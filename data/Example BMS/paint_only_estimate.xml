@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VehicleDamageEstimateAddRq>
+    <RqUID>REQ-2024-0004</RqUID>
+    <RefClaimNum>CLM-24-0004</RefClaimNum>
+    
+    <DocumentInfo>
+        <BMSVer>5.2.22</BMSVer>
+        <DocumentType>Estimate</DocumentType>
+        <DocumentID>EST-24-0004</DocumentID>
+        <VendorCode>CAUTO</VendorCode>
+        <DocumentStatus>Final</DocumentStatus>
+        <CreateDateTime>2024-08-23T14:20:00</CreateDateTime>
+        <TransmitDateTime>2024-08-23T14:25:00</TransmitDateTime>
+        <CurrencyInfo>
+            <CurCode>CAD</CurCode>
+            <BaseCurCode>CAD</BaseCurCode>
+            <CurRate>1.00</CurRate>
+        </CurrencyInfo>
+    </DocumentInfo>
+    
+    <AdminInfo>
+        <InsuranceCompany>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>Co-operators Insurance</CompanyName>
+                    <IDInfo>
+                        <IDQualifierCode>TAX</IDQualifierCode>
+                        <IDNum>789123456</IDNum>
+                    </IDInfo>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>130 Macdonell Street</Address1>
+                            <City>Guelph</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>N1H 6P8</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>1-800-265-2662</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </InsuranceCompany>
+        
+        <PolicyHolder>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Robert</FirstName>
+                        <LastName>Anderson</LastName>
+                    </PersonName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>789 Cedar Lane</Address1>
+                            <City>Kitchener</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>N2A 2K9</PostalCode>
+                        </Address>
+                    </Communications>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>HP</CommQualifier>
+                        <CommPhone>519-555-0789</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>EM</CommQualifier>
+                        <CommEmail>robert.anderson@email.com</CommEmail>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </PolicyHolder>
+        
+        <Estimator>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Carlos</FirstName>
+                        <LastName>Gutierrez</LastName>
+                    </PersonName>
+                </PersonInfo>
+            </Party>
+            <Affiliation>Precision Paint & Body</Affiliation>
+        </Estimator>
+        
+        <RepairFacility>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>Precision Paint & Body</CompanyName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>567 Commerce Drive</Address1>
+                            <City>Waterloo</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>N2V 1A1</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>519-555-0567</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </RepairFacility>
+    </AdminInfo>
+    
+    <ClaimInfo>
+        <ClaimNum>CLM-24-0004</ClaimNum>
+        <PolicyInfo>
+            <PolicyNum>POL-147258369</PolicyNum>
+            <CoverageInfo>
+                <Coverage>
+                    <CoverageCategory>Comprehensive</CoverageCategory>
+                    <DeductibleInfo>
+                        <DeductibleStatus>Applies</DeductibleStatus>
+                        <DeductibleAmt>300.00</DeductibleAmt>
+                    </DeductibleInfo>
+                </Coverage>
+            </CoverageInfo>
+        </PolicyInfo>
+        <LossInfo>
+            <Facts>
+                <LossDateTime>2024-08-20T16:30:00</LossDateTime>
+                <ReportedDateTime>2024-08-20T17:15:00</ReportedDateTime>
+                <PrimaryPOI>
+                    <POICode>Environmental</POICode>
+                </PrimaryPOI>
+                <DamageMemo>Paint damage from tree sap and bird droppings. Clearcoat damage to hood and roof.</DamageMemo>
+                <LossMemo>Vehicle parked under trees for extended period causing paint deterioration.</LossMemo>
+            </Facts>
+            <TotalLossInd>N</TotalLossInd>
+        </LossInfo>
+    </ClaimInfo>
+    
+    <VehicleInfo>
+        <VINInfo>
+            <VIN>
+                <VINNum>1FTEW1EP5HFC12345</VINNum>
+            </VIN>
+        </VINInfo>
+        <License>
+            <LicensePlateNum>GHI789</LicensePlateNum>
+            <LicensePlateStateProvince>ON</LicensePlateStateProvince>
+        </License>
+        <VehicleDesc>
+            <ProductionDate>2017-08-03</ProductionDate>
+            <ModelYear>2017</ModelYear>
+            <MakeCode>FORD</MakeCode>
+            <MakeDesc>Ford</MakeDesc>
+            <ModelNum>F150</ModelNum>
+            <ModelName>F-150</ModelName>
+            <SubModelDesc>XLT SuperCab</SubModelDesc>
+            <VehicleType>Truck</VehicleType>
+            <OdometerInfo>
+                <OdometerReading>125000</OdometerReading>
+                <OdometerReadingMeasure>kilometers</OdometerReadingMeasure>
+            </OdometerInfo>
+        </VehicleDesc>
+        <Body>
+            <BodyStyle>Truck</BodyStyle>
+        </Body>
+        <Powertrain>
+            <EngineDesc>3.5L V6 EcoBoost</EngineDesc>
+            <EngineCode>35EB</EngineCode>
+            <TransmissionInfo>
+                <TransmissionDesc>10-Speed Automatic</TransmissionDesc>
+            </TransmissionInfo>
+            <FuelType>Gasoline</FuelType>
+        </Powertrain>
+        <Paint>
+            <Exterior>
+                <Color>
+                    <ColorName>Magnetic Metallic</ColorName>
+                </Color>
+            </Exterior>
+            <Interior>
+                <Color>
+                    <ColorName>Medium Earth Gray</ColorName>
+                </Color>
+            </Interior>
+        </Paint>
+        <Condition>
+            <ConditionCode>Good</ConditionCode>
+            <DrivableInd>Y</DrivableInd>
+            <PriorDamageInd>N</PriorDamageInd>
+        </Condition>
+        <Valuation>
+            <ValuationType>ACV</ValuationType>
+            <ValuationAmt>24500.00</ValuationAmt>
+        </Valuation>
+    </VehicleInfo>
+    
+    <DamageLineInfo>
+        <LineNum>1</LineNum>
+        <UniqueSequenceNum>1</UniqueSequenceNum>
+        <LineDesc>Sand and prepare hood</LineDesc>
+        <LineHeaderDesc>HOOD PREPARATION</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Sand and Prepare Panel</LaborOperation>
+            <LaborHours>2.5</LaborHours>
+            <DatabaseLaborHours>2.5</DatabaseLaborHours>
+            <LaborHoursCalc>2.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+            <PaintStagesNum>3</PaintStagesNum>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>2</LineNum>
+        <UniqueSequenceNum>2</UniqueSequenceNum>
+        <LineDesc>Prime, paint and clearcoat hood</LineDesc>
+        <LineHeaderDesc>HOOD PAINT</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Prime, Paint, and Clear</LaborOperation>
+            <LaborHours>4.0</LaborHours>
+            <DatabaseLaborHours>4.0</DatabaseLaborHours>
+            <LaborHoursCalc>4.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+            <PaintStagesNum>3</PaintStagesNum>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>3</LineNum>
+        <UniqueSequenceNum>3</UniqueSequenceNum>
+        <LineDesc>Sand and prepare roof</LineDesc>
+        <LineHeaderDesc>ROOF PREPARATION</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Sand and Prepare Panel</LaborOperation>
+            <LaborHours>3.0</LaborHours>
+            <DatabaseLaborHours>3.0</DatabaseLaborHours>
+            <LaborHoursCalc>3.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+            <PaintStagesNum>3</PaintStagesNum>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>4</LineNum>
+        <UniqueSequenceNum>4</UniqueSequenceNum>
+        <LineDesc>Prime, paint and clearcoat roof</LineDesc>
+        <LineHeaderDesc>ROOF PAINT</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Prime, Paint, and Clear</LaborOperation>
+            <LaborHours>4.5</LaborHours>
+            <DatabaseLaborHours>4.5</DatabaseLaborHours>
+            <LaborHoursCalc>4.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+            <PaintStagesNum>3</PaintStagesNum>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>5</LineNum>
+        <UniqueSequenceNum>5</UniqueSequenceNum>
+        <LineDesc>Color sand and polish</LineDesc>
+        <LineHeaderDesc>FINISHING</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Color Sand and Polish</LaborOperation>
+            <LaborHours>2.0</LaborHours>
+            <DatabaseLaborHours>2.0</DatabaseLaborHours>
+            <LaborHoursCalc>2.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>6</LineNum>
+        <UniqueSequenceNum>6</UniqueSequenceNum>
+        <LineDesc>Primer for hood and roof</LineDesc>
+        <LineHeaderDesc>PRIMER</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Primer</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Paint Materials</OtherChargesType>
+            <Price>85.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>7</LineNum>
+        <UniqueSequenceNum>7</UniqueSequenceNum>
+        <LineDesc>Base coat - Magnetic Metallic</LineDesc>
+        <LineHeaderDesc>BASE COAT</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Paint</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Paint Materials</OtherChargesType>
+            <Price>125.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>8</LineNum>
+        <UniqueSequenceNum>8</UniqueSequenceNum>
+        <LineDesc>Clear coat</LineDesc>
+        <LineHeaderDesc>CLEAR COAT</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Clear</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Paint Materials</OtherChargesType>
+            <Price>95.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>9</LineNum>
+        <UniqueSequenceNum>9</UniqueSequenceNum>
+        <LineDesc>Sanding materials and supplies</LineDesc>
+        <LineHeaderDesc>SUPPLIES</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Supplies</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Shop Supplies</OtherChargesType>
+            <Price>65.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <RepairTotalsInfo>
+        <LaborTotalsInfo>
+            <TotalType>Labor</TotalType>
+            <TotalTypeDesc>Labor Total</TotalTypeDesc>
+            <TaxableAmt>1024.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>51.20</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>81.92</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>133.12</TaxTotalAmt>
+            <TotalAmt>1157.12</TotalAmt>
+        </LaborTotalsInfo>
+        
+        <OtherChargesTotalsInfo>
+            <TotalType>Materials</TotalType>
+            <TotalTypeDesc>Materials Total</TotalTypeDesc>
+            <TaxableAmt>370.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>18.50</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>29.60</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>48.10</TaxTotalAmt>
+            <TotalAmt>418.10</TotalAmt>
+        </OtherChargesTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>GrossTotal</TotalType>
+            <TotalSubType>EstimateTotal</TotalSubType>
+            <TotalTypeDesc>Gross Total</TotalTypeDesc>
+            <TotalAmt>1575.22</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>Deductible</TotalType>
+            <TotalSubType>InsuranceDeductible</TotalSubType>
+            <TotalTypeDesc>Customer Deductible</TotalTypeDesc>
+            <TotalAmt>300.00</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>NetTotal</TotalType>
+            <TotalSubType>InsuranceTotal</TotalSubType>
+            <TotalTypeDesc>Insurance Responsibility</TotalTypeDesc>
+            <TotalAmt>1275.22</TotalAmt>
+        </SummaryTotalsInfo>
+    </RepairTotalsInfo>
+    
+    <ProfileInfo>
+        <ProfileName>Paint Specialist Profile</ProfileName>
+        <ProfileUUID>PROF-PAINT-001</ProfileUUID>
+        <RateInfo>
+            <RateType>Paint Labor</RateType>
+            <RateDesc>Paint Shop Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>64.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+    </ProfileInfo>
+    
+    <EventInfo>
+        <AssignmentEvent>
+            <CreateDateTime>2024-08-23T14:20:00</CreateDateTime>
+            <InspectionDateTime>2024-08-23T15:00:00</InspectionDateTime>
+        </AssignmentEvent>
+        <EstimateEvent>
+            <CommitDateTime>2024-08-23T16:30:00</CommitDateTime>
+            <UploadDateTime>2024-08-23T16:35:00</UploadDateTime>
+            <PrintDateTime>2024-08-23T16:40:00</PrintDateTime>
+        </EstimateEvent>
+    </EventInfo>
+</VehicleDamageEstimateAddRq>

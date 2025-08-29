@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # CollisionOS Application
+  collisionos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: collisionos-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - collisionos-data:/app/data
+      - collisionos-logs:/app/logs
+      - ./uploads:/app/uploads
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=./data/collisionos.db
+      - JWT_SECRET=dev-jwt-secret-change-for-production
+      - SESSION_SECRET=dev-session-secret-change-for-production
+      - CORS_ORIGIN=http://localhost:3000
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "node", "server/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - redis
+    networks:
+      - collisionos-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: collisionos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - collisionos-network
+
+  # PostgreSQL Database (Optional - for production-like setup)
+  postgres:
+    image: postgres:15-alpine
+    container_name: collisionos-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      - POSTGRES_DB=collisionos
+      - POSTGRES_USER=collisionos
+      - POSTGRES_PASSWORD=collisionos_dev_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    networks:
+      - collisionos-network
+
+  # Nginx Reverse Proxy (Optional - for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: collisionos-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - collisionos
+    networks:
+      - collisionos-network
+
+volumes:
+  collisionos-data:
+    driver: local
+  collisionos-logs:
+    driver: local
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  nginx-logs:
+    driver: local
+
+networks:
+  collisionos-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

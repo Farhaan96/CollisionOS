@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # CollisionOS Application - Production
+  collisionos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: collisionos:latest
+    container_name: collisionos-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - collisionos-prod-data:/app/data
+      - collisionos-prod-logs:/app/logs
+      - collisionos-prod-uploads:/app/uploads
+      - collisionos-prod-backups:/app/backups
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://collisionos_prod:${POSTGRES_PASSWORD}@postgres:5432/collisionos_prod
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - LOG_LEVEL=warn
+      - MONITORING_ENABLED=true
+      - HEALTH_CHECK_ENABLED=true
+      - BACKUP_ENABLED=true
+    env_file:
+      - .env.production
+    healthcheck:
+      test: ["CMD", "node", "server/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - collisionos-prod-network
+
+  # PostgreSQL Database - Production
+  postgres:
+    image: postgres:15-alpine
+    container_name: collisionos-postgres-prod
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+      - ./scripts/init-prod-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - postgres-prod-backups:/backups
+    environment:
+      - POSTGRES_DB=collisionos_prod
+      - POSTGRES_USER=collisionos_prod
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - collisionos-prod-network
+
+  # Redis - Production
+  redis:
+    image: redis:7-alpine
+    container_name: collisionos-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-prod-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    networks:
+      - collisionos-prod-network
+
+  # Nginx Reverse Proxy - Production
+  nginx:
+    image: nginx:alpine
+    container_name: collisionos-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-prod-logs:/var/log/nginx
+    depends_on:
+      - collisionos
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    networks:
+      - collisionos-prod-network
+
+  # Backup Service
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: collisionos-backup
+    restart: unless-stopped
+    volumes:
+      - collisionos-prod-data:/app/data:ro
+      - postgres-prod-backups:/postgres-backups
+      - collisionos-prod-backups:/app/backups
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=collisionos_prod
+      - POSTGRES_USER=collisionos_prod
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - BACKUP_SCHEDULE=0 2 * * *
+      - BACKUP_RETENTION_DAYS=30
+    depends_on:
+      - postgres
+    networks:
+      - collisionos-prod-network
+
+volumes:
+  collisionos-prod-data:
+    driver: local
+  collisionos-prod-logs:
+    driver: local
+  collisionos-prod-uploads:
+    driver: local
+  collisionos-prod-backups:
+    driver: local
+  postgres-prod-data:
+    driver: local
+  postgres-prod-backups:
+    driver: local
+  redis-prod-data:
+    driver: local
+  nginx-prod-logs:
+    driver: local
+
+networks:
+  collisionos-prod-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

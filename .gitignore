@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables (sensitive)
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.prod
+.env.test
+
+# Build outputs
+build/
+dist/
+coverage/
+
+# Test results
+playwright-report/
+test-results/
+test-results.json
+
+# Uploads and data
+uploads/
+data/collisionos.db
+data/*.db
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+nul
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# API keys and secrets
+secrets.json
+config/secrets.json
+*.key
+*.pem
+*.p12
+
+# Backup files
+*.bak
+*.backup

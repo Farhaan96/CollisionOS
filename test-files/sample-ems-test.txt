@@ -1,0 +1,17 @@
+ESTIMATE|EST-2025-001235|2025-08-28|Demo Auto Body Shop
+CLAIM|CLM-2025-567891|POL-DEF789012|Allstate Insurance|2025-08-22
+CUSTOMER|Jennifer|Davis|555-456-7890|jennifer.davis@email.com|5678 Oak Avenue|Springfield|IL|62701
+VEHICLE|2021|Toyota|Camry|SE|4T1C11AK0MU123456|XYZ789|Midnight Black|2.5L 4-Cylinder|8-Speed Automatic|25000
+DAMAGE_TOTAL|3875.25|1950.00|1625.75|299.50|172.63
+LINE|1|REPAIR|PANEL|Rear Bumper Cover|52159-06907-C0|2.5|60.00|150.00|365.25|1.5|65.00|97.50|28.75|641.50
+LINE|2|REPLACE|LIGHT|Right Tail Light Assembly|81561-06040|0.8|60.00|48.00|289.50||||||337.50
+LINE|3|REPAIR|PANEL|Trunk Lid|67005-06907-C0|3.0|60.00|180.00||2.5|65.00|162.50|45.25|387.75
+LINE|4|REPAIR|PANEL|Right Rear Quarter Panel|61611-06907-C0|8.5|60.00|510.00||4.5|65.00|292.50|78.50|881.00
+LINE|5|REPLACE|TRIM|Right Rear Quarter Glass|68110-06010|1.0|60.00|60.00|185.75||||||245.75
+LINE|6|REPAIR|PANEL|Right Rear Door Shell|67003-06907-C0|4.5|60.00|270.00||3.0|65.00|195.00|52.25|517.25
+LINE|7|REPLACE|STRUCTURAL|Rear Body Panel Section|57106-06010|12.0|70.00|840.00|785.25|2.0|65.00|130.00|35.75|1791.00
+LINE|8|SERVICE|ALIGNMENT|4-Wheel Alignment|SERVICE-ALIGN|1.5|75.00|112.50||||||112.50
+LINE|9|SERVICE|DETAILING|Complete Detail Service|SERVICE-DETAIL|1.5|50.00|75.00||||25.00|100.00
+TOTALS|3527.63|172.63|500.00|3875.25
+NOTES|Vehicle sustained significant rear-end collision damage|Structural damage to rear body panel requires sectioning|Right rear quarter panel has creasing that can be repaired|Recommend alignment after structural repairs|All paint matched to factory color code 218
+ATTACHMENTS|PHOTO|Rear damage overview|rear_damage_01.jpg|PHOTO|Right side damage|right_damage_01.jpg|PHOTO|Trunk damage detail|trunk_damage_01.jpg

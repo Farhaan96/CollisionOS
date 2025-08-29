@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VehicleDamageEstimateAddRq>
+    <RqUID>REQ-2024-0001</RqUID>
+    <RefClaimNum>CLM-24-0001</RefClaimNum>
+    
+    <DocumentInfo>
+        <BMSVer>5.2.22</BMSVer>
+        <DocumentType>Estimate</DocumentType>
+        <DocumentID>EST-24-0001</DocumentID>
+        <VendorCode>CAUTO</VendorCode>
+        <DocumentStatus>Final</DocumentStatus>
+        <CreateDateTime>2024-08-20T10:30:00</CreateDateTime>
+        <TransmitDateTime>2024-08-20T10:35:00</TransmitDateTime>
+        <CurrencyInfo>
+            <CurCode>CAD</CurCode>
+            <BaseCurCode>CAD</BaseCurCode>
+            <CurRate>1.00</CurRate>
+        </CurrencyInfo>
+    </DocumentInfo>
+    
+    <AdminInfo>
+        <InsuranceCompany>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>State Farm Insurance</CompanyName>
+                    <IDInfo>
+                        <IDQualifierCode>TAX</IDQualifierCode>
+                        <IDNum>123456789</IDNum>
+                    </IDInfo>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>1 State Farm Plaza</Address1>
+                            <City>Bloomington</City>
+                            <StateProvince>IL</StateProvince>
+                            <PostalCode>61710</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>1-800-782-8332</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </InsuranceCompany>
+        
+        <PolicyHolder>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Sarah</FirstName>
+                        <LastName>Johnson</LastName>
+                    </PersonName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>123 Maple Street</Address1>
+                            <City>Toronto</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>M5V 3A8</PostalCode>
+                        </Address>
+                    </Communications>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>HP</CommQualifier>
+                        <CommPhone>416-555-0123</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>EM</CommQualifier>
+                        <CommEmail>sarah.johnson@email.com</CommEmail>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </PolicyHolder>
+        
+        <Estimator>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Mike</FirstName>
+                        <LastName>Thompson</LastName>
+                    </PersonName>
+                </PersonInfo>
+            </Party>
+            <Affiliation>Certified Auto Body Shop</Affiliation>
+        </Estimator>
+        
+        <RepairFacility>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>Certified Auto Body Shop</CompanyName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>456 Industrial Way</Address1>
+                            <City>Toronto</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>M6B 1A6</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>416-555-0456</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </RepairFacility>
+    </AdminInfo>
+    
+    <ClaimInfo>
+        <ClaimNum>CLM-24-0001</ClaimNum>
+        <PolicyInfo>
+            <PolicyNum>POL-789456123</PolicyNum>
+            <CoverageInfo>
+                <Coverage>
+                    <CoverageCategory>Collision</CoverageCategory>
+                    <DeductibleInfo>
+                        <DeductibleStatus>Applies</DeductibleStatus>
+                        <DeductibleAmt>500.00</DeductibleAmt>
+                    </DeductibleInfo>
+                </Coverage>
+            </CoverageInfo>
+        </PolicyInfo>
+        <LossInfo>
+            <Facts>
+                <LossDateTime>2024-08-15T14:30:00</LossDateTime>
+                <ReportedDateTime>2024-08-15T15:45:00</ReportedDateTime>
+                <PrimaryPOI>
+                    <POICode>RearEndCollision</POICode>
+                </PrimaryPOI>
+                <DamageMemo>Minor rear-end collision. Damage to rear bumper and taillight.</DamageMemo>
+                <LossMemo>Vehicle was stopped at traffic light when struck from behind.</LossMemo>
+            </Facts>
+            <TotalLossInd>N</TotalLossInd>
+        </LossInfo>
+    </ClaimInfo>
+    
+    <VehicleInfo>
+        <VINInfo>
+            <VIN>
+                <VINNum>1HGBH41JXMN109186</VINNum>
+            </VIN>
+        </VINInfo>
+        <License>
+            <LicensePlateNum>ABC123</LicensePlateNum>
+            <LicensePlateStateProvince>ON</LicensePlateStateProvince>
+        </License>
+        <VehicleDesc>
+            <ProductionDate>2021-03-15</ProductionDate>
+            <ModelYear>2021</ModelYear>
+            <MakeCode>HONDA</MakeCode>
+            <MakeDesc>Honda</MakeDesc>
+            <ModelNum>CIVIC</ModelNum>
+            <ModelName>Civic</ModelName>
+            <SubModelDesc>LX Sedan</SubModelDesc>
+            <VehicleType>Passenger</VehicleType>
+            <OdometerInfo>
+                <OdometerReading>45000</OdometerReading>
+                <OdometerReadingMeasure>kilometers</OdometerReadingMeasure>
+            </OdometerInfo>
+        </VehicleDesc>
+        <Body>
+            <BodyStyle>Sedan</BodyStyle>
+        </Body>
+        <Powertrain>
+            <EngineDesc>2.0L I4</EngineDesc>
+            <EngineCode>K20C2</EngineCode>
+            <TransmissionInfo>
+                <TransmissionDesc>CVT</TransmissionDesc>
+            </TransmissionInfo>
+            <FuelType>Gasoline</FuelType>
+        </Powertrain>
+        <Paint>
+            <Exterior>
+                <Color>
+                    <ColorName>Rallye Red</ColorName>
+                </Color>
+            </Exterior>
+            <Interior>
+                <Color>
+                    <ColorName>Black</ColorName>
+                </Color>
+            </Interior>
+        </Paint>
+        <Condition>
+            <ConditionCode>Good</ConditionCode>
+            <DrivableInd>Y</DrivableInd>
+            <PriorDamageInd>N</PriorDamageInd>
+        </Condition>
+        <Valuation>
+            <ValuationType>ACV</ValuationType>
+            <ValuationAmt>22500.00</ValuationAmt>
+        </Valuation>
+    </VehicleInfo>
+    
+    <DamageLineInfo>
+        <LineNum>1</LineNum>
+        <UniqueSequenceNum>1</UniqueSequenceNum>
+        <LineDesc>Rear bumper cover</LineDesc>
+        <LineHeaderDesc>REAR BUMPER</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Sheet Metal</PartType>
+            <PartNum>71501-TBA-A00ZZ</PartNum>
+            <OEMPartNum>71501-TBA-A00ZZ</OEMPartNum>
+            <PartPrice>450.00</PartPrice>
+            <OEMPartPrice>450.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>2</LineNum>
+        <UniqueSequenceNum>2</UniqueSequenceNum>
+        <LineDesc>Remove and reinstall rear bumper cover</LineDesc>
+        <LineHeaderDesc>REAR BUMPER</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>R&amp;I Rear Bumper Cover</LaborOperation>
+            <LaborHours>1.5</LaborHours>
+            <DatabaseLaborHours>1.5</DatabaseLaborHours>
+            <LaborHoursCalc>1.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>3</LineNum>
+        <UniqueSequenceNum>3</UniqueSequenceNum>
+        <LineDesc>Right rear taillight assembly</LineDesc>
+        <LineHeaderDesc>TAILLIGHTS</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Electrical</PartType>
+            <PartNum>33500-TBA-306</PartNum>
+            <OEMPartNum>33500-TBA-306</OEMPartNum>
+            <PartPrice>125.00</PartPrice>
+            <OEMPartPrice>125.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>4</LineNum>
+        <UniqueSequenceNum>4</UniqueSequenceNum>
+        <LineDesc>Remove and reinstall taillight assembly</LineDesc>
+        <LineHeaderDesc>TAILLIGHTS</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>R&amp;I Taillight Assembly</LaborOperation>
+            <LaborHours>0.3</LaborHours>
+            <DatabaseLaborHours>0.3</DatabaseLaborHours>
+            <LaborHoursCalc>0.3</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>5</LineNum>
+        <UniqueSequenceNum>5</UniqueSequenceNum>
+        <LineDesc>Paint materials</LineDesc>
+        <LineHeaderDesc>PAINT MATERIALS</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Paint</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Paint Materials</OtherChargesType>
+            <Price>65.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <RepairTotalsInfo>
+        <LaborTotalsInfo>
+            <TotalType>Labor</TotalType>
+            <TotalTypeDesc>Labor Total</TotalTypeDesc>
+            <TaxableAmt>115.20</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>5.76</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>9.22</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>14.98</TaxTotalAmt>
+            <TotalAmt>130.18</TotalAmt>
+        </LaborTotalsInfo>
+        
+        <PartsTotalsInfo>
+            <TotalType>Parts</TotalType>
+            <TotalTypeDesc>Parts Total</TotalTypeDesc>
+            <TaxableAmt>575.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>28.75</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>46.00</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>74.75</TaxTotalAmt>
+            <TotalAmt>649.75</TotalAmt>
+        </PartsTotalsInfo>
+        
+        <OtherChargesTotalsInfo>
+            <TotalType>Materials</TotalType>
+            <TotalTypeDesc>Materials Total</TotalTypeDesc>
+            <TaxableAmt>65.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>3.25</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>5.20</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>8.45</TaxTotalAmt>
+            <TotalAmt>73.45</TotalAmt>
+        </OtherChargesTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>GrossTotal</TotalType>
+            <TotalSubType>EstimateTotal</TotalSubType>
+            <TotalTypeDesc>Gross Total</TotalTypeDesc>
+            <TotalAmt>853.38</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>Deductible</TotalType>
+            <TotalSubType>InsuranceDeductible</TotalSubType>
+            <TotalTypeDesc>Customer Deductible</TotalTypeDesc>
+            <TotalAmt>500.00</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>NetTotal</TotalType>
+            <TotalSubType>InsuranceTotal</TotalSubType>
+            <TotalTypeDesc>Insurance Responsibility</TotalTypeDesc>
+            <TotalAmt>353.38</TotalAmt>
+        </SummaryTotalsInfo>
+    </RepairTotalsInfo>
+    
+    <ProfileInfo>
+        <ProfileName>Standard Profile</ProfileName>
+        <ProfileUUID>PROF-STD-001</ProfileUUID>
+        <RateInfo>
+            <RateType>Body Labor</RateType>
+            <RateDesc>Body Shop Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>64.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <RateInfo>
+            <RateType>Paint Labor</RateType>
+            <RateDesc>Paint Shop Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>64.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+    </ProfileInfo>
+    
+    <EventInfo>
+        <AssignmentEvent>
+            <CreateDateTime>2024-08-20T10:30:00</CreateDateTime>
+            <InspectionDateTime>2024-08-20T14:00:00</InspectionDateTime>
+        </AssignmentEvent>
+        <EstimateEvent>
+            <CommitDateTime>2024-08-20T16:30:00</CommitDateTime>
+            <UploadDateTime>2024-08-20T16:35:00</UploadDateTime>
+            <PrintDateTime>2024-08-20T16:40:00</PrintDateTime>
+        </EstimateEvent>
+    </EventInfo>
+</VehicleDamageEstimateAddRq>

@@ -1,0 +1,612 @@
+/* Global styles for CollisionOS - Automotive Business Management Platform */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Global Typography and Base Styles */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Modern mobile viewport fixes using 2025 best practices */
+html {
+  /* Use modern viewport units for better mobile browser support */
+  height: max(100%, 100svh);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Use small viewport height to account for mobile browser UI */
+  height: max(100%, 100svh);
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Prevent scroll on login page for mobile - using modern viewport units */
+body.login-page {
+  overflow: hidden;
+  height: max(100vh, 100svh);
+  min-height: 100svh;
+}
+
+/* Login page specific fixes to prevent jumping */
+body.login-page,
+body.login-page html {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Enhanced animations for login page */
+@keyframes subtlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-15px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes subtleGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Premium animations for high-class design */
+@keyframes premiumGradientShift {
+  0% {
+    background-position: 0% 50%, 0% 0%, 0% 0%, 0% 0%;
+  }
+  50% {
+    background-position: 100% 50%, 0% 0%, 0% 0%, 0% 0%;
+  }
+  100% {
+    background-position: 0% 50%, 0% 0%, 0% 0%, 0% 0%;
+  }
+}
+
+@keyframes premiumFloat {
+  0%, 100% {
+    transform: translateY(0px);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-25px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes premiumRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Enhanced login page styling */
+.login-page .MuiPaper-root {
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced button animations */
+.login-page .MuiButton-root {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page .MuiButton-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.6s;
+}
+
+.login-page .MuiButton-root:hover::before {
+  left: 100%;
+}
+
+/* Enhanced text field animations */
+.login-page .MuiTextField-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-page .MuiTextField-root:hover {
+  transform: translateY(-2px);
+}
+
+/* Fix for text field border issues */
+.login-page .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-width: 1px !important;
+  border-color: rgba(0, 0, 0, 0.23) !important;
+}
+
+.login-page .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-width: 2px !important;
+  border-color: #3b82f6 !important;
+}
+
+.login-page .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-width: 2px !important;
+  border-color: #3b82f6 !important;
+}
+
+/* Remove any double borders */
+.login-page .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline legend {
+  display: none !important;
+}
+
+/* AGGRESSIVE FIXES FOR DOUBLE BORDER ISSUE */
+.login-page .MuiTextField-root .MuiOutlinedInput-root {
+  border: none !important;
+  outline: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root::before,
+.login-page .MuiTextField-root .MuiOutlinedInput-root::after {
+  display: none !important;
+  border: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border: 1px solid rgba(0, 0, 0, 0.23) !important;
+  border-width: 1px !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border: 2px solid #3b82f6 !important;
+  border-width: 2px !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: 2px solid #3b82f6 !important;
+  border-width: 2px !important;
+}
+
+/* Remove any additional borders or outlines */
+.login-page .MuiTextField-root .MuiOutlinedInput-root * {
+  border: none !important;
+  outline: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline * {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Floating particles animation */
+.login-page .floating-particles::before,
+.login-page .floating-particles::after {
+  animation: subtleFloat 12s ease-in-out infinite;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+  /* CRITICAL FIX: Ensure root element doesn't block clicks */
+  pointer-events: auto !important;
+}
+
+/* CRITICAL FIX: Override any pointer-events issues on root and its children */
+#root * {
+  pointer-events: auto !important;
+}
+
+/* CRITICAL FIX: Fix react-hot-toast toaster intercepting clicks */
+[data-rht-toaster] {
+  pointer-events: none !important;
+}
+
+[data-rht-toaster] * {
+  pointer-events: auto !important;
+}
+
+/* Additional aggressive fixes for toaster */
+div[data-rht-toaster] {
+  pointer-events: none !important;
+  z-index: 9999 !important;
+}
+
+div[data-rht-toaster] * {
+  pointer-events: auto !important;
+}
+
+/* Force all toaster-related elements to not block clicks */
+[data-rht-toaster],
+[data-rht-toaster] > *,
+[data-rht-toaster] > * > * {
+  pointer-events: none !important;
+}
+
+/* But allow clicks on actual toast content */
+[data-rht-toaster] [role="alert"],
+[data-rht-toaster] [role="status"] {
+  pointer-events: auto !important;
+}
+
+/* Universal interactive element fixes - MUI v6 compatible */
+/* Ensure all buttons are clickable */
+.MuiButton-root, 
+.MuiIconButton-root,
+.MuiButtonBase-root {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Ensure all links are clickable */
+a, 
+a[role="button"],
+.MuiLink-root {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Ensure all form elements are interactive */
+input,
+select,
+textarea,
+.MuiTextField-root,
+.MuiFormControl-root,
+.MuiInputBase-root {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Ensure navigation elements are clickable */
+nav,
+.MuiAppBar-root,
+.MuiToolbar-root {
+  z-index: 1100 !important;
+}
+
+/* Ensure all interactive card elements are clickable */
+.MuiCard-root,
+.MuiCardActionArea-root {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Fix for floating action buttons */
+.MuiFab-root {
+  z-index: 1050 !important;
+}
+
+/* Performance optimization for interactive elements */
+.MuiButton-root,
+.MuiCard-root {
+  contain: layout style;
+  isolation: isolate;
+}
+
+/* 2024 PROPER FIX - CSS Injection Order and Stacking Context */
+/* Based on MUI v5/v6 best practices */
+
+/* Fix stacking context issues */
+.MuiBox-root {
+  /* Remove problematic stacking contexts */
+  isolation: auto !important;
+}
+
+/* Only disable pseudo-elements that create overlays */
+.MuiBox-root::after,
+.MuiBox-root::before {
+  pointer-events: none !important;
+}
+
+/* Ensure interactive elements are always accessible */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix for MUI component click interception */
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiButtonBase-root {
+  z-index: 10 !important;
+  /* Force proper positioning to avoid click interception */
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* Prevent overlay interference */
+[class*="css-"]:empty {
+  pointer-events: none !important;
+}
+
+/* Force all background and overlay elements to not intercept clicks */
+.MuiBox-root[style*="position: fixed"],
+.MuiBox-root[style*="position: absolute"],
+[class*="css-"][style*="z-index: -"] {
+  pointer-events: none !important;
+}
+
+/* Improved focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #1e40af;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Only apply Electron-specific fixes when in Electron */
+@media screen and (-webkit-app-region: no-drag) {
+  /* Electron-specific fixes */
+  body {
+    -webkit-app-region: no-drag;
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+}
+
+/* Basic interactive element styles - Enhanced for better UX */
+button, a, input, select, textarea, [role="button"], [tabindex] {
+  cursor: pointer;
+  user-select: auto;
+}
+
+input, textarea {
+  cursor: text;
+  user-select: text;
+}
+
+/* Ensure all clickable elements work */
+[role="button"], 
+.MuiButton-root, 
+.MuiIconButton-root,
+.MuiListItemButton-root,
+.MuiMenuItem-root,
+.MuiTab-root,
+.MuiChip-root {
+  cursor: pointer !important;
+  user-select: none;
+}
+
+/* Material-UI specific styles */
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiMenuItem-root,
+.MuiListItem-root,
+.MuiCard-root,
+.MuiChip-root {
+  cursor: pointer;
+}
+
+/* Fix for dialog and modal interactions */
+.MuiDialog-root {
+  pointer-events: auto;
+}
+
+.MuiDialog-container {
+  pointer-events: none;
+}
+
+.MuiDialog-paper {
+  pointer-events: auto;
+}
+
+/* Remove any blocking overlays - Allow clicks on backdrop when appropriate */
+.MuiBackdrop-root {
+  pointer-events: auto;
+}
+
+/* Ensure proper z-index for interactive elements */
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiCard-root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced hover effects for better UX */
+.MuiCard-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.MuiCard-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(30, 64, 175, 0.15), 0 10px 10px -5px rgba(30, 64, 175, 0.08);
+}
+
+.MuiButton-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: none;
+  font-weight: 600;
+}
+
+.MuiButton-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(30, 64, 175, 0.2), 0 4px 6px -2px rgba(30, 64, 175, 0.1);
+}
+
+/* Improved spacing and readability */
+.MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3 {
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.MuiTypography-body1, .MuiTypography-body2 {
+  line-height: 1.6;
+}
+
+/* Professional spacing for automotive business context */
+.dashboard-container {
+  padding: 24px;
+  gap: 24px;
+}
+
+.stats-grid {
+  gap: 20px;
+}
+
+/* Accessibility improvements */
+.MuiButton-root:focus,
+.MuiIconButton-root:focus,
+.MuiTextField-root:focus-within {
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+}
+
+/* Enhanced glass morphism effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Enhanced focus states for better accessibility */
+.MuiButton-root:focus-visible,
+.MuiTextField-root:focus-within,
+.MuiCard-root:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 600px) {
+  .login-page .MuiPaper-root {
+    margin: 20px !important;
+    padding: 32px !important;
+  }
+  
+  .login-page .MuiTypography-h3 {
+    font-size: 2rem !important;
+  }
+  
+  .login-page .MuiButton-root {
+    padding: 12px 24px !important;
+  }
+}
+
+/* Enhanced tablet responsiveness */
+@media (min-width: 601px) and (max-width: 960px) {
+  .login-page .MuiPaper-root {
+    margin: 32px !important;
+    padding: 40px !important;
+  }
+}
+
+/* Enhanced desktop experience */
+@media (min-width: 961px) {
+  .login-page .MuiPaper-root {
+    margin: 40px !important;
+    padding: 48px !important;
+  }
+}
+
+/* ULTIMATE BORDER FIX - Remove ALL possible double borders */
+.login-page .MuiTextField-root .MuiOutlinedInput-root {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root fieldset {
+  border: none !important;
+  outline: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border: 1px solid rgba(0, 0, 0, 0.23) !important;
+  border-width: 1px !important;
+  outline: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border: 2px solid #3b82f6 !important;
+  border-width: 2px !important;
+  outline: none !important;
+}
+
+.login-page .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: 2px solid #3b82f6 !important;
+  border-width: 2px !important;
+  outline: none !important;
+}
+
+/* Remove any fieldset borders */
+.login-page .MuiTextField-root .MuiOutlinedInput-root fieldset {
+  border: none !important;
+}
+
+/* Remove any legend elements */
+.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline legend {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VehicleDamageEstimateAddRq>
+    <RqUID>EST-2024-001</RqUID>
+    <DocumentInfo>
+        <DocumentID>EST-123456</DocumentID>
+        <CreateDateTime>2024-01-15T10:30:00</CreateDateTime>
+        <DocumentStatus>Active</DocumentStatus>
+        <DocumentType>Estimate</DocumentType>
+    </DocumentInfo>
+    
+    <VehicleInfo>
+        <VINInfo>
+            <VIN>
+                <VINNum>1HGBH41JXMN109186</VINNum>
+            </VIN>
+        </VINInfo>
+        <License>
+            <LicensePlateNum>ABC123</LicensePlateNum>
+        </License>
+        <VehicleDesc>
+            <ModelYear>2020</ModelYear>
+            <MakeDesc>Honda</MakeDesc>
+            <ModelName>Civic</ModelName>
+            <OdometerInfo>
+                <OdometerReading>45000</OdometerReading>
+            </OdometerInfo>
+        </VehicleDesc>
+        <Paint>
+            <Exterior>
+                <Color>
+                    <ColorName>White</ColorName>
+                </Color>
+            </Exterior>
+        </Paint>
+    </VehicleInfo>
+    
+    <AdminInfo>
+        <PolicyHolder>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>John</FirstName>
+                        <LastName>Smith</LastName>
+                    </PersonName>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>HP</CommQualifier>
+                        <CommPhone>416-555-5678</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </PolicyHolder>
+        <InsuranceCompany>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>State Farm Insurance</CompanyName>
+                </OrgInfo>
+            </Party>
+        </InsuranceCompany>
+    </AdminInfo>
+    
+    <RefClaimNum>CLM987654321</RefClaimNum>
+    
+    <DamageLineInfo>
+        <LineNum>1</LineNum>
+        <LineType>Part</LineType>
+        <LineDesc>Front Bumper Cover</LineDesc>
+        <PartInfo>
+            <PartNum>71101-SNE-A00</PartNum>
+            <Quantity>1</Quantity>
+            <PartPrice>450.00</PartPrice>
+            <OEMPartPrice>450.00</OEMPartPrice>
+            <PartType>OEM</PartType>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>2</LineNum>
+        <LineType>Labor</LineType>
+        <LineDesc>Remove/Install Front Bumper</LineDesc>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborHours>2.5</LaborHours>
+            <LaborOperation>R&I Bumper</LaborOperation>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <RepairTotalsInfo>
+        <PartsTotalsInfo>
+            <TotalAmt>450.00</TotalAmt>
+        </PartsTotalsInfo>
+        <LaborTotalsInfo>
+            <TotalAmt>162.50</TotalAmt>
+        </LaborTotalsInfo>
+        <SummaryTotalsInfo>
+            <TotalType>GrossTotal</TotalType>
+            <TotalAmt>612.50</TotalAmt>
+        </SummaryTotalsInfo>
+    </RepairTotalsInfo>
+</VehicleDamageEstimateAddRq>

@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-08-27T20:20:33.650Z",
+  "testResults": [
+    {
+      "test": "Admin Authentication Flow",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Dashboard KPI Cards and Metrics",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Navigation to Core Sections",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Customer Management Operations",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Production Board and Job Management",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Parts Management System",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "BMS File Import System",
+      "status": "FAILED",
+      "error": "BMS Import functionality not accessible"
+    },
+    {
+      "test": "Reports and Analytics",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Manager Role Access",
+      "status": "FAILED",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "test": "Mobile Responsiveness",
+      "status": "FAILED",
+      "error": "page.reload: net::ERR_CONNECTION_REFUSED\nCall log:\n\u001b[2m  - waiting for navigation until \"load\"\u001b[22m\n"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 7,
+    "failed": 3,
+    "issues": [
+      "BMS File Import System: BMS Import functionality not accessible",
+      "Manager Role Access: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n",
+      "Mobile Responsiveness: page.reload: net::ERR_CONNECTION_REFUSED\nCall log:\n\u001b[2m  - waiting for navigation until \"load\"\u001b[22m\n"
+    ],
+    "successRate": "70.0%"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "collisionos-supabase-migration",
+  "version": "1.0.0",
+  "description": "Migration package for CollisionOS to Supabase",
+  "main": "index.js",
+  "scripts": {
+    "setup": "node migration-scripts/01-setup-supabase-project.js",
+    "export": "node data-export/export-script.js",
+    "migrate": "node migration-scripts/02-migrate-data.js",
+    "validate": "node migration-scripts/03-validate-and-test.js",
+    "seed": "node scripts/seed-test-data.js",
+    "test-seeded": "node scripts/test-seeded-data.js",
+    "full-migration": "npm run export && npm run migrate && npm run validate",
+    "test": "npm run validate",
+    "clean": "rm -rf exported-data/* *.log *.json || true"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "sequelize": "^6.35.1",
+    "pg": "^8.11.3",
+    "sqlite3": "^5.1.6",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "author": "CollisionOS Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/collisionos/supabase-migration"
+  },
+  "keywords": [
+    "supabase",
+    "migration",
+    "collisionos",
+    "database",
+    "auto-body-shop"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

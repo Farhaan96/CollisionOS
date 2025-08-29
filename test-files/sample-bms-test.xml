@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BMS_ESTIMATE xmlns="http://www.cieca.org/bms/estimate" version="1.0">
+  <DOCUMENT_INFO>
+    <DOCUMENT_NUMBER>EST-2025-001234</DOCUMENT_NUMBER>
+    <DOCUMENT_TYPE>ESTIMATE</DOCUMENT_TYPE>
+    <DATE_CREATED>2025-08-28</DATE_CREATED>
+    <DATE_MODIFIED>2025-08-28</DATE_MODIFIED>
+    <CREATED_BY>
+      <COMPANY_NAME>Demo Auto Body Shop</COMPANY_NAME>
+      <USER_NAME>John Estimator</USER_NAME>
+      <EMAIL>john@demoautobody.com</EMAIL>
+    </CREATED_BY>
+  </DOCUMENT_INFO>
+
+  <CLAIM_INFO>
+    <CLAIM_NUMBER>CLM-2025-567890</CLAIM_NUMBER>
+    <POLICY_NUMBER>POL-ABC123456</POLICY_NUMBER>
+    <INSURANCE_COMPANY>State Farm Insurance</INSURANCE_COMPANY>
+    <ADJUSTER>
+      <NAME>Sarah Johnson</NAME>
+      <PHONE>555-123-4567</PHONE>
+      <EMAIL>sarah.johnson@statefarm.com</EMAIL>
+    </ADJUSTER>
+    <DATE_OF_LOSS>2025-08-20</DATE_OF_LOSS>
+  </CLAIM_INFO>
+
+  <CUSTOMER_INFO>
+    <FIRST_NAME>Michael</FIRST_NAME>
+    <LAST_NAME>Thompson</LAST_NAME>
+    <PHONE>555-987-6543</PHONE>
+    <EMAIL>michael.thompson@email.com</EMAIL>
+    <ADDRESS>
+      <STREET>1234 Main Street</STREET>
+      <CITY>Anytown</CITY>
+      <STATE>CA</STATE>
+      <ZIP>90210</ZIP>
+    </ADDRESS>
+  </CUSTOMER_INFO>
+
+  <VEHICLE_INFO>
+    <YEAR>2022</YEAR>
+    <MAKE>Honda</MAKE>
+    <MODEL>Civic</MODEL>
+    <TRIM>EX</TRIM>
+    <VIN>1HGBH41JXMN109186</VIN>
+    <LICENSE_PLATE>ABC123</LICENSE_PLATE>
+    <COLOR>Silver Metallic</COLOR>
+    <ENGINE>1.5L Turbo</ENGINE>
+    <TRANSMISSION>CVT</TRANSMISSION>
+    <MILEAGE>15000</MILEAGE>
+  </VEHICLE_INFO>
+
+  <DAMAGE_ASSESSMENT>
+    <TOTAL_ESTIMATE>4250.75</TOTAL_ESTIMATE>
+    <LABOR_TOTAL>2100.00</LABOR_TOTAL>
+    <PARTS_TOTAL>1890.50</PARTS_TOTAL>
+    <PAINT_MATERIALS_TOTAL>260.25</PAINT_MATERIALS_TOTAL>
+    <TAX_TOTAL>189.05</TAX_TOTAL>
+
+    <DAMAGE_LINES>
+      <!-- Front End Damage -->
+      <LINE_ITEM>
+        <LINE_NUMBER>1</LINE_NUMBER>
+        <OPERATION_TYPE>REPAIR</OPERATION_TYPE>
+        <PART_TYPE>PANEL</PART_TYPE>
+        <PART_NAME>Front Bumper Cover</PART_NAME>
+        <PART_NUMBER>04711-TBB-A90ZZ</PART_NUMBER>
+        <LABOR_HOURS>3.5</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>210.00</LABOR_AMOUNT>
+        <PART_COST>425.00</PART_COST>
+        <PAINT_HOURS>2.0</PAINT_HOURS>
+        <PAINT_RATE>65.00</PAINT_RATE>
+        <PAINT_AMOUNT>130.00</PAINT_AMOUNT>
+        <MATERIAL_COST>35.50</MATERIAL_COST>
+        <TOTAL_AMOUNT>800.50</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <LINE_ITEM>
+        <LINE_NUMBER>2</LINE_NUMBER>
+        <OPERATION_TYPE>REPLACE</OPERATION_TYPE>
+        <PART_TYPE>LIGHT</PART_TYPE>
+        <PART_NAME>Left Headlight Assembly</PART_NAME>
+        <PART_NUMBER>33150-TBB-A01</PART_NUMBER>
+        <LABOR_HOURS>1.0</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>60.00</LABOR_AMOUNT>
+        <PART_COST>385.25</PART_COST>
+        <TOTAL_AMOUNT>445.25</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Hood Damage -->
+      <LINE_ITEM>
+        <LINE_NUMBER>3</LINE_NUMBER>
+        <OPERATION_TYPE>REPAIR</OPERATION_TYPE>
+        <PART_TYPE>PANEL</PART_TYPE>
+        <PART_NAME>Hood</PART_NAME>
+        <PART_NUMBER>60100-TBB-A90ZZ</PART_NUMBER>
+        <LABOR_HOURS>4.0</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>240.00</LABOR_AMOUNT>
+        <PAINT_HOURS>3.5</PAINT_HOURS>
+        <PAINT_RATE>65.00</PAINT_RATE>
+        <PAINT_AMOUNT>227.50</PAINT_AMOUNT>
+        <MATERIAL_COST>42.75</MATERIAL_COST>
+        <TOTAL_AMOUNT>510.25</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Left Fender Damage -->
+      <LINE_ITEM>
+        <LINE_NUMBER>4</LINE_NUMBER>
+        <OPERATION_TYPE>REPAIR</OPERATION_TYPE>
+        <PART_TYPE>PANEL</PART_TYPE>
+        <PART_NAME>Left Front Fender</PART_NAME>
+        <PART_NUMBER>60261-TBB-A90ZZ</PART_NUMBER>
+        <LABOR_HOURS>5.5</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>330.00</LABOR_AMOUNT>
+        <PAINT_HOURS>4.0</PAINT_HOURS>
+        <PAINT_RATE>65.00</PAINT_RATE>
+        <PAINT_AMOUNT>260.00</PAINT_AMOUNT>
+        <MATERIAL_COST>55.00</MATERIAL_COST>
+        <TOTAL_AMOUNT>645.00</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Left Door Damage -->
+      <LINE_ITEM>
+        <LINE_NUMBER>5</LINE_NUMBER>
+        <OPERATION_TYPE>REPAIR</OPERATION_TYPE>
+        <PART_TYPE>PANEL</PART_TYPE>
+        <PART_NAME>Left Front Door Shell</PART_NAME>
+        <PART_NUMBER>67010-TBB-A90ZZ</PART_NUMBER>
+        <LABOR_HOURS>6.0</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>360.00</LABOR_AMOUNT>
+        <PAINT_HOURS>3.5</PAINT_HOURS>
+        <PAINT_RATE>65.00</PAINT_RATE>
+        <PAINT_AMOUNT>227.50</PAINT_AMOUNT>
+        <MATERIAL_COST>45.50</MATERIAL_COST>
+        <TOTAL_AMOUNT>633.00</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Left Mirror -->
+      <LINE_ITEM>
+        <LINE_NUMBER>6</LINE_NUMBER>
+        <OPERATION_TYPE>REPLACE</OPERATION_TYPE>
+        <PART_TYPE>TRIM</PART_TYPE>
+        <PART_NAME>Left Door Mirror Assembly</PART_NAME>
+        <PART_NUMBER>76258-TBB-A01</PART_NUMBER>
+        <LABOR_HOURS>0.5</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>30.00</LABOR_AMOUNT>
+        <PART_COST>185.75</PART_COST>
+        <PAINT_HOURS>1.0</PAINT_HOURS>
+        <PAINT_RATE>65.00</PAINT_RATE>
+        <PAINT_AMOUNT>65.00</PAINT_AMOUNT>
+        <MATERIAL_COST>15.50</MATERIAL_COST>
+        <TOTAL_AMOUNT>296.25</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Miscellaneous -->
+      <LINE_ITEM>
+        <LINE_NUMBER>7</LINE_NUMBER>
+        <OPERATION_TYPE>REPLACE</OPERATION_TYPE>
+        <PART_TYPE>FASTENER</PART_TYPE>
+        <PART_NAME>Miscellaneous Fasteners and Clips</PART_NAME>
+        <PART_NUMBER>MISC-CLIPS-01</PART_NUMBER>
+        <LABOR_HOURS>1.5</LABOR_HOURS>
+        <LABOR_RATE>60.00</LABOR_RATE>
+        <LABOR_AMOUNT>90.00</LABOR_AMOUNT>
+        <PART_COST>45.50</PART_COST>
+        <TOTAL_AMOUNT>135.50</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Alignment -->
+      <LINE_ITEM>
+        <LINE_NUMBER>8</LINE_NUMBER>
+        <OPERATION_TYPE>SERVICE</OPERATION_TYPE>
+        <PART_TYPE>ALIGNMENT</PART_TYPE>
+        <PART_NAME>4-Wheel Alignment</PART_NAME>
+        <PART_NUMBER>SERVICE-ALIGNMENT</PART_NUMBER>
+        <LABOR_HOURS>1.0</LABOR_HOURS>
+        <LABOR_RATE>80.00</LABOR_RATE>
+        <LABOR_AMOUNT>80.00</LABOR_AMOUNT>
+        <TOTAL_AMOUNT>80.00</TOTAL_AMOUNT>
+      </LINE_ITEM>
+
+      <!-- Car Wash and Detail -->
+      <LINE_ITEM>
+        <LINE_NUMBER>9</LINE_NUMBER>
+        <OPERATION_TYPE>SERVICE</OPERATION_TYPE>
+        <PART_TYPE>DETAILING</PART_TYPE>
+        <PART_NAME>Final Wash and Detail</PART_NAME>
+        <PART_NUMBER>SERVICE-DETAIL</PART_NUMBER>
+        <LABOR_HOURS>2.0</LABOR_HOURS>
+        <LABOR_RATE>45.00</LABOR_RATE>
+        <LABOR_AMOUNT>90.00</LABOR_AMOUNT>
+        <MATERIAL_COST>25.00</MATERIAL_COST>
+        <TOTAL_AMOUNT>115.00</TOTAL_AMOUNT>
+      </LINE_ITEM>
+    </DAMAGE_LINES>
+
+    <TOTALS_BREAKDOWN>
+      <SUBTOTAL>3872.20</SUBTOTAL>
+      <LABOR_TAX>0.00</LABOR_TAX>
+      <PARTS_TAX>189.05</PARTS_TAX>
+      <TOTAL_TAX>189.05</TOTAL_TAX>
+      <DEDUCTIBLE>500.00</DEDUCTIBLE>
+      <FINAL_TOTAL>4250.75</FINAL_TOTAL>
+    </TOTALS_BREAKDOWN>
+  </DAMAGE_ASSESSMENT>
+
+  <REPAIR_NOTES>
+    <NOTE>Vehicle sustained front-end collision damage. All damaged panels require repair and refinishing.</NOTE>
+    <NOTE>Left headlight assembly requires complete replacement due to impact damage.</NOTE>
+    <NOTE>Hood has minor denting that can be repaired using paintless dent repair techniques.</NOTE>
+    <NOTE>Left door mirror housing is cracked and requires replacement.</NOTE>
+    <NOTE>Recommend 4-wheel alignment after completion of structural repairs.</NOTE>
+    <NOTE>All paint work will be color-matched to factory specifications.</NOTE>
+  </REPAIR_NOTES>
+
+  <ATTACHMENTS>
+    <ATTACHMENT>
+      <TYPE>PHOTO</TYPE>
+      <DESCRIPTION>Front damage overview</DESCRIPTION>
+      <FILENAME>front_damage_01.jpg</FILENAME>
+    </ATTACHMENT>
+    <ATTACHMENT>
+      <TYPE>PHOTO</TYPE>
+      <DESCRIPTION>Left side damage</DESCRIPTION>
+      <FILENAME>left_side_damage_01.jpg</FILENAME>
+    </ATTACHMENT>
+    <ATTACHMENT>
+      <TYPE>PHOTO</TYPE>
+      <DESCRIPTION>Hood damage detail</DESCRIPTION>
+      <FILENAME>hood_damage_01.jpg</FILENAME>
+    </ATTACHMENT>
+  </ATTACHMENTS>
+</BMS_ESTIMATE>

@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VehicleDamageEstimateAddRq>
+    <RqUID>REQ-2024-0003</RqUID>
+    <RefClaimNum>CLM-24-0003</RefClaimNum>
+    
+    <DocumentInfo>
+        <BMSVer>5.2.22</BMSVer>
+        <DocumentType>Estimate</DocumentType>
+        <DocumentID>EST-24-0003</DocumentID>
+        <VendorCode>CAUTO</VendorCode>
+        <DocumentStatus>Final</DocumentStatus>
+        <CreateDateTime>2024-08-22T11:00:00</CreateDateTime>
+        <TransmitDateTime>2024-08-22T11:05:00</TransmitDateTime>
+        <CurrencyInfo>
+            <CurCode>CAD</CurCode>
+            <BaseCurCode>CAD</BaseCurCode>
+            <CurRate>1.00</CurRate>
+        </CurrencyInfo>
+    </DocumentInfo>
+    
+    <AdminInfo>
+        <InsuranceCompany>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>TD Insurance</CompanyName>
+                    <IDInfo>
+                        <IDQualifierCode>TAX</IDQualifierCode>
+                        <IDNum>456789123</IDNum>
+                    </IDInfo>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>100 Wellington Street West</Address1>
+                            <City>Toronto</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>M5K 1A2</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>1-866-361-2311</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </InsuranceCompany>
+        
+        <PolicyHolder>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Jennifer</FirstName>
+                        <LastName>Thompson</LastName>
+                    </PersonName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>456 Elm Street</Address1>
+                            <City>Oakville</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>L6J 3N2</PostalCode>
+                        </Address>
+                    </Communications>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>HP</CommQualifier>
+                        <CommPhone>905-555-0456</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>EM</CommQualifier>
+                        <CommEmail>jennifer.thompson@email.com</CommEmail>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </PolicyHolder>
+        
+        <Estimator>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Mark</FirstName>
+                        <LastName>Rodriguez</LastName>
+                    </PersonName>
+                </PersonInfo>
+            </Party>
+            <Affiliation>AutoGlass Express</Affiliation>
+        </Estimator>
+        
+        <RepairFacility>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>AutoGlass Express</CompanyName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>321 Service Road</Address1>
+                            <City>Hamilton</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>L8E 3K1</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>905-555-0321</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </RepairFacility>
+    </AdminInfo>
+    
+    <ClaimInfo>
+        <ClaimNum>CLM-24-0003</ClaimNum>
+        <PolicyInfo>
+            <PolicyNum>POL-321654987</PolicyNum>
+            <CoverageInfo>
+                <Coverage>
+                    <CoverageCategory>Comprehensive</CoverageCategory>
+                    <DeductibleInfo>
+                        <DeductibleStatus>Waived</DeductibleStatus>
+                        <DeductibleAmt>0.00</DeductibleAmt>
+                    </DeductibleInfo>
+                </Coverage>
+            </CoverageInfo>
+        </PolicyInfo>
+        <LossInfo>
+            <Facts>
+                <LossDateTime>2024-08-19T07:20:00</LossDateTime>
+                <ReportedDateTime>2024-08-19T07:45:00</ReportedDateTime>
+                <PrimaryPOI>
+                    <POICode>Vandalism</POICode>
+                </PrimaryPOI>
+                <DamageMemo>Windshield damaged by vandalism - rock thrown at glass causing large crack.</DamageMemo>
+                <LossMemo>Vehicle parked overnight when vandalism occurred.</LossMemo>
+            </Facts>
+            <TotalLossInd>N</TotalLossInd>
+        </LossInfo>
+    </ClaimInfo>
+    
+    <VehicleInfo>
+        <VINInfo>
+            <VIN>
+                <VINNum>JM1BK32F691234567</VINNum>
+            </VIN>
+        </VINInfo>
+        <License>
+            <LicensePlateNum>DEF456</LicensePlateNum>
+            <LicensePlateStateProvince>ON</LicensePlateStateProvince>
+        </License>
+        <VehicleDesc>
+            <ProductionDate>2022-09-12</ProductionDate>
+            <ModelYear>2022</ModelYear>
+            <MakeCode>MAZDA</MakeCode>
+            <MakeDesc>Mazda</MakeDesc>
+            <ModelNum>CX5</ModelNum>
+            <ModelName>CX-5</ModelName>
+            <SubModelDesc>GS AWD</SubModelDesc>
+            <VehicleType>SUV</VehicleType>
+            <OdometerInfo>
+                <OdometerReading>28500</OdometerReading>
+                <OdometerReadingMeasure>kilometers</OdometerReadingMeasure>
+            </OdometerInfo>
+        </VehicleDesc>
+        <Body>
+            <BodyStyle>SUV</BodyStyle>
+        </Body>
+        <Powertrain>
+            <EngineDesc>2.5L I4</EngineDesc>
+            <EngineCode>PY-VPS</EngineCode>
+            <TransmissionInfo>
+                <TransmissionDesc>6-Speed Automatic</TransmissionDesc>
+            </TransmissionInfo>
+            <FuelType>Gasoline</FuelType>
+        </Powertrain>
+        <Paint>
+            <Exterior>
+                <Color>
+                    <ColorName>Deep Crystal Blue Mica</ColorName>
+                </Color>
+            </Exterior>
+            <Interior>
+                <Color>
+                    <ColorName>Black</ColorName>
+                </Color>
+            </Interior>
+        </Paint>
+        <Condition>
+            <ConditionCode>Excellent</ConditionCode>
+            <DrivableInd>Y</DrivableInd>
+            <PriorDamageInd>N</PriorDamageInd>
+        </Condition>
+        <Valuation>
+            <ValuationType>ACV</ValuationType>
+            <ValuationAmt>28500.00</ValuationAmt>
+        </Valuation>
+    </VehicleInfo>
+    
+    <DamageLineInfo>
+        <LineNum>1</LineNum>
+        <UniqueSequenceNum>1</UniqueSequenceNum>
+        <LineDesc>Windshield - laminated</LineDesc>
+        <LineHeaderDesc>WINDSHIELD</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>A</PartSourceCode>
+            <PartType>Glass</PartType>
+            <PartNum>MAZDA-CX5-WS-22</PartNum>
+            <OEMPartNum>KF01-63-31X</OEMPartNum>
+            <PartPrice>485.00</PartPrice>
+            <OEMPartPrice>625.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+            <NonOEM>
+                <PartType>Glass</PartType>
+                <NonOEMPartNum>MAZDA-CX5-WS-22</NonOEMPartNum>
+                <NonOEMPartPrice>485.00</NonOEMPartPrice>
+                <SupplierRefNum>SAFELITE</SupplierRefNum>
+                <PartSelectedInd>1</PartSelectedInd>
+            </NonOEM>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>2</LineNum>
+        <UniqueSequenceNum>2</UniqueSequenceNum>
+        <LineDesc>Remove and install windshield</LineDesc>
+        <LineHeaderDesc>WINDSHIELD</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Glass</LaborType>
+            <LaborOperation>R&amp;I Windshield</LaborOperation>
+            <LaborHours>2.0</LaborHours>
+            <DatabaseLaborHours>2.0</DatabaseLaborHours>
+            <LaborHoursCalc>2.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>3</LineNum>
+        <UniqueSequenceNum>3</UniqueSequenceNum>
+        <LineDesc>Windshield molding - lower</LineDesc>
+        <LineHeaderDesc>WINDSHIELD MOLDING</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Trim</PartType>
+            <PartNum>KF01-50-H31</PartNum>
+            <OEMPartNum>KF01-50-H31</OEMPartNum>
+            <PartPrice>45.00</PartPrice>
+            <OEMPartPrice>45.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>4</LineNum>
+        <UniqueSequenceNum>4</UniqueSequenceNum>
+        <LineDesc>Install windshield molding</LineDesc>
+        <LineHeaderDesc>WINDSHIELD MOLDING</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Glass</LaborType>
+            <LaborOperation>Install Molding</LaborOperation>
+            <LaborHours>0.3</LaborHours>
+            <DatabaseLaborHours>0.3</DatabaseLaborHours>
+            <LaborHoursCalc>0.3</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>5</LineNum>
+        <UniqueSequenceNum>5</UniqueSequenceNum>
+        <LineDesc>Windshield adhesive and materials</LineDesc>
+        <LineHeaderDesc>ADHESIVE</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Adhesive</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Glass Materials</OtherChargesType>
+            <Price>35.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>6</LineNum>
+        <UniqueSequenceNum>6</UniqueSequenceNum>
+        <LineDesc>Windshield calibration</LineDesc>
+        <LineHeaderDesc>CALIBRATION</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Calibration</LaborType>
+            <LaborOperation>ADAS Calibration</LaborOperation>
+            <LaborHours>1.5</LaborHours>
+            <DatabaseLaborHours>1.5</DatabaseLaborHours>
+            <LaborHoursCalc>1.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <RepairTotalsInfo>
+        <LaborTotalsInfo>
+            <TotalType>Labor</TotalType>
+            <TotalTypeDesc>Labor Total</TotalTypeDesc>
+            <TaxableAmt>247.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>12.35</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>19.76</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>32.11</TaxTotalAmt>
+            <TotalAmt>279.11</TotalAmt>
+        </LaborTotalsInfo>
+        
+        <PartsTotalsInfo>
+            <TotalType>Parts</TotalType>
+            <TotalTypeDesc>Parts Total</TotalTypeDesc>
+            <TaxableAmt>530.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>26.50</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>42.40</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>68.90</TaxTotalAmt>
+            <TotalAmt>598.90</TotalAmt>
+        </PartsTotalsInfo>
+        
+        <OtherChargesTotalsInfo>
+            <TotalType>Materials</TotalType>
+            <TotalTypeDesc>Materials Total</TotalTypeDesc>
+            <TaxableAmt>35.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>1.75</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>2.80</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>4.55</TaxTotalAmt>
+            <TotalAmt>39.55</TotalAmt>
+        </OtherChargesTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>GrossTotal</TotalType>
+            <TotalSubType>EstimateTotal</TotalSubType>
+            <TotalTypeDesc>Gross Total</TotalTypeDesc>
+            <TotalAmt>917.56</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>NetTotal</TotalType>
+            <TotalSubType>InsuranceTotal</TotalSubType>
+            <TotalTypeDesc>Insurance Responsibility</TotalTypeDesc>
+            <TotalAmt>917.56</TotalAmt>
+        </SummaryTotalsInfo>
+    </RepairTotalsInfo>
+    
+    <ProfileInfo>
+        <ProfileName>Glass Specialist Profile</ProfileName>
+        <ProfileUUID>PROF-GLASS-001</ProfileUUID>
+        <RateInfo>
+            <RateType>Glass Labor</RateType>
+            <RateDesc>Glass Installation Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>65.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <RateInfo>
+            <RateType>Calibration Labor</RateType>
+            <RateDesc>ADAS Calibration Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>95.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+    </ProfileInfo>
+    
+    <EventInfo>
+        <AssignmentEvent>
+            <CreateDateTime>2024-08-22T11:00:00</CreateDateTime>
+            <InspectionDateTime>2024-08-22T11:30:00</InspectionDateTime>
+        </AssignmentEvent>
+        <EstimateEvent>
+            <CommitDateTime>2024-08-22T12:15:00</CommitDateTime>
+            <UploadDateTime>2024-08-22T12:20:00</UploadDateTime>
+            <PrintDateTime>2024-08-22T12:25:00</PrintDateTime>
+        </EstimateEvent>
+    </EventInfo>
+</VehicleDamageEstimateAddRq>

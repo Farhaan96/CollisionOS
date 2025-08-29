@@ -1,0 +1,12 @@
+HD|Demo Auto Body Shop|123 Main St|Toronto|ON|M5V 3A8|416-555-0001|info@demoautobody.com
+VH|2023|Honda|Accord|1HGCM82633A123456|ABC123|25000|Platinum White Pearl
+CO|John|Smith|416-555-1234|123 Main Street|Toronto|ON|M5V 3A8|john.smith@email.com
+IN|Demo Insurance Company|POL-567890|Agent Smith|416-555-5678
+CL|CLM-2025-12345|2025-08-25|500.00|Adjuster Jones|416-555-9999
+LI|PART|Rear Bumper Cover|1|425.50|425.50|1|04715-TVA-A90ZZ
+LI|LABOR|Remove and Install Rear Bumper Cover|2.5|52.00|130.00|2|R&I_BUMPER
+LI|LABOR|Paint Rear Bumper Cover|3.0|48.00|144.00|3|PAINT_BUMPER
+TO|PARTS|425.50|LABOR|274.00|TAX|91.01|TOTAL|790.51
+TX|HST|13.0|91.01
+DE|500.00|COLLISION_DEDUCTIBLE
+NO|Vehicle in good condition overall, minimal prior damage

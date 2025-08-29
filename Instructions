@@ -1,0 +1,404 @@
+// ===============================
+// Dashboard 2025 Drop‑in Pack
+// Tech: React 18 + MUI v5 + Framer Motion + Recharts
+// Copy these files into your project. Minimal wiring notes are at the top
+// of each section. The code assumes a dark theme by default.
+// ===============================
+
+// -------------------------------------------------
+// 1) Install deps (run once)
+// -------------------------------------------------
+// npm i @mui/material @mui/icons-material @emotion/react @emotion/styled framer-motion recharts
+
+// -------------------------------------------------
+// 2) src/theme/modernTheme.ts
+// Wrap your app with <ThemeProvider theme={modernTheme}> + <CssBaseline/>
+// -------------------------------------------------
+import { createTheme } from '@mui/material/styles';
+
+declare module '@mui/material/styles' {
+  interface Theme {
+    custom: {
+      gradients: {
+        primary: string;
+        background: string;
+      };
+      glass: {
+        surface: string;
+        border: string;
+        shadow: string;
+      };
+    };
+  }
+  interface ThemeOptions {
+    custom?: {
+      gradients?: {
+        primary?: string;
+        background?: string;
+      };
+      glass?: {
+        surface?: string;
+        border?: string;
+        shadow?: string;
+      };
+    };
+  }
+}
+
+export const modernTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: { default: '#0F172A', paper: 'rgba(30,41,59,0.50)' },
+    primary: { main: '#6366F1' }, // Indigo
+    secondary: { main: '#8B5CF6' }, // Purple
+    success: { main: '#10B981' },
+    error: { main: '#EF4444' },
+    warning: { main: '#F59E0B' },
+    info: { main: '#0EA5E9' }
+  },
+  typography: {
+    fontFamily: [
+      'Inter',
+      'SF Pro Text',
+      'system-ui',
+      '-apple-system',
+      'Segoe UI',
+      'Roboto',
+      'Helvetica Neue',
+      'Arial',
+      'Noto Sans',
+      'sans-serif',
+    ].join(','),
+    h1: { fontWeight: 800, letterSpacing: '-0.02em' },
+    h2: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h3: { fontWeight: 700 },
+    subtitle1: { opacity: 0.9 }
+  },
+  shape: { borderRadius: 20 },
+  shadows: [
+    'none',
+    '0 8px 24px rgba(0,0,0,0.12)',
+    '0 12px 32px rgba(0,0,0,0.16)',
+    '0 16px 48px rgba(0,0,0,0.18)',
+    ...Array(21).fill('0 16px 48px rgba(0,0,0,0.18)')
+  ] as any,
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+        :root { color-scheme: dark; }
+        .glassmorphic-card { 
+          background: rgba(255,255,255,0.08);
+          backdrop-filter: saturate(180%) blur(20px);
+          -webkit-backdrop-filter: saturate(180%) blur(20px);
+          border: 1px solid rgba(255,255,255,0.18);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        .no-blur .glassmorphic-card { backdrop-filter: none; -webkit-backdrop-filter: none; }
+        .ambient-gradient {
+          background-image: radial-gradient( 800px 400px at 0% 0%, rgba(99,102,241,.25), transparent 45%),
+                            radial-gradient( 800px 400px at 100% 0%, rgba(139,92,246,.20), transparent 45%),
+                            radial-gradient( 1200px 600px at 50% 100%, rgba(236,72,153,.18), transparent 45%);
+        }
+      `,
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(30,41,59,0.50)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'saturate(160%) blur(18px)',
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: { borderRadius: 14, textTransform: 'none', fontWeight: 600 }
+      }
+    }
+  },
+  custom: {
+    gradients: {
+      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)'
+    },
+    glass: {
+      surface: 'rgba(255,255,255,0.08)',
+      border: 'rgba(255,255,255,0.18)',
+      shadow: '0 8px 32px rgba(0,0,0,0.35)'
+    }
+  }
+});
+
+// -------------------------------------------------
+// 3) src/components/ModernBackground.tsx (optional)
+// Place <ModernBackground/> once at app root
+// -------------------------------------------------
+import React from 'react';
+
+export const ModernBackground: React.FC = () => (
+  <div className="fixed inset-0 -z-10 ambient-gradient" style={{ pointerEvents: 'none' }}>
+    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.15 }}>
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>
+  </div>
+);
+
+// -------------------------------------------------
+// 4) src/components/GlassCard.tsx
+// Generic glass card with Framer hover + focus states
+// -------------------------------------------------
+import { Card, CardProps } from '@mui/material';
+import { motion } from 'framer-motion';
+import React from 'react';
+
+const MotionCard = motion(Card);
+
+export const GlassCard: React.FC<CardProps & { asMotion?: boolean }> = ({ children, asMotion = true, sx, ...props }) => {
+  const baseStyles = {
+    p: 2.5,
+    borderRadius: 4,
+    background: 'rgba(255,255,255,0.08)',
+    backdropFilter: 'saturate(160%) blur(18px)',
+    border: '1px solid rgba(255,255,255,0.12)'
+  } as const;
+
+  if (!asMotion) {
+    return (
+      <Card className="glassmorphic-card" sx={{ ...baseStyles, ...sx }} {...props}>
+        {children}
+      </Card>
+    );
+  }
+
+  return (
+    <MotionCard
+      className="glassmorphic-card"
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      sx={{ ...baseStyles, ...sx }}
+      {...props}
+    >
+      {children}
+    </MotionCard>
+  );
+};
+
+// -------------------------------------------------
+// 5) src/utils/AnimatedCounter.tsx
+// Smoothly animates KPI numbers (respects reduced motion)
+// -------------------------------------------------
+import React, { useEffect, useRef } from 'react';
+import { animate, useReducedMotion } from 'framer-motion';
+
+export const AnimatedCounter: React.FC<{ value: number; duration?: number; prefix?: string; suffix?: string }> = ({ value, duration = 1.0, prefix = '', suffix = '' }) => {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+    if (prefersReducedMotion) {
+      node.textContent = `${prefix}${Math.round(value).toLocaleString()}${suffix}`;
+      return;
+    }
+    const controls = animate(0, value, {
+      duration,
+      ease: 'easeOut',
+      onUpdate(v) {
+        node.textContent = `${prefix}${Math.round(v).toLocaleString()}${suffix}`;
+      }
+    });
+    return () => controls.stop();
+  }, [value, duration, prefix, suffix, prefersReducedMotion]);
+
+  return <span ref={nodeRef} />;
+};
+
+// -------------------------------------------------
+// 6) src/components/KpiCard.tsx
+// KPI card with sparkline + predictive indicator
+// -------------------------------------------------
+import React from 'react';
+import { Box, Chip, Stack, Typography } from '@mui/material';
+import { GlassCard } from './GlassCard';
+import { AnimatedCounter } from '../utils/AnimatedCounter';
+import { ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+
+export type KPI = {
+  label: string;
+  value: number;
+  deltaPct?: number; // e.g., +12% WoW
+  forecastNote?: string; // e.g., "Expected +12% next week"
+  series?: { name: string; value: number }[]; // last 7 days
+};
+
+export const KpiCard: React.FC<{ kpi: KPI } & { height?: number }> = ({ kpi, height = 120 }) => {
+  const Up = kpi.deltaPct && kpi.deltaPct >= 0;
+  return (
+    <GlassCard sx={{ overflow: 'hidden' }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+        <Box>
+          <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>{kpi.label}</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, mt: .5 }}>
+            <AnimatedCounter value={kpi.value} />
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+            <Chip size="small" color={Up ? 'success' : 'error'}
+              icon={Up ? <TrendingUpIcon/> : <TrendingDownIcon/>}
+              label={`${Up ? '+' : ''}${kpi.deltaPct ?? 0}%`} />
+            {kpi.forecastNote && (
+              <Typography variant="caption" sx={{ opacity: 0.75 }}>{kpi.forecastNote}</Typography>
+            )}
+          </Stack>
+        </Box>
+        <Box sx={{ width: '45%', height }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={kpi.series ?? []} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+              <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(255,255,255,0.1)' }} />
+              <Area type="monotone" dataKey="value" strokeOpacity={0.9} fillOpacity={0.25} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Box>
+      </Stack>
+    </GlassCard>
+  );
+};
+
+// -------------------------------------------------
+// 7) src/components/BentoGrid.tsx
+// Flexible CSS grid with variable spans per breakpoint
+// -------------------------------------------------
+import React, { ReactNode } from 'react';
+import { Box } from '@mui/material';
+import { motion } from 'framer-motion';
+
+export const BentoGrid: React.FC<{ children: ReactNode; cols?: number; gap?: number }> = ({ children, cols = 12, gap = 2 }) => (
+  <Box component={motion.div}
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       transition={{ duration: 0.3 }}
+       sx={{
+         display: 'grid',
+         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+         gap
+       }}>
+    {children}
+  </Box>
+);
+
+export const BentoItem: React.FC<{ children: ReactNode; span?: { xs?: number; sm?: number; md?: number; lg?: number; xl?: number } }> = ({ children, span }) => (
+  <Box
+    component={motion.div}
+    variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 16 } } }}
+    initial="hidden"
+    animate="visible"
+    sx={{
+      gridColumn: {
+        xs: `span ${span?.xs ?? 12}`,
+        sm: `span ${span?.sm ?? span?.xs ?? 12}`,
+        md: `span ${span?.md ?? span?.sm ?? 6}`,
+        lg: `span ${span?.lg ?? span?.md ?? 4}`,
+        xl: `span ${span?.xl ?? span?.lg ?? 3}`,
+      }
+    }}
+  >
+    {children}
+  </Box>
+);
+
+// -------------------------------------------------
+// 8) src/pages/Dashboard.tsx
+// Example dashboard page using bento + KPI cards
+// -------------------------------------------------
+import React from 'react';
+import { Box, Container, Typography } from '@mui/material';
+import { ModernBackground } from '../components/ModernBackground';
+import { BentoGrid, BentoItem } from '../components/BentoGrid';
+import { KpiCard, KPI } from '../components/KpiCard';
+import { GlassCard } from '../components/GlassCard';
+
+const sampleKpis: KPI[] = [
+  { label: 'Active Jobs', value: 42, deltaPct: 8, forecastNote: 'Expected +12% next week', series: [ {name:'d1', value: 32}, {name:'d2', value: 30}, {name:'d3', value: 35}, {name:'d4', value: 34}, {name:'d5', value: 36}, {name:'d6', value: 38}, {name:'d7', value: 42} ] },
+  { label: 'Parts On Order', value: 123, deltaPct: -5, forecastNote: 'Anomaly risk ↓', series: [ {name:'d1', value: 100},{name:'d2', value: 120},{name:'d3', value: 115},{name:'d4', value: 112},{name:'d5', value: 110},{name:'d6', value: 118},{name:'d7', value: 123} ] },
+  { label: 'Cycle Time (days)', value: 9, deltaPct: -3, forecastNote: 'Target 8 days', series: [ {name:'d1', value: 11},{name:'d2', value: 10},{name:'d3', value: 10},{name:'d4', value: 9},{name:'d5', value: 9},{name:'d6', value: 9},{name:'d7', value: 9} ] }
+];
+
+export const DashboardPage: React.FC = () => {
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundImage: (t) => t.custom.gradients.background }}>
+      <ModernBackground/>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>CollisionOS — Executive Overview</Typography>
+
+        {/* KPI Row */}
+        <BentoGrid cols={12} gap={2}>
+          {sampleKpis.map((k, i) => (
+            <BentoItem key={i} span={{ xs: 12, md: 4 }}>
+              <KpiCard kpi={k} />
+            </BentoItem>
+          ))}
+
+          {/* Wide primary analytics card (3x2 on md+) */}
+          <BentoItem span={{ xs: 12, md: 8 }}>
+            <GlassCard sx={{ minHeight: 320 }}>
+              <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 700 }}>Throughput — Last 30 Days</Typography>
+              <Box sx={{ opacity: 0.8 }}>Replace with your main chart (Recharts/visx). Add annotations, drill‑downs, and animated transitions.</Box>
+            </GlassCard>
+          </BentoItem>
+
+          {/* Quick actions (2x1) */}
+          <BentoItem span={{ xs: 12, md: 4 }}>
+            <GlassCard sx={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography>Quick Actions: New RO • Book Calibration • Order Parts</Typography>
+            </GlassCard>
+          </BentoItem>
+
+          {/* Alerts (1x3 vertical stack on md+) */}
+          <BentoItem span={{ xs: 12, md: 4 }}>
+            <GlassCard sx={{ minHeight: 160, mb: 2 }}>Live Alerts — Anomalies & SLAs</GlassCard>
+            <GlassCard sx={{ minHeight: 160, mb: 2 }}>Today’s Appointments</GlassCard>
+            <GlassCard sx={{ minHeight: 160 }}>Late Parts / Escalations</GlassCard>
+          </BentoItem>
+        </BentoGrid>
+      </Container>
+    </Box>
+  );
+};
+
+// -------------------------------------------------
+// 9) src/App.tsx (wiring example)
+// Wrap your router/pages with ThemeProvider + CssBaseline
+// -------------------------------------------------
+import React from 'react';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { modernTheme } from './theme/modernTheme';
+import { DashboardPage } from './pages/Dashboard';
+
+export default function App() {
+  // Toggle the className "no-blur" on the root <div> if you implement a
+  // settings toggle for reduced motion or low‑power mode.
+  return (
+    <ThemeProvider theme={modernTheme}>
+      <CssBaseline />
+      <DashboardPage />
+    </ThemeProvider>
+  );
+}
+
+// -------------------------------------------------
+// 10) Notes & Options
+// -------------------------------------------------
+// • Draggable/resizable widgets: add @dnd-kit/core + @dnd-kit/sortable or react-grid-layout.
+// • Anomaly detection & predictions: surface signals from your API and map into KPI.forecastNote.
+// • Accessibility: 
+//   - Use prefers-reduced-motion via Framer’s useReducedMotion (already applied in number animation).
+//   - Ensure text contrast > 4.5:1 on glass surfaces; tweak alpha if needed.
+// • Performance: lazy‑load heavy charts, memoize large datasets, and virtualize long lists.
+// • Branding: update theme.custom.gradients and component overrides to match your brand.

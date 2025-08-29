@@ -1,0 +1,10 @@
+HD|Demo Auto Body Shop|123 Main Street|Toronto|ON|M5V3G1|416-555-1234|info@demoautobody.com
+VH|2020|Honda|Civic|1HGBH41JXMN109186|ABC123|45000|White
+CO|John|Smith|416-555-5678|456 Oak Avenue|Toronto|ON|M5V2R1|john.smith@email.com
+IN|State Farm Insurance|POL123456789|Jane Agent|416-555-9999
+CL|CLM987654321|2024-01-15|500.00|Mike Adjuster|416-555-7777
+LI|PART|Front Bumper Cover|1|450.00|450.00|1|71101-SNE-A00
+LI|LABOR|Remove/Install Bumper|2.5|65.00|162.50|2|
+LI|PART|Paint Material|1|89.50|89.50|3|
+LI|LABOR|Paint Bumper|1.8|75.00|135.00|4|
+TO|PARTS|539.50|LABOR|297.50|TAX|100.72|TOTAL|937.72

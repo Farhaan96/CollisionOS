@@ -1,0 +1,1014 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><VehicleDamageEstimateAddRq xmlns="http://www.cieca.com/BMS">
+	<RqUID xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">26003e4b-e001-4096-b784-9806f935f09a</RqUID>
+	<RefClaimNum>15938539</RefClaimNum>
+	<DocumentInfo>
+		<BMSVer>5.2.22</BMSVer>
+		<DocumentType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">E</DocumentType>
+		<DocumentID>4d05e200-b132-4aea-ab8b-a8d51149ee02</DocumentID>
+		<VendorCode>M</VendorCode>
+		<DocumentVer>
+			<DocumentVerCode>EM</DocumentVerCode>
+			<DocumentVerNum>0</DocumentVerNum>
+		</DocumentVer>
+		<DocumentVer>
+			<DocumentVerCode>VN</DocumentVerCode>
+			<DocumentVerNum>0</DocumentVerNum>
+		</DocumentVer>
+		<DocumentStatus xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">I</DocumentStatus>
+		<CreateDateTime>2025-08-25T08:14:58.468-07:00</CreateDateTime>
+		<TransmitDateTime>2025-08-25T08:14:58.468-07:00</TransmitDateTime>
+		<ReferenceInfo>
+			<OtherReferenceInfo>
+				<OtherReferenceName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Account Number</OtherReferenceName>
+				<OtherRefNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">842325</OtherRefNum>
+			</OtherReferenceInfo>
+			<OtherReferenceInfo>
+				<OtherReferenceName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Estimate Retrieval ID</OtherReferenceName>
+				<OtherRefNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1005397475</OtherRefNum>
+			</OtherReferenceInfo>
+		</ReferenceInfo>
+		<CurrencyInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<CurCode>CAD</CurCode>
+			<BaseCurCode>CAD</BaseCurCode>
+			<CurRate>0.0</CurRate>
+			<CurConvertRule>Direct</CurConvertRule>
+		</CurrencyInfo>
+	</DocumentInfo>
+	<ApplicationInfo>
+		<ApplicationType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Estimating</ApplicationType>
+		<ApplicationName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Mitchell Estimating</ApplicationName>
+		<ApplicationVer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">25.2</ApplicationVer>
+		<DatabaseVer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AUG_25_V</DatabaseVer>
+		<DatabaseDateTime xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2025-07-27T15:46:23.3800000</DatabaseDateTime>
+	</ApplicationInfo>
+	<ApplicationInfo>
+		<ApplicationType>Program</ApplicationType>
+		<ApplicationName>mBMS Api</ApplicationName>
+		<ApplicationVer>10</ApplicationVer>
+	</ApplicationInfo>
+	<ApplicationInfo>
+		<ApplicationType>Program</ApplicationType>
+		<ApplicationName>Parts Dictionary</ApplicationName>
+		<ApplicationVer>None</ApplicationVer>
+	</ApplicationInfo>
+	<ApplicationInfo>
+		<ApplicationType>Conversion</ApplicationType>
+		<ApplicationName>MBMSToCiecaBMS</ApplicationName>
+		<ApplicationVer>2024.1</ApplicationVer>
+	</ApplicationInfo>
+	<EventInfo>
+		<EstimateEvent/>
+		<OtherEvent>
+			<OtherEventType>ESTFILE_ID</OtherEventType>
+			<OtherEventDateTime>2025-08-25T08:14:58.468-07:00</OtherEventDateTime>
+			<OtherEventMemo>15938539</OtherEventMemo>
+		</OtherEvent>
+	</EventInfo>
+	<AdminInfo>
+		<Owner>
+			<Party>
+				<PersonInfo>
+					<PersonName>
+						<FirstName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">DIEU </FirstName>
+						<LastName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TA</LastName>
+					</PersonName>
+				</PersonInfo>
+				<ContactInfo>
+					<Communications>
+						<CommQualifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">CP</CommQualifier>
+						<CommPhone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">+1604-7291604</CommPhone>
+					</Communications>
+				</ContactInfo>
+			</Party>
+		</Owner>
+		<Estimator>
+			<Party>
+				<PersonInfo>
+					<PersonName>
+						<FirstName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Farhaan</FirstName>
+						<LastName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Mohammed </LastName>
+					</PersonName>
+				</PersonInfo>
+				<ContactInfo>
+					<Communications>
+						<CommQualifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">EM</CommQualifier>
+						<CommEmail xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">sopronautobody@telus.net</CommEmail>
+					</Communications>
+				</ContactInfo>
+			</Party>
+			<Affiliation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">69</Affiliation>
+		</Estimator>
+		<RepairFacility>
+			<Party>
+				<OrgInfo>
+					<CompanyName>SOPRON AUTO BODY</CompanyName>
+					<Communications>
+						<CommQualifier>AL</CommQualifier>
+						<Address>
+							<Address1>11966 95 Ave</Address1>
+							<City>Delta</City>
+							<StateProvince xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">BC</StateProvince>
+							<PostalCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">V4C 3T9</PostalCode>
+						</Address>
+					</Communications>
+				</OrgInfo>
+				<ContactInfo>
+					<Communications>
+						<CommQualifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">WP</CommQualifier>
+						<CommPhone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">604-5813717</CommPhone>
+					</Communications>
+					<Communications>
+						<CommQualifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">FX</CommQualifier>
+						<CommPhone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">604-5812731</CommPhone>
+					</Communications>
+					<Communications>
+						<CommQualifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">EM</CommQualifier>
+						<CommEmail xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">sopronautobody@telus.net</CommEmail>
+					</Communications>
+				</ContactInfo>
+			</Party>
+		</RepairFacility>
+		<Sender>
+			<Party>
+				<OrgInfo>
+					<CompanyName>Mitchell International</CompanyName>
+					<IDInfo>
+						<IDQualifierCode>FI</IDQualifierCode>
+						<IDNum>362849492</IDNum>
+					</IDInfo>
+				</OrgInfo>
+			</Party>
+		</Sender>
+		<OtherParty>
+			<Party>
+				<OrgInfo>
+					<CompanyName>SOPRON AUTO BODY</CompanyName>
+				</OrgInfo>
+			</Party>
+			<AdminType>CMP</AdminType>
+		</OtherParty>
+	</AdminInfo>
+	<EstimatorIDs>
+		<OriginalEstimatorID xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">EPD:20565657</OriginalEstimatorID>
+		<CurrentEstimatorID xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">EPD:20565657</CurrentEstimatorID>
+	</EstimatorIDs>
+	<ClaimInfo>
+		<ClaimNum>N/A</ClaimNum>
+		<PolicyInfo>
+			<CoverageInfo>
+				<Coverage>
+					<CoverageCategory xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">U</CoverageCategory>
+					<DeductibleInfo>
+						<DeductibleStatus xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">FK</DeductibleStatus>
+						<DeductibleAmt>0.00</DeductibleAmt>
+					</DeductibleInfo>
+					<AccessoryCoverageInfo>
+						<AccessoryCoverageInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">false</AccessoryCoverageInd>
+					</AccessoryCoverageInfo>
+				</Coverage>
+			</CoverageInfo>
+		</PolicyInfo>
+		<LossInfo>
+			<TotalLossInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">N</TotalLossInd>
+		</LossInfo>
+		<CustomElement>
+			<CustomElementID>Apply ATS Allowance Rate</CustomElementID>
+			<CustomElementInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">N</CustomElementInd>
+		</CustomElement>
+		<CustomElement>
+			<CustomElementID>ProfileInfoDisclosureStateProvince</CustomElementID>
+			<CustomElementText>BC</CustomElementText>
+		</CustomElement>
+		<CustomElement>
+			<CustomElementID>LossTypeCode</CustomElementID>
+			<CustomElementText>U</CustomElementText>
+		</CustomElement>
+		<CustomElement>
+			<CustomElementID>LossTypeDesc</CustomElementID>
+			<CustomElementText>Unknown</CustomElementText>
+		</CustomElement>
+	</ClaimInfo>
+	<VehicleInfo>
+		<VINInfo>
+			<VIN>
+				<VINNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">JA4J24A55LZ610387</VINNum>
+			</VIN>
+		</VINInfo>
+		<VehicleDesc>
+			<ModelYear xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2020</ModelYear>
+			<MakeCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">31</MakeCode>
+			<MakeDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Mitsubishi</MakeDesc>
+			<ModelNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">3034</ModelNum>
+			<ModelName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Outlander PHEV</ModelName>
+			<SubModelDesc>SEL</SubModelDesc>
+			<VehicleType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SU</VehicleType>
+			<VehicleOptions>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ALW</OptionCode>
+					<OptionDesc>Wheels - Aluminum</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PRG</OptionCode>
+					<OptionDesc>Windows - Privacy Glass</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ES</OptionCode>
+					<OptionDesc>Seats- Driver</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">LTH</OptionCode>
+					<OptionDesc>Seats - Leather</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AC</OptionCode>
+					<OptionDesc>Air Conditioning - Air Conditioning</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">DAC</OptionCode>
+					<OptionDesc>Air Conditioning - Rear (Dual-Zone) AC</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PPS</OptionCode>
+					<OptionDesc>Seats- Passenger</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PW</OptionCode>
+					<OptionDesc>Windows - Power</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PL</OptionCode>
+					<OptionDesc>Doors - Locks</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TCM</OptionCode>
+					<OptionDesc>Instrument Panel - Trip Computer</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">FRBS</OptionCode>
+					<OptionDesc>Seats - First Row Bucket Seat</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">CC</OptionCode>
+					<OptionDesc>Accessories - Cruise Control</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PM</OptionCode>
+					<OptionDesc>Mirrors - Power</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TW</OptionCode>
+					<OptionDesc>Steering Wheel - Tilt</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">GDO</OptionCode>
+					<OptionDesc>Accessories - Garage Door Opener</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MSR</OptionCode>
+					<OptionDesc>Roof - Sunroof</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PS</OptionCode>
+					<OptionDesc>Steering - Power</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">4WD</OptionCode>
+					<OptionDesc>Drive - Four Wheel Or All Wheel Drive</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">FOG</OptionCode>
+					<OptionDesc>Lights - Fog</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ABS</OptionCode>
+					<OptionDesc>Brakes - Anti-Lock</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SAG</OptionCode>
+					<OptionDesc>Air Bag - Front</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TDS</OptionCode>
+					<OptionDesc>Security - Theft Deterrent System</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PT</OptionCode>
+					<OptionDesc>Trunk - Power Pull-Down</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AHL</OptionCode>
+					<OptionDesc>Lights - Automatic</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">DEF</OptionCode>
+					<OptionDesc>Windows - Defroster</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TPM</OptionCode>
+					<OptionDesc>Accessories - Tire Pressure Monitoring System</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SHCA</OptionCode>
+					<OptionDesc>Air Bag - Side Head Curtain Airbags</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">DAB</OptionCode>
+					<OptionDesc>Air Bag - Passenger</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SRAH</OptionCode>
+					<OptionDesc>Air Bag - Second Row Side Airbag With Head Protection</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">IAEM</OptionCode>
+					<OptionDesc>Mirrors - Interior Automatic Day/Night Or Electrochromatic Mirror</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">HEXM</OptionCode>
+					<OptionDesc>Mirror - Heated Exterior Mirror</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">RTL</OptionCode>
+					<OptionDesc>Trunk - Remote Deck Lid Or Tailgate Release</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MP3P</OptionCode>
+					<OptionDesc>Audio - Mp3 Player</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">HSW</OptionCode>
+					<OptionDesc>Steering Wheel - Heated Steering Wheel</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">DL</OptionCode>
+					<OptionDesc>Lights - Daytime Running</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ABR</OptionCode>
+					<OptionDesc>Air Bag - Driver</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TNC</OptionCode>
+					<OptionDesc>Pick Up  - Pick Up  Bed - Tonneau Cover</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SLR</OptionCode>
+					<OptionDesc>Audio - Satellite Radio</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">LSW</OptionCode>
+					<OptionDesc>Steering Wheel - Leather</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AI</OptionCode>
+					<OptionDesc>Accessories - Auxiliary Input (electrical)</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">BPC</OptionCode>
+					<OptionDesc>Accessories - Bluetooth Phone Connection</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AC</OptionCode>
+					<OptionDesc>Air Conditioning - Air Conditioning</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">FMS</OptionCode>
+					<OptionDesc>Audio - AM/FM Stereo</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">LA</OptionCode>
+					<OptionDesc>Seats- Lumbar Adjuster</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ESP</OptionCode>
+					<OptionDesc>Safety And Security - Tires/Wheels/Suspension - Elect. Stability Program</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">HFS</OptionCode>
+					<OptionDesc>Seats - Heated</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">KES</OptionCode>
+					<OptionDesc>Doors - Keyless Entry System</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PFEM</OptionCode>
+					<OptionDesc>Mirrors - Power Folding Exterior Mirrors</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PRL</OptionCode>
+					<OptionDesc>Lift Gate - Power Rear Liftgate</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">RSWW</OptionCode>
+					<OptionDesc>Wipers - Rain-Sensing Windshield Wipers</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SRSS</OptionCode>
+					<OptionDesc>Seats - Second Row Bench Seat</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SPL</OptionCode>
+					<OptionDesc>Accessories - Rear Spoiler</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">RWW</OptionCode>
+					<OptionDesc>Wipers - Rear Window</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SBZA</OptionCode>
+					<OptionDesc>Safety And Security - Side Blind Zone Alert</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SP</OptionCode>
+					<OptionDesc>Accessories - Skid Plate</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SKS</OptionCode>
+					<OptionDesc>Accessories - Smart Key System</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">SWAC</OptionCode>
+					<OptionDesc>Steering Wheel - Audio Controls</OptionDesc>
+				</Option>
+				<Option>
+					<OptionCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">BCM</OptionCode>
+					<OptionDesc>Accessories - Back-Up Camera W/Monitor</OptionDesc>
+				</Option>
+			</VehicleOptions>
+			<DatabaseCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">912123</DatabaseCode>
+			<DatabaseVehicleNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">185667</DatabaseVehicleNum>
+		</VehicleDesc>
+		<Body>
+			<BodyStyle>4 Door Utility</BodyStyle>
+		</Body>
+		<Powertrain>
+			<EngineDesc>2.0L 4 Cyl Plug-In Hybrid Injected</EngineDesc>
+			<EngineCode>01007</EngineCode>
+			<TransmissionInfo>
+				<TransmissionCode>00001</TransmissionCode>
+				<TransmissionDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Base</TransmissionDesc>
+			</TransmissionInfo>
+			<Configuration>AWD</Configuration>
+			<FuelType>X</FuelType>
+		</Powertrain>
+		<Condition>
+			<DrivableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">U</DrivableInd>
+			<PriorDamageInd>N</PriorDamageInd>
+		</Condition>
+		<Valuation>
+			<ValuationType>BKV</ValuationType>
+			<ValuationAmt>27017.00</ValuationAmt>
+			<ValuationAmtJudgmentInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">false</ValuationAmtJudgmentInd>
+		</Valuation>
+	</VehicleInfo>
+	<ProfileInfo>
+		<ProfileName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Client Billing</ProfileName>
+		<ProfileUUID>4f5edf89-9b72-4679-beeb-4fdec665b251</ProfileUUID>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">LA</RateType>
+			<RateDesc>Labor</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+				<TaxTierInfo>
+					<TierNum>1</TierNum>
+					<Percentage>7.0000</Percentage>
+				</TaxTierInfo>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PA</RateType>
+			<RateDesc>Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+				<TaxTierInfo>
+					<TierNum>1</TierNum>
+					<Percentage>7.0000</Percentage>
+				</TaxTierInfo>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAN</RateType>
+			<RateDesc>New Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAL</RateType>
+			<RateDesc>Like Kind &amp; Quality</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAR</RateType>
+			<RateDesc>Recored Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAC</RateType>
+			<RateDesc>Rechromed Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAM</RateType>
+			<RateDesc>Remanufactured Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">OTSL</RateType>
+			<RateDesc>Sublet</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAA</RateType>
+			<RateDesc>Aftermarket Parts</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">OTCC</RateType>
+			<RateDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Car Cover</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">OTPC</RateType>
+			<RateDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Corrosion Protection Materials</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAB</RateType>
+			<RateDesc>Body Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>87.71</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAG</RateType>
+			<RateDesc>Glass Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>87.71</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAM</RateType>
+			<RateDesc>Mechanical Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>112.79</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAR</RateType>
+			<RateDesc>Refinish Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>87.71</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAF</RateType>
+			<RateDesc>Frame Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>100.26</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAS</RateType>
+			<RateDesc>Structural Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>87.71</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LAA</RateType>
+			<RateDesc>Aluminum Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>0.00</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LA4</RateType>
+			<RateDesc>Carbon Fiber Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>0.00</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LA1</RateType>
+			<RateDesc>UserDefined1 Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>0.00</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>LA2</RateType>
+			<RateDesc>UserDefined2 Labor</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>0.00</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType>ATS</RateType>
+			<RateDesc>ATS Allowance</RateDesc>
+			<RateTierInfo>
+				<TierNum>1</TierNum>
+				<Rate>8.68</Rate>
+			</RateTierInfo>
+			<TaxableInd>1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd>1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MA2S</RateType>
+			<RateDesc>Clear Coat</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Percentage>40.00</Percentage>
+			</RateTierInfo>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2</TierNum>
+				<Percentage>20.00</Percentage>
+			</RateTierInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>1</CalcMethodCode>
+				<CalcMaxHours>999.9</CalcMaxHours>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MA2T</RateType>
+			<RateDesc>Two Tone</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Percentage>50.00</Percentage>
+			</RateTierInfo>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2</TierNum>
+				<Percentage>30.00</Percentage>
+			</RateTierInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>1</CalcMethodCode>
+				<CalcMaxHours>999.9</CalcMaxHours>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MA3S</RateType>
+			<RateDesc>Three Stage</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Percentage>70.00</Percentage>
+			</RateTierInfo>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2</TierNum>
+				<Percentage>40.00</Percentage>
+			</RateTierInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>1</CalcMethodCode>
+				<CalcMaxHours>999.9</CalcMaxHours>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MAPA</RateType>
+			<RateDesc>Paint Materials</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Rate>57.76</Rate>
+			</RateTierInfo>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2</TierNum>
+				<Rate>0.00</Rate>
+				<ThresholdHours>99.9</ThresholdHours>
+			</RateTierInfo>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>4</CalcMethodCode>
+				<CalcMaxAmt>9999.99</CalcMaxAmt>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MASH</RateType>
+			<RateDesc>Shop Materials</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Rate>6.97</Rate>
+			</RateTierInfo>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>4</CalcMethodCode>
+				<CalcMaxAmt>9999.99</CalcMaxAmt>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MAHW</RateType>
+			<RateDesc>Hazardous Waste</RateDesc>
+			<RateTierInfo>
+				<TierNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TierNum>
+				<Rate>0.00</Rate>
+			</RateTierInfo>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+			<MaterialCalcSettings>
+				<CalcMethodCode>4</CalcMethodCode>
+				<CalcMaxAmt>9999.99</CalcMaxAmt>
+			</MaterialCalcSettings>
+		</RateInfo>
+		<RateInfo>
+			<RateType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">OTGM</RateType>
+			<RateDesc>Glass Materials</RateDesc>
+			<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			<TaxInfo>
+				<TaxType>LS</TaxType>
+				<TaxableInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</TaxableInd>
+			</TaxInfo>
+		</RateInfo>
+		<AlternatePartInfo>
+			<PartType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAA</PartType>
+			<SearchSourceCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">02</SearchSourceCode>
+			<SearchCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ML</SearchCode>
+			<DisclosureStateProvince xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">BC</DisclosureStateProvince>
+			<BeginSearchPostalCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">V4C 3T9</BeginSearchPostalCode>
+			<OnlinePartProfileID xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2d39b4dc-3602-4fdc-83cf-fe747639b116</OnlinePartProfileID>
+			<OnlinePartProfileName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ICBC Parts Profile</OnlinePartProfileName>
+			<OnlinePartProfileVersion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">29.0</OnlinePartProfileVersion>
+			<OnlinePartProfileDateTime xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2025-08-22T15:05:16.967</OnlinePartProfileDateTime>
+		</AlternatePartInfo>
+		<AlternatePartInfo>
+			<PartType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAA</PartType>
+			<SearchSourceCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">02</SearchSourceCode>
+			<SearchCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ML</SearchCode>
+			<DisclosureStateProvince xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">BC</DisclosureStateProvince>
+			<BeginSearchPostalCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">V4C 3T9</BeginSearchPostalCode>
+			<OnlinePartProfileID xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2d39b4dc-3602-4fdc-83cf-fe747639b116</OnlinePartProfileID>
+			<OnlinePartProfileName xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">ICBC Parts Profile</OnlinePartProfileName>
+			<OnlinePartProfileVersion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">29.0</OnlinePartProfileVersion>
+			<OnlinePartProfileDateTime xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2025-08-22T15:05:16.967</OnlinePartProfileDateTime>
+		</AlternatePartInfo>
+		<PartCertification>
+			<CertificationType>C</CertificationType>
+			<CertifiedOnlyInd>0</CertifiedOnlyInd>
+			<CertifiedPreferredInd>0</CertifiedPreferredInd>
+		</PartCertification>
+		<CostPlusBasisInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">false</CostPlusBasisInd>
+		<PreTaxDiscountRate>0.0</PreTaxDiscountRate>
+		<CanadianTax xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<TaxableInd>0</TaxableInd>
+			<GoodsServicesTaxRate>5.0</GoodsServicesTaxRate>
+		</CanadianTax>
+		<BlendCalcSettings>
+			<TwoStagePct xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">50.0</TwoStagePct>
+			<ThreeStagePct xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">70.0</ThreeStagePct>
+		</BlendCalcSettings>
+	</ProfileInfo>
+	<DamageLineInfo>
+		<LineNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</LineNum>
+		<UniqueSequenceNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</UniqueSequenceNum>
+		<ManualLineInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</ManualLineInd>
+		<AutomatedEntry>0</AutomatedEntry>
+		<LineStatusCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</LineStatusCode>
+		<VendorRefNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">200052</VendorRefNum>
+		<LineDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">L Quarter Outer Panel</LineDesc>
+		<DescJudgmentInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</DescJudgmentInd>
+		<LineItemCategoryCode>RBQPL</LineItemCategoryCode>
+		<LineHeaderDesc>Quarter Panel</LineHeaderDesc>
+		<PartInfo>
+			<PartSourceCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">99</PartSourceCode>
+			<PartType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PAE</PartType>
+			<PartNum>Existing</PartNum>
+			<PartPrice>0.00</PartPrice>
+			<OEMPartPrice>1034.38</OEMPartPrice>
+			<TaxableInd>0</TaxableInd>
+			<AfterMarketUsage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">NU</AfterMarketUsage>
+			<PriceJudgmentInd>0</PriceJudgmentInd>
+			<GlassPartInd>0</GlassPartInd>
+			<PriceInclInd>0</PriceInclInd>
+			<OrderByApplicationInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">false</OrderByApplicationInd>
+		</PartInfo>
+		<LaborInfo>
+			<LaborType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">LAB</LaborType>
+			<LaborOperation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">OP9</LaborOperation>
+			<LaborHours>1.00</LaborHours>
+			<DatabaseLaborHours>0.00</DatabaseLaborHours>
+			<LaborHoursCalc>0.00</LaborHoursCalc>
+			<LaborInclInd>0</LaborInclInd>
+			<TaxableInd>1</TaxableInd>
+			<LaborHoursJudgmentInd>1</LaborHoursJudgmentInd>
+			<LaborOperationJudgmentInd>0</LaborOperationJudgmentInd>
+			<LaborTypeJudgmentInd>0</LaborTypeJudgmentInd>
+			<BlendAsteriskInd>false</BlendAsteriskInd>
+		</LaborInfo>
+		<AppliedAdjustment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AINA</AppliedAdjustment>
+		<LineMemo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">#</LineMemo>
+		<LineType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Current Claim</LineType>
+	</DamageLineInfo>
+	<DamageLineInfo>
+		<LineNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">2</LineNum>
+		<UniqueSequenceNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">3</UniqueSequenceNum>
+		<ManualLineInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</ManualLineInd>
+		<AutomatedEntry>1</AutomatedEntry>
+		<LineStatusCode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1</LineStatusCode>
+		<VendorRefNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">936007</VendorRefNum>
+		<LineDesc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Shop Materials</LineDesc>
+		<DescJudgmentInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</DescJudgmentInd>
+		<LineHeaderDesc>Additional Costs &amp; Materials</LineHeaderDesc>
+		<MaterialType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MASH</MaterialType>
+		<OtherChargesInfo>
+			<OtherChargesType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">MASH</OtherChargesType>
+			<Price xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">6.97</Price>
+			<PriceJudgmentInd>1</PriceJudgmentInd>
+			<PriceProfileModifiedInd>true</PriceProfileModifiedInd>
+			<TaxableInd>1</TaxableInd>
+			<PriceInclInd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</PriceInclInd>
+		</OtherChargesInfo>
+		<AppliedAdjustment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">AINA</AppliedAdjustment>
+		<LineType xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Current Claim</LineType>
+	</DamageLineInfo>
+	<RepairTotalsInfo>
+		<LaborTotalsInfo>
+			<TotalType>LAB</TotalType>
+			<TotalTypeDesc>Body Labor</TotalTypeDesc>
+			<TotalHours>1.00</TotalHours>
+			<TotalAmt>87.71</TotalAmt>
+		</LaborTotalsInfo>
+		<LaborTotalsInfo>
+			<TotalType>LA</TotalType>
+			<TotalTypeDesc>Labor</TotalTypeDesc>
+			<TotalHours>1.00</TotalHours>
+			<TotalTaxInfo>
+				<TaxType>LS</TaxType>
+				<TierNum>1</TierNum>
+				<TaxAmt>6.14</TaxAmt>
+			</TotalTaxInfo>
+			<TotalTaxInfo>
+				<TaxType>GS</TaxType>
+				<TierNum>1</TierNum>
+				<TaxAmt>4.39</TaxAmt>
+			</TotalTaxInfo>
+			<TaxableAmt>87.71</TaxableAmt>
+			<TaxTotalAmt>10.53</TaxTotalAmt>
+			<TotalAmt>98.24</TotalAmt>
+		</LaborTotalsInfo>
+		<PartsTotalsInfo>
+			<TotalType>PA</TotalType>
+			<TotalTypeDesc>Parts</TotalTypeDesc>
+			<TotalAmt>0.00</TotalAmt>
+		</PartsTotalsInfo>
+		<OtherChargesTotalsInfo>
+			<TotalType>OTAC</TotalType>
+			<TotalTypeDesc>Additional Costs</TotalTypeDesc>
+			<TotalTaxInfo>
+				<TaxType>LS</TaxType>
+				<TierNum>1</TierNum>
+				<TaxAmt>0.49</TaxAmt>
+			</TotalTaxInfo>
+			<TotalTaxInfo>
+				<TaxType>GS</TaxType>
+				<TierNum>1</TierNum>
+				<TaxAmt>0.35</TaxAmt>
+			</TotalTaxInfo>
+			<TaxableAmt>6.97</TaxableAmt>
+			<TaxTotalAmt>0.84</TaxTotalAmt>
+			<TotalAmt>7.81</TotalAmt>
+		</OtherChargesTotalsInfo>
+		<OtherChargesTotalsInfo>
+			<TotalType>ATS</TotalType>
+			<TotalTypeDesc>ATS Allowance</TotalTypeDesc>
+			<TotalAmt>0.00</TotalAmt>
+		</OtherChargesTotalsInfo>
+		<SummaryTotalsInfo>
+			<TotalType>TOT</TotalType>
+			<TotalSubType>CE</TotalSubType>
+			<TotalTypeDesc>Gross Total</TotalTypeDesc>
+			<TotalAmt>106.05</TotalAmt>
+		</SummaryTotalsInfo>
+		<SummaryTotalsInfo>
+			<TotalType>TOT</TotalType>
+			<TotalSubType>TT</TotalSubType>
+			<TotalTypeDesc>Net Total</TotalTypeDesc>
+			<TotalAdjustmentInfo>
+				<AdjustmentType>Adjustment</AdjustmentType>
+				<TotalAdjustmentAmt>0.00</TotalAdjustmentAmt>
+			</TotalAdjustmentInfo>
+			<TotalAmt>106.05</TotalAmt>
+		</SummaryTotalsInfo>
+	</RepairTotalsInfo>
+	<RepairTotalsHistory>
+		<TotalVerCode>EM</TotalVerCode>
+		<TotalVerNum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0</TotalVerNum>
+		<HistoryTotalType>DocumentPortionDelta</HistoryTotalType>
+		<HistoryTotalsInfo>
+			<SummaryTotalsInfo>
+				<TotalType>TOT</TotalType>
+				<TotalSubType>TT</TotalSubType>
+				<TotalTypeDesc>Net Total</TotalTypeDesc>
+				<TotalAmt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">106.05</TotalAmt>
+			</SummaryTotalsInfo>
+		</HistoryTotalsInfo>
+	</RepairTotalsHistory>
+</VehicleDamageEstimateAddRq>

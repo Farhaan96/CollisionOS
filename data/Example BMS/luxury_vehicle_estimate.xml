@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VehicleDamageEstimateAddRq>
+    <RqUID>REQ-2024-0005</RqUID>
+    <RefClaimNum>CLM-24-0005</RefClaimNum>
+    
+    <DocumentInfo>
+        <BMSVer>5.2.22</BMSVer>
+        <DocumentType>Estimate</DocumentType>
+        <DocumentID>EST-24-0005</DocumentID>
+        <VendorCode>CAUTO</VendorCode>
+        <DocumentStatus>Final</DocumentStatus>
+        <CreateDateTime>2024-08-24T10:45:00</CreateDateTime>
+        <TransmitDateTime>2024-08-24T10:50:00</TransmitDateTime>
+        <CurrencyInfo>
+            <CurCode>CAD</CurCode>
+            <BaseCurCode>CAD</BaseCurCode>
+            <CurRate>1.00</CurRate>
+        </CurrencyInfo>
+    </DocumentInfo>
+    
+    <AdminInfo>
+        <InsuranceCompany>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>Chubb Insurance</CompanyName>
+                    <IDInfo>
+                        <IDQualifierCode>TAX</IDQualifierCode>
+                        <IDNum>135792468</IDNum>
+                    </IDInfo>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>199 Bay Street</Address1>
+                            <City>Toronto</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>M5L 1G4</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>1-800-882-4822</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </InsuranceCompany>
+        
+        <PolicyHolder>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Victoria</FirstName>
+                        <LastName>Sterling</LastName>
+                    </PersonName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>1255 Bay Street Penthouse</Address1>
+                            <City>Toronto</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>M5R 2A9</PostalCode>
+                        </Address>
+                    </Communications>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>HP</CommQualifier>
+                        <CommPhone>416-555-1255</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>CP</CommQualifier>
+                        <CommPhone>647-555-9999</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>EM</CommQualifier>
+                        <CommEmail>victoria.sterling@premiumemail.com</CommEmail>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </PolicyHolder>
+        
+        <Adjuster>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Michael</FirstName>
+                        <LastName>Pemberton</LastName>
+                    </PersonName>
+                </PersonInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>416-555-1847</CommPhone>
+                    </Communications>
+                    <Communications>
+                        <CommQualifier>EM</CommQualifier>
+                        <CommEmail>michael.pemberton@chubb.com</CommEmail>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </Adjuster>
+        
+        <Estimator>
+            <Party>
+                <PersonInfo>
+                    <PersonName>
+                        <FirstName>Alessandro</FirstName>
+                        <LastName>Romano</LastName>
+                    </PersonName>
+                </PersonInfo>
+            </Party>
+            <Affiliation>Prestige European Motors</Affiliation>
+        </Estimator>
+        
+        <RepairFacility>
+            <Party>
+                <OrgInfo>
+                    <CompanyName>Prestige European Motors</CompanyName>
+                    <Communications>
+                        <CommQualifier>AL</CommQualifier>
+                        <Address>
+                            <Address1>2500 Automotive Boulevard</Address1>
+                            <City>Mississauga</City>
+                            <StateProvince>ON</StateProvince>
+                            <PostalCode>L4W 4Y8</PostalCode>
+                        </Address>
+                    </Communications>
+                </OrgInfo>
+                <ContactInfo>
+                    <Communications>
+                        <CommQualifier>WP</CommQualifier>
+                        <CommPhone>905-555-2500</CommPhone>
+                    </Communications>
+                </ContactInfo>
+            </Party>
+        </RepairFacility>
+    </AdminInfo>
+    
+    <ClaimInfo>
+        <ClaimNum>CLM-24-0005</ClaimNum>
+        <PolicyInfo>
+            <PolicyNum>POL-PREMIUM-789</PolicyNum>
+            <CoverageInfo>
+                <Coverage>
+                    <CoverageCategory>Collision</CoverageCategory>
+                    <DeductibleInfo>
+                        <DeductibleStatus>Applies</DeductibleStatus>
+                        <DeductibleAmt>2500.00</DeductibleAmt>
+                    </DeductibleInfo>
+                </Coverage>
+            </CoverageInfo>
+        </PolicyInfo>
+        <LossInfo>
+            <Facts>
+                <LossDateTime>2024-08-22T19:15:00</LossDateTime>
+                <ReportedDateTime>2024-08-22T19:45:00</ReportedDateTime>
+                <PrimaryPOI>
+                    <POICode>FrontEndCollision</POICode>
+                </PrimaryPOI>
+                <DamageMemo>High-end luxury vehicle collision. Damage to front bumper, grille, headlights, and hood. Possible radiator damage.</DamageMemo>
+                <LossMemo>Vehicle collided with concrete barrier in underground parking garage. Low speed impact but significant damage due to vehicle design.</LossMemo>
+            </Facts>
+            <TotalLossInd>N</TotalLossInd>
+        </LossInfo>
+    </ClaimInfo>
+    
+    <VehicleInfo>
+        <VINInfo>
+            <VIN>
+                <VINNum>WDD2220301A012345</VINNum>
+            </VIN>
+        </VINInfo>
+        <License>
+            <LicensePlateNum>LUXURY1</LicensePlateNum>
+            <LicensePlateStateProvince>ON</LicensePlateStateProvince>
+        </License>
+        <VehicleDesc>
+            <ProductionDate>2023-02-14</ProductionDate>
+            <ModelYear>2023</ModelYear>
+            <MakeCode>MBENZ</MakeCode>
+            <MakeDesc>Mercedes-Benz</MakeDesc>
+            <ModelNum>S580</ModelNum>
+            <ModelName>S-Class</ModelName>
+            <SubModelDesc>S 580 4MATIC</SubModelDesc>
+            <VehicleType>Luxury Sedan</VehicleType>
+            <OdometerInfo>
+                <OdometerReading>8500</OdometerReading>
+                <OdometerReadingMeasure>kilometers</OdometerReadingMeasure>
+            </OdometerInfo>
+            <VehicleOptions>
+                <Option>
+                    <OptionCode>P01</OptionCode>
+                    <OptionDesc>Premium Package</OptionDesc>
+                </Option>
+                <Option>
+                    <OptionCode>P02</OptionCode>
+                    <OptionDesc>Executive Rear Seat Package</OptionDesc>
+                </Option>
+                <Option>
+                    <OptionCode>P03</OptionCode>
+                    <OptionDesc>Driver Assistance Package</OptionDesc>
+                </Option>
+            </VehicleOptions>
+        </VehicleDesc>
+        <Body>
+            <BodyStyle>Sedan</BodyStyle>
+        </Body>
+        <Powertrain>
+            <EngineDesc>4.0L V8 Biturbo</EngineDesc>
+            <EngineCode>M176</EngineCode>
+            <TransmissionInfo>
+                <TransmissionDesc>9-Speed Automatic</TransmissionDesc>
+            </TransmissionInfo>
+            <FuelType>Gasoline</FuelType>
+        </Powertrain>
+        <Paint>
+            <Exterior>
+                <Color>
+                    <ColorName>Obsidian Black Metallic</ColorName>
+                </Color>
+            </Exterior>
+            <Interior>
+                <Color>
+                    <ColorName>Nappa Leather Macchiato Beige</ColorName>
+                </Color>
+            </Interior>
+        </Paint>
+        <Condition>
+            <ConditionCode>Excellent</ConditionCode>
+            <DrivableInd>Y</DrivableInd>
+            <PriorDamageInd>N</PriorDamageInd>
+        </Condition>
+        <Valuation>
+            <ValuationType>ACV</ValuationType>
+            <ValuationAmt>145000.00</ValuationAmt>
+        </Valuation>
+    </VehicleInfo>
+    
+    <!-- Front Bumper -->
+    <DamageLineInfo>
+        <LineNum>1</LineNum>
+        <UniqueSequenceNum>1</UniqueSequenceNum>
+        <LineDesc>Front bumper cover with sensors</LineDesc>
+        <LineHeaderDesc>FRONT BUMPER</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Body Panel</PartType>
+            <PartNum>A2238853925</PartNum>
+            <OEMPartNum>A2238853925</OEMPartNum>
+            <PartPrice>2850.00</PartPrice>
+            <OEMPartPrice>2850.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>2</LineNum>
+        <UniqueSequenceNum>2</UniqueSequenceNum>
+        <LineDesc>Replace front bumper cover</LineDesc>
+        <LineHeaderDesc>FRONT BUMPER</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>Replace Bumper Cover</LaborOperation>
+            <LaborHours>4.5</LaborHours>
+            <DatabaseLaborHours>4.5</DatabaseLaborHours>
+            <LaborHoursCalc>4.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Grille -->
+    <DamageLineInfo>
+        <LineNum>3</LineNum>
+        <UniqueSequenceNum>3</UniqueSequenceNum>
+        <LineDesc>Front grille assembly - chrome</LineDesc>
+        <LineHeaderDesc>GRILLE</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Trim</PartType>
+            <PartNum>A2238800983</PartNum>
+            <OEMPartNum>A2238800983</OEMPartNum>
+            <PartPrice>1650.00</PartPrice>
+            <OEMPartPrice>1650.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>4</LineNum>
+        <UniqueSequenceNum>4</UniqueSequenceNum>
+        <LineDesc>Install front grille</LineDesc>
+        <LineHeaderDesc>GRILLE</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>Install Grille</LaborOperation>
+            <LaborHours>1.2</LaborHours>
+            <DatabaseLaborHours>1.2</DatabaseLaborHours>
+            <LaborHoursCalc>1.2</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Left Headlight -->
+    <DamageLineInfo>
+        <LineNum>5</LineNum>
+        <UniqueSequenceNum>5</UniqueSequenceNum>
+        <LineDesc>Left LED headlight assembly</LineDesc>
+        <LineHeaderDesc>LEFT HEADLIGHT</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Lighting</PartType>
+            <PartNum>A2238201861</PartNum>
+            <OEMPartNum>A2238201861</OEMPartNum>
+            <PartPrice>4250.00</PartPrice>
+            <OEMPartPrice>4250.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>6</LineNum>
+        <UniqueSequenceNum>6</UniqueSequenceNum>
+        <LineDesc>Replace left headlight</LineDesc>
+        <LineHeaderDesc>LEFT HEADLIGHT</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>Replace Headlight</LaborOperation>
+            <LaborHours>2.0</LaborHours>
+            <DatabaseLaborHours>2.0</DatabaseLaborHours>
+            <LaborHoursCalc>2.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Right Headlight -->
+    <DamageLineInfo>
+        <LineNum>7</LineNum>
+        <UniqueSequenceNum>7</UniqueSequenceNum>
+        <LineDesc>Right LED headlight assembly</LineDesc>
+        <LineHeaderDesc>RIGHT HEADLIGHT</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Lighting</PartType>
+            <PartNum>A2238201961</PartNum>
+            <OEMPartNum>A2238201961</OEMPartNum>
+            <PartPrice>4250.00</PartPrice>
+            <OEMPartPrice>4250.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>8</LineNum>
+        <UniqueSequenceNum>8</UniqueSequenceNum>
+        <LineDesc>Replace right headlight</LineDesc>
+        <LineHeaderDesc>RIGHT HEADLIGHT</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>Replace Headlight</LaborOperation>
+            <LaborHours>2.0</LaborHours>
+            <DatabaseLaborHours>2.0</DatabaseLaborHours>
+            <LaborHoursCalc>2.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Hood -->
+    <DamageLineInfo>
+        <LineNum>9</LineNum>
+        <UniqueSequenceNum>9</UniqueSequenceNum>
+        <LineDesc>Repair hood - aluminum</LineDesc>
+        <LineHeaderDesc>HOOD</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Body</LaborType>
+            <LaborOperation>Repair Aluminum Hood</LaborOperation>
+            <LaborHours>6.5</LaborHours>
+            <DatabaseLaborHours>6.5</DatabaseLaborHours>
+            <LaborHoursCalc>6.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Radiator -->
+    <DamageLineInfo>
+        <LineNum>10</LineNum>
+        <UniqueSequenceNum>10</UniqueSequenceNum>
+        <LineDesc>Engine cooling radiator</LineDesc>
+        <LineHeaderDesc>RADIATOR</LineHeaderDesc>
+        <LineType>Part</LineType>
+        <PartInfo>
+            <PartSourceCode>O</PartSourceCode>
+            <PartType>Cooling</PartType>
+            <PartNum>A2238150000</PartNum>
+            <OEMPartNum>A2238150000</OEMPartNum>
+            <PartPrice>1850.00</PartPrice>
+            <OEMPartPrice>1850.00</OEMPartPrice>
+            <Quantity>1</Quantity>
+            <TaxableInd>1</TaxableInd>
+        </PartInfo>
+    </DamageLineInfo>
+    
+    <DamageLineInfo>
+        <LineNum>11</LineNum>
+        <UniqueSequenceNum>11</UniqueSequenceNum>
+        <LineDesc>Replace radiator</LineDesc>
+        <LineHeaderDesc>RADIATOR</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Mechanical</LaborType>
+            <LaborOperation>Replace Radiator</LaborOperation>
+            <LaborHours>3.5</LaborHours>
+            <DatabaseLaborHours>3.5</DatabaseLaborHours>
+            <LaborHoursCalc>3.5</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Paint Work -->
+    <DamageLineInfo>
+        <LineNum>12</LineNum>
+        <UniqueSequenceNum>12</UniqueSequenceNum>
+        <LineDesc>Prepare and paint hood - 3 stage</LineDesc>
+        <LineHeaderDesc>PAINT</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Paint</LaborType>
+            <LaborOperation>Prepare and Paint - 3 Stage</LaborOperation>
+            <LaborHours>8.0</LaborHours>
+            <DatabaseLaborHours>8.0</DatabaseLaborHours>
+            <LaborHoursCalc>8.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+            <PaintStagesNum>3</PaintStagesNum>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Premium Paint Materials -->
+    <DamageLineInfo>
+        <LineNum>13</LineNum>
+        <UniqueSequenceNum>13</UniqueSequenceNum>
+        <LineDesc>Premium paint - Obsidian Black Metallic</LineDesc>
+        <LineHeaderDesc>PAINT MATERIALS</LineHeaderDesc>
+        <LineType>Material</LineType>
+        <MaterialType>Paint</MaterialType>
+        <OtherChargesInfo>
+            <OtherChargesType>Premium Paint Materials</OtherChargesType>
+            <Price>485.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <!-- ADAS Calibration -->
+    <DamageLineInfo>
+        <LineNum>14</LineNum>
+        <UniqueSequenceNum>14</UniqueSequenceNum>
+        <LineDesc>ADAS system calibration</LineDesc>
+        <LineHeaderDesc>CALIBRATION</LineHeaderDesc>
+        <LineType>Labor</LineType>
+        <LaborInfo>
+            <LaborType>Calibration</LaborType>
+            <LaborOperation>Complete ADAS Calibration</LaborOperation>
+            <LaborHours>4.0</LaborHours>
+            <DatabaseLaborHours>4.0</DatabaseLaborHours>
+            <LaborHoursCalc>4.0</LaborHoursCalc>
+            <LaborInclInd>0</LaborInclInd>
+            <TaxableInd>1</TaxableInd>
+        </LaborInfo>
+    </DamageLineInfo>
+    
+    <!-- Sublet - Mercedes Specific -->
+    <DamageLineInfo>
+        <LineNum>15</LineNum>
+        <UniqueSequenceNum>15</UniqueSequenceNum>
+        <LineDesc>Mercedes diagnostic and programming</LineDesc>
+        <LineHeaderDesc>SUBLET</LineHeaderDesc>
+        <LineType>Sublet</LineType>
+        <OtherChargesInfo>
+            <OtherChargesType>Dealer Sublet</OtherChargesType>
+            <Price>750.00</Price>
+            <TaxableInd>1</TaxableInd>
+            <PriceInclInd>0</PriceInclInd>
+        </OtherChargesInfo>
+    </DamageLineInfo>
+    
+    <RepairTotalsInfo>
+        <LaborTotalsInfo>
+            <TotalType>Labor</TotalType>
+            <TotalTypeDesc>Labor Total</TotalTypeDesc>
+            <TaxableAmt>2392.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>119.60</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>191.36</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>310.96</TaxTotalAmt>
+            <TotalAmt>2702.96</TotalAmt>
+        </LaborTotalsInfo>
+        
+        <PartsTotalsInfo>
+            <TotalType>Parts</TotalType>
+            <TotalTypeDesc>Parts Total</TotalTypeDesc>
+            <TaxableAmt>14850.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>742.50</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>1188.00</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>1930.50</TaxTotalAmt>
+            <TotalAmt>16780.50</TotalAmt>
+        </PartsTotalsInfo>
+        
+        <OtherChargesTotalsInfo>
+            <TotalType>Materials</TotalType>
+            <TotalTypeDesc>Materials and Sublet Total</TotalTypeDesc>
+            <TaxableAmt>1235.00</TaxableAmt>
+            <TotalTaxInfo>
+                <TaxType>GST</TaxType>
+                <TierNum>1</TierNum>
+                <TaxAmt>61.75</TaxAmt>
+            </TotalTaxInfo>
+            <TotalTaxInfo>
+                <TaxType>PST</TaxType>
+                <TierNum>2</TierNum>
+                <TaxAmt>98.80</TaxAmt>
+            </TotalTaxInfo>
+            <TaxTotalAmt>160.55</TaxTotalAmt>
+            <TotalAmt>1395.55</TotalAmt>
+        </OtherChargesTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>GrossTotal</TotalType>
+            <TotalSubType>EstimateTotal</TotalSubType>
+            <TotalTypeDesc>Gross Total</TotalTypeDesc>
+            <TotalAmt>20879.01</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>Deductible</TotalType>
+            <TotalSubType>InsuranceDeductible</TotalSubType>
+            <TotalTypeDesc>Customer Deductible</TotalTypeDesc>
+            <TotalAmt>2500.00</TotalAmt>
+        </SummaryTotalsInfo>
+        
+        <SummaryTotalsInfo>
+            <TotalType>NetTotal</TotalType>
+            <TotalSubType>InsuranceTotal</TotalSubType>
+            <TotalTypeDesc>Insurance Responsibility</TotalTypeDesc>
+            <TotalAmt>18379.01</TotalAmt>
+        </SummaryTotalsInfo>
+    </RepairTotalsInfo>
+    
+    <ProfileInfo>
+        <ProfileName>Luxury Vehicle Profile</ProfileName>
+        <ProfileUUID>PROF-LUX-001</ProfileUUID>
+        <RateInfo>
+            <RateType>Body Labor</RateType>
+            <RateDesc>Luxury Vehicle Body Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>85.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <RateInfo>
+            <RateType>Paint Labor</RateType>
+            <RateDesc>Luxury Vehicle Paint Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>85.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <RateInfo>
+            <RateType>Mechanical Labor</RateType>
+            <RateDesc>Luxury Vehicle Mechanical Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>95.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <RateInfo>
+            <RateType>Calibration Labor</RateType>
+            <RateDesc>ADAS Calibration Labor Rate</RateDesc>
+            <RateTierInfo>
+                <Rate>125.00</Rate>
+                <Percentage>100.00</Percentage>
+            </RateTierInfo>
+            <TaxableInd>1</TaxableInd>
+        </RateInfo>
+        <PartCertification>
+            <CertificationType>OEM_Only</CertificationType>
+            <CertifiedOnlyInd>1</CertifiedOnlyInd>
+            <CertifiedPreferredInd>1</CertifiedPreferredInd>
+        </PartCertification>
+    </ProfileInfo>
+    
+    <EventInfo>
+        <AssignmentEvent>
+            <CreateDateTime>2024-08-24T10:45:00</CreateDateTime>
+            <InspectionDateTime>2024-08-24T14:00:00</InspectionDateTime>
+        </AssignmentEvent>
+        <EstimateEvent>
+            <CommitDateTime>2024-08-24T18:30:00</CommitDateTime>
+            <UploadDateTime>2024-08-24T18:35:00</UploadDateTime>
+            <PrintDateTime>2024-08-24T18:40:00</PrintDateTime>
+        </EstimateEvent>
+    </EventInfo>
+</VehicleDamageEstimateAddRq>
