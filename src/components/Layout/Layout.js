@@ -36,7 +36,12 @@ import {
   Notifications,
   Settings,
   Close,
-  Handyman
+  Handyman,
+  Search,
+  Analytics,
+  ShoppingCart,
+  Message,
+  Timeline
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
@@ -44,14 +49,15 @@ import { ThemeSwitcher } from '../Theme/ThemeSwitcher';
 
 const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <Dashboard /> },
+  { path: '/search', label: 'Search', icon: <Search /> },
+  { path: '/analytics', label: 'Analytics', icon: <Analytics /> },
+  { path: '/advanced-production', label: 'Production Board', icon: <Timeline /> },
+  { path: '/purchase-orders', label: 'Purchase Orders', icon: <ShoppingCart /> },
+  { path: '/communications', label: 'Communications', icon: <Message /> },
   { path: '/bms-import', label: 'BMS Import', icon: <Inventory /> },
-  { path: '/bms-dashboard', label: 'BMS Dashboard', icon: <Assessment /> },
-  { path: '/production', label: 'Production', icon: <Build /> },
   { path: '/customers', label: 'Customers', icon: <People /> },
   { path: '/parts', label: 'Parts', icon: <Handyman /> },
-  { path: '/technician', label: 'Technician', icon: <Engineering /> },
   { path: '/quality-control', label: 'QC', icon: <VerifiedUser /> },
-  { path: '/reports', label: 'Reports', icon: <Assessment /> },
 ];
 
 export default function Layout() {

@@ -19,6 +19,13 @@ const QualityControlDashboard = lazy(() => import('./pages/QualityControl/Qualit
 const ReportsManagement = lazy(() => import('./pages/Reports/ReportsManagement'));
 const MUIComponentTest = lazy(() => import('./components/Testing/MUIComponentTest'));
 
+// New Enterprise Collision Repair Components
+const SearchPage = lazy(() => import('./pages/Search/SearchPage'));
+const BusinessIntelligenceDashboard = lazy(() => import('./components/Analytics/BusinessIntelligenceDashboard'));
+const AdvancedProductionBoard = lazy(() => import('./components/Production/AdvancedProductionBoard'));
+const PODashboard = lazy(() => import('./components/PurchaseOrder/PODashboard'));
+const CustomerCommunicationCenter = lazy(() => import('./components/Communication/CustomerCommunicationCenter'));
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,6 +58,31 @@ const AppRoutes = () => {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="search" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <SearchPage />
+          </Suspense>
+        } />
+        <Route path="analytics" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <BusinessIntelligenceDashboard />
+          </Suspense>
+        } />
+        <Route path="advanced-production" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdvancedProductionBoard />
+          </Suspense>
+        } />
+        <Route path="purchase-orders" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <PODashboard />
+          </Suspense>
+        } />
+        <Route path="communications" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <CustomerCommunicationCenter />
+          </Suspense>
+        } />
         <Route path="bms-import" element={
           <Suspense fallback={<LoadingSpinner />}>
             <BMSImportPage />
