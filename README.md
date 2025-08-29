@@ -1,7 +1,5 @@
 # CollisionOS - Complete Auto Body Shop Management System
 
-<!-- TEST: GitHub sync test - should appear at https://github.com/Farhaan96/CollisionOS.git -->
-
 ## 🚗 Overview
 
 CollisionOS is a comprehensive desktop application designed specifically for auto body shop management. It combines advanced workflow automation, real-time data synchronization, and industry-specific features to streamline collision repair operations.
