@@ -1,55 +1,67 @@
-# CollisionOS - Complete Auto Body Shop Management System
+# CollisionOS - Insurance Collision Repair Management System
 
 ## 🚗 Overview
 
-CollisionOS is a comprehensive desktop application designed specifically for auto body shop management. It combines advanced workflow automation, real-time data synchronization, and industry-specific features to streamline collision repair operations.
+CollisionOS is a specialized desktop application designed for collision repair shops that process insurance claims. It provides end-to-end workflow management from BMS ingestion through parts sourcing to job completion, with deep integration into the insurance repair ecosystem.
 
 ## ✨ Key Features
 
-### 🎯 Core Management
-- **Visual Production Board**: Drag-and-drop Kanban workflow management
-- **Real-time Dashboard**: Live KPIs and performance metrics
-- **Customer Portal**: Transparent communication and status updates
-- **Parts Management**: Multi-vendor integration and inventory control
-- **Estimate Management**: Integration with major estimating platforms
-- **Quality Control**: Comprehensive inspection and calibration tracking
+### 🎯 Core Collision Repair Workflow
+- **BMS Integration**: Automated XML parsing and data ingestion from insurance systems
+- **Claims Management**: 1:1 claim-to-repair-order relationship tracking
+- **Parts Sourcing**: Multi-vendor parts ordering with status workflow (Needed → Ordered → Received → Installed)
+- **Purchase Order Management**: Automated PO numbering and supplier integration
+- **Search-First Interface**: Global search by RO#, Claim#, Plate, or VIN
 
 ### 🔧 Technical Capabilities
-- **Multi-platform**: Windows, macOS, Linux, and web access
-- **Offline Mode**: Local SQLite with cloud sync
-- **Real-time Updates**: WebSocket connections for live data
-- **API Integration**: RESTful APIs for third-party connections
-- **Mobile Apps**: iOS/Android companion applications
-- **AI Features**: Predictive analytics and automation
+- **Multi-platform**: Electron desktop app with web access
+- **Database**: PostgreSQL/Supabase with collision-specific schema
+- **BMS Parsing**: Supabase Edge Functions for XML processing
+- **Real-time Updates**: Live status tracking across repair workflow
+- **Parts Workflow**: Status buckets with multi-select PO creation
 
-### 📊 Business Intelligence
-- **Advanced Analytics**: Custom report builder and BI tools
-- **KPI Tracking**: Cycle time, CSI, labor efficiency, and more
-- **Financial Management**: Revenue tracking and profit analysis
-- **Staff Performance**: Individual and team productivity metrics
+### 📊 Collision Repair Intelligence
+- **Vendor KPIs**: Lead time, fill rate, return rate tracking
+- **Parts Analytics**: OEM vs Aftermarket vs Reman analysis
+- **Claim Tracking**: Insurance-specific reporting and compliance
+- **RO Performance**: Cycle time and profitability by repair order
 
 ## 🏗️ Architecture
 
 ### Technology Stack
 - **Frontend**: Electron + React with Material-UI
-- **Backend**: Node.js with Express
-- **Database**: PostgreSQL (primary) + SQLite (offline)
-- **Real-time**: Socket.io for live updates
-- **Authentication**: JWT with role-based access control
-- **File Storage**: Local + cloud backup system
+- **Backend**: Supabase with Edge Functions + Node.js Express APIs
+- **Database**: PostgreSQL with collision repair schema
+- **BMS Integration**: Supabase Edge Functions with fast-xml-parser
+- **Authentication**: Supabase Auth with role-based access
+
+### Database Schema - Collision Repair Specific
+
+```sql
+-- Core entities with insurance collision repair relationships
+claims (claim_id PK, claim_number UNIQUE, insurer_name, customer_id, vehicle_id)
+repair_orders (ro_id PK, ro_number UNIQUE, claim_id FK UNIQUE, stage, opened_at, delivered_at)
+customers (customer_id PK, type, first_name, last_name, company_name, contact_info)
+vehicles (vehicle_id PK, customer_id FK, vin UNIQUE, year, make, model, trim, plate, colour, odometer)
+suppliers (supplier_id PK, name, site_code, account_number, terms, is_active)
+purchase_orders (po_id PK, ro_id FK, supplier_id FK, po_number UNIQUE, status, dates, totals)
+part_lines (part_line_id PK, ro_id FK, po_id FK, operation, oem_number, brand_type, status, quantities, pricing)
+returns (return_id PK, part_line_id FK, supplier_id FK, rma_number, reason, amounts)
+documents (bms_document_id PK, bms_version, document_type, created_at, provenance)
+```
 
 ### System Requirements
 - **OS**: Windows 10+, macOS 10.14+, Ubuntu 18.04+
 - **RAM**: 8GB minimum, 16GB recommended
 - **Storage**: 10GB available space
-- **Network**: Broadband internet connection
+- **Network**: Broadband internet connection for BMS/Supabase
 - **Display**: 1920x1080 minimum resolution
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
-- PostgreSQL 13+ (for production)
+- Supabase account and project
 - Git
 
 ### Installation
@@ -65,54 +77,52 @@ CollisionOS is a comprehensive desktop application designed specifically for aut
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Set up Supabase configuration**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # Edit .env with your Supabase URL and keys
    ```
 
-4. **Initialize database**
+4. **Initialize collision repair database**
    ```bash
-   npm run db:migrate
-   npm run db:seed
+   npm run db:gen        # Generate and deploy schema
+   npm run seed:bms      # Load sample BMS data
    ```
 
-5. **Start development server**
+5. **Start development environment**
    ```bash
-   npm run electron-dev
+   npm run dev:electron  # Desktop app
+   npm run dev:functions # Supabase edge functions
    ```
 
 ### Production Build
 
 ```bash
-# Build the application
+# Build the desktop application
 npm run electron-pack
 
-# The built application will be in the dist/ folder
+# Deploy Supabase functions
+supabase functions deploy bms_ingest
 ```
 
 ## 📁 Project Structure
 
 ```
 collision-os/
-├── electron/                 # Electron main process
-├── src/                     # React frontend
-│   ├── components/          # Reusable UI components
-│   ├── pages/              # Page components
-│   ├── hooks/              # Custom React hooks
-│   ├── store/              # State management
-│   ├── services/           # API services
-│   └── utils/              # Utility functions
-├── server/                 # Node.js backend
-│   ├── controllers/        # Route controllers
-│   ├── models/             # Database models
-│   ├── routes/             # API routes
-│   ├── middleware/         # Custom middleware
-│   ├── services/           # Business logic
-│   └── database/           # Database setup
-├── assets/                 # Static assets
-├── docs/                   # Documentation
-└── tests/                  # Test files
+├── app-desktop/             # Electron + React frontend
+│   ├── src/components/      # UI components (RO detail, Parts buckets)
+│   ├── src/pages/          # Main app screens
+│   └── src/services/       # API client services
+├── supabase/
+│   ├── functions/          # Edge functions
+│   │   └── bms_ingest/     # BMS XML parsing
+│   └── migrations/         # Database schema
+├── api/                    # Express API routes (if needed)
+│   └── routes/po.js        # Purchase order endpoints
+├── scripts/                # Development utilities
+│   ├── db-gen.js          # Schema generation
+│   └── seed-bms.js        # Sample data loading
+└── samples/                # Sample BMS XML files
 ```
 
 ## 🔧 Configuration
@@ -122,211 +132,158 @@ collision-os/
 Create a `.env` file in the root directory:
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/collisionos
-SQLITE_PATH=./data/collisionos.db
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# JWT
+# JWT (if using custom auth)
 JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=24h
 
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-
-# SMS (Twilio)
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_PHONE_NUMBER=+1234567890
-
-# File Storage
-UPLOAD_PATH=./uploads
-MAX_FILE_SIZE=10485760
-
-# Server
-PORT=3001
+# Development
 NODE_ENV=development
+ELECTRON_DEV_PORT=3000
+API_PORT=3001
 ```
 
-## 🎯 Core Modules
+## 🎯 Core Workflows
 
-### 1. Dashboard & Analytics
-- Executive overview with real-time KPIs
-- Production board with drag-and-drop workflow
-- Financial analytics and reporting
-- Staff performance tracking
+### 1. BMS Ingestion Pipeline
+- Receive BMS XML files via upload or API
+- Parse with fast-xml-parser (removeNSPrefix: true)
+- Upsert data in order: documents → customers → vehicles → claims → repair_orders → part_lines
+- Set initial part_lines status to "needed"
+- Return ingestion summary with counts
 
-### 2. Customer Management
-- Complete customer database
-- Vehicle portfolio management
-- Communication automation
-- Customer portal access
+### 2. RO Detail & Parts Management
+- **Search Interface**: Global search by RO#, Claim#, Plate, VIN last 6
+- **RO Header**: Display claim#, RO#, customer, vehicle as chips
+- **Parts Buckets**: Needed | Ordered | Backordered | Received | Installed | Returned
+- **Multi-select PO Creation**: Choose parts → select vendor → generate PO
 
-### 3. Job Management
-- Estimate creation and management
-- Work order processing
-- Quality control checkpoints
-- Delivery coordination
+### 3. Purchase Order Workflow
+- **PO Numbering**: `${ro_number}-${YYMM}-${vendorCode}-${seq}`
+- **Vendor Code**: 4 chars uppercase from supplier name
+- **Status Updates**: ordered → received (with quantities) → installed
+- **Returns Handling**: Create return records for quantity mismatches
 
-### 4. Parts Management
-- Multi-vendor parts ordering
-- Inventory control and tracking
-- Parts status board
-- Vendor performance analytics
+### 4. Vendor Management
+- **Per-vendor PO views**: Open POs by supplier
+- **KPI Tracking**: Lead time, fill rate, return rate
+- **Inline Receiving**: Partial quantity updates per line item
 
-### 5. Financial Management
-- Invoice generation and billing
-- Payment processing
-- Accounts receivable management
-- Financial reporting
+## 🔌 BMS Integration
 
-### 6. Quality Control
-- Multi-point inspection checklists
-- Calibration requirements tracking
-- Warranty documentation
-- Post-repair scanning
+### Supported Operations Mapping
+```
+BMS Operation → part_lines fields:
+- Replace → operation: "Replace", brand_type based on part source
+- R&I → operation: "R&I", condition: "Reuse"  
+- Repair → operation: "Repair", condition: "Repair"
+- Sublet → operation: "Sublet", supplier_id if specified
+```
 
-## 🔌 Integrations
+### API Endpoints
 
-### Estimating Systems
-- CCC ONE
-- Mitchell Cloud Estimating
-- Audatex/Qapter
-- Web-Est
+```bash
+# BMS ingestion
+POST /bms_ingest
+Content-Type: multipart/form-data or text/xml
+Returns: {documents: 1, customers: 1, vehicles: 1, claims: 1, repair_orders: 1, part_lines: 15}
 
-### Accounting Software
-- QuickBooks (Desktop & Online)
-- Sage
-- Xero
+# Purchase orders
+POST /api/pos
+Body: {ro_id, supplier_id, line_ids[]}
+Returns: {po_id, po_number}
 
-### Parts Suppliers
-- OE Connection
-- Auto PartsBridge
-- PartsTrader
-- OEMPartSource
+# Receive parts  
+POST /api/pos/:id/receive
+Body: {line_items: [{part_line_id, qty_received}]}
+Returns: {updated_lines, returns_created}
 
-### Insurance & DRP
-- DRP portals
-- ClaimConnect
-- Insurance company APIs
-
-## 📱 Mobile Applications
-
-### Technician App
-- Clock in/out functionality
-- Job status updates
-- Photo/video capture
-- Parts lookup
-- Time tracking
-
-### Management App
-- Real-time KPIs
-- Approval workflows
-- Staff messaging
-- Emergency notifications
-
-### Customer App
-- Repair tracking
-- Photo sharing
-- Messaging
-- Payments
-- Appointment booking
-
-## 🛡️ Security & Compliance
-
-### Data Security
-- Role-based access control (RBAC)
-- Multi-factor authentication
-- SSL/TLS encryption
-- Automated backups
-- Audit trails
-
-### Compliance
-- PCI DSS compliance
-- PIPEDA/privacy compliance
-- Industry-specific regulations
-- Data retention policies
+# Install parts
+POST /api/part-lines/:id/install
+Returns: {installed_date, status: "installed"}
+```
 
 ## 📊 Reporting & Analytics
 
-### Standard Reports
-- Daily production report
-- Weekly KPI dashboard
-- Monthly P&L statement
-- Technician productivity
-- Parts profitability
+### Collision Repair Specific Reports
+- **Claim Cycle Time**: Days from BMS ingestion to delivery
+- **Parts Profitability**: Markup analysis by brand type (OEM/AM/LKQ)
+- **Vendor Performance**: Lead times and fill rates by supplier
+- **RO Status**: Current pipeline and bottlenecks
 
-### Custom Reports
-- Drag-and-drop report builder
-- Scheduled report delivery
-- Multiple export formats
-- Data visualization tools
+### Search & Filtering
+- **Global Search**: RO#, Claim#, Plate, VIN last 6 digits
+- **Parts Status**: Filter by needed/ordered/received/installed
+- **Date Ranges**: Order dates, ETA dates, received dates
+- **Vendor Analysis**: Performance metrics by supplier
 
-## 🎓 Training & Support
+## 🧪 Development Scripts
 
-### Documentation
-- User guides and tutorials
-- Video training library
-- Knowledge base
-- API documentation
+```bash
+# Database management
+npm run db:gen          # Generate SQL schema and deploy to Supabase
+npm run db:migrate      # Run pending migrations
+npm run db:seed         # Load sample collision repair data
 
-### Support
-- 24/7 help desk
-- User community forum
-- Regular webinars
-- Annual user conference
+# Development environment  
+npm run dev:electron    # Start desktop app in development
+npm run dev:functions   # Start Supabase edge functions locally
+npm run dev:api        # Start Express API server
 
-## 🤝 Contributing
+# BMS testing
+npm run seed:bms       # Process sample BMS files from /samples
+npm run test:bms       # Test BMS ingestion pipeline
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+# Testing
+npm run test           # Run unit tests
+npm run test:e2e       # Run Playwright collision repair workflow tests
+```
 
-## 📄 License
+## 🚀 Implementation Roadmap
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Task 1: Foundation (Week 1)
+- [x] Monorepo scaffolding with app-desktop, supabase, api packages
+- [x] Supabase project setup and configuration
+- [x] Development script framework
 
-## 🆘 Support
+### Task 2: Database Schema (Week 1)  
+- [ ] Collision repair PostgreSQL schema design
+- [ ] Migration scripts and indexes
+- [ ] Enum definitions (part status, brand types)
 
-- **Documentation**: [docs.collisionos.com](https://docs.collisionos.com)
-- **Support**: [support.collisionos.com](https://support.collisionos.com)
-- **Community**: [community.collisionos.com](https://community.collisionos.com)
-- **Email**: support@collisionos.com
+### Task 3: BMS Integration (Week 2)
+- [ ] Supabase Edge Function for XML parsing
+- [ ] BMS-to-database mapping implementation
+- [ ] Sample BMS file processing
 
-## 🚀 Roadmap
+### Task 4: PO APIs (Week 2)
+- [ ] Purchase order creation endpoints
+- [ ] PO numbering system implementation  
+- [ ] Parts receiving workflow APIs
 
-### Phase 1: Foundation (Months 1-3)
-- [x] Core database setup
-- [x] User authentication system
-- [x] Basic job management
-- [x] Customer database
-- [x] Simple scheduling
+### Task 5: RO Interface (Week 3)
+- [ ] Search-first navigation design
+- [ ] RO detail page with claim/customer/vehicle chips
+- [ ] Parts status buckets with drag-and-drop
 
-### Phase 2: Production (Months 4-6)
-- [x] Production board
-- [x] Parts management
-- [x] Technician console
-- [x] Quality control
-- [x] Basic reporting
+### Task 6: PO Management (Week 3)
+- [ ] Multi-select PO creation workflow
+- [ ] Vendor-specific PO views
+- [ ] Inline parts receiving interface
 
-### Phase 3: Integration (Months 7-9)
-- [ ] Estimating system connections
-- [ ] Accounting integration
-- [ ] Parts supplier APIs
-- [ ] Insurance portals
-- [ ] Payment processing
+### Task 7: Testing & Validation (Week 4)
+- [ ] Collision repair workflow testing
+- [ ] BMS ingestion validation
+- [ ] Performance testing with sample data
 
-### Phase 4: Advanced (Months 10-12)
-- [ ] Mobile applications
-- [ ] Customer portal
-- [ ] AI features
-- [ ] Advanced analytics
-- [ ] Marketing automation
+### Task 8: Performance Optimization (Week 4)
+- [ ] Database indexing verification
+- [ ] Query optimization for large part datasets
+- [ ] UI performance testing
 
 ---
 
-**CollisionOS** - Revolutionizing Auto Body Shop Management
+**CollisionOS** - Specialized Insurance Collision Repair Management

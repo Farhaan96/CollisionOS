@@ -72,7 +72,7 @@ import { SearchBar } from '../../components/Common/SearchBar';
 import { customerService } from '../../services/customerService';
 
 // Hooks
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
 const CustomerList = () => {

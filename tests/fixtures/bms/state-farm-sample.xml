@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+  <Header>
+    <Version>2.1</Version>
+    <EstimateID>SF-EST-2024-001</EstimateID>
+    <CreatedDate>2024-08-29</CreatedDate>
+    <Insurer>State Farm</Insurer>
+    <ShopCode>SHOP001</ShopCode>
+  </Header>
+  
+  <Customer>
+    <FirstName>Michael</FirstName>
+    <LastName>Johnson</LastName>
+    <Phone>604-555-FARM</Phone>
+    <Email>michael.johnson@email.com</Email>
+    <Address>
+      <Street>456 Oak Street</Street>
+      <City>Vancouver</City>
+      <State>BC</State>
+      <PostalCode>V6H 2M5</PostalCode>
+      <Country>Canada</Country>
+    </Address>
+  </Customer>
+  
+  <Vehicle>
+    <VIN>1HGCM82633A123456</VIN>
+    <Year>2021</Year>
+    <Make>Honda</Make>
+    <Model>Accord</Model>
+    <Trim>EX-L</Trim>
+    <Engine>2.0L I4 Turbo</Engine>
+    <Transmission>CVT</Transmission>
+    <Color>Crystal Black Pearl</Color>
+    <ColorCode>NH731P</ColorCode>
+    <Mileage>42500</Mileage>
+  </Vehicle>
+  
+  <Claim>
+    <ClaimNumber>SF-2024-789012</ClaimNumber>
+    <PolicyNumber>SF-POL-987654</PolicyNumber>
+    <DateOfLoss>2024-08-25</DateOfLoss>
+    <TypeOfLoss>Collision</TypeOfLoss>
+    <Deductible>500.00</Deductible>
+    <InsuredLiability>true</InsuredLiability>
+    <Adjuster>
+      <Name>Sarah Wilson</Name>
+      <Phone>1-800-SF-CLAIM</Phone>
+      <Email>sarah.wilson@statefarm.com</Email>
+    </Adjuster>
+  </Claim>
+  
+  <DamageAssessment>
+    <Description>Front end collision damage. Impact to front bumper, hood, right headlight assembly, and right fender.</Description>
+    <Photos>
+      <Photo>damage_front_01.jpg</Photo>
+      <Photo>damage_right_side_01.jpg</Photo>
+      <Photo>damage_headlight_01.jpg</Photo>
+    </Photos>
+  </DamageAssessment>
+  
+  <Parts>
+    <Part>
+      <LineNumber>1</LineNumber>
+      <Operation>Replace</Operation>
+      <Description>Front Bumper Cover</Description>
+      <OEMNumber>71501-TVA-A00</OEMNumber>
+      <AlternateNumber>71501TVAA00</AlternateNumber>
+      <Quantity>1</Quantity>
+      <UnitPrice>425.50</UnitPrice>
+      <TotalPrice>425.50</TotalPrice>
+      <LaborHours>2.8</LaborHours>
+      <LaborRate>85.00</LaborRate>
+      <LaborAmount>238.00</LaborAmount>
+      <PaintHours>3.2</PaintHours>
+      <PaintAmount>272.00</PaintAmount>
+    </Part>
+    
+    <Part>
+      <LineNumber>2</LineNumber>
+      <Operation>Replace</Operation>
+      <Description>Hood</Description>
+      <OEMNumber>60100-TVA-A90ZZ</OEMNumber>
+      <AlternateNumber>60100TVAA90ZZ</AlternateNumber>
+      <Quantity>1</Quantity>
+      <UnitPrice>520.75</UnitPrice>
+      <TotalPrice>520.75</TotalPrice>
+      <LaborHours>1.5</LaborHours>
+      <LaborRate>85.00</LaborRate>
+      <LaborAmount>127.50</LaborAmount>
+      <PaintHours>4.1</PaintHours>
+      <PaintAmount>348.50</PaintAmount>
+    </Part>
+    
+    <Part>
+      <LineNumber>3</LineNumber>
+      <Operation>Replace</Operation>
+      <Description>Headlight Assembly - Right</Description>
+      <OEMNumber>33100-TVA-A01</OEMNumber>
+      <AlternateNumber>33100TVAA01</AlternateNumber>
+      <Quantity>1</Quantity>
+      <UnitPrice>345.25</UnitPrice>
+      <TotalPrice>345.25</TotalPrice>
+      <LaborHours>0.8</LaborHours>
+      <LaborRate>85.00</LaborRate>
+      <LaborAmount>68.00</LaborAmount>
+      <PaintHours>0.0</PaintHours>
+      <PaintAmount>0.00</PaintAmount>
+    </Part>
+    
+    <Part>
+      <LineNumber>4</LineNumber>
+      <Operation>Repair</Operation>
+      <Description>Fender - Right Front</Description>
+      <OEMNumber>N/A</OEMNumber>
+      <AlternateNumber>N/A</AlternateNumber>
+      <Quantity>1</Quantity>
+      <UnitPrice>0.00</UnitPrice>
+      <TotalPrice>0.00</TotalPrice>
+      <LaborHours>3.5</LaborHours>
+      <LaborRate>85.00</LaborRate>
+      <LaborAmount>297.50</LaborAmount>
+      <PaintHours>2.8</PaintHours>
+      <PaintAmount>238.00</PaintAmount>
+    </Part>
+  </Parts>
+  
+  <AdditionalOperations>
+    <Operation>
+      <Description>Vehicle Inspection</Description>
+      <LaborHours>0.5</LaborHours>
+      <LaborRate>85.00</LaborRate>
+      <Amount>42.50</Amount>
+    </Operation>
+    
+    <Operation>
+      <Description>Rental Car (7 days)</Description>
+      <DailyRate>35.00</DailyRate>
+      <Days>7</Days>
+      <Amount>245.00</Amount>
+    </Operation>
+    
+    <Operation>
+      <Description>Towing</Description>
+      <Amount>125.00</Amount>
+    </Operation>
+  </AdditionalOperations>
+  
+  <EstimateTotals>
+    <PartsTotal>1291.50</PartsTotal>
+    <LaborTotal>773.50</LaborTotal>
+    <PaintTotal>858.50</PaintTotal>
+    <AdditionalTotal>412.50</AdditionalTotal>
+    <SubTotal>3336.00</SubTotal>
+    <TaxRate>0.12</TaxRate>
+    <TaxAmount>400.32</TaxAmount>
+    <GrandTotal>3736.32</GrandTotal>
+    <NetTotal>3236.32</NetTotal>
+    <Deductible>500.00</Deductible>
+  </EstimateTotals>
+  
+  <ApprovalStatus>
+    <Status>Approved</Status>
+    <ApprovedBy>Sarah Wilson</ApprovedBy>
+    <ApprovalDate>2024-08-26</ApprovalDate>
+    <Comments>Estimate approved. Customer may proceed with repairs.</Comments>
+  </ApprovalStatus>
+  
+  <ShopInstructions>
+    <Instruction>Use OEM parts only</Instruction>
+    <Instruction>Pre-repair photos required</Instruction>
+    <Instruction>Progress photos during repair</Instruction>
+    <Instruction>Final photos before customer pickup</Instruction>
+    <Instruction>Contact adjuster before any supplements</Instruction>
+  </ShopInstructions>
+  
+</Estimate>

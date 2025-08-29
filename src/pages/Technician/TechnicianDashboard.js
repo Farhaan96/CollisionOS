@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import TechnicianConsole from '../../components/Production/TechnicianConsole';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const TechnicianDashboard = () => {
   const { user } = useAuth();

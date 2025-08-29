@@ -1,0 +1,50 @@
+{
+  "name": "@collision-os/api",
+  "version": "2.0.0",
+  "description": "Collision Repair API Server - Express REST API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "echo 'No build step required for Express API'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:po": "jest --testPathPattern=purchase-orders",
+    "test:parts": "jest --testPathPattern=parts",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.0.1",
+    "express-validator": "^7.2.1",
+    "dotenv": "^16.3.1",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^6.0.0",
+    "multer": "^2.0.2",
+    "fast-xml-parser": "^5.2.5",
+    "decimal.js": "^10.6.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "collision-repair",
+    "purchase-orders",
+    "parts-management", 
+    "express-api",
+    "rest-api"
+  ]
+}

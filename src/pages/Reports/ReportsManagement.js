@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import Layout from '../../components/Layout/Layout';
 import ReportingSystem from '../../components/Reports/ReportingSystem';
 
 const ReportsManagement = () => {
@@ -15,14 +14,12 @@ const ReportsManagement = () => {
   };
 
   return (
-    <Layout>
-      <Box sx={{ p: 3 }}>
-        <ReportingSystem 
-          onReportGenerate={handleReportGenerate}
-          onReportSchedule={handleReportSchedule}
-        />
-      </Box>
-    </Layout>
+    <Box sx={{ p: 3 }}>
+      <ReportingSystem 
+        onReportGenerate={handleReportGenerate}
+        onReportSchedule={handleReportSchedule}
+      />
+    </Box>
   );
 };
 

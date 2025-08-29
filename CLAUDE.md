@@ -1,302 +1,358 @@
-# CLAUDE.md
+# CLAUDE.md - CollisionOS Insurance Collision Repair System
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with the CollisionOS collision repair management system.
+
+## Project Overview
+
+**CollisionOS** is a specialized desktop application for collision repair shops that process insurance claims. The system provides end-to-end workflow management from BMS (Body Management System) XML ingestion through parts sourcing to job completion.
+
+### Key Architectural Differences from Generic Auto Shop Systems:
+- **Insurance-Centric**: 1:1 claim-to-repair-order relationship
+- **BMS Integration**: Automated XML parsing from insurance systems
+- **Parts Workflow**: Status-based workflow (Needed → Ordered → Received → Installed)
+- **Search-First Interface**: Global search by RO#, Claim#, Plate, VIN
+- **Vendor Management**: Multi-supplier parts sourcing with KPI tracking
 
 ## Agent Orchestration with .claude/agents
 
 ### Available Specialized Agents
 
-The `.claude/agents/` folder contains specialized agents for different tasks:
+The `.claude/agents/` folder contains specialized agents for collision repair development:
 
 1. **architect.md** - Lead software architect
-   - Classifies projects and creates implementation plans
-   - Delegates tasks to appropriate subagents
+   - Classifies collision repair projects and creates implementation plans
+   - Delegates tasks to appropriate subagents for insurance workflows
    - Maintains project updates in `.claude/project_updates/`
    - Tools: Read, LS, Grep, Glob, TodoWrite, Task
 
 2. **backend-api.md** - Backend API specialist
-   - Designs and implements REST/GraphQL APIs
-   - Database integration and authentication
-   - Integration testing
+   - Designs BMS ingestion APIs and purchase order workflows  
+   - Supabase Edge Functions for XML parsing
+   - Insurance-specific business logic implementation
    - Tools: Read, Edit, Write, Grep, Glob, Bash
 
 3. **frontend-ui.md** - Frontend UI engineer
-   - Builds React/Next/Electron UIs
-   - Responsive and accessible components
-   - Frontend testing (RTL/Vitest)
+   - Builds collision repair interfaces (RO detail, parts buckets)
+   - Search-first navigation and workflow management
+   - Multi-select PO creation interfaces
    - Tools: Read, Edit, Write, Grep, Glob, Bash
 
 4. **db-architect.md** - Database architect
-   - Database schema design and migrations
-   - Performance optimization and indexing
-   - Data modeling and seed data
+   - Collision repair schema design with insurance entities
+   - Performance optimization for parts workflow queries
+   - Migration scripts for claims/RO/parts relationships
    - Tools: Read, Edit, Write, Grep, Glob, Bash
 
 5. **devops.md** - DevOps engineer
-   - CI/CD pipelines and deployment
-   - Environment setup and configuration
-   - Containerization and staging deploys
+   - Supabase project configuration and deployment
+   - BMS ingestion pipeline setup and monitoring
+   - Electron app build and distribution
    - Tools: Read, Edit, Write, Grep, Glob, Bash
 
 6. **test-runner.md** - Testing specialist
-   - Runs tests and fixes failures
-   - Preserves test intent while fixing
-   - Test coverage and quality assurance
+   - Collision repair workflow testing (BMS → RO → PO)
+   - Parts sourcing and vendor integration tests
+   - Performance testing with collision repair datasets
    - Tools: Read, Edit, Write, Grep, Glob, Bash
 
-### How to Use the Architect Agent
+### Collision Repair Specific Workflows
 
-When you receive a complex request:
+When you receive collision repair requests:
 
-1. **Engage the architect agent** using the Task tool with `subagent_type="architect"`
-2. **The architect will**:
-   - Read project updates from `.claude/project_updates/`
-   - Analyze the request and current project state
-   - Create a detailed implementation plan
-   - Assign specific tasks to appropriate agents
-3. **You then execute the plan** by calling each agent as directed
-4. **Track progress** using TodoWrite tool
+1. **Engage the architect agent** for complex insurance workflow changes
+2. **The architect will analyze** collision repair requirements and business logic
+3. **Task assignments** will be made based on collision repair expertise areas
+4. **Progress tracking** through collision repair-specific updates
 
-### Calling the Architect
+### Calling the Architect for Collision Repair Tasks
 
 ```javascript
 Task tool with:
 - subagent_type: "architect"
-- description: "Brief task description"
-- prompt: "Analyze [request] and create implementation plan with task assignments"
+- description: "Collision repair [feature/fix] analysis"
+- prompt: "Analyze [collision repair request] considering BMS integration, parts workflow, and insurance requirements. Create implementation plan with agent assignments."
 ```
 
-### Calling Specialized Agents After Architect's Plan
+### Project Updates Protocol - Collision Repair Focus
 
-```javascript
-Task tool with:
-- subagent_type: "[agent-name]" // e.g., "backend-api", "frontend-ui", "test-runner"
-- description: "Specific task from architect's plan"
-- prompt: "[Detailed instructions from architect's assignment]"
-```
+All agents maintain progress files in `.claude/project_updates/` with collision repair context:
+- `architect_progress.md` - Overall collision repair architecture decisions
+- `backend_progress.md` - BMS ingestion, PO APIs, insurance business logic
+- `frontend_progress.md` - RO interfaces, parts buckets, search workflows
+- `db_progress.md` - Collision repair schema changes and optimizations
+- `devops_progress.md` - Supabase deployment and BMS pipeline configuration
+- `test_progress.md` - Collision repair workflow validation results
 
-### Project Updates Protocol
-
-All agents maintain progress files in `.claude/project_updates/`:
-- `architect_progress.md` - Overall project decisions and task assignments
-- `backend_progress.md` - Backend API changes and decisions
-- `frontend_progress.md` - Frontend UI changes and decisions
-- `db_progress.md` - Database changes and migrations
-- `devops_progress.md` - Deployment and infrastructure changes
-- `test_progress.md` - Test results and coverage updates
-
-### Update Format (Used by All Agents)
+### Update Format for Collision Repair Development
 
 ```markdown
-## [DATE] [TIME] - [AGENT NAME] - [ACTION TYPE]
+## [DATE] [TIME] - [AGENT NAME] - [COLLISION REPAIR ACTION]
 
 ### What was done:
-- [Specific changes made]
-- [Files modified/created/deleted]
+- [Collision repair specific changes]
+- [BMS/Parts/RO/Claim related modifications]
 
 ### Why it was done:
-- [Business/technical reasoning]
-- [Problem solved]
+- [Insurance workflow reasoning]
+- [Parts sourcing business logic]
 
 ### Impact:
-- [What this enables/prevents]
-- [Dependencies created/resolved]
+- [Effect on BMS ingestion pipeline]
+- [Changes to RO/Parts/PO workflows]
 
 ### Files Changed:
-- `path/to/file1.js` - [brief description]
-- `path/to/file2.js` - [brief description]
+- `path/to/collision-repair-file.js` - [collision repair description]
+- `supabase/functions/bms_ingest.ts` - [BMS integration changes]
 ```
 
-## Workflow Examples
-
-### Example 1: Complex Feature Implementation
-
-```
-User: "Implement a new BMS import feature with UI and testing"
-
-1. You → Architect: "Create implementation plan for BMS import feature"
-2. Architect analyzes and returns:
-   - Task 1: Backend API for BMS parsing (backend-api)
-   - Task 2: Upload UI component (frontend-ui)
-   - Task 3: Database schema for BMS data (db-architect)
-   - Task 4: Integration tests (test-runner)
-
-3. You execute the plan:
-   - Call backend-api agent with Task 1 details
-   - Call frontend-ui agent with Task 2 details
-   - Call db-architect agent with Task 3 details
-   - Call test-runner agent with Task 4 details
-```
-
-### Example 2: Bug Fixing and Testing
-
-```
-User: "Fix all TypeScript errors and ensure tests pass"
-
-1. You → Architect: "Analyze TypeScript errors and create fix plan"
-2. Architect returns prioritized fixes:
-   - Critical: Backend compilation errors (backend-api)
-   - High: Frontend type issues (frontend-ui)
-   - Medium: Test failures (test-runner)
-
-3. You execute fixes in priority order
-```
-
-## Development Commands
+## Development Commands - Collision Repair Focused
 
 ### Development Environment
 ```bash
-npm run dev           # Start full development environment
-npm run dev:ui        # Start UI only
-npm run dev:server    # Start server only
-npm run electron-dev  # Start Electron app
+npm run dev:electron     # Start collision repair desktop app
+npm run dev:functions    # Start Supabase edge functions (BMS ingestion)
+npm run dev:api         # Start Express API server (PO workflows)
 ```
 
-### Testing
+### Database Management - Collision Repair Schema
 ```bash
-npm test                  # Run all tests
-npm run test:playwright   # Run E2E tests
-npm run test:e2e:smoke   # Run smoke test suite
-npm run test:coverage    # Run with coverage
+npm run db:gen          # Generate collision repair schema and deploy to Supabase
+npm run db:migrate      # Run collision repair database migrations
+npm run db:seed         # Load sample collision repair data
+npm run seed:bms        # Process sample BMS XML files
+```
+
+### Testing - Collision Repair Workflows
+```bash
+npm test                    # Run collision repair unit tests
+npm run test:bms           # Test BMS XML parsing and ingestion
+npm run test:po            # Test purchase order workflow
+npm run test:e2e          # Run collision repair end-to-end tests
+npm run test:performance   # Test with large parts datasets
 ```
 
 ### Code Quality
 ```bash
-npm run typecheck    # TypeScript type checking
-npm run lint         # ESLint checking
+npm run typecheck    # TypeScript checking (collision repair types)
+npm run lint         # ESLint with collision repair rules
 npm run format       # Prettier formatting
 ```
 
-### Building & Deployment
-```bash
-npm run build              # Build React app
-npm run electron-pack      # Build Electron app
-npm run build:analyze      # Analyze bundle size
+## Project Structure - Collision Repair System
+
+### Frontend (`app-desktop/src/`)
+- `components/CollisionRepair/` - RO detail, parts buckets, search
+- `components/BMS/` - BMS file upload and processing UI
+- `components/PurchaseOrders/` - PO creation and management
+- `components/Vendors/` - Supplier management interfaces
+- `pages/RO/` - Repair order detail pages
+- `pages/Search/` - Global search interface
+- `services/bms.js` - BMS ingestion API client
+- `services/parts.js` - Parts workflow API client
+- `services/po.js` - Purchase order API client
+
+### Backend (`supabase/`)
+- `functions/bms_ingest/` - Edge function for XML parsing
+- `migrations/` - Collision repair database schema
+- `types.ts` - TypeScript definitions for collision repair entities
+
+### API (`api/` if needed)
+- `routes/po.js` - Purchase order workflow endpoints
+- `routes/parts.js` - Parts status and sourcing APIs
+- `middleware/bms.js` - BMS validation and processing
+
+### Scripts (`scripts/`)
+- `db-gen.js` - Collision repair schema generation
+- `seed-bms.js` - Sample BMS file processing
+- `vendor-setup.js` - Supplier configuration utilities
+
+## Current Feature Status - Collision Repair System
+
+### ✅ Foundation Complete (Generic → Collision Repair)
+- [x] README.md updated with collision repair architecture
+- [x] CLAUDE.md updated with collision repair workflows
+- [x] Agent coordination established for collision repair tasks
+- [x] Project structure defined for collision repair system
+
+### 🔧 Implementation Tasks (8-Task Plan)
+
+#### Task 1: Foundation & Scaffolding ⏳
+- [ ] Monorepo structure with app-desktop, supabase, api packages
+- [ ] Supabase project setup and configuration
+- [ ] Development script framework
+
+#### Task 2: Database Schema 📋
+- [ ] Collision repair PostgreSQL schema design
+- [ ] Claims, RO, parts, suppliers, PO tables
+- [ ] Migration scripts and performance indexes
+- [ ] Enums for part status and brand types
+
+#### Task 3: BMS Integration 🔌
+- [ ] Supabase Edge Function for XML parsing
+- [ ] fast-xml-parser integration with removeNSPrefix
+- [ ] BMS-to-database mapping (documents → customers → vehicles → claims → ROs → parts)
+- [ ] Sample BMS file processing
+
+#### Task 4: Purchase Order APIs 🛒
+- [ ] PO creation endpoints with numbering system
+- [ ] Parts receiving workflow APIs
+- [ ] Returns handling for quantity mismatches
+- [ ] Vendor code generation utilities
+
+#### Task 5: RO Detail Interface 🖥️
+- [ ] Search-first navigation (RO#, Claim#, Plate, VIN)
+- [ ] RO detail page with claim/customer/vehicle chips
+- [ ] Parts status buckets with drag-and-drop
+- [ ] Multi-select PO creation workflow
+
+#### Task 6: PO Management Interface 📦
+- [ ] Vendor-specific PO views
+- [ ] Inline parts receiving with quantity tracking
+- [ ] KPI dashboards (lead time, fill rate, return rate)
+- [ ] PO numbering display and tracking
+
+#### Task 7: Testing & Validation 🧪
+- [ ] BMS ingestion pipeline testing
+- [ ] End-to-end collision repair workflow tests
+- [ ] Parts sourcing and PO workflow validation
+- [ ] Performance testing with realistic datasets
+
+#### Task 8: Performance Optimization ⚡
+- [ ] Database indexing for collision repair queries
+- [ ] Query optimization for large parts datasets
+- [ ] UI performance with multiple ROs and parts
+- [ ] BMS ingestion performance validation
+
+### 📝 Not Yet Implemented (Future Enhancements)
+- VIN decoding integration
+- Insurance company API connections
+- Mobile app for technicians
+- Advanced reporting and analytics
+- Multi-location support
+
+## Architecture - Collision Repair Specific
+
+### Database Relationships
+```
+insurance_claims (1) ←→ (1) repair_orders
+repair_orders (1) ←→ (many) part_lines  
+repair_orders (1) ←→ (many) purchase_orders
+suppliers (1) ←→ (many) purchase_orders
+suppliers (1) ←→ (many) part_lines
+part_lines (1) ←→ (0..1) returns
+customers (1) ←→ (many) vehicles
+vehicles (1) ←→ (many) claims
 ```
 
-## Project Structure
+### BMS Integration Flow
+```
+XML Upload → Edge Function → XML Parser → Database Upserts:
+1. documents (provenance tracking)
+2. customers (contact information)  
+3. vehicles (VIN, YMMT, plate)
+4. claims (claim_number, insurer)
+5. repair_orders (RO_number, 1:1 with claim)
+6. part_lines (operations, parts, status=needed)
+```
 
-### Frontend (`src/`)
-- `components/` - React components by feature
-- `contexts/` - React contexts (auth, theme)
-- `hooks/` - Custom React hooks
-- `pages/` - Page components
-- `services/` - API service layer
-- `store/` - Zustand state management
-- `utils/` - Utility functions
+### Parts Workflow States
+```
+needed → sourcing → ordered → backordered → received → installed → returned → cancelled
+```
 
-### Backend (`server/`)
-- `routes/` - Express route handlers
-- `models/` - Database models
-- `services/` - Business logic
-- `middleware/` - Auth, validation, security
-- `database/` - Configuration and migrations
+### PO Numbering System
+```
+${ro_number}-${YYMM}-${vendorCode}-${seq}
+Example: R12345-2412-LKQU-001
+```
 
-### Testing (`tests/`)
-- `unit/` - Unit tests
-- `integration/` - Integration tests
-- `e2e/` - End-to-end tests
-
-### Agent Configuration (`.claude/`)
-- `agents/` - Agent definition files
-- `project_updates/` - Progress tracking files
-- `hooks/` - Custom hooks for agent behavior
-- `settings.local.json` - Local agent settings
-
-## Current Feature Status
-
-### ✅ Implemented
-- Authentication (JWT, roles, MFA)
-- Dashboard with KPIs
-- Customer management
-- Production board (Kanban)
-- Parts management
-- Theme system
-- Real-time updates (Socket.io)
-
-### 🔧 Known Issues
-1. **BMS Import** - File upload not accessible
-2. **Dashboard Metrics** - KPI loading inconsistencies
-3. **Production Board** - Stage display issues
-4. **Parts Search** - Incomplete filter functionality
-
-### 📝 Not Implemented
-- VIN decoding
-- Labor time tracking
-- Customer portal
-- Mobile app
-- Multi-shop support
-- Advanced scheduling
-
-## Architecture
-
-### Database
-- Primary: Supabase (PostgreSQL)
-- Fallback: SQLite for offline mode
-- Real-time: Socket.io + Supabase
-
-### State Management
-- Global: Zustand
-- Auth/Theme: React Context
-- Server state: React Query
-
-### Security
-- JWT authentication
-- Role-based access control
-- Input sanitization
-- Rate limiting
-- CORS configured
-
-## Important Guidelines
+## Important Guidelines for Collision Repair Development
 
 ### DO:
-- Always engage architect for complex tasks
-- Read project updates before starting work
-- Update progress files after changes
-- Use TodoWrite to track task progress
-- Test changes before marking complete
-- Follow existing code patterns
+- Always consider insurance workflow requirements
+- Maintain 1:1 claim-to-RO relationship integrity
+- Test BMS ingestion with realistic XML samples
+- Optimize for parts workflow performance
+- Follow collision repair industry standards
+- Update collision repair progress files after changes
 
 ### DON'T:
-- Skip the architect for multi-step tasks
-- Duplicate work already done
-- Create files unless necessary
-- Make breaking changes without planning
-- Forget to update progress files
+- Break the BMS ingestion pipeline
+- Modify core collision repair entities without architect review
+- Skip testing collision repair workflows
+- Ignore vendor integration requirements
+- Create generic auto shop features
 
 ### ALWAYS:
-- Check `.claude/project_updates/` first
-- Use the appropriate specialized agent
-- Maintain backward compatibility
-- Document architectural decisions
-- Coordinate through the architect
+- Check collision repair business logic before changes
+- Test BMS XML parsing with various formats
+- Validate parts workflow state transitions
+- Consider multi-vendor scenarios
+- Document collision repair-specific decisions
+- Coordinate through the architect for complex changes
 
-## Agent Capability Matrix
+## Agent Capability Matrix - Collision Repair Focus
 
-| Agent | Primary Focus | Use For |
-|-------|--------------|---------|
-| architect | Planning & Coordination | Task breakdown, delegation, architecture decisions |
-| backend-api | Server & APIs | REST/GraphQL endpoints, auth, database integration |
-| frontend-ui | UI Components | React components, styling, user interactions |
-| db-architect | Database | Schema design, migrations, performance |
-| devops | Infrastructure | CI/CD, deployment, environment setup |
-| test-runner | Testing | Test execution, fixing, coverage |
+| Agent | Collision Repair Focus | Use For |
+|-------|----------------------|---------|
+| architect | Collision repair architecture & coordination | Insurance workflow planning, BMS integration architecture |
+| backend-api | BMS ingestion, PO APIs, insurance business logic | XML parsing, parts workflow APIs, vendor integrations |
+| frontend-ui | RO interfaces, parts buckets, search workflows | Collision repair UI, parts management, PO creation |
+| db-architect | Collision repair schema, parts workflow optimization | Claims/RO relationships, parts query performance |
+| devops | Supabase deployment, BMS pipeline, Electron build | BMS ingestion infrastructure, collision repair deployments |
+| test-runner | Collision repair workflow testing | BMS ingestion tests, parts workflow validation |
 
-## Testing Specific Workflows
+## Session Best Practices - Collision Repair Development
 
-When asked to test the application:
-1. First engage architect to create a testing plan
-2. Architect will assign specific test scenarios to test-runner
-3. Test-runner executes tests and reports results
-4. Other agents fix issues found during testing
-5. Repeat until all tests pass
+1. **Start of Session**: Review collision repair progress updates
+2. **During Work**: Focus on insurance workflow implications
+3. **Complex Tasks**: Always engage architect for collision repair changes
+4. **BMS Changes**: Test with sample XML files immediately
+5. **End of Session**: Update collision repair progress with business context
+6. **Handoff**: Document collision repair workflow impacts
 
-## Session Best Practices
+## Sample BMS XML Processing
 
-1. **Start of Session**: Read all project updates
-2. **During Work**: Update progress files frequently
-3. **Complex Tasks**: Always use architect first
-4. **End of Session**: Final progress update with summary
-5. **Handoff**: Leave clear notes for next session
+When working with BMS integration:
 
-This configuration ensures coordinated development with clear task ownership and progress tracking across all agents.
+```xml
+<!-- Sample BMS XML structure -->
+<Estimate>
+  <Customer>
+    <FirstName>John</FirstName>
+    <LastName>Smith</LastName>
+    <Phone>555-1234</Phone>
+  </Customer>
+  <Vehicle>
+    <VIN>1G1BC5SM5H7123456</VIN>
+    <Year>2017</Year>
+    <Make>Chevrolet</Make>
+    <Model>Malibu</Model>
+  </Vehicle>
+  <Claim>
+    <ClaimNumber>CLM-2024-001</ClaimNumber>
+    <Insurer>State Farm</Insurer>
+  </Claim>
+  <RepairOrder>
+    <RONumber>RO-2024-001</RONumber>
+  </RepairOrder>
+  <Parts>
+    <Part>
+      <Operation>Replace</Operation>
+      <Description>Front Bumper Cover</Description>
+      <OEMNumber>84044368</OEMNumber>
+      <Quantity>1</Quantity>
+    </Part>
+  </Parts>
+</Estimate>
+```
+
+This configuration ensures coordinated collision repair development with clear task ownership, insurance workflow focus, and progress tracking across all specialized agents.
+
+# important-instruction-reminders
+- Focus on collision repair workflows and insurance industry requirements
+- Always consider BMS integration implications when making changes
+- Maintain database relationships specific to collision repair business logic
+- Test parts workflow state transitions thoroughly
+- Document collision repair business context in all changes
+- Coordinate complex collision repair changes through the architect agent

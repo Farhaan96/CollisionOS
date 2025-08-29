@@ -36,6 +36,14 @@ const productionRoutes = require('./routes/production');
 const laborRoutes = require('./routes/labor');
 const communicationRoutes = require('./routes/communication');
 
+// Phase 2 Backend Development Routes
+const purchaseOrderRoutes = require('./routes/purchaseOrders');
+const partsWorkflowRoutes = require('./routes/partsWorkflow');
+const schedulingRoutes = require('./routes/scheduling');
+const loanerFleetRoutes = require('./routes/loanerFleet');
+const customerCommunicationRoutes = require('./routes/customerCommunication');
+const qualityControlRoutes = require('./routes/qualityControl');
+
 const { authenticateToken, optionalAuth } = require('./middleware/authEnhanced'); // Use enhanced auth with proper token handling
 const { errorHandler, notFoundHandler } = require('./utils/errorHandler');
 const { securityHeaders, sanitizeInput, auditLogger, httpsOnly } = require('./middleware/security');
@@ -202,6 +210,17 @@ app.use('/api/v1/production', authenticateToken(), productionRoutes);
 app.use('/api/v1/labor', authenticateToken(), laborRoutes);
 app.use('/api/v1/communication', authenticateToken(), communicationRoutes);
 
+// Phase 2 Backend Development API Routes (v1)
+app.use('/api/v1/purchase-orders', authenticateToken(), purchaseOrderRoutes);
+app.use('/api/v1/pos', authenticateToken(), purchaseOrderRoutes); // Shorter alias
+app.use('/api/v1/parts-workflow', authenticateToken(), partsWorkflowRoutes);
+app.use('/api/v1/scheduling', authenticateToken(), schedulingRoutes);
+app.use('/api/v1/loaner-fleet', authenticateToken(), loanerFleetRoutes);
+app.use('/api/v1/loaners', authenticateToken(), loanerFleetRoutes); // Shorter alias
+app.use('/api/v1/customer-communication', authenticateToken(), customerCommunicationRoutes);
+app.use('/api/v1/qc', authenticateToken(), qualityControlRoutes);
+app.use('/api/v1/quality-control', authenticateToken(), qualityControlRoutes); // Full name alias
+
 // Maintain backward compatibility with unversioned routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken(), userRoutes);
@@ -226,6 +245,17 @@ app.use('/api/dashboard', optionalAuth, dashboardRoutes); // Dashboard endpoints
 app.use('/api/production', authenticateToken(), productionRoutes);
 app.use('/api/labor', authenticateToken(), laborRoutes);
 app.use('/api/communication', authenticateToken(), communicationRoutes);
+
+// Phase 2 Backend Development API Routes (legacy)
+app.use('/api/purchase-orders', authenticateToken(), purchaseOrderRoutes);
+app.use('/api/pos', authenticateToken(), purchaseOrderRoutes);
+app.use('/api/parts-workflow', authenticateToken(), partsWorkflowRoutes);
+app.use('/api/scheduling', authenticateToken(), schedulingRoutes);
+app.use('/api/loaner-fleet', authenticateToken(), loanerFleetRoutes);
+app.use('/api/loaners', authenticateToken(), loanerFleetRoutes);
+app.use('/api/customer-communication', authenticateToken(), customerCommunicationRoutes);
+app.use('/api/qc', authenticateToken(), qualityControlRoutes);
+app.use('/api/quality-control', authenticateToken(), qualityControlRoutes);
 
 // Socket.io connection handling
 const socketAuth = require('./middleware/socketAuth');

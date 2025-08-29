@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import QualityControlSystem from '../../components/QualityControl/QualityControlSystem';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const QualityControlDashboard = () => {
   const { user } = useAuth();

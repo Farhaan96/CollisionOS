@@ -1,0 +1,233 @@
+# CollisionOS Enterprise Load Testing Configuration
+# Phase 4 - Performance and Scalability Testing
+
+config:
+  target: 'http://localhost:3001'
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 1
+      name: "Warm-up"
+    # Gradual ramp-up
+    - duration: 60
+      arrivalRate: 5
+      name: "Ramp-up"
+    # Peak load simulation
+    - duration: 120
+      arrivalRate: 25
+      name: "Peak Load"
+    # Holiday season stress test
+    - duration: 60
+      arrivalRate: 50
+      name: "Holiday Stress"
+    # Cool-down
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool-down"
+  
+  defaults:
+    headers:
+      'Content-Type': 'application/json'
+      'User-Agent': 'CollisionOS-LoadTest/1.0'
+  
+  # Performance thresholds for collision repair operations
+  ensure:
+    maxErrorRate: 5          # Max 5% error rate
+    p95: 500                 # 95% of requests under 500ms
+    p99: 1000                # 99% of requests under 1 second
+    maxResponseTime: 3000    # Max response time 3 seconds
+
+  # Variables for realistic testing
+  variables:
+    customerNames:
+      - "John Smith"
+      - "Jane Doe"
+      - "Mike Johnson"
+      - "Sarah Wilson"
+      - "David Brown"
+      - "Lisa Davis"
+      - "Robert Miller"
+      - "Jennifer Garcia"
+      - "Michael Martinez"
+      - "Ashley Anderson"
+    
+    vehicleMakes:
+      - "Toyota"
+      - "Honda"
+      - "Ford"
+      - "Chevrolet"
+      - "BMW"
+      - "Mercedes-Benz"
+      - "Audi"
+      - "Volkswagen"
+      - "Nissan"
+      - "Hyundai"
+    
+    repairTypes:
+      - "Collision Repair"
+      - "Hail Damage"
+      - "Scratch Repair"
+      - "Dent Removal"
+      - "Paint Work"
+      - "Bumper Replacement"
+      - "Panel Replacement"
+      - "Frame Straightening"
+
+# Load testing scenarios for collision repair workflows
+scenarios:
+  # Critical API Performance Testing
+  - name: "Authentication Load Test"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1
+
+  - name: "Dashboard KPI Load Test"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/dashboard/stats"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - get:
+          url: "/api/dashboard/kpis"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - think: 2
+
+  - name: "Customer Management Load Test"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/customers"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - get:
+          url: "/api/customers?limit=50"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      # Create new customer
+      - post:
+          url: "/api/customers"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            firstName: "{{ customerNames }}"
+            lastName: "LoadTest"
+            phone: "604-555-{{ $randomInt(1000, 9999) }}"
+            email: "loadtest{{ $randomInt(1, 1000) }}@test.com"
+          capture:
+            - json: "$.id"
+              as: "customerId"
+      - think: 3
+
+  - name: "Vehicle and Jobs Load Test"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/vehicles"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - get:
+          url: "/api/jobs"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      # Create vehicle and job
+      - post:
+          url: "/api/vehicles"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            vin: "TEST{{ $randomString() }}"
+            year: "{{ $randomInt(2010, 2024) }}"
+            make: "{{ vehicleMakes }}"
+            model: "Test Model"
+            color: "Blue"
+      - think: 2
+
+  - name: "Parts and Inventory Load Test"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/parts"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - get:
+          url: "/api/parts/search?q=bumper"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - get:
+          url: "/api/inventory/status"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - think: 1
+
+  - name: "BMS Upload Performance Test"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "admin"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      # Simulate BMS file upload
+      - post:
+          url: "/api/bms/upload"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            fileName: "performance-test.xml"
+            fileContent: '<?xml version="1.0"?><Estimate><Customer><FirstName>Perf</FirstName><LastName>Test</LastName></Customer></Estimate>'
+      - think: 5
+
+# Memory and resource monitoring hooks
+before:
+  - log: "Starting CollisionOS Enterprise Load Testing"
+  - log: "Target: {{ target }}"
+  - log: "Testing collision repair management system performance"
+
+after:
+  - log: "Load testing completed"
+  - log: "Analyze results for production readiness assessment"

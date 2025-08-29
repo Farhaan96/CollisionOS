@@ -50,53 +50,53 @@ const AppRoutes = () => {
           <Layout />
         </ProtectedRoute>
       }>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/bms-import" element={
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="bms-import" element={
           <Suspense fallback={<LoadingSpinner />}>
             <BMSImportPage />
           </Suspense>
         } />
-        <Route path="/bms-dashboard" element={
+        <Route path="bms-dashboard" element={
           <Suspense fallback={<LoadingSpinner />}>
             <BMSDashboard />
           </Suspense>
         } />
-        <Route path="/customers" element={
+        <Route path="customers" element={
           <Suspense fallback={<LoadingSpinner />}>
             <CustomerList />
           </Suspense>
         } />
-        <Route path="/production" element={
+        <Route path="production" element={
           <Suspense fallback={<LoadingSpinner />}>
             <ProductionBoard />
           </Suspense>
         } />
-        <Route path="/parts" element={
+        <Route path="parts" element={
           <Suspense fallback={<LoadingSpinner />}>
             <PartsManagement />
           </Suspense>
         } />
-        <Route path="/technician" element={
+        <Route path="technician" element={
           <Suspense fallback={<LoadingSpinner />}>
             <TechnicianDashboard />
           </Suspense>
         } />
-        <Route path="/quality-control" element={
+        <Route path="quality-control" element={
           <Suspense fallback={<LoadingSpinner />}>
             <QualityControlDashboard />
           </Suspense>
         } />
-        <Route path="/reports" element={
+        <Route path="reports" element={
           <Suspense fallback={<LoadingSpinner />}>
             <ReportsManagement />
           </Suspense>
         } />
-        <Route path="/mui-test" element={
+        <Route path="mui-test" element={
           <Suspense fallback={<LoadingSpinner />}>
             <MUIComponentTest />
           </Suspense>
         } />
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

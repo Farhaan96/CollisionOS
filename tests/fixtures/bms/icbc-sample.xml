@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RepairEstimate xmlns="http://icbc.ca/schemas/estimate" version="3.0">
+  <EstimateHeader>
+    <DocumentID>ICBC-EST-2024-456</DocumentID>
+    <CreationDate>2024-08-29</CreationDate>
+    <EstimateType>Collision</EstimateType>
+    <Language>EN</Language>
+  </EstimateHeader>
+  
+  <PolicyHolder>
+    <FirstName>Lisa</FirstName>
+    <LastName>Chen</LastName>
+    <PolicyNumber>ICBC-789-012-345</PolicyNumber>
+    <Phone>604-555-ICBC</Phone>
+    <Email>lisa.chen@example.com</Email>
+    <Address>
+      <Street>789 Granville Street</Street>
+      <City>Vancouver</City>
+      <Province>BC</Province>
+      <PostalCode>V6Z 1K3</PostalCode>
+    </Address>
+    <DriversLicense>1234567890</DriversLicense>
+  </PolicyHolder>
+  
+  <VehicleInfo>
+    <VIN>2T1BURHE0JC123456</VIN>
+    <Year>2022</Year>
+    <Make>Toyota</Make>
+    <Model>Corolla</Model>
+    <Trim>LE</Trim>
+    <BodyStyle>4-Door Sedan</BodyStyle>
+    <Engine>2.0L 4-Cylinder</Engine>
+    <Transmission>CVT</Transmission>
+    <Color>Classic Silver Metallic</Color>
+    <ColorCode>1F7</ColorCode>
+    <Odometer>28500</Odometer>
+    <OdometerUnit>KM</OdometerUnit>
+    <FuelType>Gasoline</FuelType>
+  </VehicleInfo>
+  
+  <ClaimInfo>
+    <ClaimID>ICBC-2024-567890</ClaimID>
+    <LossDate>2024-08-24</LossDate>
+    <LossTime>14:30</LossTime>
+    <LossLocation>4th Ave & Burrard St, Vancouver, BC</LossLocation>
+    <AccidentType>Rear-End Collision</AccidentType>
+    <WeatherConditions>Clear</WeatherConditions>
+    <RoadConditions>Dry</RoadConditions>
+    <PoliceReportNumber>VPD-2024-12345</PoliceReportNumber>
+    <AtFaultPercentage>0</AtFaultPercentage>
+    <Deductible>
+      <CollisionDeductible>300.00</CollisionDeductible>
+      <ComprehensiveDeductible>100.00</ComprehensiveDeductible>
+    </Deductible>
+  </ClaimInfo>
+  
+  <Adjuster>
+    <Name>David Kim</Name>
+    <Phone>604-661-2800</Phone>
+    <Email>david.kim@icbc.com</Email>
+    <AdjusterID>ICBC-ADJ-001</AdjusterID>
+    <OfficeLocation>North Vancouver</OfficeLocation>
+  </Adjuster>
+  
+  <DamageDescription>
+    <PrimaryDamage>Rear bumper cover, trunk lid, and rear quarter panels</PrimaryDamage>
+    <DamageArea>Rear</DamageArea>
+    <SeverityLevel>Moderate</SeverityLevel>
+    <EstimatedRepairDays>5</EstimatedRepairDays>
+    <TowRequired>false</TowRequired>
+    <Driveable>true</Driveable>
+  </DamageDescription>
+  
+  <RepairOperations>
+    <Operation>
+      <LineID>001</LineID>
+      <OperationType>Replace</OperationType>
+      <Component>Rear Bumper Cover</Component>
+      <PartNumber>52159-02903</PartNumber>
+      <PartDescription>Bumper Cover Assembly - Rear</PartDescription>
+      <Quantity>1</Quantity>
+      <PartCost>385.75</PartCost>
+      <Labour>
+        <RepairHours>2.2</RepairHours>
+        <PaintHours>2.8</PaintHours>
+        <LabourRate>88.00</LabourRate>
+        <RepairAmount>193.60</RepairAmount>
+        <PaintAmount>246.40</PaintAmount>
+      </Labour>
+    </Operation>
+    
+    <Operation>
+      <LineID>002</LineID>
+      <OperationType>Replace</OperationType>
+      <Component>Trunk Lid</Component>
+      <PartNumber>64401-02903</PartNumber>
+      <PartDescription>Trunk Lid Assembly</PartDescription>
+      <Quantity>1</Quantity>
+      <PartCost>465.25</PartCost>
+      <Labour>
+        <RepairHours>1.8</RepairHours>
+        <PaintHours>3.5</PaintHours>
+        <LabourRate>88.00</LabourRate>
+        <RepairAmount>158.40</RepairAmount>
+        <PaintAmount>308.00</PaintAmount>
+      </Labour>
+    </Operation>
+    
+    <Operation>
+      <LineID>003</LineID>
+      <OperationType>Repair</OperationType>
+      <Component>Quarter Panel - Left Rear</Component>
+      <PartNumber>N/A</PartNumber>
+      <PartDescription>Body Repair</PartDescription>
+      <Quantity>1</Quantity>
+      <PartCost>0.00</PartCost>
+      <Labour>
+        <RepairHours>4.5</RepairHours>
+        <PaintHours>2.2</PaintHours>
+        <LabourRate>88.00</LabourRate>
+        <RepairAmount>396.00</RepairAmount>
+        <PaintAmount>193.60</PaintAmount>
+      </Labour>
+    </Operation>
+    
+    <Operation>
+      <LineID>004</LineID>
+      <OperationType>Repair</OperationType>
+      <Component>Quarter Panel - Right Rear</Component>
+      <PartNumber>N/A</PartNumber>
+      <PartDescription>Body Repair</PartDescription>
+      <Quantity>1</Quantity>
+      <PartCost>0.00</PartCost>
+      <Labour>
+        <RepairHours>3.8</RepairHours>
+        <PaintHours>2.0</PaintHours>
+        <LabourRate>88.00</LabourRate>
+        <RepairAmount>334.40</RepairAmount>
+        <PaintAmount>176.00</PaintAmount>
+      </Labour>
+    </Operation>
+  </RepairOperations>
+  
+  <AdditionalCharges>
+    <Charge>
+      <Description>Vehicle Alignment Check</Description>
+      <Amount>125.00</Amount>
+      <Type>Service</Type>
+    </Charge>
+    
+    <Charge>
+      <Description>Shop Supplies</Description>
+      <Amount>75.50</Amount>
+      <Type>Material</Type>
+    </Charge>
+    
+    <Charge>
+      <Description>Environmental Fee</Description>
+      <Amount>15.00</Amount>
+      <Type>Fee</Type>
+    </Charge>
+  </AdditionalCharges>
+  
+  <EstimateSummary>
+    <Parts>851.00</Parts>
+    <Labour>1082.40</Labour>
+    <Paint>924.00</Paint>
+    <Additional>215.50</Additional>
+    <Subtotal>3072.90</Subtotal>
+    <GST>153.65</GST>
+    <PST>245.83</PST>
+    <TotalTax>399.48</TotalTax>
+    <GrandTotal>3472.38</GrandTotal>
+    <Deductible>300.00</Deductible>
+    <PayoutAmount>3172.38</PayoutAmount>
+  </EstimateSummary>
+  
+  <RepairFacility>
+    <ShopName>Precision Auto Body</ShopName>
+    <ShopAddress>
+      <Street>123 Industrial Way</Street>
+      <City>Richmond</City>
+      <Province>BC</Province>
+      <PostalCode>V6V 1B2</PostalCode>
+    </ShopAddress>
+    <ShopPhone>604-555-BODY</ShopPhone>
+    <ICBCShopID>SHOP-2024-001</ICBCShopID>
+    <EstimatedCompletionDate>2024-09-05</EstimatedCompletionDate>
+  </RepairFacility>
+  
+  <QualityRequirements>
+    <RequirePreRepairPhotos>true</RequirePreRepairPhotos>
+    <RequireProgressPhotos>true</RequireProgressPhotos>
+    <RequirePostRepairPhotos>true</RequirePostRepairPhotos>
+    <RequireOEMParts>false</RequireOEMParts>
+    <AllowAlternativeParts>true</AllowAlternativeParts>
+    <RequireCustomerApproval>true</RequireCustomerApproval>
+  </QualityRequirements>
+  
+  <ContactInstructions>
+    <CustomerContact>Contact customer 24 hours before repair completion</CustomerContact>
+    <AdjusterContact>Contact adjuster for any supplements over $200</AdjusterContact>
+    <PhotoSubmission>Upload all photos to ICBC portal within 48 hours</PhotoSubmission>
+  </ContactInstructions>
+  
+</RepairEstimate>
