@@ -43,8 +43,24 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Check for remember me first
+        const rememberedUser = localStorage.getItem('collisionos_remembered_user');
         const token = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
+        
+        if (rememberedUser && !token) {
+          // User was remembered but session expired - restore from remember me
+          try {
+            const userData = JSON.parse(rememberedUser);
+            setUser(userData);
+            localStorage.setItem('token', 'dev-token');
+            localStorage.setItem('user', JSON.stringify(userData));
+            console.log('AuthContext - Restored from remember me:', userData);
+            return;
+          } catch (e) {
+            localStorage.removeItem('collisionos_remembered_user');
+          }
+        }
         
         if (token && savedUser) {
           const userData = JSON.parse(savedUser);
@@ -62,12 +78,14 @@ export const AuthProvider = ({ children }) => {
         // Clear corrupted data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('collisionos_remembered_user');
       } finally {
         setIsLoading(false);
       }
     };
 
-    initAuth();
+    // Add small delay to ensure localStorage is fully available
+    setTimeout(initAuth, 100);
   }, []);
 
   const isAuthenticated = !!user;

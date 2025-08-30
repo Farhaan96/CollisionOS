@@ -1,678 +1,326 @@
 const express = require('express');
 const router = express.Router();
-const { Customer, Vehicle, Job } = require('../database/models');
-const { authenticateToken } = require('../middleware/auth');
-const { validateBody, validateQuery, validateParams, commonSchemas } = require('../middleware/validation');
-const { createCustomerSchema, updateCustomerSchema, customerQuerySchema, customerSearchSchema } = require('../schemas/customerSchemas');
-const { asyncHandler, errors, successResponse, paginatedResponse } = require('../utils/errorHandler');
-const { rateLimits } = require('../middleware/security');
-const { Op } = require('sequelize');
+const { getSupabaseClient } = require('../config/supabase');
+const { authenticateToken } = require('../middleware/authSupabase');
 
-// Enhanced query parameter handling for dashboard navigation
-const parseCustomerFilters = (req) => {
-  const {
-    view = 'all',
-    highlight,
-    action,
-    period = 'recent',
-    satisfaction_filter,
-    page = 1,
-    limit = 20,
-    search,
-    status,
-    type,
-    sortBy = 'lastName',
-    sortOrder = 'ASC'
-  } = req.query;
-
-  return {
-    view: view.toLowerCase(),
-    highlight: highlight || null,
-    action: action || null,
-    period: period.toLowerCase(),
-    satisfactionFilter: satisfaction_filter || null,
-    page: parseInt(page),
-    limit: parseInt(limit),
-    search: search || null,
-    status: status || null,
-    type: type || null,
-    sortBy: sortBy || 'lastName',
-    sortOrder: sortOrder.toUpperCase() || 'ASC',
-    // Response metadata
-    _metadata: {
-      totalFiltersApplied: Object.values(req.query).filter(v => v && v !== 'all').length,
-      viewContext: view,
-      hasHighlight: !!highlight,
-      actionContext: action
-    }
-  };
-};
-
-// Apply view-specific filtering logic for customers
-const applyCustomerViewFilters = (customers, filters) => {
-  let filteredCustomers = [...customers];
-
-  // Apply view-specific filters
-  switch (filters.view) {
-    case 'satisfaction':
-      // Filter based on satisfaction period and ratings
-      if (filters.period === 'recent') {
-        const recentDate = new Date();
-        recentDate.setMonth(recentDate.getMonth() - 3); // Last 3 months
-        filteredCustomers = filteredCustomers.filter(customer => 
-          customer.lastJobDate && new Date(customer.lastJobDate) >= recentDate
-        );
-      }
-      break;
-    case 'insurance':
-      // Filter for customers with insurance follow-ups needed
-      if (filters.action === 'follow-up') {
-        filteredCustomers = filteredCustomers.filter(customer => 
-          customer.insuranceProvider && 
-          customer.claimStatus === 'pending' ||
-          customer.claimStatus === 'under_review'
-        );
-      }
-      break;
-    case 'active':
-      filteredCustomers = filteredCustomers.filter(customer => 
-        customer.status === 'active' && customer.hasActiveJobs
-      );
-      break;
-    case 'recent':
-      const recentDate = new Date();
-      recentDate.setMonth(recentDate.getMonth() - 1);
-      filteredCustomers = filteredCustomers.filter(customer => 
-        customer.lastJobDate && new Date(customer.lastJobDate) >= recentDate
-      );
-      break;
-  }
-
-  // Apply satisfaction filter
-  if (filters.satisfactionFilter) {
-    const minRating = parseFloat(filters.satisfactionFilter);
-    filteredCustomers = filteredCustomers.filter(customer => 
-      customer.satisfactionRating >= minRating
-    );
-  }
-
-  // Apply action-specific filters
-  if (filters.action === 'pickup') {
-    filteredCustomers = filteredCustomers.filter(customer => 
-      customer.hasJobsReadyForPickup
-    );
-  }
-
-  return filteredCustomers;
-};
-
-// Apply highlighting logic for customers
-const applyCustomerHighlighting = (customers, highlightId) => {
-  if (!highlightId) return customers;
-  
-  return customers.map(customer => ({
-    ...customer,
-    _highlighted: customer.id === highlightId || customer.customerNumber === highlightId,
-    _highlightReason: customer.customerNumber === highlightId ? 'customer_number_match' : 'id_match'
-  }));
-};
-
-/**
- * @swagger
- * tags:
- *   name: Customers
- *   description: Customer management endpoints
- */
-
-/**
- * @swagger
- * /customers:
- *   get:
- *     summary: Get all customers with optional filtering and pagination
- *     tags: [Customers]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 20
- *         description: Number of customers per page
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search term for customer name, email, phone, or customer number
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [active, inactive, vip, all]
- *         description: Filter by customer status
- *       - in: query
- *         name: type
- *         schema:
- *           type: string
- *           enum: [individual, corporate, insurance, all]
- *         description: Filter by customer type
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [createdAt, firstName, lastName, email, customerNumber]
- *           default: createdAt
- *         description: Field to sort by
- *       - in: query
- *         name: sortOrder
- *         schema:
- *           type: string
- *           enum: [ASC, DESC]
- *           default: DESC
- *         description: Sort order
- *     responses:
- *       200:
- *         description: Customers retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/PaginatedResponse'
- *                 - type: object
- *                   properties:
- *                     data:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Customer'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
-router.get('/', 
-  rateLimits.read,
-  validateQuery(customerQuerySchema),
-  asyncHandler(async (req, res) => {
+// Get all customers
+router.get('/', authenticateToken(), async (req, res) => {
+  try {
     const {
-      page,
-      limit,
+      page = 1,
+      limit = 20,
       search,
       status,
       type,
-      sortBy,
-      sortOrder
+      sortBy = 'last_name',
+      sortOrder = 'asc'
     } = req.query;
 
-    const whereClause = {
-      shopId: req.user.shopId,
-      isActive: true
-    };
+    console.log('🔍 Getting customers for user:', req.user?.userId, 'shop:', req.user?.shopId);
+
+    const supabase = getSupabaseClient(true); // Use admin client for now
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required'
+      });
+    }
+
+    // Build query
+    let query = supabase
+      .from('customers')
+      .select(`
+        id,
+        customer_number,
+        first_name,
+        last_name,
+        email,
+        phone,
+        company_name,
+        customer_type,
+        customer_status,
+        is_active,
+        created_at,
+        updated_at
+      `)
+      .eq('shop_id', shopId)
+      .eq('is_active', true);
 
     // Add search filter
     if (search) {
-      whereClause[Op.or] = [
-        { firstName: { [Op.iLike]: `%${search}%` } },
-        { lastName: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } },
-        { phone: { [Op.iLike]: `%${search}%` } },
-        { customerNumber: { [Op.iLike]: `%${search}%` } },
-        { companyName: { [Op.iLike]: `%${search}%` } }
-      ];
+      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,customer_number.ilike.%${search}%,company_name.ilike.%${search}%`);
     }
 
     // Add status filter
     if (status && status !== 'all') {
-      whereClause.customerStatus = status;
+      query = query.eq('customer_status', status);
     }
 
     // Add type filter
     if (type && type !== 'all') {
-      whereClause.customerType = type;
+      query = query.eq('customer_type', type);
     }
 
-    const offset = (page - 1) * limit;
+    // Add sorting
+    query = query.order(sortBy, { ascending: sortOrder.toLowerCase() === 'asc' });
 
-    const { count, rows: customers } = await Customer.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        },
-        {
-          model: Job,
-          as: 'jobs',
-          attributes: ['id', 'jobNumber', 'status', 'createdAt']
-        }
-      ],
-      order: [[sortBy, sortOrder]],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query = query.range(offset, offset + parseInt(limit) - 1);
+
+    const { data: customers, error, count } = await query;
+
+    if (error) {
+      console.error('❌ Error fetching customers:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customers',
+        details: error.message
+      });
+    }
+
+    console.log('✅ Found', customers?.length || 0, 'customers');
+
+    // Calculate pagination
+    const totalPages = Math.ceil((count || customers?.length || 0) / parseInt(limit));
+
+    res.json({
+      success: true,
+      data: customers || [],
+      pagination: {
+        total: count || customers?.length || 0,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages
+      },
+      message: 'Customers retrieved successfully'
     });
 
-    const pagination = {
-      total: count,
-      page: parseInt(page),
-      limit: parseInt(limit),
-      totalPages: Math.ceil(count / limit)
-    };
-
-    paginatedResponse(res, customers, pagination, 'Customers retrieved successfully');
-  })
-);
+  } catch (error) {
+    console.error('❌ Customers route error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customers',
+      details: error.message
+    });
+  }
+});
 
 // Get customer by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken(), async (req, res) => {
   try {
-    const customer = await Customer.findOne({
-      where: {
-        id: req.params.id,
-        shopId: req.user.shopId
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          include: [
-            {
-              model: Job,
-              as: 'jobs',
-              attributes: ['id', 'jobNumber', 'status', 'createdAt', 'totalAmount']
-            }
-          ]
-        },
-        {
-          model: Job,
-          as: 'jobs',
-          attributes: ['id', 'jobNumber', 'status', 'createdAt', 'totalAmount', 'estimateAmount']
-        }
-      ]
-    });
+    const supabase = getSupabaseClient(true);
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
 
-    if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required'
+      });
     }
 
-    res.json(customer);
+    const { data: customer, error } = await supabase
+      .from('customers')
+      .select(`
+        id,
+        customer_number,
+        first_name,
+        last_name,
+        email,
+        phone,
+        company_name,
+        customer_type,
+        customer_status,
+        is_active,
+        created_at,
+        updated_at
+      `)
+      .eq('id', id)
+      .eq('shop_id', shopId)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      console.error('❌ Error fetching customer:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customer',
+        details: error.message
+      });
+    }
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Customer not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: customer,
+      message: 'Customer retrieved successfully'
+    });
   } catch (error) {
     console.error('Error fetching customer:', error);
-    res.status(500).json({ error: 'Failed to fetch customer' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch customer' 
+    });
   }
 });
 
 // Create new customer
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken(), async (req, res) => {
   try {
-    const customerData = {
-      ...req.body,
-      shopId: req.user.shopId
-    };
+    const supabase = getSupabaseClient(true);
+    const shopId = req.user?.shopId;
 
-    // Generate customer number if not provided
-    if (!customerData.customerNumber) {
-      customerData.customerNumber = await Customer.generateCustomerNumber(req.user.shopId);
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required'
+      });
     }
 
-    const customer = await Customer.create(customerData);
-    res.status(201).json(customer);
+    const customerData = {
+      ...req.body,
+      shop_id: shopId
+    };
+
+    const { data: customer, error } = await supabase
+      .from('customers')
+      .insert([customerData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error creating customer:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to create customer',
+        details: error.message
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      data: customer,
+      message: 'Customer created successfully'
+    });
   } catch (error) {
     console.error('Error creating customer:', error);
-    res.status(500).json({ error: 'Failed to create customer' });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create customer'
+    });
   }
 });
 
 // Update customer
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken(), async (req, res) => {
   try {
-    const customer = await Customer.findOne({
-      where: {
-        id: req.params.id,
-        shopId: req.user.shopId
-      }
-    });
+    const supabase = getSupabaseClient(true);
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
 
-    if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required'
+      });
     }
 
-    await customer.update(req.body);
-    res.json(customer);
+    const { data: customer, error } = await supabase
+      .from('customers')
+      .update(req.body)
+      .eq('id', id)
+      .eq('shop_id', shopId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error updating customer:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update customer',
+        details: error.message
+      });
+    }
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Customer not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: customer,
+      message: 'Customer updated successfully'
+    });
   } catch (error) {
     console.error('Error updating customer:', error);
-    res.status(500).json({ error: 'Failed to update customer' });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update customer'
+    });
   }
 });
 
 // Delete customer
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken(), async (req, res) => {
   try {
-    const customer = await Customer.findOne({
-      where: {
-        id: req.params.id,
-        shopId: req.user.shopId
-      }
-    });
+    const supabase = getSupabaseClient(true);
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required'
+      });
+    }
+
+    // Soft delete by setting is_active to false
+    const { data: customer, error } = await supabase
+      .from('customers')
+      .update({ is_active: false })
+      .eq('id', id)
+      .eq('shop_id', shopId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error deleting customer:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to delete customer',
+        details: error.message
+      });
+    }
 
     if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
+      return res.status(404).json({
+        success: false,
+        error: 'Customer not found'
+      });
     }
-
-    // Soft delete by setting isActive to false
-    await customer.update({ isActive: false });
-    res.json({ message: 'Customer deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting customer:', error);
-    res.status(500).json({ error: 'Failed to delete customer' });
-  }
-});
-
-// Search customers
-router.get('/search', async (req, res) => {
-  try {
-    const { q, limit = 20 } = req.query;
-
-    if (!q) {
-      return res.status(400).json({ error: 'Search query is required' });
-    }
-
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true,
-        [Op.or]: [
-          { firstName: { [Op.iLike]: `%${q}%` } },
-          { lastName: { [Op.iLike]: `%${q}%` } },
-          { email: { [Op.iLike]: `%${q}%` } },
-          { phone: { [Op.iLike]: `%${q}%` } },
-          { customerNumber: { [Op.iLike]: `%${q}%` } },
-          { companyName: { [Op.iLike]: `%${q}%` } }
-        ]
-      },
-      limit: parseInt(limit),
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error searching customers:', error);
-    res.status(500).json({ error: 'Failed to search customers' });
-  }
-});
-
-// Get customers by type
-router.get('/type/:type', async (req, res) => {
-  try {
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        customerType: req.params.type,
-        isActive: true
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error fetching customers by type:', error);
-    res.status(500).json({ error: 'Failed to fetch customers by type' });
-  }
-});
-
-// Get customers by status
-router.get('/status/:status', async (req, res) => {
-  try {
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        customerStatus: req.params.status,
-        isActive: true
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error fetching customers by status:', error);
-    res.status(500).json({ error: 'Failed to fetch customers by status' });
-  }
-});
-
-// Get VIP customers
-router.get('/vip', async (req, res) => {
-  try {
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        customerStatus: 'vip',
-        isActive: true
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error fetching VIP customers:', error);
-    res.status(500).json({ error: 'Failed to fetch VIP customers' });
-  }
-});
-
-// Get customer statistics
-router.get('/stats', async (req, res) => {
-  try {
-    const totalCustomers = await Customer.count({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true
-      }
-    });
-
-    const customersByStatus = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true
-      },
-      attributes: [
-        'customerStatus',
-        [Customer.sequelize.fn('COUNT', Customer.sequelize.col('id')), 'count']
-      ],
-      group: ['customerStatus']
-    });
-
-    const customersByType = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true
-      },
-      attributes: [
-        'customerType',
-        [Customer.sequelize.fn('COUNT', Customer.sequelize.col('id')), 'count']
-      ],
-      group: ['customerType']
-    });
-
-    const newCustomersThisMonth = await Customer.count({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true,
-        createdAt: {
-          [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-        }
-      }
-    });
 
     res.json({
-      totalCustomers,
-      customersByStatus,
-      customersByType,
-      newCustomersThisMonth
+      success: true,
+      message: 'Customer deleted successfully'
     });
   } catch (error) {
-    console.error('Error fetching customer stats:', error);
-    res.status(500).json({ error: 'Failed to fetch customer statistics' });
-  }
-});
-
-// Get customer vehicles
-router.get('/:id/vehicles', async (req, res) => {
-  try {
-    const vehicles = await Vehicle.findAll({
-      where: {
-        customerId: req.params.id,
-        shopId: req.user.shopId
-      },
-      include: [
-        {
-          model: Job,
-          as: 'jobs',
-          attributes: ['id', 'jobNumber', 'status', 'createdAt', 'totalAmount']
-        }
-      ],
-      order: [['createdAt', 'DESC']]
+    console.error('Error deleting customer:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete customer'
     });
-
-    res.json(vehicles);
-  } catch (error) {
-    console.error('Error fetching customer vehicles:', error);
-    res.status(500).json({ error: 'Failed to fetch customer vehicles' });
-  }
-});
-
-// Get customer jobs
-router.get('/:id/jobs', async (req, res) => {
-  try {
-    const jobs = await Job.findAll({
-      where: {
-        customerId: req.params.id,
-        shopId: req.user.shopId
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicle',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(jobs);
-  } catch (error) {
-    console.error('Error fetching customer jobs:', error);
-    res.status(500).json({ error: 'Failed to fetch customer jobs' });
-  }
-});
-
-// Update customer status
-router.patch('/:id/status', async (req, res) => {
-  try {
-    const { status } = req.body;
-    const customer = await Customer.findOne({
-      where: {
-        id: req.params.id,
-        shopId: req.user.shopId
-      }
-    });
-
-    if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-
-    await customer.update({ customerStatus: status });
-    res.json(customer);
-  } catch (error) {
-    console.error('Error updating customer status:', error);
-    res.status(500).json({ error: 'Failed to update customer status' });
-  }
-});
-
-// Get customer suggestions (for autocomplete)
-router.get('/suggestions', async (req, res) => {
-  try {
-    const { q, limit = 10 } = req.query;
-
-    if (!q) {
-      return res.status(400).json({ error: 'Search query is required' });
-    }
-
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true,
-        [Op.or]: [
-          { firstName: { [Op.iLike]: `%${q}%` } },
-          { lastName: { [Op.iLike]: `%${q}%` } },
-          { email: { [Op.iLike]: `%${q}%` } },
-          { customerNumber: { [Op.iLike]: `%${q}%` } }
-        ]
-      },
-      attributes: ['id', 'firstName', 'lastName', 'email', 'customerNumber', 'customerType'],
-      limit: parseInt(limit),
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error fetching customer suggestions:', error);
-    res.status(500).json({ error: 'Failed to fetch customer suggestions' });
-  }
-});
-
-// Get recent customers
-router.get('/recent', async (req, res) => {
-  try {
-    const { limit = 10 } = req.query;
-
-    const customers = await Customer.findAll({
-      where: {
-        shopId: req.user.shopId,
-        isActive: true
-      },
-      include: [
-        {
-          model: Vehicle,
-          as: 'vehicles',
-          attributes: ['id', 'vin', 'year', 'make', 'model']
-        }
-      ],
-      order: [['createdAt', 'DESC']],
-      limit: parseInt(limit)
-    });
-
-    res.json(customers);
-  } catch (error) {
-    console.error('Error fetching recent customers:', error);
-    res.status(500).json({ error: 'Failed to fetch recent customers' });
   }
 });
 

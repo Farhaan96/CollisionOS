@@ -39,17 +39,24 @@ function createWindow() {
   
   console.log('Loading URL:', startUrl);
   
-  // Load the URL with error handling
-  mainWindow.loadURL(startUrl).catch(err => {
-    console.error('Failed to load URL:', err);
-    // Try again after a delay
-    setTimeout(() => {
-      mainWindow.loadURL(startUrl).catch(err2 => {
-        console.error('Failed to load URL again:', err2);
-        mainWindow.loadURL('data:text/html,<h1>Loading CollisionOS...</h1><p>Please wait while the application starts.</p>');
-      });
-    }, 2000);
-  });
+  // Load the URL with better error handling to prevent red crash page
+  const loadWithRetry = async (retryCount = 0) => {
+    try {
+      await mainWindow.loadURL(startUrl);
+    } catch (err) {
+      console.log(`Loading attempt ${retryCount + 1} failed:`, err.message);
+      if (retryCount < 5) {
+        // Wait progressively longer between retries
+        const delay = Math.min(1000 + (retryCount * 500), 5000);
+        setTimeout(() => loadWithRetry(retryCount + 1), delay);
+      } else {
+        // Only show fallback page after multiple failures
+        mainWindow.loadURL('data:text/html,<h1 style="color:#333;font-family:system-ui">Loading CollisionOS...</h1><p style="color:#666;font-family:system-ui">Starting development server...</p>');
+      }
+    }
+  };
+  
+  loadWithRetry();
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
@@ -63,15 +70,12 @@ function createWindow() {
     }
   });
 
-  // Handle page load errors
+  // Handle page load errors more gracefully
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
-    console.error('Page failed to load:', errorCode, errorDescription);
-    if (isDev) {
-      // In development, show a loading page and retry
-      mainWindow.loadURL('data:text/html,<h1>Loading CollisionOS...</h1><p>Please wait while the React development server starts.</p><p>Error: ' + errorDescription + '</p>');
-      setTimeout(() => {
-        mainWindow.loadURL(startUrl);
-      }, 3000);
+    console.log('Page load issue:', errorCode, errorDescription);
+    // Don't show error page immediately - let the retry logic handle it
+    if (errorCode !== -3) { // -3 is aborted, which is normal during retries
+      console.log('Non-critical load error, retrying...');
     }
   });
 

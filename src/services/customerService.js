@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { transformToFrontend, transformToBackend, ensureBackendFormat } from '../utils/fieldTransformers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 class CustomerService {
   constructor() {
@@ -11,13 +12,19 @@ class CustomerService {
       },
     });
 
-    // Add request interceptor to include auth token
+    // Add request interceptor to include auth token and transform data
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Transform camelCase request data to snake_case for backend
+        if (config.data && (config.method === 'post' || config.method === 'put' || config.method === 'patch')) {
+          config.data = ensureBackendFormat(config.data);
+        }
+        
         return config;
       },
       (error) => {
@@ -25,9 +32,22 @@ class CustomerService {
       }
     );
 
-    // Add response interceptor for error handling
+    // Add response interceptor for error handling and field transformation
     this.api.interceptors.response.use(
-      (response) => response.data,
+      (response) => {
+        // Handle the new API response format: { success: true, data: [...] }
+        if (response.data && response.data.success && response.data.data !== undefined) {
+          // Transform snake_case backend data to camelCase frontend format
+          const transformedData = Array.isArray(response.data.data) 
+            ? response.data.data.map(transformToFrontend)
+            : transformToFrontend(response.data.data);
+          
+          // Return just the transformed data as expected by components
+          return transformedData;
+        }
+        // Fallback for other response formats
+        return response.data;
+      },
       (error) => {
         console.error('Customer API Error:', error);
         throw error;

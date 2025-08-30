@@ -58,6 +58,9 @@ config/secrets.json
 *.pem
 *.p12
 
+# Claude Code project files (may contain sensitive data)
+.claude/
+
 # Backup files
 *.bak
 *.backup

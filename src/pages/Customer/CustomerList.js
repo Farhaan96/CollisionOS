@@ -75,6 +75,9 @@ import { customerService } from '../../services/customerService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
+// Utils
+import { getCustomerFullName } from '../../utils/fieldTransformers';
+
 const CustomerList = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -327,7 +330,7 @@ const CustomerList = () => {
                         </Avatar>
                         <Box>
                           <Typography variant="subtitle2">
-                            {customer.getFullName ? customer.getFullName() : `${customer.firstName} ${customer.lastName}`}
+                            {getCustomerFullName(customer)}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {customer.customerNumber}

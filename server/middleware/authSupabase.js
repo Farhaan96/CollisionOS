@@ -39,6 +39,27 @@ const authenticateToken = (options = {}) => {
         }
       }
 
+      // Handle development token
+      if (!user && process.env.NODE_ENV === 'development' && token === 'dev-token') {
+        const devShopId = process.env.DEV_SHOP_ID;
+        const devUserId = process.env.DEV_USER_ID || 'dev-user-123';
+        
+        if (!devShopId) {
+          console.error('❌ DEV_SHOP_ID environment variable is required for development authentication');
+          console.error('Please set DEV_SHOP_ID in your .env.local file');
+        }
+        
+        user = {
+          userId: devUserId,
+          shopId: devShopId,
+          role: 'owner',
+          firstName: 'Admin',
+          email: 'admin@dev.com',
+          is_active: true
+        };
+        console.log('🔧 Using development token for AI authentication');
+      }
+
       // Fallback to legacy JWT authentication
       if (!user) {
         try {

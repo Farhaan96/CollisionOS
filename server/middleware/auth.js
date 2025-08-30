@@ -9,7 +9,13 @@ function authenticateToken(req, res, next) {
       req.user = { id: 'dev-user', shopId: 'dev-shop' };
       return next();
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev');
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('❌ JWT_SECRET environment variable is required');
+      console.error('Please set JWT_SECRET in your .env.local file');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded || { id: 'dev-user', shopId: 'dev-shop' };
     next();
   } catch (e) {
