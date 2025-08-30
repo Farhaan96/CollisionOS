@@ -35,6 +35,12 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tooltip,
+  useTheme,
+  useMediaQuery,
+  Fab
+} from '@mui/material';
+import {
   Timeline,
   TimelineItem,
   TimelineOppositeContent,
@@ -42,11 +48,7 @@ import {
   TimelineDot,
   TimelineConnector,
   TimelineContent,
-  Tooltip,
-  useTheme,
-  useMediaQuery,
-  Fab
-} from '@mui/material';
+} from '@mui/lab';
 import {
   Message,
   Email,

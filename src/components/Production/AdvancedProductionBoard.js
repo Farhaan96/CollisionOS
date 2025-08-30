@@ -41,7 +41,7 @@ import {
   DirectionsCar,
   Engineering,
   SettingsApplications,
-  QualityControl,
+  Verified,
   CleaningServices,
   CheckCircle,
   Schedule,
@@ -128,7 +128,7 @@ const AdvancedProductionBoard = ({
     { id: 'mechanical', name: 'Mechanical', icon: Engineering, color: '#009688', capacity: 4, avgTime: 6 },
     { id: 'assembly', name: 'Assembly', icon: Build, color: '#4CAF50', capacity: 6, avgTime: 8 },
     { id: 'adas_calib', name: 'ADAS Calib', icon: SettingsApplications, color: '#8BC34A', capacity: 2, avgTime: 3 },
-    { id: 'qc_inspection', name: 'QC Inspection', icon: QualityControl, color: '#CDDC39', capacity: 3, avgTime: 1 },
+    { id: 'qc_inspection', name: 'QC Inspection', icon: Verified, color: '#CDDC39', capacity: 3, avgTime: 1 },
     { id: 'detail', name: 'Detail', icon: CleaningServices, color: '#FFEB3B', capacity: 3, avgTime: 2 },
     { id: 'final_qc', name: 'Final QC', icon: CheckCircle, color: '#FFC107', capacity: 2, avgTime: 0.5 },
     { id: 'delivery', name: 'Delivery', icon: DirectionsCar, color: '#FF5722', capacity: 10, avgTime: 0.5 }

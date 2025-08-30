@@ -31,12 +31,6 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
   Alert,
   Accordion,
   AccordionSummary,
@@ -51,6 +45,14 @@ import {
   useTheme,
   alpha
 } from '@mui/material';
+import {
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+} from '@mui/lab';
 import {
   Message,
   Phone,

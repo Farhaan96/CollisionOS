@@ -41,7 +41,7 @@ import {
   Group,
   Business,
   Notifications,
-  Timeline,
+  ShowChart,
   AccountBalance,
   Engineering,
   OpenInNew,
@@ -759,7 +759,7 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6} lg={3}>
           <MetricCard 
             title="Average Ticket" 
-            icon={<Timeline />}
+            icon={<ShowChart />}
             value="$3,247"
             subtitle="15% above target"
             trend={15.3}
@@ -779,7 +779,7 @@ const Dashboard = () => {
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'between', mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Timeline sx={{ color: '#667eea' }} />
+                <ShowChart sx={{ color: '#667eea' }} />
                 Real-time Activity Feed
               </Typography>
               <Chip 
