@@ -22,7 +22,6 @@ import {
   Tooltip
 } from '@mui/material';
 import {
-  Build,
   AttachMoney,
   AccessTime,
   Inventory,
@@ -34,17 +33,14 @@ import {
   DirectionsCar,
   Warning,
   CheckCircle,
-  Pending,
   Assignment,
   Assessment,
-  Speed,
   Group,
   Business,
   Notifications,
   ShowChart,
   AccountBalance,
   Engineering,
-  OpenInNew,
   ArrowForwardIos
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -54,7 +50,6 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Dashboard = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
   const navigate = useNavigate();
   const [refreshTime, setRefreshTime] = useState(new Date());

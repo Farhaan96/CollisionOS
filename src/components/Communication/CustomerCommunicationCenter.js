@@ -70,8 +70,6 @@ import {
   Archive,
   Delete,
   Search,
-  FilterList,
-  Sort,
   MoreVert,
   Add,
   Camera,

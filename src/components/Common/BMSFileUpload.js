@@ -157,7 +157,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       setUploadProgress(25);
       setProcessingFile(`Processing ${fileType} file: ${file.name}`);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}${endpoint}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3002'}${endpoint}`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -198,7 +198,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       
       setUploadProgress(25);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/import/batch`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3002'}/api/import/batch`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -235,7 +235,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/import/status/${importId}`,
+          `${process.env.REACT_APP_API_URL || 'http://localhost:3002'}/api/import/status/${importId}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,

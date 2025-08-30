@@ -43,6 +43,7 @@ const schedulingRoutes = require('./routes/scheduling');
 const loanerFleetRoutes = require('./routes/loanerFleet');
 const customerCommunicationRoutes = require('./routes/customerCommunication');
 const qualityControlRoutes = require('./routes/qualityControl');
+const aiRoutes = require('./routes/ai');
 
 const { authenticateToken, optionalAuth } = require('./middleware/authEnhanced'); // Use enhanced auth with proper token handling
 const { errorHandler, notFoundHandler } = require('./utils/errorHandler');
@@ -220,6 +221,7 @@ app.use('/api/v1/loaners', authenticateToken(), loanerFleetRoutes); // Shorter a
 app.use('/api/v1/customer-communication', authenticateToken(), customerCommunicationRoutes);
 app.use('/api/v1/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/v1/quality-control', authenticateToken(), qualityControlRoutes); // Full name alias
+app.use('/api/v1/ai', authenticateToken(), aiRoutes);
 
 // Maintain backward compatibility with unversioned routes
 app.use('/api/auth', authRoutes);
@@ -256,6 +258,7 @@ app.use('/api/loaners', authenticateToken(), loanerFleetRoutes);
 app.use('/api/customer-communication', authenticateToken(), customerCommunicationRoutes);
 app.use('/api/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/quality-control', authenticateToken(), qualityControlRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Socket.io connection handling
 const socketAuth = require('./middleware/socketAuth');

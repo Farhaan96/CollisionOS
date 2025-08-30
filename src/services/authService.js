@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NODE_ENV === 'development' ? 'http://localhost:3006' : '';
+const API_BASE = process.env.NODE_ENV === 'development' ? 'http://localhost:3002' : '';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -8,6 +8,12 @@ const api = axios.create({
     'Content-Type': 'application/json'
   }
 });
+
+// Helper function to get auth header
+export const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const authService = {
   async login(username, password) {

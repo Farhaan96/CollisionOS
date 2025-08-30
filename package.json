@@ -4,7 +4,7 @@
   "description": "Complete Auto Body Shop Management Desktop Application",
   "main": "electron/main.js",
   "homepage": "./",
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3002",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "dev": "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:3000 && electron .\"",
@@ -111,6 +111,7 @@
     "react-scripts": "5.0.1",
     "react-window-infinite-loader": "^1.0.10",
     "recharts": "^3.1.2",
+    "redis": "^5.8.2",
     "sequelize": "^6.35.1",
     "sharp": "^0.33.2",
     "socket.io": "^4.7.4",

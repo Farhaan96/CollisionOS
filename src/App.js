@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
 import Layout from './components/Layout/Layout';
 import { LoadingSpinner } from './components/Common/LoadingSpinner';
+import AIFloatingButton from './components/AI/AIFloatingButton';
 
 // Lazy load components for better performance
 const BMSImportPage = lazy(() => import('./pages/BMSImport/BMSImportPage'));
@@ -142,8 +143,19 @@ export default function App() {
       <AuthProvider>
         <Router>
           <AppRoutes />
+          {/* AI Assistant available globally when authenticated */}
+          <AIAssistantWrapper />
         </Router>
       </AuthProvider>
     </ThemeProvider>
   );
 }
+
+// Wrapper component to only show AI assistant when authenticated
+const AIAssistantWrapper = () => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) return null;
+  
+  return <AIFloatingButton />;
+};
