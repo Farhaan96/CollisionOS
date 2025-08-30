@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
@@ -6,8 +6,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeContextProvider } from '../contexts/ThemeContext';
 
-// Create a test-only AuthContext
-const AuthContext = createContext();
+// Import AuthContext
+import AuthContext from '../contexts/AuthContext';
 
 // Create a test theme
 const testTheme = createTheme({

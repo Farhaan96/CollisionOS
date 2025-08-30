@@ -12,7 +12,7 @@ import {
   statusAnimations, 
   advancedSpringConfigs,
   premiumEasings 
-} from '../../utils/animations';
+} from '../../utils/animations/index';
 import { useAnimationState, useAccessibleAnimation } from '../../hooks/useAnimation';
 
 const AnimatedButton = ({

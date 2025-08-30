@@ -2,7 +2,7 @@
 // Executive-level animations with 60fps optimization and gesture support
 
 import { motion } from 'framer-motion';
-import { premiumAnimations, premiumColors, premiumEffects, premiumShadows } from '../theme/premiumDesignSystem';
+import { premiumAnimations, premiumColors, premiumEffects, premiumShadows } from '../../theme/premiumDesignSystem';
 
 // Advanced Spring Physics Configurations
 export const advancedSpringConfigs = {
@@ -636,17 +636,4 @@ export default {
   animationUtils
 };
 
-// Individual exports for convenience
-export {
-  advancedSpringConfigs,
-  premiumEasings,
-  pageTransitions,
-  microInteractions,
-  loadingStates,
-  statusAnimations,
-  containerAnimations,
-  gestureAnimations,
-  scrollAnimations,
-  formAnimations,
-  animationUtils
-};
+// Individual exports for convenience (already exported inline above)

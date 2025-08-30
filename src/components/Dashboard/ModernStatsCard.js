@@ -93,7 +93,7 @@ const ModernStatsCard = ({
               fontSize: '0.75rem'
             }}
           >
-            {title}
+            {title?.toUpperCase()}
           </Typography>
           
           {Icon && (

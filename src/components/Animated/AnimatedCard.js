@@ -11,7 +11,7 @@ import {
   scrollAnimations,
   advancedSpringConfigs,
   premiumEasings 
-} from '../../utils/animations';
+} from '../../utils/animations/index';
 import { useMouseTracking, useScrollAnimation, useAccessibleAnimation } from '../../hooks/useAnimation';
 
 const AnimatedCard = ({

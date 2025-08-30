@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useInView, useMotionValue, useSpring, useTransform, useAnimation, useReducedMotion } from 'framer-motion';
-import { advancedSpringConfigs, premiumEasings } from '../utils/animations';
+import { advancedSpringConfigs, premiumEasings } from '../utils/animations/index';
 
 // Hook for intersection observer based animations
 export const useScrollAnimation = (options = {}) => {
