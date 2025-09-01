@@ -1,28 +1,26 @@
 import { renderHook, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { 
-  useKeyboardShortcut, 
+import {
+  useKeyboardShortcut,
   useKeyboardShortcuts,
   useConditionalKeyboardShortcut,
   useFormShortcuts,
   useNavigationShortcuts,
-  useModalShortcuts
+  useModalShortcuts,
 } from '../../../src/hooks/useKeyboardShortcut';
 import { ShortcutManager } from '../../../src/components/KeyboardShortcuts/ShortcutManager';
 
 // Mock dependencies
 jest.mock('../../../src/hooks/useNotification', () => ({
   useNotification: () => ({
-    showNotification: jest.fn()
-  })
+    showNotification: jest.fn(),
+  }),
 }));
 
 // Test wrapper with providers
 const TestWrapper = ({ children }) => (
   <BrowserRouter>
-    <ShortcutManager>
-      {children}
-    </ShortcutManager>
+    <ShortcutManager>{children}</ShortcutManager>
   </BrowserRouter>
 );
 
@@ -35,9 +33,9 @@ const simulateKeyboardEvent = (key, modifiers = {}) => {
     shiftKey: modifiers.shift || false,
     metaKey: modifiers.meta || false,
     bubbles: true,
-    cancelable: true
+    cancelable: true,
   });
-  
+
   document.dispatchEvent(event);
   return event;
 };
@@ -56,10 +54,9 @@ describe('useKeyboardShortcut', () => {
   });
 
   it('registers and executes a simple shortcut', () => {
-    renderHook(
-      () => useKeyboardShortcut('cmd+k', mockHandler),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcut('cmd+k', mockHandler), {
+      wrapper: TestWrapper,
+    });
 
     // Simulate Cmd+K
     act(() => {
@@ -70,10 +67,9 @@ describe('useKeyboardShortcut', () => {
   });
 
   it('prevents default behavior by default', () => {
-    renderHook(
-      () => useKeyboardShortcut('cmd+s', mockHandler),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcut('cmd+s', mockHandler), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       const event = simulateKeyboardEvent('s', { meta: true });
@@ -83,7 +79,8 @@ describe('useKeyboardShortcut', () => {
 
   it('allows default behavior when preventDefault is false', () => {
     renderHook(
-      () => useKeyboardShortcut('cmd+s', mockHandler, { preventDefault: false }),
+      () =>
+        useKeyboardShortcut('cmd+s', mockHandler, { preventDefault: false }),
       { wrapper: TestWrapper }
     );
 
@@ -127,10 +124,9 @@ describe('useKeyboardShortcut', () => {
   });
 
   it('handles different modifier combinations', () => {
-    renderHook(
-      () => useKeyboardShortcut('ctrl+alt+shift+s', mockHandler),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcut('ctrl+alt+shift+s', mockHandler), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('s', { ctrl: true, alt: true, shift: true });
@@ -151,13 +147,10 @@ describe('useKeyboardShortcuts', () => {
   it('registers multiple shortcuts', () => {
     const shortcuts = {
       'cmd+k': mockHandler1,
-      'cmd+j': mockHandler2
+      'cmd+j': mockHandler2,
     };
 
-    renderHook(
-      () => useKeyboardShortcuts(shortcuts),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcuts(shortcuts), { wrapper: TestWrapper });
 
     act(() => {
       simulateKeyboardEvent('k', { meta: true });
@@ -174,15 +167,12 @@ describe('useKeyboardShortcuts', () => {
     const shortcuts = {
       'cmd+k': {
         handler: mockHandler1,
-        options: { preventDefault: false }
+        options: { preventDefault: false },
       },
-      'cmd+j': mockHandler2
+      'cmd+j': mockHandler2,
     };
 
-    renderHook(
-      () => useKeyboardShortcuts(shortcuts),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcuts(shortcuts), { wrapper: TestWrapper });
 
     act(() => {
       simulateKeyboardEvent('k', { meta: true });
@@ -196,15 +186,14 @@ describe('useKeyboardShortcuts', () => {
   it('applies global options to all shortcuts', () => {
     const shortcuts = {
       'cmd+k': mockHandler1,
-      'cmd+j': mockHandler2
+      'cmd+j': mockHandler2,
     };
 
     const globalOptions = { enabled: false };
 
-    renderHook(
-      () => useKeyboardShortcuts(shortcuts, globalOptions),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useKeyboardShortcuts(shortcuts, globalOptions), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('k', { meta: true });
@@ -285,11 +274,12 @@ describe('useFormShortcuts', () => {
 
   it('registers default form shortcuts', () => {
     renderHook(
-      () => useFormShortcuts({
-        submit: mockSubmit,
-        save: mockSave,
-        cancel: mockCancel
-      }),
+      () =>
+        useFormShortcuts({
+          submit: mockSubmit,
+          save: mockSave,
+          cancel: mockCancel,
+        }),
       { wrapper: TestWrapper }
     );
 
@@ -314,11 +304,15 @@ describe('useFormShortcuts', () => {
 
   it('does not execute when form is inactive', () => {
     renderHook(
-      () => useFormShortcuts({
-        submit: mockSubmit,
-        save: mockSave,
-        cancel: mockCancel
-      }, false), // formActive = false
+      () =>
+        useFormShortcuts(
+          {
+            submit: mockSubmit,
+            save: mockSave,
+            cancel: mockCancel,
+          },
+          false
+        ), // formActive = false
       { wrapper: TestWrapper }
     );
 
@@ -342,10 +336,9 @@ describe('useNavigationShortcuts', () => {
   });
 
   it('registers default navigation shortcuts', () => {
-    renderHook(
-      () => useNavigationShortcuts(mockNavigate),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useNavigationShortcuts(mockNavigate), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('1', { meta: true });
@@ -360,13 +353,12 @@ describe('useNavigationShortcuts', () => {
 
   it('supports custom routes', () => {
     const customRoutes = {
-      'cmd+9': '/custom-page'
+      'cmd+9': '/custom-page',
     };
 
-    renderHook(
-      () => useNavigationShortcuts(mockNavigate, customRoutes),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useNavigationShortcuts(mockNavigate, customRoutes), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('9', { meta: true });
@@ -384,10 +376,9 @@ describe('useModalShortcuts', () => {
   });
 
   it('registers escape to close', () => {
-    renderHook(
-      () => useModalShortcuts(true, mockOnClose),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useModalShortcuts(true, mockOnClose), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('Escape');
@@ -396,10 +387,9 @@ describe('useModalShortcuts', () => {
   });
 
   it('registers cmd+enter to submit when provided', () => {
-    renderHook(
-      () => useModalShortcuts(true, mockOnClose, mockOnSubmit),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useModalShortcuts(true, mockOnClose, mockOnSubmit), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('Enter', { meta: true });
@@ -408,10 +398,9 @@ describe('useModalShortcuts', () => {
   });
 
   it('does not execute when modal is closed', () => {
-    renderHook(
-      () => useModalShortcuts(false, mockOnClose, mockOnSubmit),
-      { wrapper: TestWrapper }
-    );
+    renderHook(() => useModalShortcuts(false, mockOnClose, mockOnSubmit), {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       simulateKeyboardEvent('Escape');

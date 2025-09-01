@@ -3,6 +3,7 @@
 ## 📋 Pre-Deployment Checklist
 
 ### ✅ Code Quality & Testing
+
 - [ ] All unit tests passing (`npm test`)
 - [ ] All integration tests passing (`npm run test:integration`)
 - [ ] E2E tests passing (`npm run test:playwright`)
@@ -14,6 +15,7 @@
 - [ ] Security audit passed (`npm audit`)
 
 ### 🔐 Security Configuration
+
 - [ ] New JWT secret generated (64 bytes)
   ```bash
   openssl rand -hex 64
@@ -31,6 +33,7 @@
 - [ ] All development/debug flags disabled
 
 ### 🗄️ Database Configuration
+
 - [ ] Production PostgreSQL database created
 - [ ] Database user and permissions configured
 - [ ] Database connection string tested
@@ -40,6 +43,7 @@
 - [ ] Connection pooling configured
 
 ### 🐳 Infrastructure Setup
+
 - [ ] Docker installed and configured
 - [ ] Docker Compose files reviewed
 - [ ] Production environment variables configured
@@ -50,6 +54,7 @@
 - [ ] Restart policies configured
 
 ### 🌐 Network & DNS
+
 - [ ] Domain name configured
 - [ ] DNS records pointing to production server
 - [ ] SSL certificates installed and tested
@@ -59,6 +64,7 @@
 - [ ] Port configuration verified
 
 ### 📊 Monitoring & Logging
+
 - [ ] Error tracking configured (Sentry)
 - [ ] Application monitoring set up
 - [ ] Log aggregation configured
@@ -72,6 +78,7 @@
 ## 🚀 Deployment Steps
 
 ### 1. Final Pre-deployment Verification
+
 ```bash
 # Run full test suite
 npm test
@@ -89,6 +96,7 @@ npm run typecheck
 ```
 
 ### 2. Environment Configuration
+
 ```bash
 # Copy production environment file
 cp .env.production .env
@@ -111,6 +119,7 @@ pool.query('SELECT NOW()', (err, res) => {
 ### 3. Docker Deployment
 
 #### Option A: Production Docker Compose
+
 ```bash
 # Build and deploy with production compose
 docker-compose -f docker-compose.prod.yml up -d
@@ -121,6 +130,7 @@ docker-compose -f docker-compose.prod.yml logs
 ```
 
 #### Option B: Individual Container Deployment
+
 ```bash
 # Build production image
 docker build -t collisionos:latest .
@@ -141,6 +151,7 @@ docker logs collisionos-prod
 ```
 
 ### 4. Database Setup
+
 ```bash
 # Run production migrations
 docker exec collisionos-prod npm run db:migrate
@@ -156,6 +167,7 @@ db.query('SELECT COUNT(*) FROM users').then(console.log);
 ```
 
 ### 5. Health Verification
+
 ```bash
 # Check application health
 curl -f http://localhost:3001/api/health
@@ -169,6 +181,7 @@ curl -f http://localhost:3001/api/customers
 ```
 
 ### 6. SSL & Reverse Proxy Setup
+
 ```bash
 # Deploy nginx reverse proxy
 docker run -d \
@@ -190,6 +203,7 @@ curl -f https://collisionos.com/api/health
 ## ✅ Post-Deployment Verification
 
 ### Application Testing
+
 - [ ] Login/authentication working
 - [ ] Dashboard loading correctly
 - [ ] Customer management functional
@@ -201,6 +215,7 @@ curl -f https://collisionos.com/api/health
 - [ ] All critical user workflows tested
 
 ### Performance Testing
+
 - [ ] Page load times acceptable (< 3s)
 - [ ] Database queries performing well
 - [ ] File uploads working efficiently
@@ -209,6 +224,7 @@ curl -f https://collisionos.com/api/health
 - [ ] Disk I/O performance adequate
 
 ### Security Testing
+
 - [ ] HTTPS enforced
 - [ ] Security headers present
 - [ ] Authentication required for protected routes
@@ -218,6 +234,7 @@ curl -f https://collisionos.com/api/health
 - [ ] Rate limiting functional
 
 ### Monitoring Verification
+
 - [ ] Error tracking receiving events
 - [ ] Performance monitoring active
 - [ ] Log aggregation working
@@ -232,6 +249,7 @@ curl -f https://collisionos.com/api/health
 ### Common Issues
 
 #### Application Won't Start
+
 ```bash
 # Check container logs
 docker logs collisionos-prod -f
@@ -247,6 +265,7 @@ db.authenticate().then(() => console.log('DB OK')).catch(console.error);
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Verify PostgreSQL is running
 docker exec collisionos-postgres-prod pg_isready
@@ -259,6 +278,7 @@ docker exec collisionos-postgres-prod psql -U collisionos_prod -d collisionos_pr
 ```
 
 #### SSL Certificate Issues
+
 ```bash
 # Check certificate validity
 openssl x509 -in /path/to/cert.pem -text -noout
@@ -271,15 +291,16 @@ docker exec collisionos-nginx nginx -t
 ```
 
 ### Performance Issues
+
 ```bash
 # Check resource usage
 docker stats collisionos-prod
 
 # Analyze slow queries
 docker exec collisionos-postgres-prod psql -U collisionos_prod -d collisionos_prod -c "
-SELECT query, mean_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_time DESC 
+SELECT query, mean_time, calls
+FROM pg_stat_statements
+ORDER BY mean_time DESC
 LIMIT 10;
 "
 
@@ -292,6 +313,7 @@ curl http://localhost:3001/api/metrics
 ## 📊 Monitoring & Maintenance
 
 ### Daily Checks
+
 - [ ] Application health status
 - [ ] Error rates within normal range
 - [ ] Response times acceptable
@@ -300,6 +322,7 @@ curl http://localhost:3001/api/metrics
 - [ ] Backup completion status
 
 ### Weekly Checks
+
 - [ ] Security updates available
 - [ ] Database cleanup and optimization
 - [ ] Log rotation and cleanup
@@ -307,6 +330,7 @@ curl http://localhost:3001/api/metrics
 - [ ] Capacity planning review
 
 ### Monthly Checks
+
 - [ ] SSL certificate expiration dates
 - [ ] Dependency security audit
 - [ ] Backup restoration testing
@@ -318,18 +342,21 @@ curl http://localhost:3001/api/metrics
 ## 🚨 Emergency Procedures
 
 ### Application Down
+
 1. Check container status: `docker ps`
 2. Check logs: `docker logs collisionos-prod`
 3. Restart container: `docker restart collisionos-prod`
 4. If persistent, rollback: `./scripts/rollback.sh`
 
 ### Database Issues
+
 1. Check PostgreSQL status: `docker exec collisionos-postgres-prod pg_isready`
 2. Check disk space: `df -h`
 3. Review slow queries: Check pg_stat_statements
 4. If corrupted, restore from backup
 
 ### Performance Degradation
+
 1. Check resource usage: `docker stats`
 2. Review application logs for errors
 3. Check database performance
@@ -337,6 +364,7 @@ curl http://localhost:3001/api/metrics
 5. Optimize queries if identified
 
 ### Security Incident
+
 1. Isolate affected systems
 2. Review access logs
 3. Update credentials if compromised
@@ -348,7 +376,7 @@ curl http://localhost:3001/api/metrics
 ## 📞 Support Contacts
 
 - **System Administrator**: admin@collisionos.com
-- **DevOps Team**: devops@collisionos.com  
+- **DevOps Team**: devops@collisionos.com
 - **Security Team**: security@collisionos.com
 - **Emergency Hotline**: +1-555-SUPPORT
 
@@ -394,7 +422,7 @@ Rollback Plan:
 
 Sign-off:
 Developer: __________
-DevOps: __________  
+DevOps: __________
 QA: __________
 ```
 
@@ -403,6 +431,7 @@ QA: __________
 **🎉 Deployment Complete!**
 
 Remember to:
+
 - Document any issues or deviations from this checklist
 - Update monitoring dashboards with new deployment
 - Schedule post-deployment review meeting

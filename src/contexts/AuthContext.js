@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from 'react';
 
 const AuthContext = createContext();
 
@@ -44,10 +50,12 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       try {
         // Check for remember me first
-        const rememberedUser = localStorage.getItem('collisionos_remembered_user');
+        const rememberedUser = localStorage.getItem(
+          'collisionos_remembered_user'
+        );
         const token = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
-        
+
         if (rememberedUser && !token) {
           // User was remembered but session expired - restore from remember me
           try {
@@ -61,7 +69,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('collisionos_remembered_user');
           }
         }
-        
+
         if (token && savedUser) {
           const userData = JSON.parse(savedUser);
           setUser(userData);
@@ -96,14 +104,10 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     setIsLoading,
     login,
-    logout
+    logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

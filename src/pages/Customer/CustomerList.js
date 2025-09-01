@@ -33,7 +33,7 @@ import {
   Fab,
   SpeedDial,
   SpeedDialAction,
-  SpeedDialIcon
+  SpeedDialIcon,
 } from '@mui/material';
 import {
   Add,
@@ -58,7 +58,7 @@ import {
   DirectionsCar,
   Assignment,
   AttachMoney,
-  Timeline
+  Timeline,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -82,7 +82,7 @@ const CustomerList = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
-  
+
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -102,6 +102,21 @@ const CustomerList = () => {
     loadCustomers();
   }, []);
 
+  // Listen for customers updated event from BMS imports
+  useEffect(() => {
+    const handleCustomersUpdated = event => {
+      console.log('Customers updated event received:', event.detail);
+      // Refresh customer list when new customers are created via BMS import
+      loadCustomers();
+    };
+
+    window.addEventListener('customersUpdated', handleCustomersUpdated);
+
+    return () => {
+      window.removeEventListener('customersUpdated', handleCustomersUpdated);
+    };
+  }, []);
+
   // Filter customers based on search and filters
   useEffect(() => {
     let filtered = customers;
@@ -109,24 +124,29 @@ const CustomerList = () => {
     // Search filter
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(customer => 
-        customer.firstName?.toLowerCase().includes(searchLower) ||
-        customer.lastName?.toLowerCase().includes(searchLower) ||
-        customer.email?.toLowerCase().includes(searchLower) ||
-        customer.phone?.includes(searchLower) ||
-        customer.customerNumber?.toLowerCase().includes(searchLower) ||
-        customer.companyName?.toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        customer =>
+          customer.firstName?.toLowerCase().includes(searchLower) ||
+          customer.lastName?.toLowerCase().includes(searchLower) ||
+          customer.email?.toLowerCase().includes(searchLower) ||
+          customer.phone?.includes(searchLower) ||
+          customer.customerNumber?.toLowerCase().includes(searchLower) ||
+          customer.companyName?.toLowerCase().includes(searchLower)
       );
     }
 
     // Status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(customer => customer.customerStatus === statusFilter);
+      filtered = filtered.filter(
+        customer => customer.customerStatus === statusFilter
+      );
     }
 
     // Type filter
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(customer => customer.customerType === typeFilter);
+      filtered = filtered.filter(
+        customer => customer.customerType === typeFilter
+      );
     }
 
     setFilteredCustomers(filtered);
@@ -149,24 +169,24 @@ const CustomerList = () => {
     setCustomerFormOpen(true);
   };
 
-  const handleEditCustomer = (customer) => {
+  const handleEditCustomer = customer => {
     setSelectedCustomer(customer);
     setCustomerFormOpen(true);
   };
 
-  const handleViewCustomer = (customer) => {
+  const handleViewCustomer = customer => {
     setSelectedCustomer(customer);
     setCustomerDetailOpen(true);
   };
 
-  const handleDeleteCustomer = (customer) => {
+  const handleDeleteCustomer = customer => {
     setSelectedCustomer(customer);
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!selectedCustomer) return;
-    
+
     try {
       await customerService.deleteCustomer(selectedCustomer.id);
       await loadCustomers();
@@ -177,33 +197,48 @@ const CustomerList = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'default';
-      case 'prospect': return 'warning';
-      case 'vip': return 'error';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'default';
+      case 'prospect':
+        return 'warning';
+      case 'vip':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
-  const getTypeIcon = (type) => {
+  const getTypeIcon = type => {
     switch (type) {
-      case 'individual': return <Person />;
-      case 'business': return <Business />;
-      case 'insurance': return <AttachMoney />;
-      case 'fleet': return <DirectionsCar />;
-      default: return <Person />;
+      case 'individual':
+        return <Person />;
+      case 'business':
+        return <Business />;
+      case 'insurance':
+        return <AttachMoney />;
+      case 'fleet':
+        return <DirectionsCar />;
+      default:
+        return <Person />;
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = status => {
     switch (status) {
-      case 'vip': return <Star />;
-      case 'active': return <Person />;
-      case 'inactive': return <Archive />;
-      case 'prospect': return <Timeline />;
-      default: return <Person />;
+      case 'vip':
+        return <Star />;
+      case 'active':
+        return <Person />;
+      case 'inactive':
+        return <Archive />;
+      case 'prospect':
+        return <Timeline />;
+      default:
+        return <Person />;
     }
   };
 
@@ -211,7 +246,7 @@ const CustomerList = () => {
     { icon: <Add />, name: 'Add Customer', action: handleAddCustomer },
     { icon: <Download />, name: 'Export', action: () => console.log('Export') },
     { icon: <Upload />, name: 'Import', action: () => console.log('Import') },
-    { icon: <Print />, name: 'Print List', action: () => console.log('Print') }
+    { icon: <Print />, name: 'Print List', action: () => console.log('Print') },
   ];
 
   if (loading) {
@@ -221,20 +256,27 @@ const CustomerList = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h4' component='h1'>
           Customer Management
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
-            variant="outlined"
+            variant='outlined'
             startIcon={<Refresh />}
             onClick={loadCustomers}
           >
             Refresh
           </Button>
           <Button
-            variant="contained"
+            variant='contained'
             startIcon={<Add />}
             onClick={handleAddCustomer}
           >
@@ -246,49 +288,49 @@ const CustomerList = () => {
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid xs={12} md={4}>
               <SearchBar
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search customers..."
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder='Search customers...'
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  label="Status"
+                  onChange={e => setStatusFilter(e.target.value)}
+                  label='Status'
                 >
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                  <MenuItem value="prospect">Prospect</MenuItem>
-                  <MenuItem value="vip">VIP</MenuItem>
+                  <MenuItem value='all'>All Status</MenuItem>
+                  <MenuItem value='active'>Active</MenuItem>
+                  <MenuItem value='inactive'>Inactive</MenuItem>
+                  <MenuItem value='prospect'>Prospect</MenuItem>
+                  <MenuItem value='vip'>VIP</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Type</InputLabel>
                 <Select
                   value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  label="Type"
+                  onChange={e => setTypeFilter(e.target.value)}
+                  label='Type'
                 >
-                  <MenuItem value="all">All Types</MenuItem>
-                  <MenuItem value="individual">Individual</MenuItem>
-                  <MenuItem value="business">Business</MenuItem>
-                  <MenuItem value="insurance">Insurance</MenuItem>
-                  <MenuItem value="fleet">Fleet</MenuItem>
+                  <MenuItem value='all'>All Types</MenuItem>
+                  <MenuItem value='individual'>Individual</MenuItem>
+                  <MenuItem value='business'>Business</MenuItem>
+                  <MenuItem value='insurance'>Insurance</MenuItem>
+                  <MenuItem value='fleet'>Fleet</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={2}>
-              <Typography variant="body2" color="text.secondary">
+            <Grid xs={12} md={2}>
+              <Typography variant='body2' color='text.secondary'>
                 {filteredCustomers.length} customers
               </Typography>
             </Grid>
@@ -324,19 +366,25 @@ const CustomerList = () => {
                     hover
                   >
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
                         <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
                           {getStatusIcon(customer.customerStatus)}
                         </Avatar>
                         <Box>
-                          <Typography variant="subtitle2">
+                          <Typography variant='subtitle2'>
                             {getCustomerFullName(customer)}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant='caption' color='text.secondary'>
                             {customer.customerNumber}
                           </Typography>
                           {customer.companyName && (
-                            <Typography variant="caption" display="block" color="text.secondary">
+                            <Typography
+                              variant='caption'
+                              display='block'
+                              color='text.secondary'
+                            >
                               {customer.companyName}
                             </Typography>
                           )}
@@ -346,15 +394,32 @@ const CustomerList = () => {
                     <TableCell>
                       <Box>
                         {customer.phone && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                            <Phone fontSize="small" />
-                            <Typography variant="body2">{customer.phone}</Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              mb: 0.5,
+                            }}
+                          >
+                            <Phone fontSize='small' />
+                            <Typography variant='body2'>
+                              {customer.phone}
+                            </Typography>
                           </Box>
                         )}
                         {customer.email && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Email fontSize="small" />
-                            <Typography variant="body2">{customer.email}</Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}
+                          >
+                            <Email fontSize='small' />
+                            <Typography variant='body2'>
+                              {customer.email}
+                            </Typography>
                           </Box>
                         )}
                       </Box>
@@ -363,49 +428,56 @@ const CustomerList = () => {
                       <Chip
                         icon={getTypeIcon(customer.customerType)}
                         label={customer.customerType}
-                        size="small"
-                        variant="outlined"
+                        size='small'
+                        variant='outlined'
                       />
                     </TableCell>
                     <TableCell>
                       <Chip
                         label={customer.customerStatus}
                         color={getStatusColor(customer.customerStatus)}
-                        size="small"
+                        size='small'
                       />
                     </TableCell>
                     <TableCell>
-                      <Badge badgeContent={customer.vehicles?.length || 0} color="primary">
+                      <Badge
+                        badgeContent={customer.vehicles?.length || 0}
+                        color='primary'
+                      >
                         <DirectionsCar />
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">
-                        {customer.lastVisitDate ? new Date(customer.lastVisitDate).toLocaleDateString() : 'Never'}
+                      <Typography variant='body2'>
+                        {customer.lastVisitDate
+                          ? new Date(
+                              customer.lastVisitDate
+                            ).toLocaleDateString()
+                          : 'Never'}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="View Details">
+                        <Tooltip title='View Details'>
                           <IconButton
-                            size="small"
+                            size='small'
                             onClick={() => handleViewCustomer(customer)}
                           >
                             <Visibility />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Edit">
+                        <Tooltip title='Edit'>
                           <IconButton
-                            size="small"
+                            size='small'
                             onClick={() => handleEditCustomer(customer)}
                           >
                             <Edit />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title='Delete'>
                           <IconButton
-                            size="small"
-                            color="error"
+                            size='small'
+                            color='error'
                             onClick={() => handleDeleteCustomer(customer)}
                           >
                             <Delete />
@@ -424,14 +496,14 @@ const CustomerList = () => {
       {/* Speed Dial for Mobile */}
       {isMobile && (
         <SpeedDial
-          ariaLabel="Customer actions"
+          ariaLabel='Customer actions'
           sx={{ position: 'fixed', bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
           open={speedDialOpen}
           onOpen={() => setSpeedDialOpen(true)}
           onClose={() => setSpeedDialOpen(false)}
         >
-          {speedDialActions.map((action) => (
+          {speedDialActions.map(action => (
             <SpeedDialAction
               key={action.name}
               icon={action.icon}
@@ -470,17 +542,20 @@ const CustomerList = () => {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Delete Customer</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete {selectedCustomer?.firstName} {selectedCustomer?.lastName}?
-            This action cannot be undone.
+            Are you sure you want to delete {selectedCustomer?.firstName}{' '}
+            {selectedCustomer?.lastName}? This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={confirmDelete} color="error" variant="contained">
+          <Button onClick={confirmDelete} color='error' variant='contained'>
             Delete
           </Button>
         </DialogActions>

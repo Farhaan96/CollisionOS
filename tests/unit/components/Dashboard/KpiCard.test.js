@@ -1,36 +1,45 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { KpiCard } from '../../../../src/components/Dashboard/KpiCard';
-import { renderWithProviders, createMockChartData } from '../../../../src/utils/testUtils';
+import {
+  renderWithProviders,
+  createMockChartData,
+} from '../../../../src/utils/testUtils';
 
 // Mock chart components to avoid canvas rendering issues
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children, ...props }) => (
-    <div data-testid="responsive-container" {...props}>
+    <div data-testid='responsive-container' {...props}>
       {children}
     </div>
   ),
   AreaChart: ({ children, data, ...props }) => (
-    <div data-testid="area-chart" data-chart-data={JSON.stringify(data)} {...props}>
+    <div
+      data-testid='area-chart'
+      data-chart-data={JSON.stringify(data)}
+      {...props}
+    >
       {children}
     </div>
   ),
-  Area: (props) => <div data-testid="area" {...props} />,
-  Tooltip: (props) => <div data-testid="tooltip" {...props} />
+  Area: props => <div data-testid='area' {...props} />,
+  Tooltip: props => <div data-testid='tooltip' {...props} />,
 }));
 
 // Mock AnimatedCounter component
 jest.mock('../../../../src/utils/AnimatedCounter', () => ({
-  AnimatedCounter: ({ value }) => <span data-testid="animated-counter">{value}</span>
+  AnimatedCounter: ({ value }) => (
+    <span data-testid='animated-counter'>{value}</span>
+  ),
 }));
 
 // Mock GlassCard component
 jest.mock('../../../../src/components/Common/GlassCard', () => ({
   GlassCard: ({ children, ...props }) => (
-    <div data-testid="glass-card" {...props}>
+    <div data-testid='glass-card' {...props}>
       {children}
     </div>
-  )
+  ),
 }));
 
 describe('KpiCard Component', () => {
@@ -43,7 +52,7 @@ describe('KpiCard Component', () => {
       { name: 'Jan', value: 30 },
       { name: 'Feb', value: 35 },
       { name: 'Mar', value: 42 },
-    ]
+    ],
   };
 
   describe('Basic Rendering', () => {
@@ -119,9 +128,10 @@ describe('KpiCard Component', () => {
       const positiveKpi = { ...mockKpiData, deltaPct: 15 };
       renderWithProviders(<KpiCard kpi={positiveKpi} />);
 
-      const chip = screen.getByText('+15%').closest('[data-testid*="chip"]') || 
-                   screen.getByText('+15%').closest('.MuiChip-root');
-      
+      const chip =
+        screen.getByText('+15%').closest('[data-testid*="chip"]') ||
+        screen.getByText('+15%').closest('.MuiChip-root');
+
       // Check that the chip exists (color testing would require more complex setup)
       expect(screen.getByText('+15%')).toBeInTheDocument();
     });
@@ -156,7 +166,10 @@ describe('KpiCard Component', () => {
     });
 
     test('displays custom forecast note', () => {
-      const customNoteKpi = { ...mockKpiData, forecastNote: 'Seasonal decline expected' };
+      const customNoteKpi = {
+        ...mockKpiData,
+        forecastNote: 'Seasonal decline expected',
+      };
       renderWithProviders(<KpiCard kpi={customNoteKpi} />);
 
       expect(screen.getByText('Seasonal decline expected')).toBeInTheDocument();
@@ -194,7 +207,7 @@ describe('KpiCard Component', () => {
 
       const chart = screen.getByTestId('area-chart');
       const chartData = JSON.parse(chart.getAttribute('data-chart-data'));
-      
+
       expect(chartData).toEqual(mockKpiData.series);
     });
   });
@@ -205,7 +218,7 @@ describe('KpiCard Component', () => {
 
       const glassCard = screen.getByTestId('glass-card');
       expect(glassCard).toBeInTheDocument();
-      
+
       // Check that all main elements are present in the expected structure
       expect(screen.getByText('Active Jobs')).toBeInTheDocument();
       expect(screen.getByTestId('animated-counter')).toBeInTheDocument();
@@ -230,22 +243,24 @@ describe('KpiCard Component', () => {
     });
 
     test('handles very large numbers', () => {
-      const largeNumberKpi = { 
-        ...mockKpiData, 
+      const largeNumberKpi = {
+        ...mockKpiData,
         value: 9999999,
-        deltaPct: 999 
+        deltaPct: 999,
       };
       renderWithProviders(<KpiCard kpi={largeNumberKpi} />);
 
-      expect(screen.getByTestId('animated-counter')).toHaveTextContent('9999999');
+      expect(screen.getByTestId('animated-counter')).toHaveTextContent(
+        '9999999'
+      );
       expect(screen.getByText('+999%')).toBeInTheDocument();
     });
 
     test('handles negative values', () => {
-      const negativeValueKpi = { 
-        ...mockKpiData, 
+      const negativeValueKpi = {
+        ...mockKpiData,
         value: -50,
-        deltaPct: -25 
+        deltaPct: -25,
       };
       renderWithProviders(<KpiCard kpi={negativeValueKpi} />);
 
@@ -254,10 +269,10 @@ describe('KpiCard Component', () => {
     });
 
     test('handles decimal values', () => {
-      const decimalKpi = { 
-        ...mockKpiData, 
+      const decimalKpi = {
+        ...mockKpiData,
         value: 42.5,
-        deltaPct: 15.7 
+        deltaPct: 15.7,
       };
       renderWithProviders(<KpiCard kpi={decimalKpi} />);
 
@@ -266,13 +281,15 @@ describe('KpiCard Component', () => {
     });
 
     test('handles string values', () => {
-      const stringValueKpi = { 
-        ...mockKpiData, 
-        value: '$1,234'
+      const stringValueKpi = {
+        ...mockKpiData,
+        value: '$1,234',
       };
       renderWithProviders(<KpiCard kpi={stringValueKpi} />);
 
-      expect(screen.getByTestId('animated-counter')).toHaveTextContent('$1,234');
+      expect(screen.getByTestId('animated-counter')).toHaveTextContent(
+        '$1,234'
+      );
     });
   });
 
@@ -283,7 +300,7 @@ describe('KpiCard Component', () => {
       // Check that text content is properly structured
       expect(screen.getByText('Active Jobs')).toBeInTheDocument();
       expect(screen.getByTestId('animated-counter')).toBeInTheDocument();
-      
+
       // Chips should be properly labeled
       expect(screen.getByText('+15%')).toBeInTheDocument();
     });
@@ -305,7 +322,7 @@ describe('KpiCard Component', () => {
 
       expect(screen.getByText('Simple KPI')).toBeInTheDocument();
       expect(screen.getByTestId('animated-counter')).toHaveTextContent('10');
-      
+
       // Should still render chart container even with no series data
       expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
     });

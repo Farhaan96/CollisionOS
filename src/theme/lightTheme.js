@@ -32,7 +32,7 @@ export const lightTheme = createTheme({
     },
     error: {
       main: '#EF4444',
-      light: '#F87171', 
+      light: '#F87171',
       dark: '#DC2626',
       contrastText: '#FFFFFF',
     },
@@ -50,56 +50,57 @@ export const lightTheme = createTheme({
     },
     divider: '#E5E7EB',
   },
-  
+
   typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "SF Pro Display", sans-serif',
-    h1: { 
-      fontSize: '2rem', 
-      fontWeight: 600, 
-      lineHeight: 1.2 
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "SF Pro Display", sans-serif',
+    h1: {
+      fontSize: '2rem',
+      fontWeight: 600,
+      lineHeight: 1.2,
     },
-    h2: { 
-      fontSize: '1.75rem', 
-      fontWeight: 600, 
-      lineHeight: 1.3 
+    h2: {
+      fontSize: '1.75rem',
+      fontWeight: 600,
+      lineHeight: 1.3,
     },
-    h3: { 
-      fontSize: '1.5rem', 
-      fontWeight: 600, 
-      lineHeight: 1.4 
+    h3: {
+      fontSize: '1.5rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
-    h4: { 
-      fontSize: '1.25rem', 
-      fontWeight: 600, 
-      lineHeight: 1.4 
+    h4: {
+      fontSize: '1.25rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
-    h5: { 
-      fontSize: '1.125rem', 
-      fontWeight: 600, 
-      lineHeight: 1.5 
+    h5: {
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.5,
     },
-    h6: { 
-      fontSize: '1rem', 
-      fontWeight: 600, 
-      lineHeight: 1.5 
+    h6: {
+      fontSize: '1rem',
+      fontWeight: 600,
+      lineHeight: 1.5,
     },
-    body1: { 
-      fontSize: '1rem', 
-      lineHeight: 1.6 
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.6,
     },
-    body2: { 
-      fontSize: '0.875rem', 
-      lineHeight: 1.6 
+    body2: {
+      fontSize: '0.875rem',
+      lineHeight: 1.6,
     },
-    button: { 
-      textTransform: 'none' 
+    button: {
+      textTransform: 'none',
     },
   },
-  
+
   shape: {
     borderRadius: 8,
   },
-  
+
   shadows: [
     'none',
     '0 1px 2px rgba(0,0,0,0.05)',
@@ -125,9 +126,9 @@ export const lightTheme = createTheme({
     '0 8px 16px rgba(0,0,0,0.1)',
     '0 8px 16px rgba(0,0,0,0.1)',
     '0 8px 16px rgba(0,0,0,0.1)',
-    '0 8px 16px rgba(0,0,0,0.1)'
+    '0 8px 16px rgba(0,0,0,0.1)',
   ],
-  
+
   components: {
     MuiButton: {
       styleOverrides: {

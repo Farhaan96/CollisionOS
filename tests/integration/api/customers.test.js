@@ -34,7 +34,7 @@ describe('Customer API Endpoints', () => {
     app = express();
     app.use(express.json());
     app.use('/api/customers', mockAuthMiddleware);
-    
+
     // Import and use customer routes
     try {
       const customerRoutes = require('../../../server/routes/customers');
@@ -42,7 +42,7 @@ describe('Customer API Endpoints', () => {
     } catch (error) {
       // If routes don't exist, create mock routes
       const router = express.Router();
-      
+
       router.get('/', async (req, res) => {
         try {
           const customers = await Customer.findAll();
@@ -56,7 +56,9 @@ describe('Customer API Endpoints', () => {
         try {
           const customer = await Customer.findByPk(req.params.id);
           if (!customer) {
-            return res.status(404).json({ success: false, error: 'Customer not found' });
+            return res
+              .status(404)
+              .json({ success: false, error: 'Customer not found' });
           }
           res.json({ success: true, data: customer });
         } catch (error) {
@@ -76,13 +78,15 @@ describe('Customer API Endpoints', () => {
       router.put('/:id', async (req, res) => {
         try {
           const [updatedRows] = await Customer.update(req.body, {
-            where: { id: req.params.id }
+            where: { id: req.params.id },
           });
-          
+
           if (updatedRows === 0) {
-            return res.status(404).json({ success: false, error: 'Customer not found' });
+            return res
+              .status(404)
+              .json({ success: false, error: 'Customer not found' });
           }
-          
+
           const customer = await Customer.findByPk(req.params.id);
           res.json({ success: true, data: customer });
         } catch (error) {
@@ -93,13 +97,15 @@ describe('Customer API Endpoints', () => {
       router.delete('/:id', async (req, res) => {
         try {
           const deletedRows = await Customer.destroy({
-            where: { id: req.params.id }
+            where: { id: req.params.id },
           });
-          
+
           if (deletedRows === 0) {
-            return res.status(404).json({ success: false, error: 'Customer not found' });
+            return res
+              .status(404)
+              .json({ success: false, error: 'Customer not found' });
           }
-          
+
           res.json({ success: true, message: 'Customer deleted successfully' });
         } catch (error) {
           res.status(500).json({ success: false, error: error.message });
@@ -122,22 +128,20 @@ describe('Customer API Endpoints', () => {
           firstName: 'John',
           lastName: 'Doe',
           email: 'john@example.com',
-          phone: '555-0123'
+          phone: '555-0123',
         },
         {
           id: 2,
           firstName: 'Jane',
           lastName: 'Smith',
           email: 'jane@example.com',
-          phone: '555-0456'
-        }
+          phone: '555-0456',
+        },
       ];
 
       Customer.findAll.mockResolvedValue(mockCustomers);
 
-      const response = await request(app)
-        .get('/api/customers')
-        .expect(200);
+      const response = await request(app).get('/api/customers').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual(mockCustomers);
@@ -147,9 +151,7 @@ describe('Customer API Endpoints', () => {
     test('should handle database error', async () => {
       Customer.findAll.mockRejectedValue(new Error('Database error'));
 
-      const response = await request(app)
-        .get('/api/customers')
-        .expect(500);
+      const response = await request(app).get('/api/customers').expect(500);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toBe('Database error');
@@ -158,9 +160,7 @@ describe('Customer API Endpoints', () => {
     test('should return empty array when no customers exist', async () => {
       Customer.findAll.mockResolvedValue([]);
 
-      const response = await request(app)
-        .get('/api/customers')
-        .expect(200);
+      const response = await request(app).get('/api/customers').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual([]);
@@ -174,14 +174,12 @@ describe('Customer API Endpoints', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        phone: '555-0123'
+        phone: '555-0123',
       };
 
       Customer.findByPk.mockResolvedValue(mockCustomer);
 
-      const response = await request(app)
-        .get('/api/customers/1')
-        .expect(200);
+      const response = await request(app).get('/api/customers/1').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual(mockCustomer);
@@ -191,9 +189,7 @@ describe('Customer API Endpoints', () => {
     test('should return 404 for non-existent customer', async () => {
       Customer.findByPk.mockResolvedValue(null);
 
-      const response = await request(app)
-        .get('/api/customers/999')
-        .expect(404);
+      const response = await request(app).get('/api/customers/999').expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toBe('Customer not found');
@@ -221,7 +217,7 @@ describe('Customer API Endpoints', () => {
         address: '456 Oak St',
         city: 'Springfield',
         state: 'IL',
-        zipCode: '62701'
+        zipCode: '62701',
       };
 
       const createdCustomer = { id: 3, ...newCustomerData };
@@ -240,10 +236,12 @@ describe('Customer API Endpoints', () => {
     test('should validate required fields', async () => {
       const invalidData = {
         firstName: '',
-        email: 'invalid-email'
+        email: 'invalid-email',
       };
 
-      Customer.create.mockRejectedValue(new Error('Validation error: firstName is required'));
+      Customer.create.mockRejectedValue(
+        new Error('Validation error: firstName is required')
+      );
 
       const response = await request(app)
         .post('/api/customers')
@@ -258,7 +256,7 @@ describe('Customer API Endpoints', () => {
       const duplicateData = {
         firstName: 'John',
         lastName: 'Duplicate',
-        email: 'existing@example.com'
+        email: 'existing@example.com',
       };
 
       Customer.create.mockRejectedValue(new Error('Email already exists'));
@@ -277,7 +275,7 @@ describe('Customer API Endpoints', () => {
     test('should update existing customer', async () => {
       const updateData = {
         firstName: 'Johnny',
-        phone: '555-9999'
+        phone: '555-9999',
       };
 
       const updatedCustomer = {
@@ -285,7 +283,7 @@ describe('Customer API Endpoints', () => {
         firstName: 'Johnny',
         lastName: 'Doe',
         email: 'john@example.com',
-        phone: '555-9999'
+        phone: '555-9999',
       };
 
       Customer.update.mockResolvedValue([1]); // Number of affected rows
@@ -298,7 +296,9 @@ describe('Customer API Endpoints', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual(updatedCustomer);
-      expect(Customer.update).toHaveBeenCalledWith(updateData, { where: { id: '1' } });
+      expect(Customer.update).toHaveBeenCalledWith(updateData, {
+        where: { id: '1' },
+      });
     });
 
     test('should return 404 for non-existent customer update', async () => {
@@ -351,14 +351,18 @@ describe('Customer API Endpoints', () => {
     });
 
     test('should handle deletion constraint errors', async () => {
-      Customer.destroy.mockRejectedValue(new Error('Cannot delete customer with active jobs'));
+      Customer.destroy.mockRejectedValue(
+        new Error('Cannot delete customer with active jobs')
+      );
 
       const response = await request(app)
         .delete('/api/customers/1')
         .expect(500);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toBe('Cannot delete customer with active jobs');
+      expect(response.body.error).toBe(
+        'Cannot delete customer with active jobs'
+      );
     });
   });
 
@@ -367,7 +371,7 @@ describe('Customer API Endpoints', () => {
       // Create app without auth middleware
       const unauthApp = express();
       unauthApp.use(express.json());
-      
+
       const router = express.Router();
       router.get('/', (req, res) => {
         if (!req.user) {
@@ -375,7 +379,7 @@ describe('Customer API Endpoints', () => {
         }
         res.json({ success: true });
       });
-      
+
       unauthApp.use('/api/customers', router);
 
       const response = await request(unauthApp)

@@ -1,4 +1,5 @@
 # IMEX-Level Database Schema ERD
+
 ## CollisionOS Enterprise Auto Body Shop Management System
 
 ### Database Architecture Overview
@@ -8,9 +9,10 @@ The CollisionOS database has been enhanced to support IMEX-level auto body shop 
 ## Core Entity Relationships
 
 ### 1. Shop Hub (Central Entity)
+
 ```
 shops (1) ──────── (*) users
-      (1) ──────── (*) customers  
+      (1) ──────── (*) customers
       (1) ──────── (*) vehicles
       (1) ──────── (*) jobs
       (1) ──────── (*) parts
@@ -26,6 +28,7 @@ shops (1) ──────── (*) users
 ```
 
 ### 2. Job Workflow Management
+
 ```
 jobs (1) ──────── (*) workflow_status
      (1) ──────── (*) job_stage_history
@@ -39,6 +42,7 @@ jobs (1) ──────── (*) workflow_status
 ```
 
 ### 3. Production Workflow System
+
 ```
 production_stages (1) ──────── (*) job_stage_history
 workflow_status (1) ──────── (*) job_stage_history
@@ -48,6 +52,7 @@ users (technicians) (1) ──────── (*) job_stage_history
 ```
 
 ### 4. Financial Management
+
 ```
 customers (1) ──────── (*) financial_transactions
 jobs (1) ──────── (*) financial_transactions
@@ -59,6 +64,7 @@ parts_orders (1) ──────── (*) financial_transactions
 ```
 
 ### 5. Communication System
+
 ```
 communication_templates (1) ──────── (*) communication_log
 customers (1) ──────── (*) communication_log
@@ -68,6 +74,7 @@ users (1) ──────── (*) communication_log (sender)
 ```
 
 ### 6. Parts Management
+
 ```
 vendors (1) ──────── (*) parts
        (1) ──────── (*) parts_orders
@@ -82,8 +89,10 @@ estimates (1) ──────── (*) estimate_line_items
 ### Production Management Models
 
 #### 1. ProductionStage
+
 **Purpose**: Configurable workflow stages with rules and dependencies
 **Key Features**:
+
 - Stage ordering and dependencies
 - Resource requirements (skills, equipment, tools)
 - Quality control checkpoints
@@ -93,8 +102,10 @@ estimates (1) ──────── (*) estimate_line_items
 - Automation rules and integration endpoints
 
 #### 2. JobStageHistory
+
 **Purpose**: Complete audit trail of job movements through production stages
 **Key Features**:
+
 - Movement tracking (forward, backward, skip, restart)
 - Timing information and duration tracking
 - Quality and performance metrics
@@ -105,8 +116,10 @@ estimates (1) ──────── (*) estimate_line_items
 - Photo and document management
 
 #### 3. TechnicianPerformance
+
 **Purpose**: Comprehensive performance metrics and KPI tracking
 **Key Features**:
+
 - Productivity metrics (utilization, efficiency, velocity)
 - Quality metrics (first-time-right rate, rework tracking)
 - Cost performance (revenue per hour, profit margins)
@@ -119,8 +132,10 @@ estimates (1) ──────── (*) estimate_line_items
 ### Communication System Models
 
 #### 4. CommunicationTemplate
+
 **Purpose**: SMS/Email templates for automated customer communication
 **Key Features**:
+
 - Multi-channel support (SMS, Email, Phone, Push, Portal)
 - Trigger conditions and automation rules
 - Personalization variables and dynamic content
@@ -131,8 +146,10 @@ estimates (1) ──────── (*) estimate_line_items
 - Localization and branding support
 
 #### 5. CommunicationLog
+
 **Purpose**: Complete customer interaction history
 **Key Features**:
+
 - Multi-channel communication tracking
 - Engagement metrics (opens, clicks, responses)
 - Response handling and sentiment analysis
@@ -145,8 +162,10 @@ estimates (1) ──────── (*) estimate_line_items
 ### Financial Management Models
 
 #### 6. FinancialTransaction
+
 **Purpose**: Complete financial audit trail
 **Key Features**:
+
 - Multi-type transaction support (payments, refunds, fees, adjustments)
 - Payment method tracking and processing
 - Fee calculation and cost tracking
@@ -160,12 +179,14 @@ estimates (1) ──────── (*) estimate_line_items
 ## Database Performance Optimizations
 
 ### Strategic Indexing
+
 - **Composite indexes** for common query patterns
 - **Performance-specific indexes** for reporting queries
 - **Relationship indexes** for foreign key lookups
 - **Date-range indexes** for time-based queries
 
 ### Query Optimization Features
+
 ```sql
 -- Job timeline queries
 CREATE INDEX idx_job_stage_timeline ON job_stage_history(jobId, transitionTime);
@@ -183,6 +204,7 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 ## Business Intelligence Support
 
 ### Analytics-Ready Schema
+
 - **KPI tracking** at multiple levels (shop, technician, job, customer)
 - **Time-series data** for trend analysis
 - **Performance benchmarking** capabilities
@@ -190,6 +212,7 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 - **Customer journey mapping** through communication logs
 
 ### Reporting Capabilities
+
 - Production efficiency reports
 - Technician performance scorecards
 - Customer communication analytics
@@ -200,6 +223,7 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 ## Integration Architecture
 
 ### External System Support
+
 - **API-friendly schema** design for third-party integrations
 - **Flexible field mapping** for Mitchell, Audatex, QuickBooks
 - **Webhook support** for real-time notifications
@@ -207,6 +231,7 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 - **Error handling and retry logic**
 
 ### Data Migration Support
+
 - **Import/export capabilities** for data migration
 - **Version tracking** for schema evolution
 - **Backup and disaster recovery** considerations
@@ -215,12 +240,14 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 ## Compliance and Security
 
 ### Data Protection
+
 - **GDPR compliance** features in communication logs
 - **Audit trail** preservation for all financial transactions
 - **Role-based access** control through user associations
 - **Data retention policies** with automated cleanup
 
 ### Quality Assurance
+
 - **Foreign key constraints** ensuring data integrity
 - **Check constraints** for data validation
 - **Default values** preventing null data issues
@@ -229,12 +256,14 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 ## Scalability Considerations
 
 ### Performance Architecture
+
 - **Partitioning support** for large datasets
 - **Archiving strategies** for historical data
 - **Connection pooling** optimization
 - **Query caching** capabilities
 
 ### Growth Support
+
 - **Horizontal scaling** support through proper indexing
 - **Vertical scaling** through optimized queries
 - **Multi-tenant** architecture support
@@ -243,13 +272,15 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 ## Implementation Status
 
 ### Current State
+
 ✅ **25 Production Models** - All models implemented with full associations  
 ✅ **Comprehensive Migration** - SQL migration script with default data  
 ✅ **Performance Indexes** - Strategic indexing for optimal performance  
 ✅ **Business Logic** - Advanced hooks and validation rules  
-✅ **Integration Ready** - External system integration support  
+✅ **Integration Ready** - External system integration support
 
 ### Next Steps Available
+
 1. **API Development** - REST endpoints for all new models
 2. **Frontend Integration** - UI components for enhanced features
 3. **Reporting Engine** - Business intelligence and analytics
@@ -258,14 +289,14 @@ CREATE INDEX idx_financial_period ON financial_transactions(transactionDate, amo
 
 ## Database Statistics
 
-| Category | Count | Description |
-|----------|--------|-------------|
-| **Total Models** | 25 | Complete entity coverage |
-| **Core Models** | 7 | Original shop management |
-| **Production Models** | 12 | Workflow and operations |
-| **IMEX Enhancements** | 6 | Enterprise-level features |
-| **Indexes** | 150+ | Performance optimized |
-| **Relationships** | 80+ | Comprehensive associations |
-| **Business Rules** | 200+ | Validation and automation |
+| Category              | Count | Description                |
+| --------------------- | ----- | -------------------------- |
+| **Total Models**      | 25    | Complete entity coverage   |
+| **Core Models**       | 7     | Original shop management   |
+| **Production Models** | 12    | Workflow and operations    |
+| **IMEX Enhancements** | 6     | Enterprise-level features  |
+| **Indexes**           | 150+  | Performance optimized      |
+| **Relationships**     | 80+   | Comprehensive associations |
+| **Business Rules**    | 200+  | Validation and automation  |
 
 This database schema provides IMEX-level functionality with enterprise-grade features supporting complete auto body shop management operations from estimate through delivery with comprehensive tracking, reporting, and integration capabilities.

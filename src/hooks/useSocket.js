@@ -7,7 +7,7 @@ export function useSocket() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
     // Only attempt connection if we have a token (user is authenticated)
     if (!token) {
       return;
@@ -20,7 +20,7 @@ export function useSocket() {
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
       timeout: 5000,
-      forceNew: true
+      forceNew: true,
     });
 
     socketRef.current = socket;
@@ -29,13 +29,13 @@ export function useSocket() {
       console.log('🔌 WebSocket connected successfully');
       setIsConnected(true);
     };
-    
-    const onDisconnect = (reason) => {
+
+    const onDisconnect = reason => {
       console.log('🔌 WebSocket disconnected:', reason);
       setIsConnected(false);
     };
 
-    const onConnectError = (error) => {
+    const onConnectError = error => {
       console.log('🔌 WebSocket connection error:', error.message);
       setIsConnected(false);
     };

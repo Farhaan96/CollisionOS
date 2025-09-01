@@ -1,24 +1,31 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Dashboard as DashboardIcon, TrendingUp, TrendingDown } from '@mui/icons-material';
+import {
+  Dashboard as DashboardIcon,
+  TrendingUp,
+  TrendingDown,
+} from '@mui/icons-material';
 import ModernStatsCard from '../../../../src/components/Dashboard/ModernStatsCard';
 import { renderWithProviders } from '../../../../src/utils/testUtils';
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, whileHover, whileTap, ...props }) => 
-      <div data-testid="motion-div" {...props}>{children}</div>
-  }
+    div: ({ children, whileHover, whileTap, ...props }) => (
+      <div data-testid='motion-div' {...props}>
+        {children}
+      </div>
+    ),
+  },
 }));
 
 // Mock ModernCard component
 jest.mock('../../../../src/components/Common/ModernCard', () => {
   return function ModernCard({ children, variant, hover, sx, ...props }) {
     return (
-      <div 
-        data-testid="modern-card" 
+      <div
+        data-testid='modern-card'
         data-variant={variant}
         data-hover={hover}
         style={sx}
@@ -38,7 +45,7 @@ describe('ModernStatsCard Component', () => {
     changeType: 'positive',
     icon: DashboardIcon,
     color: 'primary',
-    variant: 'glass'
+    variant: 'glass',
   };
 
   describe('Basic Rendering', () => {
@@ -52,12 +59,7 @@ describe('ModernStatsCard Component', () => {
     });
 
     test('renders without optional props', () => {
-      renderWithProviders(
-        <ModernStatsCard 
-          title="Simple Card" 
-          value="100" 
-        />
-      );
+      renderWithProviders(<ModernStatsCard title='Simple Card' value='100' />);
 
       expect(screen.getByText('SIMPLE CARD')).toBeInTheDocument();
       expect(screen.getByText('100')).toBeInTheDocument();
@@ -66,10 +68,7 @@ describe('ModernStatsCard Component', () => {
 
     test('transforms title to uppercase', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="lowercase title" 
-          value="123" 
-        />
+        <ModernStatsCard title='lowercase title' value='123' />
       );
 
       expect(screen.getByText('LOWERCASE TITLE')).toBeInTheDocument();
@@ -113,11 +112,11 @@ describe('ModernStatsCard Component', () => {
   describe('Change Indicator', () => {
     test('renders positive change with trending up icon', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100" 
-          change={25} 
-          changeType="positive" 
+        <ModernStatsCard
+          title='Test'
+          value='100'
+          change={25}
+          changeType='positive'
         />
       );
 
@@ -127,11 +126,11 @@ describe('ModernStatsCard Component', () => {
 
     test('renders negative change with trending down icon', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100" 
-          change={-15} 
-          changeType="negative" 
+        <ModernStatsCard
+          title='Test'
+          value='100'
+          change={-15}
+          changeType='negative'
         />
       );
 
@@ -141,11 +140,11 @@ describe('ModernStatsCard Component', () => {
 
     test('renders neutral change without trend icon', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100" 
-          change={0} 
-          changeType="neutral" 
+        <ModernStatsCard
+          title='Test'
+          value='100'
+          change={0}
+          changeType='neutral'
         />
       );
 
@@ -156,11 +155,11 @@ describe('ModernStatsCard Component', () => {
 
     test('handles string change values', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100" 
-          change="Custom Change" 
-          changeType="positive" 
+        <ModernStatsCard
+          title='Test'
+          value='100'
+          change='Custom Change'
+          changeType='positive'
         />
       );
 
@@ -168,12 +167,7 @@ describe('ModernStatsCard Component', () => {
     });
 
     test('does not render change section when change is undefined', () => {
-      renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100" 
-        />
-      );
+      renderWithProviders(<ModernStatsCard title='Test' value='100' />);
 
       expect(screen.queryByText('vs last month')).not.toBeInTheDocument();
     });
@@ -181,61 +175,75 @@ describe('ModernStatsCard Component', () => {
 
   describe('Color Variants', () => {
     test('applies primary color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="primary" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} color='primary' />
+      );
+
       // Component renders without error
       expect(screen.getByText('42')).toBeInTheDocument();
     });
 
     test('applies success color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="success" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} color='success' />
+      );
+
       expect(screen.getByText('42')).toBeInTheDocument();
     });
 
     test('applies warning color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="warning" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} color='warning' />
+      );
+
       expect(screen.getByText('42')).toBeInTheDocument();
     });
 
     test('applies error color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="error" />);
-      
+      renderWithProviders(<ModernStatsCard {...defaultProps} color='error' />);
+
       expect(screen.getByText('42')).toBeInTheDocument();
     });
 
     test('applies info color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="info" />);
-      
+      renderWithProviders(<ModernStatsCard {...defaultProps} color='info' />);
+
       expect(screen.getByText('42')).toBeInTheDocument();
     });
 
     test('falls back to primary color for unknown color', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} color="unknown" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} color='unknown' />
+      );
+
       expect(screen.getByText('42')).toBeInTheDocument();
     });
   });
 
   describe('Variant Styles', () => {
     test('applies glass variant', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} variant="glass" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} variant='glass' />
+      );
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard).toHaveAttribute('data-variant', 'glass');
     });
 
     test('applies gradient variant with background styling', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} variant="gradient" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} variant='gradient' />
+      );
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard).toHaveAttribute('data-variant', 'gradient');
     });
 
     test('applies solid variant', () => {
-      renderWithProviders(<ModernStatsCard {...defaultProps} variant="solid" />);
-      
+      renderWithProviders(
+        <ModernStatsCard {...defaultProps} variant='solid' />
+      );
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard).toHaveAttribute('data-variant', 'solid');
     });
@@ -245,7 +253,7 @@ describe('ModernStatsCard Component', () => {
     test('passes through custom sx styles', () => {
       const customSx = { backgroundColor: 'red', margin: '10px' };
       renderWithProviders(<ModernStatsCard {...defaultProps} sx={customSx} />);
-      
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard.style.backgroundColor).toBe('red');
       expect(modernCard.style.margin).toBe('10px');
@@ -254,20 +262,20 @@ describe('ModernStatsCard Component', () => {
     test('applies custom height from sx', () => {
       const customSx = { height: '200px' };
       renderWithProviders(<ModernStatsCard {...defaultProps} sx={customSx} />);
-      
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard.style.height).toBe('200px');
     });
 
     test('passes through additional props to ModernCard', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          {...defaultProps} 
-          data-custom="test-value"
-          aria-label="Custom Stats Card"
+        <ModernStatsCard
+          {...defaultProps}
+          data-custom='test-value'
+          aria-label='Custom Stats Card'
         />
       );
-      
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard).toHaveAttribute('data-custom', 'test-value');
       expect(modernCard).toHaveAttribute('aria-label', 'Custom Stats Card');
@@ -277,61 +285,54 @@ describe('ModernStatsCard Component', () => {
   describe('Typography and Content', () => {
     test('displays value with proper typography', () => {
       renderWithProviders(<ModernStatsCard {...defaultProps} />);
-      
+
       const valueElement = screen.getByText('42');
       expect(valueElement).toBeInTheDocument();
     });
 
     test('handles long values gracefully', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          {...defaultProps} 
-          value="999,999,999" 
-        />
+        <ModernStatsCard {...defaultProps} value='999,999,999' />
       );
-      
+
       expect(screen.getByText('999,999,999')).toBeInTheDocument();
     });
 
     test('handles special characters in value', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          {...defaultProps} 
-          value="$1,234.56" 
-        />
+        <ModernStatsCard {...defaultProps} value='$1,234.56' />
       );
-      
+
       expect(screen.getByText('$1,234.56')).toBeInTheDocument();
     });
 
     test('handles long titles gracefully', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          {...defaultProps} 
-          title="Very Long Title That Should Still Display Properly" 
+        <ModernStatsCard
+          {...defaultProps}
+          title='Very Long Title That Should Still Display Properly'
         />
       );
-      
-      expect(screen.getByText('VERY LONG TITLE THAT SHOULD STILL DISPLAY PROPERLY')).toBeInTheDocument();
+
+      expect(
+        screen.getByText('VERY LONG TITLE THAT SHOULD STILL DISPLAY PROPERLY')
+      ).toBeInTheDocument();
     });
   });
 
   describe('Responsive Design', () => {
     test('maintains consistent height', () => {
       renderWithProviders(<ModernStatsCard {...defaultProps} />);
-      
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard.style.height).toBe('140px');
     });
 
     test('allows height override through sx', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          {...defaultProps} 
-          sx={{ height: '180px' }}
-        />
+        <ModernStatsCard {...defaultProps} sx={{ height: '180px' }} />
       );
-      
+
       const modernCard = screen.getByTestId('modern-card');
       expect(modernCard.style.height).toBe('180px');
     });
@@ -343,10 +344,10 @@ describe('ModernStatsCard Component', () => {
 
       // Title should be present and readable
       expect(screen.getByText('ACTIVE JOBS')).toBeInTheDocument();
-      
+
       // Value should be the main content
       expect(screen.getByText('42')).toBeInTheDocument();
-      
+
       // Change information should be supplementary
       expect(screen.getByText('+15%')).toBeInTheDocument();
       expect(screen.getByText('vs last month')).toBeInTheDocument();
@@ -357,11 +358,11 @@ describe('ModernStatsCard Component', () => {
       renderWithProviders(<ModernStatsCard {...defaultProps} />);
 
       const iconButton = screen.getByRole('button');
-      
+
       // Button should be focusable
       await user.tab();
       expect(iconButton).toHaveFocus();
-      
+
       // Button should be clickable
       await user.click(iconButton);
       // No specific action expected, but should not crash
@@ -382,45 +383,36 @@ describe('ModernStatsCard Component', () => {
     test('handles missing required props gracefully', () => {
       // Should not crash with minimal props
       expect(() => {
-        renderWithProviders(<ModernStatsCard title="Test" />);
+        renderWithProviders(<ModernStatsCard title='Test' />);
       }).not.toThrow();
     });
 
     test('handles undefined value', () => {
-      renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value={undefined}
-        />
-      );
-      
+      renderWithProviders(<ModernStatsCard title='Test' value={undefined} />);
+
       // Should render without crashing
       expect(screen.getByText('TEST')).toBeInTheDocument();
     });
 
     test('handles null change value', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100"
-          change={null}
-        />
+        <ModernStatsCard title='Test' value='100' change={null} />
       );
-      
+
       expect(screen.getByText('100')).toBeInTheDocument();
       expect(screen.queryByText('vs last month')).not.toBeInTheDocument();
     });
 
     test('handles invalid changeType', () => {
       renderWithProviders(
-        <ModernStatsCard 
-          title="Test" 
-          value="100"
+        <ModernStatsCard
+          title='Test'
+          value='100'
           change={15}
-          changeType="invalid"
+          changeType='invalid'
         />
       );
-      
+
       expect(screen.getByText('15%')).toBeInTheDocument();
     });
   });

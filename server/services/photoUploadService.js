@@ -9,14 +9,23 @@ class PhotoUploadService {
     this.maxFileSize = 10 * 1024 * 1024; // 10MB
     this.allowedMimeTypes = [
       'image/jpeg',
-      'image/png', 
+      'image/png',
       'image/webp',
       'image/gif',
       'image/heic',
       'image/heif',
-      'image/tiff'
+      'image/tiff',
     ];
-    this.allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif', 'tiff'];
+    this.allowedExtensions = [
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+      'gif',
+      'heic',
+      'heif',
+      'tiff',
+    ];
     this.thumbnailSize = { width: 300, height: 300 };
     this.maxImageDimensions = { width: 2000, height: 2000 };
   }
@@ -29,31 +38,39 @@ class PhotoUploadService {
 
     // Check file size
     if (file.size > this.maxFileSize) {
-      errors.push(`File size ${this.formatFileSize(file.size)} exceeds maximum allowed size of ${this.formatFileSize(this.maxFileSize)}`);
+      errors.push(
+        `File size ${this.formatFileSize(file.size)} exceeds maximum allowed size of ${this.formatFileSize(this.maxFileSize)}`
+      );
     }
 
     // Check MIME type
     if (!this.allowedMimeTypes.includes(file.mimetype)) {
-      errors.push(`File type ${file.mimetype} is not allowed. Allowed types: ${this.allowedMimeTypes.join(', ')}`);
+      errors.push(
+        `File type ${file.mimetype} is not allowed. Allowed types: ${this.allowedMimeTypes.join(', ')}`
+      );
     }
 
     // Check file extension
     const ext = path.extname(file.originalname).toLowerCase().substring(1);
     if (!this.allowedExtensions.includes(ext)) {
-      errors.push(`File extension .${ext} is not allowed. Allowed extensions: ${this.allowedExtensions.map(e => '.' + e).join(', ')}`);
+      errors.push(
+        `File extension .${ext} is not allowed. Allowed extensions: ${this.allowedExtensions.map(e => '.' + e).join(', ')}`
+      );
     }
 
     // Validate magic bytes for common image formats
     if (file.buffer) {
       const magicBytes = this.getMagicBytes(file.buffer);
       if (!this.validateMagicBytes(magicBytes, file.mimetype)) {
-        errors.push('File content does not match declared file type (security check failed)');
+        errors.push(
+          'File content does not match declared file type (security check failed)'
+        );
       }
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -64,7 +81,7 @@ class PhotoUploadService {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    
+
     return path.join('uploads', year.toString(), month, jobId || 'general');
   }
 
@@ -95,7 +112,7 @@ class PhotoUploadService {
     try {
       const image = sharp(imagePath);
       const metadata = await image.metadata();
-      
+
       return {
         width: metadata.width,
         height: metadata.height,
@@ -106,7 +123,7 @@ class PhotoUploadService {
         hasAlpha: metadata.hasAlpha,
         hasProfile: metadata.hasProfile,
         exif: metadata.exif ? this.parseExifData(metadata.exif) : null,
-        orientation: metadata.orientation || 1
+        orientation: metadata.orientation || 1,
       };
     } catch (error) {
       console.error('Error extracting EXIF data:', error);
@@ -121,7 +138,7 @@ class PhotoUploadService {
     // Basic EXIF parsing - in production, use a library like 'exif-parser' for comprehensive parsing
     try {
       return {
-        raw: exifBuffer.toString('base64')
+        raw: exifBuffer.toString('base64'),
       };
     } catch (error) {
       return null;
@@ -133,18 +150,17 @@ class PhotoUploadService {
    */
   async processImage(inputPath, outputPath, options = {}) {
     try {
-      const { 
+      const {
         maxWidth = this.maxImageDimensions.width,
         maxHeight = this.maxImageDimensions.height,
         quality = 85,
-        format = 'jpeg'
+        format = 'jpeg',
       } = options;
 
-      let pipeline = sharp(inputPath)
-        .resize(maxWidth, maxHeight, {
-          fit: 'inside',
-          withoutEnlargement: true
-        });
+      let pipeline = sharp(inputPath).resize(maxWidth, maxHeight, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
 
       // Apply format-specific optimization
       switch (format.toLowerCase()) {
@@ -163,15 +179,15 @@ class PhotoUploadService {
       }
 
       await pipeline.toFile(outputPath);
-      
+
       // Get final image metadata
       const finalMetadata = await sharp(outputPath).metadata();
-      
+
       return {
         success: true,
         width: finalMetadata.width,
         height: finalMetadata.height,
-        size: (await fs.stat(outputPath)).size
+        size: (await fs.stat(outputPath)).size,
       };
     } catch (error) {
       console.error('Error processing image:', error);
@@ -187,7 +203,7 @@ class PhotoUploadService {
       await sharp(inputPath)
         .resize(this.thumbnailSize.width, this.thumbnailSize.height, {
           fit: 'cover',
-          position: 'center'
+          position: 'center',
         })
         .jpeg({ quality: 80 })
         .toFile(outputPath);
@@ -207,15 +223,20 @@ class PhotoUploadService {
       // Validate file
       const validation = this.validateFile(file);
       if (!validation.isValid) {
-        throw new Error(`File validation failed: ${validation.errors.join(', ')}`);
+        throw new Error(
+          `File validation failed: ${validation.errors.join(', ')}`
+        );
       }
 
       // Generate paths and filenames
-      const storagePath = this.generateStoragePath(metadata.jobId, metadata.category);
+      const storagePath = this.generateStoragePath(
+        metadata.jobId,
+        metadata.category
+      );
       const filename = this.generateFilename(file.originalname);
       const fullStoragePath = path.join(process.cwd(), storagePath);
       const filePath = path.join(fullStoragePath, filename);
-      
+
       // Generate thumbnail path
       const thumbnailDir = path.join(process.cwd(), 'uploads', 'thumbnails');
       const thumbnailPath = path.join(thumbnailDir, `thumb_${filename}`);
@@ -230,13 +251,16 @@ class PhotoUploadService {
 
       // Process and optimize image
       const processResult = await this.processImage(tempPath, filePath);
-      
+
       // Generate thumbnail
-      const thumbnailGenerated = await this.generateThumbnail(filePath, thumbnailPath);
-      
+      const thumbnailGenerated = await this.generateThumbnail(
+        filePath,
+        thumbnailPath
+      );
+
       // Extract EXIF data
       const exifData = await this.extractExifData(filePath);
-      
+
       // Clean up temp file
       await fs.unlink(tempPath);
 
@@ -245,10 +269,15 @@ class PhotoUploadService {
         fileName: filename,
         originalFileName: file.originalname,
         filePath: path.relative(process.cwd(), filePath),
-        thumbnailPath: thumbnailGenerated ? path.relative(process.cwd(), thumbnailPath) : null,
+        thumbnailPath: thumbnailGenerated
+          ? path.relative(process.cwd(), thumbnailPath)
+          : null,
         fileType: 'image',
         mimeType: file.mimetype,
-        fileExtension: path.extname(file.originalname).toLowerCase().substring(1),
+        fileExtension: path
+          .extname(file.originalname)
+          .toLowerCase()
+          .substring(1),
         fileSize: processResult.size,
         imageWidth: processResult.width,
         imageHeight: processResult.height,
@@ -257,7 +286,7 @@ class PhotoUploadService {
         processed: true,
         storageProvider: 'local',
         uploadDate: new Date(),
-        ...metadata // jobId, estimateId, category, description, etc.
+        ...metadata, // jobId, estimateId, category, description, etc.
       };
 
       // Create database record
@@ -273,14 +302,13 @@ class PhotoUploadService {
           size: processResult.size,
           dimensions: {
             width: processResult.width,
-            height: processResult.height
+            height: processResult.height,
           },
           path: attachmentData.filePath,
           thumbnailPath: attachmentData.thumbnailPath,
-          category: metadata.category || 'other'
-        }
+          category: metadata.category || 'other',
+        },
       };
-
     } catch (error) {
       console.error('Photo upload error:', error);
       throw error;
@@ -297,8 +325,8 @@ class PhotoUploadService {
       summary: {
         total: files.length,
         successful: 0,
-        failed: 0
-      }
+        failed: 0,
+      },
     };
 
     for (const file of files) {
@@ -309,7 +337,7 @@ class PhotoUploadService {
       } catch (error) {
         results.failed.push({
           filename: file.originalname,
-          error: error.message
+          error: error.message,
         });
         results.summary.failed++;
       }
@@ -353,7 +381,10 @@ class PhotoUploadService {
 
       // Delete thumbnail if exists
       if (attachment.thumbnailPath) {
-        const thumbnailPath = path.join(process.cwd(), attachment.thumbnailPath);
+        const thumbnailPath = path.join(
+          process.cwd(),
+          attachment.thumbnailPath
+        );
         try {
           await fs.unlink(thumbnailPath);
         } catch (error) {
@@ -381,7 +412,7 @@ class PhotoUploadService {
         limit,
         offset,
         orderBy = 'uploadDate',
-        orderDirection = 'DESC'
+        orderDirection = 'DESC',
       } = options;
 
       const whereClause = { jobId, fileType };
@@ -407,11 +438,13 @@ class PhotoUploadService {
       return {
         attachments: attachments.rows,
         total: attachments.count,
-        pagination: limit ? {
-          limit,
-          offset,
-          hasMore: (offset + limit) < attachments.count
-        } : null
+        pagination: limit
+          ? {
+              limit,
+              offset,
+              hasMore: offset + limit < attachments.count,
+            }
+          : null,
       };
     } catch (error) {
       throw new Error(`Error retrieving job attachments: ${error.message}`);
@@ -426,7 +459,7 @@ class PhotoUploadService {
       'image/jpeg': ['FFD8FF'],
       'image/png': ['89504E47'],
       'image/webp': ['52494646'], // RIFF header for WebP
-      'image/gif': ['47494638']
+      'image/gif': ['47494638'],
     };
 
     const signature = signatures[mimeType];
@@ -459,21 +492,73 @@ class PhotoUploadService {
    */
   getSupportedCategories() {
     return [
-      { value: 'damage_assessment', label: 'Damage Assessment', description: 'Initial damage documentation' },
-      { value: 'before_damage', label: 'Before Repair', description: 'Pre-repair condition' },
-      { value: 'during_repair', label: 'During Repair', description: 'Work in progress' },
-      { value: 'after_repair', label: 'After Repair', description: 'Completed work' },
-      { value: 'supplement', label: 'Supplement', description: 'Additional damage found' },
-      { value: 'parts_received', label: 'Parts', description: 'Parts condition/packaging' },
-      { value: 'quality_check', label: 'Quality Check', description: 'Final inspection' },
-      { value: 'delivery', label: 'Delivery', description: 'Vehicle pickup/delivery' },
-      { value: 'customer_signature', label: 'Customer Authorization', description: 'Signed documents' },
-      { value: 'insurance_doc', label: 'Insurance', description: 'Claim documents' },
-      { value: 'invoice', label: 'Invoice', description: 'Billing documentation' },
+      {
+        value: 'damage_assessment',
+        label: 'Damage Assessment',
+        description: 'Initial damage documentation',
+      },
+      {
+        value: 'before_damage',
+        label: 'Before Repair',
+        description: 'Pre-repair condition',
+      },
+      {
+        value: 'during_repair',
+        label: 'During Repair',
+        description: 'Work in progress',
+      },
+      {
+        value: 'after_repair',
+        label: 'After Repair',
+        description: 'Completed work',
+      },
+      {
+        value: 'supplement',
+        label: 'Supplement',
+        description: 'Additional damage found',
+      },
+      {
+        value: 'parts_received',
+        label: 'Parts',
+        description: 'Parts condition/packaging',
+      },
+      {
+        value: 'quality_check',
+        label: 'Quality Check',
+        description: 'Final inspection',
+      },
+      {
+        value: 'delivery',
+        label: 'Delivery',
+        description: 'Vehicle pickup/delivery',
+      },
+      {
+        value: 'customer_signature',
+        label: 'Customer Authorization',
+        description: 'Signed documents',
+      },
+      {
+        value: 'insurance_doc',
+        label: 'Insurance',
+        description: 'Claim documents',
+      },
+      {
+        value: 'invoice',
+        label: 'Invoice',
+        description: 'Billing documentation',
+      },
       { value: 'estimate', label: 'Estimate', description: 'Repair estimate' },
-      { value: 'blueprint', label: 'VIN/Labels', description: 'Vehicle identification' },
-      { value: 'warranty', label: 'Warranty', description: 'Warranty documentation' },
-      { value: 'other', label: 'Other', description: 'Other documentation' }
+      {
+        value: 'blueprint',
+        label: 'VIN/Labels',
+        description: 'Vehicle identification',
+      },
+      {
+        value: 'warranty',
+        label: 'Warranty',
+        description: 'Warranty documentation',
+      },
+      { value: 'other', label: 'Other', description: 'Other documentation' },
     ];
   }
 }

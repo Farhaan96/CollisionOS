@@ -17,14 +17,14 @@ class BMSErrorReporter extends EventEmitter {
       NETWORK: 'network',
       FILE_IO: 'file_io',
       BUSINESS_LOGIC: 'business_logic',
-      SYSTEM: 'system'
+      SYSTEM: 'system',
     };
-    
+
     this.severityLevels = {
       LOW: 'low',
       MEDIUM: 'medium',
       HIGH: 'high',
-      CRITICAL: 'critical'
+      CRITICAL: 'critical',
     };
 
     this.maxRetryAttempts = 3;
@@ -41,25 +41,27 @@ class BMSErrorReporter extends EventEmitter {
     this.errorPatterns.set(/XML.*parse.*error/i, {
       category: this.errorCategories.PARSING,
       severity: this.severityLevels.HIGH,
-      userMessage: 'The BMS file appears to be corrupted or not in valid XML format. Please check the file and try again.',
+      userMessage:
+        'The BMS file appears to be corrupted or not in valid XML format. Please check the file and try again.',
       suggestions: [
         'Ensure the file is a valid BMS XML file from Mitchell Estimating',
         'Check that the file was not corrupted during transfer',
-        'Try opening the file in a text editor to verify its contents'
+        'Try opening the file in a text editor to verify its contents',
       ],
-      retryable: false
+      retryable: false,
     });
 
     this.errorPatterns.set(/VIN.*invalid/i, {
       category: this.errorCategories.VALIDATION,
       severity: this.severityLevels.MEDIUM,
-      userMessage: 'The Vehicle Identification Number (VIN) in the BMS file is invalid or missing.',
+      userMessage:
+        'The Vehicle Identification Number (VIN) in the BMS file is invalid or missing.',
       suggestions: [
         'Verify the VIN in the original estimate',
         'Check that the VIN contains exactly 17 characters',
-        'Ensure the VIN does not contain invalid characters (I, O, Q)'
+        'Ensure the VIN does not contain invalid characters (I, O, Q)',
       ],
-      retryable: false
+      retryable: false,
     });
 
     this.errorPatterns.set(/database.*connection/i, {
@@ -69,9 +71,9 @@ class BMSErrorReporter extends EventEmitter {
       suggestions: [
         'Check your internet connection',
         'Wait a few minutes and try again',
-        'Contact support if the problem persists'
+        'Contact support if the problem persists',
       ],
-      retryable: true
+      retryable: true,
     });
 
     this.errorPatterns.set(/network.*error|fetch.*failed/i, {
@@ -81,9 +83,9 @@ class BMSErrorReporter extends EventEmitter {
       suggestions: [
         'Check your internet connection',
         'Ensure firewall is not blocking the connection',
-        'Try again with a smaller file size'
+        'Try again with a smaller file size',
       ],
-      retryable: true
+      retryable: true,
     });
 
     this.errorPatterns.set(/file.*too.*large/i, {
@@ -93,9 +95,9 @@ class BMSErrorReporter extends EventEmitter {
       suggestions: [
         'Split the estimate into smaller files',
         'Compress the file if possible',
-        'Contact support to increase file size limits'
+        'Contact support to increase file size limits',
       ],
-      retryable: false
+      retryable: false,
     });
 
     this.errorPatterns.set(/missing.*required.*field/i, {
@@ -105,21 +107,22 @@ class BMSErrorReporter extends EventEmitter {
       suggestions: [
         'Check that the estimate is complete in Mitchell',
         'Ensure customer and vehicle information is filled out',
-        'Verify that claim information is present'
+        'Verify that claim information is present',
       ],
-      retryable: false
+      retryable: false,
     });
 
     this.errorPatterns.set(/duplicate.*customer|customer.*exists/i, {
       category: this.errorCategories.BUSINESS_LOGIC,
       severity: this.severityLevels.LOW,
-      userMessage: 'A customer with this information already exists in the system.',
+      userMessage:
+        'A customer with this information already exists in the system.',
       suggestions: [
         'This is normal behavior - the existing customer will be updated',
         'Check the customer list to verify the information',
-        'Contact support if duplicate customers are causing issues'
+        'Contact support if duplicate customers are causing issues',
       ],
-      retryable: false
+      retryable: false,
     });
 
     this.errorPatterns.set(/timeout/i, {
@@ -129,9 +132,9 @@ class BMSErrorReporter extends EventEmitter {
       suggestions: [
         'Check your internet connection speed',
         'Try uploading fewer files at once',
-        'Wait a moment and try again'
+        'Wait a moment and try again',
       ],
-      retryable: true
+      retryable: true,
     });
   }
 
@@ -144,10 +147,10 @@ class BMSErrorReporter extends EventEmitter {
   reportError(error, context = {}) {
     const errorReport = this.analyzeError(error, context);
     this.logError(errorReport);
-    
+
     // Emit error event for listeners
     this.emit('errorReported', errorReport);
-    
+
     // Handle retryable errors
     if (errorReport.retryable && context.operation) {
       this.scheduleRetry(errorReport, context);
@@ -165,17 +168,17 @@ class BMSErrorReporter extends EventEmitter {
   analyzeError(error, context) {
     const timestamp = new Date();
     const errorId = this.generateErrorId();
-    
+
     // Find matching error pattern
     const pattern = this.findErrorPattern(error.message);
-    
+
     const errorReport = {
       id: errorId,
       timestamp,
       originalError: {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       },
       context: {
         fileName: context.fileName || 'Unknown',
@@ -184,23 +187,25 @@ class BMSErrorReporter extends EventEmitter {
         userId: context.userId || 'anonymous',
         sessionId: context.sessionId || 'unknown',
         userAgent: context.userAgent || 'unknown',
-        ...context
+        ...context,
       },
       analysis: {
         category: pattern?.category || this.errorCategories.SYSTEM,
         severity: pattern?.severity || this.severityLevels.MEDIUM,
-        userMessage: pattern?.userMessage || this.generateGenericUserMessage(error),
+        userMessage:
+          pattern?.userMessage || this.generateGenericUserMessage(error),
         technicalMessage: error.message,
-        suggestions: pattern?.suggestions || this.generateGenericSuggestions(error),
+        suggestions:
+          pattern?.suggestions || this.generateGenericSuggestions(error),
         retryable: pattern?.retryable || false,
-        affectedComponents: this.identifyAffectedComponents(error, context)
+        affectedComponents: this.identifyAffectedComponents(error, context),
       },
       resolution: {
         status: 'unresolved',
         resolvedAt: null,
         resolvedBy: null,
-        resolution: null
-      }
+        resolution: null,
+      },
     };
 
     return errorReport;
@@ -227,7 +232,7 @@ class BMSErrorReporter extends EventEmitter {
    */
   generateGenericUserMessage(error) {
     const errorType = error.name || 'Error';
-    
+
     switch (errorType) {
       case 'ValidationError':
         return 'The BMS file contains invalid data. Please check the file and try again.';
@@ -252,7 +257,7 @@ class BMSErrorReporter extends EventEmitter {
       'Try uploading the file again',
       'Check that the file is a valid BMS XML file',
       'Ensure you have a stable internet connection',
-      'Contact support if the problem persists'
+      'Contact support if the problem persists',
     ];
   }
 
@@ -264,27 +269,27 @@ class BMSErrorReporter extends EventEmitter {
    */
   identifyAffectedComponents(error, context) {
     const components = [];
-    
+
     if (error.message.includes('database') || error.message.includes('SQL')) {
       components.push('Database');
     }
-    
+
     if (error.message.includes('network') || error.message.includes('fetch')) {
       components.push('Network');
     }
-    
+
     if (error.message.includes('parse') || error.message.includes('XML')) {
       components.push('XML Parser');
     }
-    
+
     if (error.message.includes('validation')) {
       components.push('Data Validation');
     }
-    
+
     if (context.operation) {
       components.push(`${context.operation} Operation`);
     }
-    
+
     return components.length > 0 ? components : ['Unknown Component'];
   }
 
@@ -295,19 +300,19 @@ class BMSErrorReporter extends EventEmitter {
   logError(errorReport) {
     // Add to error log
     this.errorLog.unshift(errorReport);
-    
+
     // Maintain maximum log size
     if (this.errorLog.length > this.maxLogEntries) {
       this.errorLog = this.errorLog.slice(0, this.maxLogEntries);
     }
-    
+
     // Log to console based on severity
     const consoleMethod = this.getConsoleMethod(errorReport.analysis.severity);
     console[consoleMethod](`[BMS Error ${errorReport.id}]`, {
       category: errorReport.analysis.category,
       severity: errorReport.analysis.severity,
       message: errorReport.analysis.technicalMessage,
-      context: errorReport.context
+      context: errorReport.context,
     });
   }
 
@@ -338,36 +343,38 @@ class BMSErrorReporter extends EventEmitter {
    */
   scheduleRetry(errorReport, context) {
     const retryKey = `${context.operation}-${context.fileName || 'unknown'}`;
-    
+
     if (!this.retryQueue.has(retryKey)) {
       this.retryQueue.set(retryKey, {
         attempts: 0,
         lastAttempt: null,
-        errors: []
+        errors: [],
       });
     }
-    
+
     const retryInfo = this.retryQueue.get(retryKey);
     retryInfo.errors.push(errorReport);
-    
+
     if (retryInfo.attempts < this.maxRetryAttempts) {
-      const delay = this.retryDelays[retryInfo.attempts] || this.retryDelays[this.retryDelays.length - 1];
-      
+      const delay =
+        this.retryDelays[retryInfo.attempts] ||
+        this.retryDelays[this.retryDelays.length - 1];
+
       setTimeout(() => {
         this.executeRetry(retryKey, errorReport, context);
       }, delay);
-      
+
       this.emit('retryScheduled', {
         retryKey,
         attempt: retryInfo.attempts + 1,
         delay,
-        errorReport
+        errorReport,
       });
     } else {
       this.emit('retryExhausted', {
         retryKey,
         totalAttempts: retryInfo.attempts,
-        errors: retryInfo.errors
+        errors: retryInfo.errors,
       });
     }
   }
@@ -382,28 +389,28 @@ class BMSErrorReporter extends EventEmitter {
     const retryInfo = this.retryQueue.get(retryKey);
     retryInfo.attempts++;
     retryInfo.lastAttempt = new Date();
-    
+
     this.emit('retryAttempt', {
       retryKey,
       attempt: retryInfo.attempts,
-      errorReport
+      errorReport,
     });
-    
+
     try {
       // The actual retry logic would be implemented by the calling service
       // This is a placeholder for retry coordination
       this.emit('retryExecute', {
         retryKey,
         context,
-        attempt: retryInfo.attempts
+        attempt: retryInfo.attempts,
       });
     } catch (retryError) {
       const retryErrorReport = this.reportError(retryError, {
         ...context,
         isRetry: true,
-        originalErrorId: errorReport.id
+        originalErrorId: errorReport.id,
       });
-      
+
       if (retryInfo.attempts < this.maxRetryAttempts) {
         this.scheduleRetry(retryErrorReport, context);
       }
@@ -418,19 +425,19 @@ class BMSErrorReporter extends EventEmitter {
    */
   resolveError(errorId, resolution, resolvedBy = 'system') {
     const errorIndex = this.errorLog.findIndex(error => error.id === errorId);
-    
+
     if (errorIndex !== -1) {
       this.errorLog[errorIndex].resolution = {
         status: 'resolved',
         resolvedAt: new Date(),
         resolvedBy,
-        resolution
+        resolution,
       };
-      
+
       this.emit('errorResolved', this.errorLog[errorIndex]);
       return this.errorLog[errorIndex];
     }
-    
+
     return null;
   }
 
@@ -441,52 +448,53 @@ class BMSErrorReporter extends EventEmitter {
    */
   getErrorStatistics(filters = {}) {
     let filteredErrors = this.errorLog;
-    
+
     // Apply filters
     if (filters.category) {
-      filteredErrors = filteredErrors.filter(error => 
-        error.analysis.category === filters.category
+      filteredErrors = filteredErrors.filter(
+        error => error.analysis.category === filters.category
       );
     }
-    
+
     if (filters.severity) {
-      filteredErrors = filteredErrors.filter(error => 
-        error.analysis.severity === filters.severity
+      filteredErrors = filteredErrors.filter(
+        error => error.analysis.severity === filters.severity
       );
     }
-    
+
     if (filters.timeRange) {
       const { start, end } = filters.timeRange;
-      filteredErrors = filteredErrors.filter(error => 
-        error.timestamp >= start && error.timestamp <= end
+      filteredErrors = filteredErrors.filter(
+        error => error.timestamp >= start && error.timestamp <= end
       );
     }
-    
+
     // Calculate statistics
     const totalErrors = filteredErrors.length;
-    const resolvedErrors = filteredErrors.filter(error => 
-      error.resolution.status === 'resolved'
+    const resolvedErrors = filteredErrors.filter(
+      error => error.resolution.status === 'resolved'
     ).length;
-    
+
     const errorsByCategory = {};
     const errorsBySeverity = {};
-    
+
     filteredErrors.forEach(error => {
       const category = error.analysis.category;
       const severity = error.analysis.severity;
-      
+
       errorsByCategory[category] = (errorsByCategory[category] || 0) + 1;
       errorsBySeverity[severity] = (errorsBySeverity[severity] || 0) + 1;
     });
-    
+
     return {
       totalErrors,
       resolvedErrors,
       unresolvedErrors: totalErrors - resolvedErrors,
-      resolutionRate: totalErrors > 0 ? (resolvedErrors / totalErrors) * 100 : 0,
+      resolutionRate:
+        totalErrors > 0 ? (resolvedErrors / totalErrors) * 100 : 0,
       errorsByCategory,
       errorsBySeverity,
-      recentErrors: filteredErrors.slice(0, 10)
+      recentErrors: filteredErrors.slice(0, 10),
     };
   }
 
@@ -507,25 +515,31 @@ class BMSErrorReporter extends EventEmitter {
   searchErrors(criteria) {
     return this.errorLog.filter(error => {
       let matches = true;
-      
+
       if (criteria.message) {
-        matches = matches && error.originalError.message.toLowerCase()
-          .includes(criteria.message.toLowerCase());
+        matches =
+          matches &&
+          error.originalError.message
+            .toLowerCase()
+            .includes(criteria.message.toLowerCase());
       }
-      
+
       if (criteria.category) {
         matches = matches && error.analysis.category === criteria.category;
       }
-      
+
       if (criteria.severity) {
         matches = matches && error.analysis.severity === criteria.severity;
       }
-      
+
       if (criteria.fileName) {
-        matches = matches && error.context.fileName?.toLowerCase()
-          .includes(criteria.fileName.toLowerCase());
+        matches =
+          matches &&
+          error.context.fileName
+            ?.toLowerCase()
+            .includes(criteria.fileName.toLowerCase());
       }
-      
+
       return matches;
     });
   }
@@ -537,16 +551,22 @@ class BMSErrorReporter extends EventEmitter {
    */
   exportErrorLog(options = {}) {
     const { format = 'json', limit = 1000, filters = {} } = options;
-    
+
     const errors = this.searchErrors(filters).slice(0, limit);
-    
+
     if (format === 'csv') {
       // Convert to CSV format
       const csvHeaders = [
-        'ID', 'Timestamp', 'Category', 'Severity', 'Message', 
-        'FileName', 'Operation', 'Resolved'
+        'ID',
+        'Timestamp',
+        'Category',
+        'Severity',
+        'Message',
+        'FileName',
+        'Operation',
+        'Resolved',
       ];
-      
+
       const csvRows = errors.map(error => [
         error.id,
         error.timestamp.toISOString(),
@@ -555,24 +575,24 @@ class BMSErrorReporter extends EventEmitter {
         error.originalError.message,
         error.context.fileName || '',
         error.context.operation || '',
-        error.resolution.status === 'resolved' ? 'Yes' : 'No'
+        error.resolution.status === 'resolved' ? 'Yes' : 'No',
       ]);
-      
+
       return {
         format: 'csv',
         headers: csvHeaders,
-        data: csvRows
+        data: csvRows,
       };
     }
-    
+
     return {
       format: 'json',
       data: errors,
       metadata: {
         totalErrors: this.errorLog.length,
         exportedErrors: errors.length,
-        exportDate: new Date()
-      }
+        exportDate: new Date(),
+      },
     };
   }
 
@@ -616,19 +636,19 @@ class BMSErrorReporter extends EventEmitter {
       const isResolved = error.resolution.status === 'resolved';
       if (criteria.resolved !== isResolved) return false;
     }
-    
+
     if (criteria.category && error.analysis.category !== criteria.category) {
       return false;
     }
-    
+
     if (criteria.severity && error.analysis.severity !== criteria.severity) {
       return false;
     }
-    
+
     if (criteria.olderThan) {
       if (error.timestamp > criteria.olderThan) return false;
     }
-    
+
     return true;
   }
 }

@@ -11,34 +11,38 @@ const path = require('path');
 class PerformanceOptimizer {
   constructor() {
     this.configPath = path.join(__dirname, '..', 'supabase-config.json');
-    this.logFile = path.join(__dirname, '..', 'performance-optimization-log.txt');
+    this.logFile = path.join(
+      __dirname,
+      '..',
+      'performance-optimization-log.txt'
+    );
     this.reportFile = path.join(__dirname, '..', 'performance-report.json');
-    
+
     // Load configuration
     if (!fs.existsSync(this.configPath)) {
       throw new Error('Supabase configuration not found.');
     }
-    
+
     const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
-    
+
     // Initialize Supabase admin client
     this.supabase = createClient(config.supabaseUrl, config.serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
+      auth: { autoRefreshToken: false, persistSession: false },
     });
-    
+
     this.config = config;
     this.optimizations = [];
     this.benchmarks = {
       before: {},
       after: {},
-      improvements: {}
+      improvements: {},
     };
   }
 
   log(message, type = 'info') {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-    
+
     console.log(logMessage);
     fs.appendFileSync(this.logFile, logMessage + '\n');
   }
@@ -50,9 +54,9 @@ class PerformanceOptimizer {
    */
   async runBenchmarks(phase = 'before') {
     this.log(`Running ${phase} optimization benchmarks...`);
-    
+
     const benchmarks = {};
-    
+
     // Test 1: Simple job query
     const startTime1 = Date.now();
     const { data: jobs, error: jobsError } = await this.supabase
@@ -60,7 +64,7 @@ class PerformanceOptimizer {
       .select('id, job_number, status, customer_id')
       .limit(100);
     benchmarks.simpleJobQuery = Date.now() - startTime1;
-    
+
     if (jobsError) {
       this.log(`Job query error: ${jobsError.message}`, 'warning');
     }
@@ -69,7 +73,8 @@ class PerformanceOptimizer {
     const startTime2 = Date.now();
     const { data: jobsWithDetails, error: joinError } = await this.supabase
       .from('jobs')
-      .select(`
+      .select(
+        `
         id,
         job_number,
         status,
@@ -77,23 +82,30 @@ class PerformanceOptimizer {
         customer:customers(first_name, last_name, email),
         vehicle:vehicles(year, make, model, vin),
         assignee:users!jobs_assigned_to_fkey(first_name, last_name)
-      `)
+      `
+      )
       .limit(50);
     benchmarks.complexJoinQuery = Date.now() - startTime2;
-    
+
     if (joinError) {
       this.log(`Join query error: ${joinError.message}`, 'warning');
     }
 
     // Test 3: Aggregation query
     const startTime3 = Date.now();
-    const { data: stats, error: statsError } = await this.supabase
-      .rpc('get_shop_dashboard_stats', {
-        shop_uuid: jobs && jobs.length > 0 ? jobs[0].shop_id : null
-      });
+    const { data: stats, error: statsError } = await this.supabase.rpc(
+      'get_shop_dashboard_stats',
+      {
+        shop_uuid: jobs && jobs.length > 0 ? jobs[0].shop_id : null,
+      }
+    );
     benchmarks.aggregationQuery = Date.now() - startTime3;
-    
-    if (statsError && !statsError.message.includes('function') && !statsError.message.includes('does not exist')) {
+
+    if (
+      statsError &&
+      !statsError.message.includes('function') &&
+      !statsError.message.includes('does not exist')
+    ) {
       this.log(`Stats query error: ${statsError.message}`, 'warning');
     }
 
@@ -105,7 +117,7 @@ class PerformanceOptimizer {
       .or('first_name.ilike.%test%,last_name.ilike.%test%,email.ilike.%test%')
       .limit(20);
     benchmarks.searchQuery = Date.now() - startTime4;
-    
+
     if (searchError) {
       this.log(`Search query error: ${searchError.message}`, 'warning');
     }
@@ -116,19 +128,19 @@ class PerformanceOptimizer {
       .from('jobs')
       .select('*', { count: 'exact', head: true });
     benchmarks.countQuery = Date.now() - startTime5;
-    
+
     if (countError) {
       this.log(`Count query error: ${countError.message}`, 'warning');
     }
 
     this.benchmarks[phase] = benchmarks;
-    
+
     this.log(`${phase} benchmarks completed:`);
     Object.entries(benchmarks).forEach(([test, time]) => {
       const status = time < 100 ? '✅' : time < 500 ? '⚠️' : '❌';
       this.log(`  ${status} ${test}: ${time}ms`);
     });
-    
+
     return benchmarks;
   }
 
@@ -138,26 +150,26 @@ class PerformanceOptimizer {
    */
   async createOptimizedIndexes() {
     this.log('Creating optimized database indexes...');
-    
+
     const indexes = [
       // Multi-column indexes for common queries
       {
         name: 'idx_jobs_shop_status_priority',
         sql: `CREATE INDEX IF NOT EXISTS idx_jobs_shop_status_priority 
               ON jobs(shop_id, status, priority) 
-              WHERE is_archived = false;`
+              WHERE is_archived = false;`,
       },
       {
         name: 'idx_jobs_assigned_status',
         sql: `CREATE INDEX IF NOT EXISTS idx_jobs_assigned_status 
               ON jobs(assigned_to, status) 
-              WHERE assigned_to IS NOT NULL AND is_archived = false;`
+              WHERE assigned_to IS NOT NULL AND is_archived = false;`,
       },
       {
         name: 'idx_jobs_delivery_date_status',
         sql: `CREATE INDEX IF NOT EXISTS idx_jobs_delivery_date_status 
               ON jobs(target_delivery_date, status) 
-              WHERE target_delivery_date IS NOT NULL;`
+              WHERE target_delivery_date IS NOT NULL;`,
       },
       // Customer search optimization
       {
@@ -171,76 +183,81 @@ class PerformanceOptimizer {
                   COALESCE(phone, '') || ' ' ||
                   COALESCE(customer_number, '')
                 )
-              );`
+              );`,
       },
       // Parts optimization
       {
         name: 'idx_parts_shop_category_status',
         sql: `CREATE INDEX IF NOT EXISTS idx_parts_shop_category_status 
               ON parts(shop_id, category, part_status) 
-              WHERE is_active = true;`
+              WHERE is_active = true;`,
       },
       {
         name: 'idx_parts_stock_reorder',
         sql: `CREATE INDEX IF NOT EXISTS idx_parts_stock_reorder 
               ON parts(current_stock, minimum_stock, reorder_point) 
-              WHERE is_active = true AND (current_stock <= minimum_stock OR current_stock <= reorder_point);`
+              WHERE is_active = true AND (current_stock <= minimum_stock OR current_stock <= reorder_point);`,
       },
       // Job parts for production board
       {
         name: 'idx_job_parts_status_expected',
         sql: `CREATE INDEX IF NOT EXISTS idx_job_parts_status_expected 
               ON job_parts(job_id, status, expected_date) 
-              WHERE status IN ('pending', 'ordered', 'backordered');`
+              WHERE status IN ('pending', 'ordered', 'backordered');`,
       },
       // Notifications optimization
       {
         name: 'idx_notifications_user_unread',
         sql: `CREATE INDEX IF NOT EXISTS idx_notifications_user_unread 
               ON notifications(user_id, created_at DESC) 
-              WHERE is_read = false AND expires_at > NOW();`
+              WHERE is_read = false AND expires_at > NOW();`,
       },
       // Audit log optimization
       {
         name: 'idx_audit_log_table_record_time',
         sql: `CREATE INDEX IF NOT EXISTS idx_audit_log_table_record_time 
-              ON audit_log(table_name, record_id, created_at DESC);`
-      }
+              ON audit_log(table_name, record_id, created_at DESC);`,
+      },
     ];
-    
+
     for (const index of indexes) {
       try {
         this.log(`Creating index: ${index.name}`);
-        
+
         // Execute the index creation
-        const { error } = await this.supabase.rpc('exec_sql', { 
-          sql: index.sql 
+        const { error } = await this.supabase.rpc('exec_sql', {
+          sql: index.sql,
         });
-        
+
         if (error) {
           // Try alternative method using direct query
           const { error: directError } = await this.supabase
             .from('_pg_index_create') // This won't work, but we'll log the attempt
             .select('*');
-          
-          this.log(`Index creation may have failed for ${index.name}: ${error.message}`, 'warning');
+
+          this.log(
+            `Index creation may have failed for ${index.name}: ${error.message}`,
+            'warning'
+          );
           this.log(`SQL to run manually: ${index.sql}`, 'info');
         } else {
           this.log(`✅ Index created: ${index.name}`, 'success');
           this.optimizations.push({
             type: 'index',
             name: index.name,
-            status: 'success'
+            status: 'success',
           });
         }
-        
       } catch (error) {
-        this.log(`❌ Failed to create index ${index.name}: ${error.message}`, 'error');
+        this.log(
+          `❌ Failed to create index ${index.name}: ${error.message}`,
+          'error'
+        );
         this.optimizations.push({
           type: 'index',
           name: index.name,
           status: 'failed',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -252,7 +269,7 @@ class PerformanceOptimizer {
    */
   async optimizeRLSPolicies() {
     this.log('Optimizing Row Level Security policies...');
-    
+
     const optimizedPolicies = [
       {
         table: 'jobs',
@@ -267,7 +284,7 @@ class PerformanceOptimizer {
                 assigned_to = auth.uid()
               )
             );
-        `
+        `,
       },
       {
         table: 'customers',
@@ -279,7 +296,7 @@ class PerformanceOptimizer {
               shop_id = get_user_shop() AND
               has_permission(auth.uid(), 'customers.view')
             );
-        `
+        `,
       },
       {
         table: 'parts',
@@ -291,37 +308,42 @@ class PerformanceOptimizer {
               shop_id = get_user_shop() AND
               has_permission(auth.uid(), 'parts.view')
             );
-        `
-      }
+        `,
+      },
     ];
-    
+
     for (const policy of optimizedPolicies) {
       try {
         this.log(`Optimizing RLS policy for ${policy.table}`);
-        
-        const { error } = await this.supabase.rpc('exec_sql', { 
-          sql: policy.sql 
+
+        const { error } = await this.supabase.rpc('exec_sql', {
+          sql: policy.sql,
         });
-        
+
         if (error) {
-          this.log(`RLS optimization may need manual intervention for ${policy.table}: ${error.message}`, 'warning');
+          this.log(
+            `RLS optimization may need manual intervention for ${policy.table}: ${error.message}`,
+            'warning'
+          );
           this.log(`SQL to run manually: ${policy.sql}`, 'info');
         } else {
           this.log(`✅ RLS policy optimized: ${policy.table}`, 'success');
           this.optimizations.push({
             type: 'rls_policy',
             table: policy.table,
-            status: 'success'
+            status: 'success',
           });
         }
-        
       } catch (error) {
-        this.log(`❌ Failed to optimize RLS for ${policy.table}: ${error.message}`, 'error');
+        this.log(
+          `❌ Failed to optimize RLS for ${policy.table}: ${error.message}`,
+          'error'
+        );
         this.optimizations.push({
           type: 'rls_policy',
           table: policy.table,
           status: 'failed',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -333,7 +355,7 @@ class PerformanceOptimizer {
    */
   async createMaterializedViews() {
     this.log('Creating materialized views for performance...');
-    
+
     const materializedViews = [
       {
         name: 'mv_shop_dashboard_stats',
@@ -362,7 +384,7 @@ class PerformanceOptimizer {
           GROUP BY s.id, s.name;
           
           CREATE UNIQUE INDEX ON mv_shop_dashboard_stats (shop_id);
-        `
+        `,
       },
       {
         name: 'mv_production_board',
@@ -407,37 +429,42 @@ class PerformanceOptimizer {
           
           CREATE INDEX ON mv_production_board (shop_id, status);
           CREATE INDEX ON mv_production_board (assigned_to);
-        `
-      }
+        `,
+      },
     ];
-    
+
     for (const view of materializedViews) {
       try {
         this.log(`Creating materialized view: ${view.name}`);
-        
-        const { error } = await this.supabase.rpc('exec_sql', { 
-          sql: view.sql 
+
+        const { error } = await this.supabase.rpc('exec_sql', {
+          sql: view.sql,
         });
-        
+
         if (error) {
-          this.log(`Materialized view creation may need manual intervention for ${view.name}: ${error.message}`, 'warning');
+          this.log(
+            `Materialized view creation may need manual intervention for ${view.name}: ${error.message}`,
+            'warning'
+          );
           this.log(`SQL to run manually: ${view.sql}`, 'info');
         } else {
           this.log(`✅ Materialized view created: ${view.name}`, 'success');
           this.optimizations.push({
             type: 'materialized_view',
             name: view.name,
-            status: 'success'
+            status: 'success',
           });
         }
-        
       } catch (error) {
-        this.log(`❌ Failed to create materialized view ${view.name}: ${error.message}`, 'error');
+        this.log(
+          `❌ Failed to create materialized view ${view.name}: ${error.message}`,
+          'error'
+        );
         this.optimizations.push({
           type: 'materialized_view',
           name: view.name,
           status: 'failed',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -449,7 +476,7 @@ class PerformanceOptimizer {
    */
   async optimizeConnectionSettings() {
     this.log('Optimizing database connection settings...');
-    
+
     const connectionOptimizations = [
       // Enable parallel queries
       { setting: 'max_parallel_workers_per_gather', value: '4' },
@@ -459,22 +486,28 @@ class PerformanceOptimizer {
       { setting: 'effective_cache_size', value: '256MB' },
       // Enable query planning optimizations
       { setting: 'enable_hashjoin', value: 'on' },
-      { setting: 'enable_mergejoin', value: 'on' }
+      { setting: 'enable_mergejoin', value: 'on' },
     ];
-    
+
     for (const opt of connectionOptimizations) {
       try {
         // Note: These settings typically require database admin privileges
         // We'll log what should be optimized
-        this.log(`Optimization recommendation: SET ${opt.setting} = '${opt.value}';`, 'info');
+        this.log(
+          `Optimization recommendation: SET ${opt.setting} = '${opt.value}';`,
+          'info'
+        );
         this.optimizations.push({
           type: 'connection_setting',
           setting: opt.setting,
           value: opt.value,
-          status: 'recommended'
+          status: 'recommended',
         });
       } catch (error) {
-        this.log(`Connection optimization failed for ${opt.setting}: ${error.message}`, 'warning');
+        this.log(
+          `Connection optimization failed for ${opt.setting}: ${error.message}`,
+          'warning'
+        );
       }
     }
   }
@@ -485,54 +518,59 @@ class PerformanceOptimizer {
    */
   async testScalability() {
     this.log('Testing scalability with simulated load...');
-    
+
     try {
       // Get current record counts
       const { count: jobCount } = await this.supabase
         .from('jobs')
         .select('*', { count: 'exact', head: true });
-      
+
       const { count: customerCount } = await this.supabase
         .from('customers')
         .select('*', { count: 'exact', head: true });
-      
+
       this.log(`Current data: ${jobCount} jobs, ${customerCount} customers`);
-      
+
       // Test concurrent query performance
       const concurrentQueries = [];
       const queryCount = 10;
-      
+
       for (let i = 0; i < queryCount; i++) {
         concurrentQueries.push(
           this.supabase
             .from('jobs')
-            .select(`
+            .select(
+              `
               id, job_number, status,
               customer:customers(first_name, last_name),
               vehicle:vehicles(make, model, year)
-            `)
+            `
+            )
             .limit(50)
         );
       }
-      
+
       const startTime = Date.now();
       const results = await Promise.allSettled(concurrentQueries);
       const concurrentTime = Date.now() - startTime;
-      
+
       const successCount = results.filter(r => r.status === 'fulfilled').length;
       const avgTime = concurrentTime / queryCount;
-      
-      this.log(`Concurrent query test: ${successCount}/${queryCount} succeeded`);
+
+      this.log(
+        `Concurrent query test: ${successCount}/${queryCount} succeeded`
+      );
       this.log(`Average query time: ${avgTime.toFixed(2)}ms`);
-      this.log(`Total time for ${queryCount} concurrent queries: ${concurrentTime}ms`);
-      
+      this.log(
+        `Total time for ${queryCount} concurrent queries: ${concurrentTime}ms`
+      );
+
       this.benchmarks.scalability = {
         concurrentQueries: queryCount,
         successRate: (successCount / queryCount) * 100,
         averageTime: avgTime,
-        totalTime: concurrentTime
+        totalTime: concurrentTime,
       };
-      
     } catch (error) {
       this.log(`Scalability test failed: ${error.message}`, 'error');
     }
@@ -544,7 +582,7 @@ class PerformanceOptimizer {
    */
   async generateReport() {
     const improvements = {};
-    
+
     // Calculate improvements
     if (this.benchmarks.before && this.benchmarks.after) {
       for (const [test, beforeTime] of Object.entries(this.benchmarks.before)) {
@@ -555,12 +593,12 @@ class PerformanceOptimizer {
             before: beforeTime,
             after: afterTime,
             improvement: improvement.toFixed(2),
-            status: improvement > 0 ? 'improved' : 'degraded'
+            status: improvement > 0 ? 'improved' : 'degraded',
           };
         }
       }
     }
-    
+
     const report = {
       timestamp: new Date().toISOString(),
       benchmarks: this.benchmarks,
@@ -569,17 +607,25 @@ class PerformanceOptimizer {
       recommendations: this.generateRecommendations(),
       summary: {
         totalOptimizations: this.optimizations.length,
-        successfulOptimizations: this.optimizations.filter(o => o.status === 'success').length,
-        avgImprovementPercentage: Object.values(improvements).length > 0 
-          ? (Object.values(improvements).reduce((sum, imp) => sum + parseFloat(imp.improvement), 0) / Object.values(improvements).length).toFixed(2)
-          : 0
-      }
+        successfulOptimizations: this.optimizations.filter(
+          o => o.status === 'success'
+        ).length,
+        avgImprovementPercentage:
+          Object.values(improvements).length > 0
+            ? (
+                Object.values(improvements).reduce(
+                  (sum, imp) => sum + parseFloat(imp.improvement),
+                  0
+                ) / Object.values(improvements).length
+              ).toFixed(2)
+            : 0,
+      },
     };
-    
+
     // Save report
     fs.writeFileSync(this.reportFile, JSON.stringify(report, null, 2));
     this.log(`Performance report saved: ${this.reportFile}`, 'success');
-    
+
     return report;
   }
 
@@ -589,7 +635,7 @@ class PerformanceOptimizer {
    */
   generateRecommendations() {
     const recommendations = [];
-    
+
     // Check if any queries are still slow
     if (this.benchmarks.after) {
       Object.entries(this.benchmarks.after).forEach(([test, time]) => {
@@ -599,23 +645,25 @@ class PerformanceOptimizer {
             priority: time > 500 ? 'high' : 'medium',
             test,
             currentTime: time,
-            recommendation: `${test} is taking ${time}ms. Consider additional indexing or query optimization.`
+            recommendation: `${test} is taking ${time}ms. Consider additional indexing or query optimization.`,
           });
         }
       });
     }
-    
+
     // Check optimization failures
-    const failedOptimizations = this.optimizations.filter(o => o.status === 'failed');
+    const failedOptimizations = this.optimizations.filter(
+      o => o.status === 'failed'
+    );
     if (failedOptimizations.length > 0) {
       recommendations.push({
         type: 'optimization',
         priority: 'high',
         recommendation: `${failedOptimizations.length} optimizations failed and may need manual intervention.`,
-        details: failedOptimizations
+        details: failedOptimizations,
       });
     }
-    
+
     // Scalability recommendations
     if (this.benchmarks.scalability) {
       const { successRate, averageTime } = this.benchmarks.scalability;
@@ -623,18 +671,18 @@ class PerformanceOptimizer {
         recommendations.push({
           type: 'scalability',
           priority: 'high',
-          recommendation: `Concurrent query success rate is ${successRate}%. Consider connection pooling optimization.`
+          recommendation: `Concurrent query success rate is ${successRate}%. Consider connection pooling optimization.`,
         });
       }
       if (averageTime > 200) {
         recommendations.push({
           type: 'scalability',
           priority: 'medium',
-          recommendation: `Average concurrent query time is ${averageTime.toFixed(2)}ms. Consider query caching.`
+          recommendation: `Average concurrent query time is ${averageTime.toFixed(2)}ms. Consider query caching.`,
         });
       }
     }
-    
+
     return recommendations;
   }
 
@@ -644,61 +692,70 @@ class PerformanceOptimizer {
    */
   async runCompleteOptimization() {
     const startTime = Date.now();
-    
+
     try {
       this.log('🚀 Starting complete performance optimization suite...');
-      
+
       // Phase 1: Baseline benchmarks
       this.log('Phase 1: Running baseline benchmarks...');
       await this.runBenchmarks('before');
-      
+
       // Phase 2: Create optimized indexes
       this.log('Phase 2: Creating optimized indexes...');
       await this.createOptimizedIndexes();
-      
+
       // Phase 3: Optimize RLS policies
       this.log('Phase 3: Optimizing RLS policies...');
       await this.optimizeRLSPolicies();
-      
+
       // Phase 4: Create materialized views
       this.log('Phase 4: Creating materialized views...');
       await this.createMaterializedViews();
-      
+
       // Phase 5: Connection optimizations
       this.log('Phase 5: Optimizing connection settings...');
       await this.optimizeConnectionSettings();
-      
+
       // Phase 6: Post-optimization benchmarks
       this.log('Phase 6: Running post-optimization benchmarks...');
       await this.runBenchmarks('after');
-      
+
       // Phase 7: Scalability testing
       this.log('Phase 7: Testing scalability...');
       await this.testScalability();
-      
+
       // Phase 8: Generate report
       this.log('Phase 8: Generating performance report...');
       const report = await this.generateReport();
-      
+
       const duration = (Date.now() - startTime) / 1000;
-      
-      this.log(`🎉 Complete optimization suite finished in ${duration.toFixed(2)} seconds`, 'success');
+
+      this.log(
+        `🎉 Complete optimization suite finished in ${duration.toFixed(2)} seconds`,
+        'success'
+      );
       this.log(`📊 Performance improvements summary:`, 'info');
-      
+
       Object.entries(report.improvements).forEach(([test, data]) => {
         const status = parseFloat(data.improvement) > 0 ? '✅' : '⚠️';
-        this.log(`   ${status} ${test}: ${data.before}ms → ${data.after}ms (${data.improvement}% improvement)`);
+        this.log(
+          `   ${status} ${test}: ${data.before}ms → ${data.after}ms (${data.improvement}% improvement)`
+        );
       });
-      
+
       if (report.recommendations.length > 0) {
-        this.log(`📋 ${report.recommendations.length} recommendations generated`, 'warning');
+        this.log(
+          `📋 ${report.recommendations.length} recommendations generated`,
+          'warning'
+        );
         report.recommendations.forEach((rec, index) => {
-          this.log(`   ${index + 1}. [${rec.priority.toUpperCase()}] ${rec.recommendation}`);
+          this.log(
+            `   ${index + 1}. [${rec.priority.toUpperCase()}] ${rec.recommendation}`
+          );
         });
       }
-      
+
       return report;
-      
     } catch (error) {
       this.log(`❌ Optimization suite failed: ${error.message}`, 'error');
       throw error;
@@ -709,11 +766,12 @@ class PerformanceOptimizer {
 // Export and CLI interface
 if (require.main === module) {
   const optimizer = new PerformanceOptimizer();
-  
+
   const args = process.argv.slice(2);
-  
+
   if (args.includes('--benchmark-only')) {
-    optimizer.runBenchmarks('current')
+    optimizer
+      .runBenchmarks('current')
       .then(results => {
         console.log('\n📊 Benchmark Results:');
         Object.entries(results).forEach(([test, time]) => {
@@ -727,15 +785,18 @@ if (require.main === module) {
         process.exit(1);
       });
   } else {
-    optimizer.runCompleteOptimization()
+    optimizer
+      .runCompleteOptimization()
       .then(report => {
         console.log('\n🎉 Performance optimization completed successfully!');
         console.log(`📋 Report saved: ${optimizer.reportFile}`);
-        
+
         if (report.summary.avgImprovementPercentage > 0) {
-          console.log(`📈 Average improvement: ${report.summary.avgImprovementPercentage}%`);
+          console.log(
+            `📈 Average improvement: ${report.summary.avgImprovementPercentage}%`
+          );
         }
-        
+
         process.exit(0);
       })
       .catch(error => {

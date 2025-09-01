@@ -51,25 +51,27 @@ Mitchell/CCC Links: Template-driven deep-links saved per job/insurer.
 
 Success Criteria
 
- BMS/EMS files import without data loss; unknown tags logged (no crash)
+BMS/EMS files import without data loss; unknown tags logged (no crash)
 
- Upsert logic prevents duplicates; re-import updates existing records
+Upsert logic prevents duplicates; re-import updates existing records
 
- Production board shows stage, status, ETA; drag-drop with guardrails
+Production board shows stage, status, ETA; drag-drop with guardrails
 
- Parts flow supports PO→received/backordered; “waiting on parts” clears correctly
+Parts flow supports PO→received/backordered; “waiting on parts” clears correctly
 
- GST/PST logic correct for BC; GST only when BMS indicates payable
+GST/PST logic correct for BC; GST only when BMS indicates payable
 
- Mitchell deep links available via one-click in job view
+Mitchell deep links available via one-click in job view
 
- CLI import + watcher work; E2E tests (Playwright MCP) pass
+CLI import + watcher work; E2E tests (Playwright MCP) pass
 
- Lint/type checks clean; >80% unit coverage on parsers/mappers
+Lint/type checks clean; >80% unit coverage on parsers/mappers
 
 All Needed Context
 Documentation & References
+
 # MUST READ - include these in your context window
+
 - url: https://www.electronjs.org/docs/latest
   why: Desktop shell, security guidelines, auto-update patterns
 
@@ -82,7 +84,7 @@ Documentation & References
 - url: https://playwright.dev/docs/api/class-electron
   why: E2E desktop testing approach for Electron apps
 
-- url: https://kysely.dev/           # or Prisma if preferred
+- url: https://kysely.dev/ # or Prisma if preferred
   why: Type-safe SQL schema & migrations
 
 - url: https://stripe.com/docs/payments
@@ -103,73 +105,73 @@ Documentation & References
 Current Codebase tree
 .
 ├── apps/
-│   ├── desktop/                # Electron + React (renderer/main)
-│   └── server/                 # Node/Express API
+│ ├── desktop/ # Electron + React (renderer/main)
+│ └── server/ # Node/Express API
 ├── examples/
 ├── tests/
 ├── .claude/
-│   └── INITIAL.md
+│ └── INITIAL.md
 └── package.json
 
 Desired Codebase tree with files to be added
 .
 ├── apps/
-│   ├── desktop/
-│   │   ├── src/
-│   │   │   ├── main/                 # Electron main process
-│   │   │   ├── renderer/             # React UI
-│   │   │   │   ├── pages/
-│   │   │   │   │   ├── JobsBoard.tsx
-│   │   │   │   │   ├── JobDetail.tsx
-│   │   │   │   │   └── Calendar.tsx
-│   │   │   │   ├── components/
-│   │   │   │   └── state/
-│   │   │   └── mcp/                  # MCP client bindings (filesystem, git, playwright)
-│   │   └── package.json
-│   └── server/
-│       ├── src/
-│       │   ├── api/
-│       │   │   ├── jobs.ts
-│       │   │   ├── parts.ts
-│       │   │   ├── invoices.ts
-│       │   │   ├── calendar.ts
-│       │   │   └── import.ts
-│       │   ├── services/
-│       │   │   ├── import/bms_parser.ts
-│       │   │   ├── import/ems_parser.ts
-│       │   │   ├── import/normalizers.ts
-│       │   │   ├── jobs/index.ts
-│       │   │   ├── parts/index.ts
-│       │   │   ├── billing/tax.ts
-│       │   │   └── links/templates.ts
-│       │   ├── db/
-│       │   │   ├── schema.ts
-│       │   │   └── migrations/
-│       │   └── lib/
-│       └── package.json
+│ ├── desktop/
+│ │ ├── src/
+│ │ │ ├── main/ # Electron main process
+│ │ │ ├── renderer/ # React UI
+│ │ │ │ ├── pages/
+│ │ │ │ │ ├── JobsBoard.tsx
+│ │ │ │ │ ├── JobDetail.tsx
+│ │ │ │ │ └── Calendar.tsx
+│ │ │ │ ├── components/
+│ │ │ │ └── state/
+│ │ │ └── mcp/ # MCP client bindings (filesystem, git, playwright)
+│ │ └── package.json
+│ └── server/
+│ ├── src/
+│ │ ├── api/
+│ │ │ ├── jobs.ts
+│ │ │ ├── parts.ts
+│ │ │ ├── invoices.ts
+│ │ │ ├── calendar.ts
+│ │ │ └── import.ts
+│ │ ├── services/
+│ │ │ ├── import/bms_parser.ts
+│ │ │ ├── import/ems_parser.ts
+│ │ │ ├── import/normalizers.ts
+│ │ │ ├── jobs/index.ts
+│ │ │ ├── parts/index.ts
+│ │ │ ├── billing/tax.ts
+│ │ │ └── links/templates.ts
+│ │ ├── db/
+│ │ │ ├── schema.ts
+│ │ │ └── migrations/
+│ │ └── lib/
+│ └── package.json
 ├── cli/
-│   └── import-bms.ts
+│ └── import-bms.ts
 ├── examples/
-│   ├── parsers/bms_parser.spec.ts
-│   ├── cli/import_bms.ts
-│   ├── ui/production_board.tsx
-│   └── urls/mitchell_link_templates.md
+│ ├── parsers/bms_parser.spec.ts
+│ ├── cli/import_bms.ts
+│ ├── ui/production_board.tsx
+│ └── urls/mitchell_link_templates.md
 ├── tests/
-│   ├── unit/
-│   │   ├── bms_parser.test.ts
-│   │   ├── ems_parser.test.ts
-│   │   ├── tax_rules.test.ts
-│   │   └── links_templates.test.ts
-│   └── e2e/
-│       └── desktop_flow.spec.ts      # Playwright (Electron)
+│ ├── unit/
+│ │ ├── bms_parser.test.ts
+│ │ ├── ems_parser.test.ts
+│ │ ├── tax_rules.test.ts
+│ │ └── links_templates.test.ts
+│ └── e2e/
+│ └── desktop_flow.spec.ts # Playwright (Electron)
 ├── .env.example
 ├── README.md
-├── turbo.json                        # optional monorepo runner
-└── credentials/.gitkeep              # if needed for 3rd-party API keys
+├── turbo.json # optional monorepo runner
+└── credentials/.gitkeep # if needed for 3rd-party API keys
 
 Known Gotchas & Library Quirks
 // CRITICAL: BMS XML uses namespaces & attributes — configure fast-xml-parser:
-// removeNSPrefix: true, ignoreAttributes: false, attributeNamePrefix: "@_", trimValues: true
+// removeNSPrefix: true, ignoreAttributes: false, attributeNamePrefix: "@\_", trimValues: true
 
 // CRITICAL: Idempotency — upsert by (ro_number, claim_number, vin). Never create duplicates on re-import.
 
@@ -194,13 +196,13 @@ Implementation Blueprint
 Data models and structure
 // schema.ts (Kysely/Prisma shape idea)
 // jobs: id, ro_number, claim_number, insurer_id, customer_id, vehicle_id, loss_date, loss_desc,
-//       stage, status, eta, promise_date, source_system, created_at, updated_at
+// stage, status, eta, promise_date, source_system, created_at, updated_at
 
 type Stage =
-  | "Estimate" | "Intake/Check-in" | "Tear-down & Blueprint" | "Supplement Pending"
-  | "Supplement Approved" | "Parts Ordering" | "Parts Receiving" | "Body/Structure"
-  | "Mechanical/Sublet" | "Paint Prep" | "Paint Booth" | "Reassembly"
-  | "Calibrations/Alignment" | "Post-Scan, QC & Road Test" | "Detail/Final Clean" | "Ready for Pickup";
+| "Estimate" | "Intake/Check-in" | "Tear-down & Blueprint" | "Supplement Pending"
+| "Supplement Approved" | "Parts Ordering" | "Parts Receiving" | "Body/Structure"
+| "Mechanical/Sublet" | "Paint Prep" | "Paint Booth" | "Reassembly"
+| "Calibrations/Alignment" | "Post-Scan, QC & Road Test" | "Detail/Final Clean" | "Ready for Pickup";
 
 // customers: gst_payable:boolean must map from BMS only when present in the correct section
 // estimate_lines: line_type ('labor'|'part'|'sublet'|'paint'|'material'), hours, rate, qty, price, tax_code
@@ -210,43 +212,49 @@ type Stage =
 List of tasks to be completed
 Task 1: Project Config & Env
 CREATE .env.example:
-  - DATABASE_URL (sqlite dev / postgres prod)
-  - IMPORT_WATCH_DIR, IMPORT_ARCHIVE_DIR
-  - DEFAULT_TAX_GST=0.05, DEFAULT_TAX_PST=0.07, APP_REGION=CA-BC
-  - FEATURE_STRIPE=false, FEATURE_AUTO_UPDATE=false
-CREATE server/src/db/schema.ts + migrations:
-  - Define jobs, customers, vehicles, estimate_lines, parts, vendors, invoices, links, audit_logs, calendar_events
+
+- DATABASE_URL (sqlite dev / postgres prod)
+- IMPORT_WATCH_DIR, IMPORT_ARCHIVE_DIR
+- DEFAULT_TAX_GST=0.05, DEFAULT_TAX_PST=0.07, APP_REGION=CA-BC
+- FEATURE_STRIPE=false, FEATURE_AUTO_UPDATE=false
+  CREATE server/src/db/schema.ts + migrations:
+- Define jobs, customers, vehicles, estimate_lines, parts, vendors, invoices, links, audit_logs, calendar_events
 
 Task 2: Importers
 CREATE server/src/services/import/bms_parser.ts:
-  - fast-xml-parser config; map all entities; collect unknown tags in logs
-CREATE server/src/services/import/ems_parser.ts:
-  - parse pipe-delimited EMS; map minimal viable entities
-CREATE server/src/services/import/normalizers.ts:
-  - upsert rules (ro_number, claim_number, vin), tax mapping, line normalization
-CREATE cli/import-bms.ts:
-  - `--path`, prints summary, non-zero exit on validation errors
+
+- fast-xml-parser config; map all entities; collect unknown tags in logs
+  CREATE server/src/services/import/ems_parser.ts:
+- parse pipe-delimited EMS; map minimal viable entities
+  CREATE server/src/services/import/normalizers.ts:
+- upsert rules (ro_number, claim_number, vin), tax mapping, line normalization
+  CREATE cli/import-bms.ts:
+- `--path`, prints summary, non-zero exit on validation errors
 
 Task 3: API Routes
 CREATE jobs.ts, parts.ts, invoices.ts, calendar.ts, import.ts:
-  - CRUD + list endpoints; pagination, filters; safe input validation
+
+- CRUD + list endpoints; pagination, filters; safe input validation
 
 Task 4: UI (Electron + React)
 CREATE JobsBoard.tsx:
-  - Kanban with filters, drag-drop, guardrails (no Paint before critical parts received)
-CREATE JobDetail.tsx:
-  - Job header (RO/Claim/VIN), customer/vehicle, estimate lines, parts tab, Mitchell links
-CREATE Calendar.tsx:
-  - Intake/delivery/calibration events; reminders
+
+- Kanban with filters, drag-drop, guardrails (no Paint before critical parts received)
+  CREATE JobDetail.tsx:
+- Job header (RO/Claim/VIN), customer/vehicle, estimate lines, parts tab, Mitchell links
+  CREATE Calendar.tsx:
+- Intake/delivery/calibration events; reminders
 
 Task 5: Billing & Taxes
 CREATE billing/tax.ts:
-  - compute invoice totals; GST applies only if gst_payable AND line taxable; PST configurable
-CREATE invoices API + PDF export (minimal)
+
+- compute invoice totals; GST applies only if gst_payable AND line taxable; PST configurable
+  CREATE invoices API + PDF export (minimal)
 
 Task 6: Parts & POs
 CREATE parts service:
-  - Vendor CRUD, PO create, received/backordered, variance calc; unblock job when critical parts received
+
+- Vendor CRUD, PO create, received/backordered, variance calc; unblock job when critical parts received
 
 Task 7: E2E & Unit Tests
 UNIT: parsers (BMS, EMS), tax rules, link templates
@@ -258,138 +266,149 @@ README quickstart, screenshots
 Seed vendors/jobs; samples in /samples (BMS variants)
 
 Per task pseudocode
-// server/src/services/import/bms_parser.ts
+// server/src/services/import/bms*parser.ts
 export async function parseBMS(xml: string): Promise<NormalizedPayload> {
-  const parser = new XMLParser({ ignoreAttributes:false, removeNSPrefix:true, attributeNamePrefix:"@_", trimValues:true });
-  const doc = parser.parse(xml);
+const parser = new XMLParser({ ignoreAttributes:false, removeNSPrefix:true, attributeNamePrefix:"@*", trimValues:true });
+const doc = parser.parse(xml);
 
-  // Extract core identities
-  const ro = g(doc, "Mitchell.RepairOrder.RONumber");       // helper g(obj, path)
-  const claim = g(doc, "Mitchell.Claims.ClaimNumber");
-  const vin = g(doc, "Mitchell.Vehicle.VIN");
+// Extract core identities
+const ro = g(doc, "Mitchell.RepairOrder.RONumber"); // helper g(obj, path)
+const claim = g(doc, "Mitchell.Claims.ClaimNumber");
+const vin = g(doc, "Mitchell.Vehicle.VIN");
 
-  // Customer + gst flag (ONLY if present in the correct section)
-  const gstPayable = !!g(doc, "Mitchell.Billing.Customer.GSTPayable"); // example path
+// Customer + gst flag (ONLY if present in the correct section)
+const gstPayable = !!g(doc, "Mitchell.Billing.Customer.GSTPayable"); // example path
 
-  // Vehicle
-  const vehicle = {
-    vin, year: g(doc,"Mitchell.Vehicle.Year"), make: g(doc,"Mitchell.Vehicle.Make"),
-    model: g(doc,"Mitchell.Vehicle.Model"), trim: g(doc,"Mitchell.Vehicle.Trim"),
-    color: g(doc,"Mitchell.Vehicle.Color")
-  };
+// Vehicle
+const vehicle = {
+vin, year: g(doc,"Mitchell.Vehicle.Year"), make: g(doc,"Mitchell.Vehicle.Make"),
+model: g(doc,"Mitchell.Vehicle.Model"), trim: g(doc,"Mitchell.Vehicle.Trim"),
+color: g(doc,"Mitchell.Vehicle.Color")
+};
 
-  // Estimate lines (parts/labor/materials/sublet)
-  const lines = extractLines(doc); // return normalized typed lines with tax_code, qty, hours, rate, price
+// Estimate lines (parts/labor/materials/sublet)
+const lines = extractLines(doc); // return normalized typed lines with tax_code, qty, hours, rate, price
 
-  // Parts (from lines where line_type==='part')
-  const parts = lines.filter(l => l.line_type==='part').map(toPartRecord);
+// Parts (from lines where line_type==='part')
+const parts = lines.filter(l => l.line_type==='part').map(toPartRecord);
 
-  return { identities: { ro, claim, vin }, customer:{ gst_payable: gstPayable, ...extractCustomer(doc) },
-           vehicle, lines, parts, meta:{ source_system:"mitchell" } };
+return { identities: { ro, claim, vin }, customer:{ gst_payable: gstPayable, ...extractCustomer(doc) },
+vehicle, lines, parts, meta:{ source_system:"mitchell" } };
 }
 
 // normalizers.ts
 export async function upsertAll(db, payload) {
-  const jobId = await upsertJob(db, payload.identities, payload.meta, payload.jobFields);
-  await upsertCustomerVehicle(db, jobId, payload.customer, payload.vehicle);
-  await upsertLines(db, jobId, payload.lines);
-  await upsertParts(db, jobId, payload.parts);
-  await logImport(db, payload);
+const jobId = await upsertJob(db, payload.identities, payload.meta, payload.jobFields);
+await upsertCustomerVehicle(db, jobId, payload.customer, payload.vehicle);
+await upsertLines(db, jobId, payload.lines);
+await upsertParts(db, jobId, payload.parts);
+await logImport(db, payload);
 }
 
 // billing/tax.ts
 export function computeTotals(lines, gstPayable:boolean, rates) {
-  const taxable = (line) => line.tax_code === "TAXABLE";
-  const gst = gstPayable ? sum(lines.filter(taxable).map(x => x.ext_price * rates.gst)) : 0;
-  const pst = sum(lines.filter(l => l.pst_applicable).map(x => x.ext_price * rates.pst));
-  return { subtotal: sum(lines.map(x=>x.ext_price)), gst, pst, total: subtotal + gst + pst };
+const taxable = (line) => line.tax_code === "TAXABLE";
+const gst = gstPayable ? sum(lines.filter(taxable).map(x => x.ext_price _ rates.gst)) : 0;
+const pst = sum(lines.filter(l => l.pst_applicable).map(x => x.ext_price _ rates.pst));
+return { subtotal: sum(lines.map(x=>x.ext_price)), gst, pst, total: subtotal + gst + pst };
 }
 
 Integration Points
 ENVIRONMENT:
-  - Add to .env:
-    # App
-    NODE_ENV=development
-    PORT=5173
-    APP_REGION=CA-BC
 
-    # Database
-    DATABASE_URL=file:./dev.sqlite
-    # DATABASE_URL=postgres://USER:PASS@HOST:5432/collisionos
+- Add to .env:
 
-    # Files
-    IMPORT_WATCH_DIR=./import
-    IMPORT_ARCHIVE_DIR=./import_archive
+  # App
 
-    # Taxes (province defaults; can be overridden per insurer/job)
-    DEFAULT_TAX_GST=0.05
-    DEFAULT_TAX_PST=0.07
+  NODE_ENV=development
+  PORT=5173
+  APP_REGION=CA-BC
 
-    # Features
-    FEATURE_STRIPE=false
-    FEATURE_AUTO_UPDATE=false
+  # Database
+
+  DATABASE_URL=file:./dev.sqlite
+
+  # DATABASE_URL=postgres://USER:PASS@HOST:5432/collisionos
+
+  # Files
+
+  IMPORT_WATCH_DIR=./import
+  IMPORT_ARCHIVE_DIR=./import_archive
+
+  # Taxes (province defaults; can be overridden per insurer/job)
+
+  DEFAULT_TAX_GST=0.05
+  DEFAULT_TAX_PST=0.07
+
+  # Features
+
+  FEATURE_STRIPE=false
+  FEATURE_AUTO_UPDATE=false
 
 CONFIG:
-  - Stage guardrails configurable (JSON) to block transitions until conditions met
-  - Mitchell link templates stored per insurer/system in DB; rendered with job context
+
+- Stage guardrails configurable (JSON) to block transitions until conditions met
+- Mitchell link templates stored per insurer/system in DB; rendered with job context
 
 DEPENDENCIES (add to package.json):
-  - fast-xml-parser, zod (or yup), decimal.js, express, cors, kysely (or prisma), better-sqlite3/pg
-  - electron, react, react-router, @tanstack/react-query
-  - playwright, @playwright/test, ts-node, typescript, eslint, prettier
+
+- fast-xml-parser, zod (or yup), decimal.js, express, cors, kysely (or prisma), better-sqlite3/pg
+- electron, react, react-router, @tanstack/react-query
+- playwright, @playwright/test, ts-node, typescript, eslint, prettier
 
 Validation Loop
 Level 1: Syntax & Style
+
 # Root
+
 pnpm i
-pnpm run lint      # eslint
+pnpm run lint # eslint
 pnpm run typecheck # tsc --noEmit
 
 Level 2: Unit Tests
-pnpm run test:unit  # vitest/jest; covers bms_parser, ems_parser, tax_rules, link_templates
-
+pnpm run test:unit # vitest/jest; covers bms_parser, ems_parser, tax_rules, link_templates
 
 Example tests
 
 // bms_parser.test.ts
 it("parses BMS with namespaces and maps gst_payable correctly", async () => {
-  const xml = readFileSync("samples/bms/gst_true.xml","utf8");
-  const p = await parseBMS(xml);
-  expect(p.customer.gst_payable).toBe(true);
-  expect(p.lines.length).toBeGreaterThan(0);
+const xml = readFileSync("samples/bms/gst_true.xml","utf8");
+const p = await parseBMS(xml);
+expect(p.customer.gst_payable).toBe(true);
+expect(p.lines.length).toBeGreaterThan(0);
 });
 
 // tax_rules.test.ts
 it("applies GST only when gst_payable and line is taxable", () => {
-  const { total, gst } = computeTotals(linesFixture, true, { gst:0.05, pst:0.07 });
-  expect(gst).toBeCloseTo(expectedGst, 2);
+const { total, gst } = computeTotals(linesFixture, true, { gst:0.05, pst:0.07 });
+expect(gst).toBeCloseTo(expectedGst, 2);
 });
 
 Level 3: Integration / E2E (Electron + Playwright MCP)
-pnpm run dev           # starts server + desktop
-pnpm run test:e2e      # playwright: import → job on board → stage move → part receive → invoice totals
+pnpm run dev # starts server + desktop
+pnpm run test:e2e # playwright: import → job on board → stage move → part receive → invoice totals
 
 Final Validation Checklist
 
- Importer handles BMS/EMS variants; logs unknown tags
+Importer handles BMS/EMS variants; logs unknown tags
 
- Re-import updates existing jobs (no duplicates)
+Re-import updates existing jobs (no duplicates)
 
- Production board reflects stage/status/ETA and respects guardrails
+Production board reflects stage/status/ETA and respects guardrails
 
- Parts received/backordered states update job blockers
+Parts received/backordered states update job blockers
 
- GST/PST applied per rules; invoice totals correct and exported
+GST/PST applied per rules; invoice totals correct and exported
 
- Mitchell links resolve correctly from templates
+Mitchell links resolve correctly from templates
 
- CLI import & watcher operate reliably (retry/archive)
+CLI import & watcher operate reliably (retry/archive)
 
- E2E green on fresh checkout; unit coverage ≥80%
+E2E green on fresh checkout; unit coverage ≥80%
 
- No PII in logs; Electron security best practices enabled
+No PII in logs; Electron security best practices enabled
 
- README quickstart + screenshots present
+README quickstart + screenshots present
 
 Anti-Patterns to Avoid
 

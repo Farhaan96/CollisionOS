@@ -43,7 +43,7 @@ import {
   TableRow,
   LinearProgress,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Timeline,
@@ -101,11 +101,15 @@ import {
   Language,
   AccessTime,
   Visibility,
-  Comment
+  Comment,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
-import { formatCurrency, formatDate, formatPhoneNumber } from '../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatPhoneNumber,
+} from '../../utils/formatters';
 
 // Communication channels
 const COMMUNICATION_CHANNELS = {
@@ -113,7 +117,7 @@ const COMMUNICATION_CHANNELS = {
   email: { label: 'Email', icon: Email, color: '#1976d2' },
   phone: { label: 'Phone', icon: Phone, color: '#f57c00' },
   video: { label: 'Video Call', icon: VideoCall, color: '#9c27b0' },
-  portal: { label: 'Customer Portal', icon: Message, color: '#2e7d32' }
+  portal: { label: 'Customer Portal', icon: Message, color: '#2e7d32' },
 };
 
 // Communication templates based on Instructions document
@@ -121,53 +125,63 @@ const MESSAGE_TEMPLATES = {
   estimate_ready: {
     title: 'Estimate Ready',
     channel: ['email', 'sms'],
-    template: 'Hi {customerName}, your estimate for {vehicleInfo} is ready for review. Total: {estimateAmount}. View details: {portalLink}'
+    template:
+      'Hi {customerName}, your estimate for {vehicleInfo} is ready for review. Total: {estimateAmount}. View details: {portalLink}',
   },
   insurance_approved: {
     title: 'Insurance Approved',
     channel: ['email', 'sms'],
-    template: 'Good news! Your insurance claim has been approved. We can begin repairs on {startDate}. Questions? Call us at {shopPhone}'
+    template:
+      'Good news! Your insurance claim has been approved. We can begin repairs on {startDate}. Questions? Call us at {shopPhone}',
   },
   parts_ordered: {
     title: 'Parts Ordered',
     channel: ['email', 'sms'],
-    template: 'Parts have been ordered for your {vehicleInfo}. Expected arrival: {partsETA}. We\'ll notify you when they arrive.'
+    template:
+      "Parts have been ordered for your {vehicleInfo}. Expected arrival: {partsETA}. We'll notify you when they arrive.",
   },
   repair_started: {
     title: 'Repair Started',
     channel: ['email', 'sms', 'portal'],
-    template: 'Repair work has begun on your {vehicleInfo}. You can track progress in real-time: {portalLink}'
+    template:
+      'Repair work has begun on your {vehicleInfo}. You can track progress in real-time: {portalLink}',
   },
   paint_complete: {
     title: 'Paint Complete',
     channel: ['email', 'sms'],
-    template: 'Paint work is complete on your {vehicleInfo}. Photos have been uploaded to your portal: {portalLink}'
+    template:
+      'Paint work is complete on your {vehicleInfo}. Photos have been uploaded to your portal: {portalLink}',
   },
   ready_pickup: {
     title: 'Ready for Pickup',
     channel: ['email', 'sms', 'phone'],
-    template: 'Your {vehicleInfo} is ready for pickup! Please call {shopPhone} to schedule or use our online scheduler: {scheduleLink}'
+    template:
+      'Your {vehicleInfo} is ready for pickup! Please call {shopPhone} to schedule or use our online scheduler: {scheduleLink}',
   },
   payment_reminder: {
     title: 'Payment Reminder',
     channel: ['email', 'sms'],
-    template: 'Reminder: Payment of {paymentAmount} is due for your completed repair. Pay online: {paymentLink}'
+    template:
+      'Reminder: Payment of {paymentAmount} is due for your completed repair. Pay online: {paymentLink}',
   },
   satisfaction_survey: {
     title: 'Satisfaction Survey',
     channel: ['email', 'sms'],
-    template: 'How was your experience? Please take 2 minutes to share your feedback: {surveyLink}. Your input helps us improve!'
+    template:
+      'How was your experience? Please take 2 minutes to share your feedback: {surveyLink}. Your input helps us improve!',
   },
   birthday_greeting: {
     title: 'Birthday Greeting',
     channel: ['email', 'sms'],
-    template: 'Happy Birthday {customerName}! 🎉 Enjoy 15% off your next service. Use code BIRTHDAY15: {offerLink}'
+    template:
+      'Happy Birthday {customerName}! 🎉 Enjoy 15% off your next service. Use code BIRTHDAY15: {offerLink}',
   },
   service_reminder: {
     title: 'Service Reminder',
     channel: ['email', 'sms'],
-    template: 'Time for your vehicle\'s maintenance check! Schedule your appointment today: {scheduleLink}'
-  }
+    template:
+      "Time for your vehicle's maintenance check! Schedule your appointment today: {scheduleLink}",
+  },
 };
 
 // Customer preferences
@@ -179,13 +193,13 @@ const CUSTOMER_PREFERENCES = [
   'Real-time Tracking',
   'Marketing Communications',
   'Birthday Offers',
-  'Service Reminders'
+  'Service Reminders',
 ];
 
 const CustomerCommunicationHub = ({ customerId, jobId }) => {
   const theme = useTheme();
   const messageInputRef = useRef();
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -219,31 +233,31 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         model: 'Camry',
         vin: '1234567890ABCDEF',
         color: 'White',
-        mileage: 25000
-      }
+        mileage: 25000,
+      },
     ],
     serviceHistory: [
       {
         id: '1',
         date: '2024-01-15',
         type: 'Collision Repair',
-        amount: 2450.00,
-        satisfaction: 4.8
+        amount: 2450.0,
+        satisfaction: 4.8,
       },
       {
         id: '2',
         date: '2023-08-10',
         type: 'Paint Touch-up',
-        amount: 680.00,
-        satisfaction: 5.0
-      }
+        amount: 680.0,
+        satisfaction: 5.0,
+      },
     ],
     loyaltyPoints: 150,
     birthday: '1985-03-15',
     joinDate: '2023-08-01',
-    totalSpent: 3130.00,
+    totalSpent: 3130.0,
     avgSatisfaction: 4.9,
-    lastContact: '2024-01-16T14:30:00Z'
+    lastContact: '2024-01-16T14:30:00Z',
   };
 
   // Sample conversation data
@@ -253,17 +267,19 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
       customerId: '1',
       channel: 'sms',
       subject: 'Repair Status Update',
-      lastMessage: 'Thank you for the update! Looking forward to getting my car back.',
+      lastMessage:
+        'Thank you for the update! Looking forward to getting my car back.',
       lastMessageTime: '2024-01-16T14:30:00Z',
       unreadCount: 0,
       messages: [
         {
           id: '1',
           senderId: 'system',
-          content: 'Hi John! Your Toyota Camry repair has started. We\'ll keep you updated on progress.',
+          content:
+            "Hi John! Your Toyota Camry repair has started. We'll keep you updated on progress.",
           timestamp: '2024-01-16T09:00:00Z',
           channel: 'sms',
-          status: 'delivered'
+          status: 'delivered',
         },
         {
           id: '2',
@@ -271,27 +287,35 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
           content: 'Great, thank you for letting me know!',
           timestamp: '2024-01-16T09:15:00Z',
           channel: 'sms',
-          status: 'delivered'
+          status: 'delivered',
         },
         {
           id: '3',
           senderId: 'system',
-          content: 'Parts have been ordered and should arrive tomorrow. Estimated completion is Friday.',
+          content:
+            'Parts have been ordered and should arrive tomorrow. Estimated completion is Friday.',
           timestamp: '2024-01-16T14:00:00Z',
           channel: 'sms',
           status: 'delivered',
-          attachments: [{ type: 'photo', url: '/path/to/photo.jpg', name: 'parts-ordered.jpg' }]
+          attachments: [
+            {
+              type: 'photo',
+              url: '/path/to/photo.jpg',
+              name: 'parts-ordered.jpg',
+            },
+          ],
         },
         {
           id: '4',
           senderId: '1',
-          content: 'Thank you for the update! Looking forward to getting my car back.',
+          content:
+            'Thank you for the update! Looking forward to getting my car back.',
           timestamp: '2024-01-16T14:30:00Z',
           channel: 'sms',
-          status: 'delivered'
-        }
-      ]
-    }
+          status: 'delivered',
+        },
+      ],
+    },
   ];
 
   useEffect(() => {
@@ -310,7 +334,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
       content: newMessage,
       timestamp: new Date().toISOString(),
       channel: messageChannel,
-      status: 'sending'
+      status: 'sending',
     };
 
     // Add to conversation
@@ -318,13 +342,15 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
       ...currentConversation,
       messages: [...currentConversation.messages, message],
       lastMessage: newMessage,
-      lastMessageTime: message.timestamp
+      lastMessageTime: message.timestamp,
     };
 
     setCurrentConversation(updatedConversation);
-    setConversations(prev => prev.map(conv => 
-      conv.id === currentConversation.id ? updatedConversation : conv
-    ));
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === currentConversation.id ? updatedConversation : conv
+      )
+    );
     setNewMessage('');
 
     // Simulate sending
@@ -332,36 +358,38 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
       const sentMessage = { ...message, status: 'delivered' };
       const finalConversation = {
         ...updatedConversation,
-        messages: updatedConversation.messages.map(msg => 
+        messages: updatedConversation.messages.map(msg =>
           msg.id === message.id ? sentMessage : msg
-        )
+        ),
       };
-      
+
       setCurrentConversation(finalConversation);
-      setConversations(prev => prev.map(conv => 
-        conv.id === currentConversation.id ? finalConversation : conv
-      ));
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.id === currentConversation.id ? finalConversation : conv
+        )
+      );
     }, 1000);
   };
 
   // Apply message template
-  const applyTemplate = (templateKey) => {
+  const applyTemplate = templateKey => {
     const template = MESSAGE_TEMPLATES[templateKey];
     if (!template || !selectedCustomer) return;
 
     const variables = {
       customerName: selectedCustomer.name,
       vehicleInfo: `${selectedCustomer.vehicles[0]?.year} ${selectedCustomer.vehicles[0]?.make} ${selectedCustomer.vehicles[0]?.model}`,
-      estimateAmount: formatCurrency(2450.00),
+      estimateAmount: formatCurrency(2450.0),
       startDate: formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000)),
       partsETA: formatDate(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
       shopPhone: '(555) 123-4567',
       portalLink: 'https://portal.collisionos.com/track/12345',
       scheduleLink: 'https://collisionos.com/schedule',
       paymentLink: 'https://pay.collisionos.com/12345',
-      paymentAmount: formatCurrency(450.00),
+      paymentAmount: formatCurrency(450.0),
       surveyLink: 'https://survey.collisionos.com/12345',
-      offerLink: 'https://offers.collisionos.com/birthday15'
+      offerLink: 'https://offers.collisionos.com/birthday15',
     };
 
     let message = template.template;
@@ -383,7 +411,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         description: 'Repair status update sent',
         timestamp: '2024-01-16T14:00:00Z',
         icon: Sms,
-        color: '#25d366'
+        color: '#25d366',
       },
       {
         id: '2',
@@ -392,7 +420,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         description: 'Discussed insurance approval',
         timestamp: '2024-01-15T11:30:00Z',
         icon: Phone,
-        color: '#f57c00'
+        color: '#f57c00',
       },
       {
         id: '3',
@@ -401,7 +429,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         description: 'Estimate ready for review',
         timestamp: '2024-01-14T16:45:00Z',
         icon: Email,
-        color: '#1976d2'
+        color: '#1976d2',
       },
       {
         id: '4',
@@ -410,13 +438,13 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         description: 'Customer satisfaction: 5/5',
         timestamp: '2024-01-10T09:20:00Z',
         icon: Star,
-        color: '#ffc107'
-      }
+        color: '#ffc107',
+      },
     ];
 
     return (
       <Timeline>
-        {timelineEvents.map((event) => {
+        {timelineEvents.map(event => {
           const IconComponent = event.icon;
           return (
             <TimelineItem key={event.id}>
@@ -427,13 +455,13 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
                 <TimelineConnector />
               </TimelineSeparator>
               <TimelineContent>
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant='subtitle2' fontWeight='bold'>
                   {event.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {event.description}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   {formatDistanceToNow(new Date(event.timestamp))} ago
                 </Typography>
               </TimelineContent>
@@ -449,24 +477,29 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
     <Card>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}>
-            {customer.name.split(' ').map(n => n[0]).join('')}
+          <Avatar
+            sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}
+          >
+            {customer.name
+              .split(' ')
+              .map(n => n[0])
+              .join('')}
           </Avatar>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" fontWeight="bold">
+            <Typography variant='h5' fontWeight='bold'>
               {customer.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               Customer since {formatDate(customer.joinDate)}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
               <Star sx={{ color: '#ffc107', fontSize: 16, mr: 0.5 }} />
-              <Typography variant="body2">
+              <Typography variant='body2'>
                 {customer.avgSatisfaction}/5.0 satisfaction
               </Typography>
             </Box>
           </Box>
-          <Tooltip title="Edit Customer">
+          <Tooltip title='Edit Customer'>
             <IconButton onClick={() => setCustomerDialog(true)}>
               <Edit />
             </IconButton>
@@ -477,28 +510,38 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" color="text.secondary">Contact</Typography>
-            <Typography variant="body2">{formatPhoneNumber(customer.phone)}</Typography>
-            <Typography variant="body2">{customer.email}</Typography>
+            <Typography variant='body2' color='text.secondary'>
+              Contact
+            </Typography>
+            <Typography variant='body2'>
+              {formatPhoneNumber(customer.phone)}
+            </Typography>
+            <Typography variant='body2'>{customer.email}</Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" color="text.secondary">Preferred</Typography>
+            <Typography variant='body2' color='text.secondary'>
+              Preferred
+            </Typography>
             <Chip
-              size="small"
+              size='small'
               icon={COMMUNICATION_CHANNELS[customer.preferredContact]?.icon}
               label={COMMUNICATION_CHANNELS[customer.preferredContact]?.label}
               sx={{ mr: 1 }}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" color="text.secondary">Total Spent</Typography>
-            <Typography variant="h6" color="primary">
+            <Typography variant='body2' color='text.secondary'>
+              Total Spent
+            </Typography>
+            <Typography variant='h6' color='primary'>
               {formatCurrency(customer.totalSpent)}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" color="text.secondary">Loyalty Points</Typography>
-            <Typography variant="h6" color="success.main">
+            <Typography variant='body2' color='text.secondary'>
+              Loyalty Points
+            </Typography>
+            <Typography variant='h6' color='success.main'>
               {customer.loyaltyPoints} pts
             </Typography>
           </Grid>
@@ -506,16 +549,16 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="subtitle2" gutterBottom>
+        <Typography variant='subtitle2' gutterBottom>
           Communication Preferences
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {customer.preferences.map((pref, index) => (
             <Chip
               key={index}
-              size="small"
+              size='small'
               label={pref}
-              variant="outlined"
+              variant='outlined'
               sx={{ fontSize: '0.7rem' }}
             />
           ))}
@@ -528,24 +571,26 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
   const MessageComposer = () => (
     <Paper sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
+        <FormControl size='small' sx={{ minWidth: 120, mr: 2 }}>
           <Select
             value={messageChannel}
-            onChange={(e) => setMessageChannel(e.target.value)}
+            onChange={e => setMessageChannel(e.target.value)}
           >
             {Object.entries(COMMUNICATION_CHANNELS).map(([key, channel]) => (
               <MenuItem key={key} value={key}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <channel.icon sx={{ mr: 1, fontSize: 16, color: channel.color }} />
+                  <channel.icon
+                    sx={{ mr: 1, fontSize: 16, color: channel.color }}
+                  />
                   {channel.label}
                 </Box>
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        
+
         <Button
-          size="small"
+          size='small'
           startIcon={<Campaign />}
           onClick={() => setTemplateDialog(true)}
         >
@@ -557,10 +602,10 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         fullWidth
         multiline
         rows={3}
-        placeholder="Type your message..."
+        placeholder='Type your message...'
         value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
-        onKeyPress={(e) => {
+        onChange={e => setNewMessage(e.target.value)}
+        onKeyPress={e => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
@@ -569,18 +614,24 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         sx={{ mb: 2 }}
       />
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Box>
-          <IconButton size="small">
+          <IconButton size='small'>
             <Attach />
           </IconButton>
-          <IconButton size="small">
+          <IconButton size='small'>
             <PhotoCamera />
           </IconButton>
         </Box>
-        
+
         <Button
-          variant="contained"
+          variant='contained'
           startIcon={<Send />}
           onClick={sendMessage}
           disabled={!newMessage.trim()}
@@ -595,8 +646,15 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
   const ConversationView = ({ conversation }) => {
     if (!conversation) {
       return (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400 }}>
-          <Typography color="text.secondary">
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 400,
+          }}
+        >
+          <Typography color='text.secondary'>
             Select a conversation to start messaging
           </Typography>
         </Box>
@@ -606,10 +664,10 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
     return (
       <Box sx={{ height: 400, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
-          {conversation.messages.map((message) => {
+          {conversation.messages.map(message => {
             const isFromCustomer = message.senderId !== 'system';
             const ChannelIcon = COMMUNICATION_CHANNELS[message.channel]?.icon;
-            
+
             return (
               <motion.div
                 key={message.id}
@@ -618,7 +676,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
                 style={{
                   display: 'flex',
                   justifyContent: isFromCustomer ? 'flex-start' : 'flex-end',
-                  marginBottom: theme.spacing(1)
+                  marginBottom: theme.spacing(1),
                 }}
               >
                 <Paper
@@ -626,31 +684,31 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
                     p: 1.5,
                     maxWidth: '70%',
                     bgcolor: isFromCustomer ? 'grey.100' : 'primary.main',
-                    color: isFromCustomer ? 'text.primary' : 'primary.contrastText'
+                    color: isFromCustomer
+                      ? 'text.primary'
+                      : 'primary.contrastText',
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                     <ChannelIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                    <Typography variant="caption">
+                    <Typography variant='caption'>
                       {format(new Date(message.timestamp), 'HH:mm')}
                     </Typography>
                     {message.status && (
                       <Chip
-                        size="small"
+                        size='small'
                         label={message.status}
                         sx={{ ml: 1, height: 16, fontSize: '0.6rem' }}
                       />
                     )}
                   </Box>
-                  <Typography variant="body2">
-                    {message.content}
-                  </Typography>
+                  <Typography variant='body2'>{message.content}</Typography>
                   {message.attachments && (
                     <Box sx={{ mt: 1 }}>
                       {message.attachments.map((attachment, index) => (
                         <Chip
                           key={index}
-                          size="small"
+                          size='small'
                           icon={<PhotoCamera />}
                           label={attachment.name}
                           onClick={() => {}}
@@ -671,27 +729,34 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">Customer Communication Hub</Typography>
-        
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h5'>Customer Communication Hub</Typography>
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             startIcon={<AutoMode />}
-            variant="outlined"
+            variant='outlined'
             onClick={() => setAutomationDialog(true)}
           >
             Automation
           </Button>
           <Button
             startIcon={<Campaign />}
-            variant="outlined"
+            variant='outlined'
             onClick={() => setCampaignDialog(true)}
           >
             Campaign
           </Button>
           <Button
             startIcon={<Schedule />}
-            variant="contained"
+            variant='contained'
             onClick={() => setSchedulerDialog(true)}
           >
             Schedule
@@ -703,10 +768,10 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         {/* Left panel - Customer info */}
         <Grid item xs={12} lg={4}>
           {selectedCustomer && <CustomerProfile customer={selectedCustomer} />}
-          
+
           <Card sx={{ mt: 2 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Communication History
               </Typography>
               <CommunicationTimeline customer={selectedCustomer} />
@@ -718,14 +783,14 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         <Grid item xs={12} lg={5}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Conversations
               </Typography>
-              
+
               <ConversationView conversation={currentConversation} />
             </CardContent>
           </Card>
-          
+
           <Box sx={{ mt: 2 }}>
             <MessageComposer />
           </Box>
@@ -735,30 +800,40 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         <Grid item xs={12} lg={3}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Quick Actions
               </Typography>
-              
+
               <List dense>
                 <ListItem button onClick={() => {}}>
-                  <ListItemIcon><Phone /></ListItemIcon>
-                  <ListItemText primary="Call Customer" />
+                  <ListItemIcon>
+                    <Phone />
+                  </ListItemIcon>
+                  <ListItemText primary='Call Customer' />
                 </ListItem>
                 <ListItem button onClick={() => {}}>
-                  <ListItemIcon><Email /></ListItemIcon>
-                  <ListItemText primary="Send Email" />
+                  <ListItemIcon>
+                    <Email />
+                  </ListItemIcon>
+                  <ListItemText primary='Send Email' />
                 </ListItem>
                 <ListItem button onClick={() => {}}>
-                  <ListItemIcon><Schedule /></ListItemIcon>
-                  <ListItemText primary="Schedule Appointment" />
+                  <ListItemIcon>
+                    <Schedule />
+                  </ListItemIcon>
+                  <ListItemText primary='Schedule Appointment' />
                 </ListItem>
                 <ListItem button onClick={() => {}}>
-                  <ListItemIcon><Payment /></ListItemIcon>
-                  <ListItemText primary="Send Payment Link" />
+                  <ListItemIcon>
+                    <Payment />
+                  </ListItemIcon>
+                  <ListItemText primary='Send Payment Link' />
                 </ListItem>
                 <ListItem button onClick={() => {}}>
-                  <ListItemIcon><Star /></ListItemIcon>
-                  <ListItemText primary="Request Review" />
+                  <ListItemIcon>
+                    <Star />
+                  </ListItemIcon>
+                  <ListItemText primary='Request Review' />
                 </ListItem>
               </List>
             </CardContent>
@@ -766,22 +841,24 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
 
           <Card sx={{ mt: 2 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Automated Messages
               </Typography>
-              
+
               <List dense>
-                {Object.entries(MESSAGE_TEMPLATES).slice(0, 5).map(([key, template]) => (
-                  <ListItem key={key}>
-                    <ListItemText 
-                      primary={template.title}
-                      secondary={`${template.channel.join(', ')}`}
-                    />
-                    <ListItemSecondaryAction>
-                      <Switch size="small" />
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))}
+                {Object.entries(MESSAGE_TEMPLATES)
+                  .slice(0, 5)
+                  .map(([key, template]) => (
+                    <ListItem key={key}>
+                      <ListItemText
+                        primary={template.title}
+                        secondary={`${template.channel.join(', ')}`}
+                      />
+                      <ListItemSecondaryAction>
+                        <Switch size='small' />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
               </List>
             </CardContent>
           </Card>
@@ -789,7 +866,12 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
       </Grid>
 
       {/* Template Dialog */}
-      <Dialog open={templateDialog} onClose={() => setTemplateDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={templateDialog}
+        onClose={() => setTemplateDialog(false)}
+        maxWidth='md'
+        fullWidth
+      >
         <DialogTitle>Message Templates</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -798,24 +880,34 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
                 <Card
                   sx={{
                     cursor: 'pointer',
-                    border: selectedTemplate === key ? '2px solid' : '1px solid',
-                    borderColor: selectedTemplate === key ? 'primary.main' : 'divider',
-                    '&:hover': { borderColor: 'primary.main' }
+                    border:
+                      selectedTemplate === key ? '2px solid' : '1px solid',
+                    borderColor:
+                      selectedTemplate === key ? 'primary.main' : 'divider',
+                    '&:hover': { borderColor: 'primary.main' },
                   }}
                   onClick={() => setSelectedTemplate(key)}
                 >
                   <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <Typography
+                      variant='subtitle1'
+                      fontWeight='bold'
+                      gutterBottom
+                    >
                       {template.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ mb: 1 }}
+                    >
                       {template.template.substring(0, 100)}...
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      {template.channel.map((channel) => (
+                      {template.channel.map(channel => (
                         <Chip
                           key={channel}
-                          size="small"
+                          size='small'
                           label={COMMUNICATION_CHANNELS[channel]?.label}
                           sx={{ fontSize: '0.7rem' }}
                         />
@@ -830,7 +922,7 @@ const CustomerCommunicationHub = ({ customerId, jobId }) => {
         <DialogActions>
           <Button onClick={() => setTemplateDialog(false)}>Cancel</Button>
           <Button
-            variant="contained"
+            variant='contained'
             disabled={!selectedTemplate}
             onClick={() => applyTemplate(selectedTemplate)}
           >

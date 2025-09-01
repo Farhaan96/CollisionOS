@@ -40,7 +40,7 @@ import {
   Tabs,
   Tab,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Assessment,
@@ -81,11 +81,21 @@ import {
   Engineering,
   Groups,
   Inventory,
-  LocalShipping
+  LocalShipping,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
-import { formatCurrency, formatPercentage, formatNumber } from '../../utils/formatters';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  isWithinInterval,
+} from 'date-fns';
+import {
+  formatCurrency,
+  formatPercentage,
+  formatNumber,
+} from '../../utils/formatters';
 
 // Report categories and templates
 const REPORT_CATEGORIES = {
@@ -97,8 +107,12 @@ const REPORT_CATEGORIES = {
       { id: 'profit_loss', name: 'Profit & Loss Statement', type: 'financial' },
       { id: 'revenue_analysis', name: 'Revenue Analysis', type: 'financial' },
       { id: 'job_profitability', name: 'Job Profitability', type: 'financial' },
-      { id: 'parts_profitability', name: 'Parts Profitability', type: 'financial' }
-    ]
+      {
+        id: 'parts_profitability',
+        name: 'Parts Profitability',
+        type: 'financial',
+      },
+    ],
   },
   production: {
     title: 'Production Reports',
@@ -107,9 +121,17 @@ const REPORT_CATEGORIES = {
     templates: [
       { id: 'cycle_time', name: 'Cycle Time Analysis', type: 'production' },
       { id: 'throughput', name: 'Throughput Report', type: 'production' },
-      { id: 'bottleneck_analysis', name: 'Bottleneck Analysis', type: 'production' },
-      { id: 'capacity_utilization', name: 'Capacity Utilization', type: 'production' }
-    ]
+      {
+        id: 'bottleneck_analysis',
+        name: 'Bottleneck Analysis',
+        type: 'production',
+      },
+      {
+        id: 'capacity_utilization',
+        name: 'Capacity Utilization',
+        type: 'production',
+      },
+    ],
   },
   quality: {
     title: 'Quality Reports',
@@ -119,19 +141,27 @@ const REPORT_CATEGORIES = {
       { id: 'qc_scorecard', name: 'QC Scorecard', type: 'quality' },
       { id: 'defect_analysis', name: 'Defect Analysis', type: 'quality' },
       { id: 'rework_report', name: 'Rework Report', type: 'quality' },
-      { id: 'customer_satisfaction', name: 'Customer Satisfaction', type: 'quality' }
-    ]
+      {
+        id: 'customer_satisfaction',
+        name: 'Customer Satisfaction',
+        type: 'quality',
+      },
+    ],
   },
   staff: {
     title: 'Staff Performance',
     icon: Groups,
     color: '#f57c00',
     templates: [
-      { id: 'technician_productivity', name: 'Technician Productivity', type: 'staff' },
+      {
+        id: 'technician_productivity',
+        name: 'Technician Productivity',
+        type: 'staff',
+      },
       { id: 'efficiency_report', name: 'Efficiency Report', type: 'staff' },
       { id: 'training_compliance', name: 'Training Compliance', type: 'staff' },
-      { id: 'attendance_report', name: 'Attendance Report', type: 'staff' }
-    ]
+      { id: 'attendance_report', name: 'Attendance Report', type: 'staff' },
+    ],
   },
   operational: {
     title: 'Operational Reports',
@@ -139,11 +169,23 @@ const REPORT_CATEGORIES = {
     color: '#5d4037',
     templates: [
       { id: 'kpi_dashboard', name: 'KPI Dashboard', type: 'operational' },
-      { id: 'workflow_analysis', name: 'Workflow Analysis', type: 'operational' },
-      { id: 'equipment_utilization', name: 'Equipment Utilization', type: 'operational' },
-      { id: 'vendor_performance', name: 'Vendor Performance', type: 'operational' }
-    ]
-  }
+      {
+        id: 'workflow_analysis',
+        name: 'Workflow Analysis',
+        type: 'operational',
+      },
+      {
+        id: 'equipment_utilization',
+        name: 'Equipment Utilization',
+        type: 'operational',
+      },
+      {
+        id: 'vendor_performance',
+        name: 'Vendor Performance',
+        type: 'operational',
+      },
+    ],
+  },
 };
 
 // Sample KPI data
@@ -151,28 +193,43 @@ const SAMPLE_KPIS = {
   financial: {
     revenue: { value: 485000, target: 500000, trend: 'up', change: 8.5 },
     profit_margin: { value: 18.5, target: 20.0, trend: 'up', change: 2.1 },
-    avg_job_value: { value: 3240, target: 3500, trend: 'up', change: 5.2 }
+    avg_job_value: { value: 3240, target: 3500, trend: 'up', change: 5.2 },
   },
   production: {
     cycle_time: { value: 5.2, target: 4.8, trend: 'down', change: -8.1 },
     throughput: { value: 127, target: 135, trend: 'up', change: 12.4 },
-    capacity_utilization: { value: 82.5, target: 85.0, trend: 'up', change: 3.8 }
+    capacity_utilization: {
+      value: 82.5,
+      target: 85.0,
+      trend: 'up',
+      change: 3.8,
+    },
   },
   quality: {
     qc_score: { value: 94.2, target: 95.0, trend: 'up', change: 1.8 },
     first_time_right: { value: 89.3, target: 92.0, trend: 'up', change: 4.2 },
-    customer_satisfaction: { value: 4.7, target: 4.8, trend: 'stable', change: 0.1 }
+    customer_satisfaction: {
+      value: 4.7,
+      target: 4.8,
+      trend: 'stable',
+      change: 0.1,
+    },
   },
   staff: {
     efficiency: { value: 91.5, target: 92.0, trend: 'up', change: 2.3 },
     utilization: { value: 87.2, target: 85.0, trend: 'up', change: 1.8 },
-    training_compliance: { value: 96.5, target: 100.0, trend: 'up', change: 8.2 }
-  }
+    training_compliance: {
+      value: 96.5,
+      target: 100.0,
+      trend: 'up',
+      change: 8.2,
+    },
+  },
 };
 
 const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
   const theme = useTheme();
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('financial');
   const [reportDialog, setReportDialog] = useState(false);
@@ -186,7 +243,7 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
     technician: '',
     department: '',
     jobStatus: '',
-    comparison: 'previous_period'
+    comparison: 'previous_period',
   });
   const [generatedReports, setGeneratedReports] = useState([]);
   const [scheduledReports, setScheduledReports] = useState([]);
@@ -203,7 +260,7 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
       format: 'PDF',
       size: '2.4 MB',
       status: 'completed',
-      downloadUrl: '#'
+      downloadUrl: '#',
     },
     {
       id: '2',
@@ -214,8 +271,8 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
       format: 'Excel',
       size: '1.2 MB',
       status: 'completed',
-      downloadUrl: '#'
-    }
+      downloadUrl: '#',
+    },
   ];
 
   // Sample scheduled reports
@@ -228,8 +285,8 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
       nextRun: '2024-01-20',
       recipients: ['manager@shop.com', 'owner@shop.com'],
       format: 'PDF',
-      active: true
-    }
+      active: true,
+    },
   ];
 
   useEffect(() => {
@@ -243,13 +300,20 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
 
     return (
       <Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6">Key Performance Indicators</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Typography variant='h6'>Key Performance Indicators</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button startIcon={<Refresh />} size="small">
+            <Button startIcon={<Refresh />} size='small'>
               Refresh
             </Button>
-            <Button startIcon={<FilterList />} size="small">
+            <Button startIcon={<FilterList />} size='small'>
               Filter
             </Button>
           </Box>
@@ -258,7 +322,7 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
         {kpiCategories.map(([categoryId, kpis]) => {
           const category = REPORT_CATEGORIES[categoryId];
           if (!category) return null;
-          
+
           const CategoryIcon = category.icon;
 
           return (
@@ -268,62 +332,108 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                   <Avatar sx={{ bgcolor: category.color, mr: 2 }}>
                     <CategoryIcon />
                   </Avatar>
-                  <Typography variant="h6">{category.title}</Typography>
+                  <Typography variant='h6'>{category.title}</Typography>
                 </Box>
 
                 <Grid container spacing={3}>
                   {Object.entries(kpis).map(([kpiId, kpi]) => {
-                    const isPositiveTrend = kpi.trend === 'up' || (kpi.trend === 'down' && kpiId === 'cycle_time');
-                    const trendColor = isPositiveTrend ? theme.palette.success.main : theme.palette.error.main;
-                    const TrendIcon = kpi.change > 0 ? TrendingUp : TrendingDown;
+                    const isPositiveTrend =
+                      kpi.trend === 'up' ||
+                      (kpi.trend === 'down' && kpiId === 'cycle_time');
+                    const trendColor = isPositiveTrend
+                      ? theme.palette.success.main
+                      : theme.palette.error.main;
+                    const TrendIcon =
+                      kpi.change > 0 ? TrendingUp : TrendingDown;
 
                     return (
                       <Grid item xs={12} sm={6} md={4} key={kpiId}>
-                        <Card variant="outlined">
+                        <Card variant='outlined'>
                           <CardContent>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <Typography
+                              variant='body2'
+                              color='text.secondary'
+                              gutterBottom
+                            >
                               {kpiId.replace(/_/g, ' ').toUpperCase()}
                             </Typography>
-                            
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                              <Typography variant="h4" fontWeight="bold">
-                                {kpiId.includes('margin') || kpiId.includes('efficiency') || kpiId.includes('utilization') || kpiId.includes('compliance') ? 
-                                  `${kpi.value}%` :
-                                 kpiId.includes('revenue') || kpiId.includes('value') ?
-                                  formatCurrency(kpi.value) :
-                                 kpiId.includes('satisfaction') ?
-                                  `${kpi.value}/5.0` :
-                                  kpi.value
-                                }
+
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                mb: 1,
+                              }}
+                            >
+                              <Typography variant='h4' fontWeight='bold'>
+                                {kpiId.includes('margin') ||
+                                kpiId.includes('efficiency') ||
+                                kpiId.includes('utilization') ||
+                                kpiId.includes('compliance')
+                                  ? `${kpi.value}%`
+                                  : kpiId.includes('revenue') ||
+                                      kpiId.includes('value')
+                                    ? formatCurrency(kpi.value)
+                                    : kpiId.includes('satisfaction')
+                                      ? `${kpi.value}/5.0`
+                                      : kpi.value}
                               </Typography>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <TrendIcon sx={{ fontSize: 16, color: trendColor, mr: 0.5 }} />
-                                <Typography variant="caption" sx={{ color: trendColor, fontWeight: 'bold' }}>
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center' }}
+                              >
+                                <TrendIcon
+                                  sx={{
+                                    fontSize: 16,
+                                    color: trendColor,
+                                    mr: 0.5,
+                                  }}
+                                />
+                                <Typography
+                                  variant='caption'
+                                  sx={{ color: trendColor, fontWeight: 'bold' }}
+                                >
                                   {Math.abs(kpi.change)}%
                                 </Typography>
                               </Box>
                             </Box>
 
-                            <Typography variant="body2" color="text.secondary">
-                              Target: {
-                                kpiId.includes('margin') || kpiId.includes('efficiency') || kpiId.includes('utilization') || kpiId.includes('compliance') ? 
-                                  `${kpi.target}%` :
-                                kpiId.includes('revenue') || kpiId.includes('value') ?
-                                  formatCurrency(kpi.target) :
-                                kpiId.includes('satisfaction') ?
-                                  `${kpi.target}/5.0` :
-                                  kpi.target
-                              }
+                            <Typography variant='body2' color='text.secondary'>
+                              Target:{' '}
+                              {kpiId.includes('margin') ||
+                              kpiId.includes('efficiency') ||
+                              kpiId.includes('utilization') ||
+                              kpiId.includes('compliance')
+                                ? `${kpi.target}%`
+                                : kpiId.includes('revenue') ||
+                                    kpiId.includes('value')
+                                  ? formatCurrency(kpi.target)
+                                  : kpiId.includes('satisfaction')
+                                    ? `${kpi.target}/5.0`
+                                    : kpi.target}
                             </Typography>
 
-                            <Box sx={{ mt: 1, height: 4, backgroundColor: alpha(theme.palette.grey[500], 0.2), borderRadius: 2 }}>
+                            <Box
+                              sx={{
+                                mt: 1,
+                                height: 4,
+                                backgroundColor: alpha(
+                                  theme.palette.grey[500],
+                                  0.2
+                                ),
+                                borderRadius: 2,
+                              }}
+                            >
                               <Box
                                 sx={{
                                   height: '100%',
                                   width: `${Math.min((kpi.value / kpi.target) * 100, 100)}%`,
-                                  backgroundColor: (kpi.value / kpi.target) >= 1 ? theme.palette.success.main : theme.palette.warning.main,
+                                  backgroundColor:
+                                    kpi.value / kpi.target >= 1
+                                      ? theme.palette.success.main
+                                      : theme.palette.warning.main,
                                   borderRadius: 2,
-                                  transition: 'width 0.5s ease-in-out'
+                                  transition: 'width 0.5s ease-in-out',
                                 }}
                               />
                             </Box>
@@ -348,11 +458,18 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
 
     return (
       <Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6">Report Templates</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Typography variant='h6'>Report Templates</Typography>
           <Button
             startIcon={<Add />}
-            variant="contained"
+            variant='contained'
             onClick={() => setCustomReportDialog(true)}
           >
             Custom Report
@@ -370,7 +487,9 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                 label={cat.title}
                 onClick={() => setSelectedCategory(categoryId)}
                 color={selectedCategory === categoryId ? 'primary' : 'default'}
-                variant={selectedCategory === categoryId ? 'filled' : 'outlined'}
+                variant={
+                  selectedCategory === categoryId ? 'filled' : 'outlined'
+                }
                 sx={{ minWidth: 'fit-content' }}
               />
             );
@@ -379,7 +498,7 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
 
         {/* Report templates grid */}
         <Grid container spacing={3}>
-          {category?.templates.map((template) => (
+          {category?.templates.map(template => (
             <Grid item xs={12} sm={6} md={4} key={template.id}>
               <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -392,9 +511,9 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                     '&:hover': {
                       boxShadow: 4,
                       '& .report-actions': {
-                        opacity: 1
-                      }
-                    }
+                        opacity: 1,
+                      },
+                    },
                   }}
                   onClick={() => {
                     setSelectedReport(template);
@@ -403,31 +522,43 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: category.color, mr: 2, width: 40, height: 40 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: category.color,
+                          mr: 2,
+                          width: 40,
+                          height: 40,
+                        }}
+                      >
                         <CategoryIcon />
                       </Avatar>
-                      <Typography variant="h6" fontWeight="bold">
+                      <Typography variant='h6' fontWeight='bold'>
                         {template.name}
                       </Typography>
                     </Box>
 
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Generate detailed {template.name.toLowerCase()} with charts, metrics, and insights.
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ mb: 2 }}
+                    >
+                      Generate detailed {template.name.toLowerCase()} with
+                      charts, metrics, and insights.
                     </Typography>
 
-                    <Box 
-                      className="report-actions"
-                      sx={{ 
-                        display: 'flex', 
-                        gap: 1, 
-                        opacity: 0, 
-                        transition: 'opacity 0.2s ease-in-out' 
+                    <Box
+                      className='report-actions'
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        opacity: 0,
+                        transition: 'opacity 0.2s ease-in-out',
                       }}
                     >
-                      <Button size="small" startIcon={<PlayArrow />}>
+                      <Button size='small' startIcon={<PlayArrow />}>
                         Generate
                       </Button>
-                      <Button size="small" startIcon={<Schedule />}>
+                      <Button size='small' startIcon={<Schedule />}>
                         Schedule
                       </Button>
                     </Box>
@@ -444,13 +575,20 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
   // Generated reports component
   const GeneratedReports = () => (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6">Generated Reports</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h6'>Generated Reports</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button startIcon={<FilterList />} size="small">
+          <Button startIcon={<FilterList />} size='small'>
             Filter
           </Button>
-          <Button startIcon={<Refresh />} size="small">
+          <Button startIcon={<Refresh />} size='small'>
             Refresh
           </Button>
         </Box>
@@ -471,8 +609,8 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {generatedReports.map((report) => {
-              const category = Object.values(REPORT_CATEGORIES).find(cat => 
+            {generatedReports.map(report => {
+              const category = Object.values(REPORT_CATEGORIES).find(cat =>
                 cat.templates.some(t => t.type === report.category)
               );
               const CategoryIcon = category?.icon || Assessment;
@@ -481,21 +619,28 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                 <TableRow key={report.id} hover>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar sx={{ bgcolor: category?.color, mr: 2, width: 32, height: 32 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: category?.color,
+                          mr: 2,
+                          width: 32,
+                          height: 32,
+                        }}
+                      >
                         <CategoryIcon sx={{ fontSize: 16 }} />
                       </Avatar>
-                      <Typography variant="subtitle2" fontWeight="bold">
+                      <Typography variant='subtitle2' fontWeight='bold'>
                         {report.name}
                       </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
                     <Chip
-                      size="small"
+                      size='small'
                       label={category?.title}
                       sx={{
                         backgroundColor: alpha(category?.color || '#666', 0.1),
-                        color: category?.color || '#666'
+                        color: category?.color || '#666',
                       }}
                     />
                   </TableCell>
@@ -504,28 +649,34 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                   </TableCell>
                   <TableCell>{report.generatedBy}</TableCell>
                   <TableCell>
-                    <Chip size="small" label={report.format} variant="outlined" />
+                    <Chip
+                      size='small'
+                      label={report.format}
+                      variant='outlined'
+                    />
                   </TableCell>
                   <TableCell>{report.size}</TableCell>
                   <TableCell>
                     <Chip
-                      size="small"
+                      size='small'
                       label={report.status.toUpperCase()}
-                      color={report.status === 'completed' ? 'success' : 'primary'}
+                      color={
+                        report.status === 'completed' ? 'success' : 'primary'
+                      }
                     />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Visibility />
                       </IconButton>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Download />
                       </IconButton>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Share />
                       </IconButton>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Delete />
                       </IconButton>
                     </Box>
@@ -542,11 +693,18 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
   // Scheduled reports component
   const ScheduledReports = () => (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6">Scheduled Reports</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h6'>Scheduled Reports</Typography>
         <Button
           startIcon={<Add />}
-          variant="contained"
+          variant='contained'
           onClick={() => setScheduleDialog(true)}
         >
           Schedule Report
@@ -554,8 +712,8 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
       </Box>
 
       <Grid container spacing={2}>
-        {scheduledReports.map((report) => {
-          const category = Object.values(REPORT_CATEGORIES).find(cat => 
+        {scheduledReports.map(report => {
+          const category = Object.values(REPORT_CATEGORIES).find(cat =>
             cat.templates.some(t => t.type === report.category)
           );
           const CategoryIcon = category?.icon || Assessment;
@@ -569,36 +727,47 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
                       <CategoryIcon />
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
+                      <Typography variant='subtitle1' fontWeight='bold'>
                         {report.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         {report.frequency.toUpperCase()} • {report.format}
                       </Typography>
                     </Box>
                     <Chip
-                      size="small"
+                      size='small'
                       label={report.active ? 'ACTIVE' : 'PAUSED'}
                       color={report.active ? 'success' : 'default'}
                     />
                   </Box>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mb: 2 }}
+                  >
                     Next run: {format(new Date(report.nextRun), 'MMM dd, yyyy')}
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mb: 2 }}
+                  >
                     Recipients: {report.recipients.length} email(s)
                   </Typography>
 
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button size="small" startIcon={<Edit />}>
+                    <Button size='small' startIcon={<Edit />}>
                       Edit
                     </Button>
-                    <Button size="small" startIcon={report.active ? <Pause /> : <PlayArrow />}>
+                    <Button
+                      size='small'
+                      startIcon={report.active ? <Pause /> : <PlayArrow />}
+                    >
                       {report.active ? 'Pause' : 'Resume'}
                     </Button>
-                    <IconButton size="small" onClick={() => {}}>
+                    <IconButton size='small' onClick={() => {}}>
                       <Delete />
                     </IconButton>
                   </Box>
@@ -613,10 +782,13 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
 
   // Report generation dialog
   const ReportGenerationDialog = () => (
-    <Dialog open={reportDialog} onClose={() => setReportDialog(false)} maxWidth="md" fullWidth>
-      <DialogTitle>
-        Generate Report: {selectedReport?.name}
-      </DialogTitle>
+    <Dialog
+      open={reportDialog}
+      onClose={() => setReportDialog(false)}
+      maxWidth='md'
+      fullWidth
+    >
+      <DialogTitle>Generate Report: {selectedReport?.name}</DialogTitle>
       <DialogContent>
         <Grid container spacing={3} sx={{ mt: 1 }}>
           {/* Date Range */}
@@ -625,14 +797,19 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
               <InputLabel>Date Range</InputLabel>
               <Select
                 value={reportFilters.dateRange}
-                onChange={(e) => setReportFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+                onChange={e =>
+                  setReportFilters(prev => ({
+                    ...prev,
+                    dateRange: e.target.value,
+                  }))
+                }
               >
-                <MenuItem value="last_7_days">Last 7 Days</MenuItem>
-                <MenuItem value="last_30_days">Last 30 Days</MenuItem>
-                <MenuItem value="last_3_months">Last 3 Months</MenuItem>
-                <MenuItem value="last_6_months">Last 6 Months</MenuItem>
-                <MenuItem value="last_12_months">Last 12 Months</MenuItem>
-                <MenuItem value="custom">Custom Range</MenuItem>
+                <MenuItem value='last_7_days'>Last 7 Days</MenuItem>
+                <MenuItem value='last_30_days'>Last 30 Days</MenuItem>
+                <MenuItem value='last_3_months'>Last 3 Months</MenuItem>
+                <MenuItem value='last_6_months'>Last 6 Months</MenuItem>
+                <MenuItem value='last_12_months'>Last 12 Months</MenuItem>
+                <MenuItem value='custom'>Custom Range</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -641,35 +818,42 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Export Format</InputLabel>
-              <Select defaultValue="pdf">
-                <MenuItem value="pdf">PDF</MenuItem>
-                <MenuItem value="excel">Excel</MenuItem>
-                <MenuItem value="csv">CSV</MenuItem>
-                <MenuItem value="powerpoint">PowerPoint</MenuItem>
+              <Select defaultValue='pdf'>
+                <MenuItem value='pdf'>PDF</MenuItem>
+                <MenuItem value='excel'>Excel</MenuItem>
+                <MenuItem value='csv'>CSV</MenuItem>
+                <MenuItem value='powerpoint'>PowerPoint</MenuItem>
               </Select>
             </FormControl>
           </Grid>
 
           {/* Filters */}
           <Grid item xs={12}>
-            <Typography variant="subtitle2" gutterBottom>
+            <Typography variant='subtitle2' gutterBottom>
               Additional Filters
             </Typography>
             <FormGroup row>
-              <FormControlLabel control={<Checkbox />} label="Include Charts" />
-              <FormControlLabel control={<Checkbox />} label="Include Raw Data" />
-              <FormControlLabel control={<Checkbox />} label="Period Comparison" />
-              <FormControlLabel control={<Checkbox />} label="Executive Summary" />
+              <FormControlLabel control={<Checkbox />} label='Include Charts' />
+              <FormControlLabel
+                control={<Checkbox />}
+                label='Include Raw Data'
+              />
+              <FormControlLabel
+                control={<Checkbox />}
+                label='Period Comparison'
+              />
+              <FormControlLabel
+                control={<Checkbox />}
+                label='Executive Summary'
+              />
             </FormGroup>
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setReportDialog(false)}>
-          Cancel
-        </Button>
-        <Button 
-          variant="contained"
+        <Button onClick={() => setReportDialog(false)}>Cancel</Button>
+        <Button
+          variant='contained'
           startIcon={<PlayArrow />}
           onClick={() => {
             setReportDialog(false);
@@ -688,25 +872,36 @@ const ReportingSystem = ({ onReportGenerate, onReportSchedule }) => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">Business Intelligence & Reports</Typography>
-        
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h5'>Business Intelligence & Reports</Typography>
+
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button startIcon={<Analytics />} variant="outlined">
+          <Button startIcon={<Analytics />} variant='outlined'>
             Advanced Analytics
           </Button>
-          <Button startIcon={<Settings />} variant="outlined">
+          <Button startIcon={<Settings />} variant='outlined'>
             Report Settings
           </Button>
         </Box>
       </Box>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
-        <Tab label="KPI Dashboard" />
-        <Tab label="Report Templates" />
-        <Tab label="Generated Reports" />
-        <Tab label="Scheduled Reports" />
+      <Tabs
+        value={activeTab}
+        onChange={(e, newValue) => setActiveTab(newValue)}
+        sx={{ mb: 3 }}
+      >
+        <Tab label='KPI Dashboard' />
+        <Tab label='Report Templates' />
+        <Tab label='Generated Reports' />
+        <Tab label='Scheduled Reports' />
       </Tabs>
 
       {/* Tab content */}

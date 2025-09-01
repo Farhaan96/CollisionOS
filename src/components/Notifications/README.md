@@ -5,6 +5,7 @@ Premium notification and toast system with executive-level design and sophistica
 ## Features
 
 ### 🎯 Core Features
+
 - **Global Notification Context** - Centralized notification management
 - **Queue Management** - Priority-based notification queuing with max limits
 - **Priority System** - Critical, High, Normal, Low priority levels
@@ -13,6 +14,7 @@ Premium notification and toast system with executive-level design and sophistica
 - **Sound & Vibration** - Audio and haptic feedback support
 
 ### 🎨 Premium Design
+
 - **Glassmorphism Effects** - Modern backdrop blur and transparency
 - **Executive-Level Styling** - Professional design suitable for C-suite
 - **Premium Animations** - Smooth transitions with Framer Motion
@@ -20,6 +22,7 @@ Premium notification and toast system with executive-level design and sophistica
 - **Multiple Positions** - Top/bottom, left/right/center positioning
 
 ### 🚀 Advanced Functionality
+
 - **Swipe to Dismiss** - Mobile-friendly gesture support
 - **Progress Bars** - Visual countdown for timed notifications
 - **Action Buttons** - Custom actions with notifications
@@ -38,10 +41,7 @@ import { NotificationProvider } from './components/Notifications';
 
 function App() {
   return (
-    <NotificationProvider 
-      position="top-right"
-      maxNotifications={5}
-    >
+    <NotificationProvider position='top-right' maxNotifications={5}>
       <YourApp />
     </NotificationProvider>
   );
@@ -63,12 +63,12 @@ import { Toast } from './components/Notifications';
     message: 'Operation completed successfully',
     actions: [
       { label: 'View Details', handler: () => {} },
-      { label: 'Dismiss', handler: () => {} }
-    ]
+      { label: 'Dismiss', handler: () => {} },
+    ],
   }}
   onDismiss={handleDismiss}
-  position="top-right"
-/>
+  position='top-right'
+/>;
 ```
 
 ### NotificationCenter
@@ -83,7 +83,7 @@ import { NotificationCenter } from './components/Notifications';
   open={isOpen}
   onClose={handleClose}
   showSettings={true}
-/>
+/>;
 ```
 
 ### AlertDialog
@@ -96,11 +96,11 @@ import { AlertDialog, DIALOG_TYPES } from './components/Notifications';
 <AlertDialog
   open={isOpen}
   type={DIALOG_TYPES.DESTRUCTIVE}
-  title="Delete Item"
-  message="This action cannot be undone."
+  title='Delete Item'
+  message='This action cannot be undone.'
   onConfirm={handleDelete}
   onCancel={handleCancel}
-/>
+/>;
 ```
 
 ## Hooks
@@ -126,9 +126,7 @@ function MyComponent() {
       await notification.show({
         title: 'Loading...',
         message: 'Please wait...',
-        actions: [
-          { label: 'Cancel', handler: () => {} }
-        ]
+        actions: [{ label: 'Cancel', handler: () => {} }],
       });
     } catch (error) {
       notification.error('Something went wrong');
@@ -144,9 +142,7 @@ function MyComponent() {
       .type('info')
       .priority('high')
       .duration(5000)
-      .actions([
-        { label: 'Action 1', handler: () => {} }
-      ])
+      .actions([{ label: 'Action 1', handler: () => {} }])
       .show();
   };
 
@@ -160,7 +156,7 @@ function MyComponent() {
       {
         loadingMessage: 'Processing...',
         successMessage: 'Complete!',
-        errorMessage: 'Failed!'
+        errorMessage: 'Failed!',
       }
     );
   };
@@ -168,11 +164,11 @@ function MyComponent() {
   // Loading with progress updates
   const handleWithProgress = async () => {
     const loading = notification.loading('Uploading file...');
-    
+
     try {
       // Update progress
       loading.updateProgress(50, 'Halfway there...');
-      
+
       // Complete
       loading.complete('Upload successful!');
     } catch (error) {
@@ -185,7 +181,7 @@ function MyComponent() {
 ## Notification Types
 
 - `success` - Green with checkmark icon
-- `error` - Red with error icon  
+- `error` - Red with error icon
 - `warning` - Yellow/orange with warning icon
 - `info` - Blue with info icon
 - `custom` - Customizable appearance
@@ -200,6 +196,7 @@ function MyComponent() {
 ## Configuration Options
 
 ### Provider Props
+
 ```jsx
 <NotificationProvider
   position="top-right" // top-right, top-left, bottom-right, etc.
@@ -209,6 +206,7 @@ function MyComponent() {
 ```
 
 ### Notification Options
+
 ```jsx
 const notification = {
   id: 'unique-id', // Auto-generated if not provided
@@ -226,7 +224,7 @@ const notification = {
   count: 1, // Notification count badge
   data: {}, // Custom data
   onClick: () => {}, // Click handler
-  onDismiss: () => {} // Dismiss handler
+  onDismiss: () => {}, // Dismiss handler
 };
 ```
 
@@ -250,7 +248,7 @@ const notification = {
 The notification system uses the premium design system tokens:
 
 - `premiumColors` - Color palette
-- `premiumShadows` - Shadow effects  
+- `premiumShadows` - Shadow effects
 - `premiumBorderRadius` - Border radius values
 - `premiumEffects` - Backdrop filters and effects
 - `advancedSpringConfigs` - Animation configurations
@@ -271,6 +269,7 @@ The notification system uses the premium design system tokens:
 - Edge 88+
 
 Features gracefully degrade in older browsers:
+
 - Backdrop blur falls back to solid background
 - Animations fall back to simple transitions
 - Vibration/sound features fail silently if unsupported

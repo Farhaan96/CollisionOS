@@ -17,12 +17,12 @@ export const useTheme = () => {
 const themeConfigs = {
   light: {
     name: 'Light',
-    description: 'Clean, professional light theme'
+    description: 'Clean, professional light theme',
   },
   dark: {
-    name: 'Dark', 
-    description: 'Professional dark theme'
-  }
+    name: 'Dark',
+    description: 'Professional dark theme',
+  },
 };
 
 export const ThemeProvider = ({ children }) => {
@@ -32,11 +32,11 @@ export const ThemeProvider = ({ children }) => {
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('collisionos-theme');
-    
+
     // Detect system preference
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setSystemPreference(mediaQuery.matches ? 'dark' : 'light');
-    
+
     if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
       setCurrentTheme(savedTheme);
     } else {
@@ -48,15 +48,16 @@ export const ThemeProvider = ({ children }) => {
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleSystemThemeChange = (e) => {
+
+    const handleSystemThemeChange = e => {
       setSystemPreference(e.matches ? 'dark' : 'light');
       updateMetaThemeColor(currentTheme);
     };
-    
+
     mediaQuery.addEventListener('change', handleSystemThemeChange);
-    
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+
+    return () =>
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, [currentTheme]);
 
   // Update color-scheme for FOUC prevention
@@ -65,14 +66,14 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('color-scheme', currentTheme);
   }, [currentTheme]);
 
-  const getThemeObject = (themeName) => {
+  const getThemeObject = themeName => {
     return themeName === 'dark' ? darkTheme : lightTheme;
   };
 
-  const updateMetaThemeColor = (themeName) => {
+  const updateMetaThemeColor = themeName => {
     const theme = getThemeObject(themeName);
     const themeColor = theme.palette.primary.main;
-    
+
     let metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (!metaThemeColor) {
       metaThemeColor = document.createElement('meta');
@@ -82,9 +83,13 @@ export const ThemeProvider = ({ children }) => {
     metaThemeColor.content = themeColor;
   };
 
-  const switchTheme = (newTheme) => {
-    if (newTheme === currentTheme || (newTheme !== 'light' && newTheme !== 'dark')) return;
-    
+  const switchTheme = newTheme => {
+    if (
+      newTheme === currentTheme ||
+      (newTheme !== 'light' && newTheme !== 'dark')
+    )
+      return;
+
     setCurrentTheme(newTheme);
     localStorage.setItem('collisionos-theme', newTheme);
     updateMetaThemeColor(newTheme);
@@ -98,18 +103,18 @@ export const ThemeProvider = ({ children }) => {
     // Current state
     currentTheme,
     systemPreference,
-    
+
     // Theme management
     switchTheme,
     toggleTheme,
-    
+
     // Configuration
     themeConfigs,
     getThemeObject: (theme = currentTheme) => getThemeObject(theme),
-    
+
     // Utilities
     isSystemDark: systemPreference === 'dark',
-    isDarkMode: currentTheme === 'dark'
+    isDarkMode: currentTheme === 'dark',
   };
 
   const currentThemeObject = getThemeObject(currentTheme);

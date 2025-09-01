@@ -2,40 +2,40 @@
 // Specialized types for insurance collision repair operations
 
 export interface RepairOrder {
-  id: string
-  roNumber: string
-  claimNumber: string
-  status: RepairOrderStatus
-  createdAt: Date
-  updatedAt: Date
-  estimatedCompletionDate: Date
-  actualCompletionDate?: Date
-  
+  id: string;
+  roNumber: string;
+  claimNumber: string;
+  status: RepairOrderStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  estimatedCompletionDate: Date;
+  actualCompletionDate?: Date;
+
   // Vehicle Information
-  vehicle: VehicleInfo
-  
+  vehicle: VehicleInfo;
+
   // Customer & Insurance
-  customer: CustomerInfo
-  insurance: InsuranceInfo
-  
+  customer: CustomerInfo;
+  insurance: InsuranceInfo;
+
   // Repair Details
-  damages: DamageAssessment[]
-  estimateLines: EstimateLine[]
-  purchaseOrders: PurchaseOrder[]
-  
+  damages: DamageAssessment[];
+  estimateLines: EstimateLine[];
+  purchaseOrders: PurchaseOrder[];
+
   // Progress Tracking
-  stages: RepairStage[]
-  currentStage: RepairStageType
-  progressPercentage: number
-  
+  stages: RepairStage[];
+  currentStage: RepairStageType;
+  progressPercentage: number;
+
   // Financial
-  totalEstimate: number
-  totalActual: number
-  laborHours: number
-  
+  totalEstimate: number;
+  totalActual: number;
+  laborHours: number;
+
   // Photos & Documentation
-  photos: RepairPhoto[]
-  documents: RepairDocument[]
+  photos: RepairPhoto[];
+  documents: RepairDocument[];
 }
 
 export enum RepairOrderStatus {
@@ -44,7 +44,7 @@ export enum RepairOrderStatus {
   WAITING_PARTS = 'waiting_parts',
   QUALITY_CHECK = 'quality_check',
   COMPLETED = 'completed',
-  DELIVERED = 'delivered'
+  DELIVERED = 'delivered',
 }
 
 export enum RepairStageType {
@@ -57,68 +57,68 @@ export enum RepairStageType {
   REASSEMBLY = 'reassembly',
   DETAIL = 'detail',
   QUALITY_CHECK = 'quality_check',
-  DELIVERY_PREP = 'delivery_prep'
+  DELIVERY_PREP = 'delivery_prep',
 }
 
 export interface VehicleInfo {
-  vin: string
-  year: number
-  make: string
-  model: string
-  trim?: string
-  color: string
-  mileage: number
-  licensePlate: string
-  
+  vin: string;
+  year: number;
+  make: string;
+  model: string;
+  trim?: string;
+  color: string;
+  mileage: number;
+  licensePlate: string;
+
   // Collision specific
-  preAccidentValue: number
-  postAccidentValue: number
-  totalLoss: boolean
+  preAccidentValue: number;
+  postAccidentValue: number;
+  totalLoss: boolean;
 }
 
 export interface CustomerInfo {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  address: Address
-  
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: Address;
+
   // Insurance relationship
-  policyHolder: boolean
-  relationToPolicyHolder?: string
+  policyHolder: boolean;
+  relationToPolicyHolder?: string;
 }
 
 export interface InsuranceInfo {
-  company: string
-  policyNumber: string
-  claimNumber: string
-  deductible: number
-  adjusterName: string
-  adjusterPhone: string
-  adjusterEmail: string
-  
+  company: string;
+  policyNumber: string;
+  claimNumber: string;
+  deductible: number;
+  adjusterName: string;
+  adjusterPhone: string;
+  adjusterEmail: string;
+
   // Financial limits
-  coverageType: CoverageType
-  policyLimit: number
-  deductiblePaid: boolean
+  coverageType: CoverageType;
+  policyLimit: number;
+  deductiblePaid: boolean;
 }
 
 export enum CoverageType {
   LIABILITY = 'liability',
   COLLISION = 'collision',
   COMPREHENSIVE = 'comprehensive',
-  UNINSURED_MOTORIST = 'uninsured_motorist'
+  UNINSURED_MOTORIST = 'uninsured_motorist',
 }
 
 export interface DamageAssessment {
-  id: string
-  area: VehicleArea
-  damageType: DamageType
-  severity: DamageSeverity
-  description: string
-  photos: string[]
-  estimatedCost: number
+  id: string;
+  area: VehicleArea;
+  damageType: DamageType;
+  severity: DamageSeverity;
+  description: string;
+  photos: string[];
+  estimatedCost: number;
 }
 
 export enum VehicleArea {
@@ -134,7 +134,7 @@ export enum VehicleArea {
   ROOF = 'roof',
   TRUNK = 'trunk',
   LEFT_SIDE = 'left_side',
-  RIGHT_SIDE = 'right_side'
+  RIGHT_SIDE = 'right_side',
 }
 
 export enum DamageType {
@@ -144,44 +144,44 @@ export enum DamageType {
   BROKEN = 'broken',
   MISSING = 'missing',
   BENT = 'bent',
-  TORN = 'torn'
+  TORN = 'torn',
 }
 
 export enum DamageSeverity {
   MINOR = 'minor',
   MODERATE = 'moderate',
   MAJOR = 'major',
-  SEVERE = 'severe'
+  SEVERE = 'severe',
 }
 
 export interface EstimateLine {
-  id: string
-  lineNumber: number
-  type: LineType
-  partNumber?: string
-  description: string
-  quantity: number
-  
+  id: string;
+  lineNumber: number;
+  type: LineType;
+  partNumber?: string;
+  description: string;
+  quantity: number;
+
   // Labor
-  laborHours: number
-  laborRate: number
-  laborCost: number
-  
+  laborHours: number;
+  laborRate: number;
+  laborCost: number;
+
   // Parts
-  partCost: number
-  partSupplier?: string
-  partETA?: Date
-  
+  partCost: number;
+  partSupplier?: string;
+  partETA?: Date;
+
   // Paint & Materials
-  paintCost?: number
-  materialsCost?: number
-  
+  paintCost?: number;
+  materialsCost?: number;
+
   // Totals
-  lineCost: number
-  
+  lineCost: number;
+
   // Status
-  status: LineStatus
-  notes?: string
+  status: LineStatus;
+  notes?: string;
 }
 
 export enum LineType {
@@ -189,7 +189,7 @@ export enum LineType {
   PARTS = 'parts',
   PAINT = 'paint',
   MATERIALS = 'materials',
-  SUBLET = 'sublet'
+  SUBLET = 'sublet',
 }
 
 export enum LineStatus {
@@ -197,30 +197,30 @@ export enum LineStatus {
   ORDERED = 'ordered',
   RECEIVED = 'received',
   IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed'
+  COMPLETED = 'completed',
 }
 
 export interface PurchaseOrder {
-  id: string
-  poNumber: string
-  supplier: SupplierInfo
-  orderDate: Date
-  expectedDeliveryDate: Date
-  actualDeliveryDate?: Date
-  status: POStatus
-  
+  id: string;
+  poNumber: string;
+  supplier: SupplierInfo;
+  orderDate: Date;
+  expectedDeliveryDate: Date;
+  actualDeliveryDate?: Date;
+  status: POStatus;
+
   // Line Items
-  items: POLineItem[]
-  
+  items: POLineItem[];
+
   // Financial
-  subtotal: number
-  tax: number
-  shipping: number
-  total: number
-  
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+
   // Tracking
-  trackingNumber?: string
-  notes?: string
+  trackingNumber?: string;
+  notes?: string;
 }
 
 export enum POStatus {
@@ -229,74 +229,74 @@ export enum POStatus {
   ACKNOWLEDGED = 'acknowledged',
   SHIPPED = 'shipped',
   RECEIVED = 'received',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
 }
 
 export interface POLineItem {
-  id: string
-  partNumber: string
-  description: string
-  quantity: number
-  unitCost: number
-  lineCost: number
-  
+  id: string;
+  partNumber: string;
+  description: string;
+  quantity: number;
+  unitCost: number;
+  lineCost: number;
+
   // Status
-  received: number
-  backordered: number
-  
+  received: number;
+  backordered: number;
+
   // References
-  estimateLineId?: string
+  estimateLineId?: string;
 }
 
 export interface SupplierInfo {
-  id: string
-  name: string
-  contactName: string
-  phone: string
-  email: string
-  address: Address
-  
+  id: string;
+  name: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  address: Address;
+
   // Terms
-  paymentTerms: string
-  shippingMethod: string
-  accountNumber?: string
+  paymentTerms: string;
+  shippingMethod: string;
+  accountNumber?: string;
 }
 
 export interface RepairStage {
-  id: string
-  stage: RepairStageType
-  status: StageStatus
-  startDate?: Date
-  endDate?: Date
-  assignedTechnician?: string
-  notes?: string
-  photos?: string[]
+  id: string;
+  stage: RepairStageType;
+  status: StageStatus;
+  startDate?: Date;
+  endDate?: Date;
+  assignedTechnician?: string;
+  notes?: string;
+  photos?: string[];
 }
 
 export enum StageStatus {
   NOT_STARTED = 'not_started',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
-  ON_HOLD = 'on_hold'
+  ON_HOLD = 'on_hold',
 }
 
 export interface RepairPhoto {
-  id: string
-  url: string
-  caption: string
-  stage: RepairStageType
-  area?: VehicleArea
-  timestamp: Date
-  takenBy: string
+  id: string;
+  url: string;
+  caption: string;
+  stage: RepairStageType;
+  area?: VehicleArea;
+  timestamp: Date;
+  takenBy: string;
 }
 
 export interface RepairDocument {
-  id: string
-  type: DocumentType
-  name: string
-  url: string
-  uploadDate: Date
-  uploadedBy: string
+  id: string;
+  type: DocumentType;
+  name: string;
+  url: string;
+  uploadDate: Date;
+  uploadedBy: string;
 }
 
 export enum DocumentType {
@@ -305,36 +305,36 @@ export enum DocumentType {
   INSURANCE_FORM = 'insurance_form',
   PHOTO = 'photo',
   RECEIPT = 'receipt',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 export interface Address {
-  street: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
 // BMS Integration Types
 export interface BMSImportData {
-  source: string
-  importDate: Date
-  claimNumber: string
-  estimateData: EstimateLine[]
-  vehicleData: Partial<VehicleInfo>
-  customerData: Partial<CustomerInfo>
-  insuranceData: Partial<InsuranceInfo>
+  source: string;
+  importDate: Date;
+  claimNumber: string;
+  estimateData: EstimateLine[];
+  vehicleData: Partial<VehicleInfo>;
+  customerData: Partial<CustomerInfo>;
+  insuranceData: Partial<InsuranceInfo>;
 }
 
 // Dashboard Analytics Types
 export interface CollisionRepairMetrics {
-  activeRepairs: number
-  completedThisMonth: number
-  averageRepairTime: number
-  customerSatisfaction: number
-  partsOnOrder: number
-  revenueThisMonth: number
-  cycleTimeByStage: Record<RepairStageType, number>
-  topDamageTypes: Array<{ type: DamageType; count: number }>
+  activeRepairs: number;
+  completedThisMonth: number;
+  averageRepairTime: number;
+  customerSatisfaction: number;
+  partsOnOrder: number;
+  revenueThisMonth: number;
+  cycleTimeByStage: Record<RepairStageType, number>;
+  topDamageTypes: Array<{ type: DamageType; count: number }>;
 }

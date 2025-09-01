@@ -8,10 +8,10 @@ const options = {
   port: 3001,
   path: '/api/health',
   method: 'GET',
-  timeout: 3000
+  timeout: 3000,
 };
 
-const req = http.request(options, (res) => {
+const req = http.request(options, res => {
   if (res.statusCode === 200) {
     process.exit(0); // Success
   } else {

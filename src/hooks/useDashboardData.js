@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { dashboardService } from '../services/dashboardService';
 import { useDebounce } from './useDebounce';
 
-export const useDashboardData = (timeframe = 'month', refreshInterval = 30000) => {
+export const useDashboardData = (
+  timeframe = 'month',
+  refreshInterval = 30000
+) => {
   const [data, setData] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +19,8 @@ export const useDashboardData = (timeframe = 'month', refreshInterval = 30000) =
   const fetchDashboardData = useCallback(async () => {
     try {
       setError(null);
-      const dashboardData = await dashboardService.getDashboardData(debouncedTimeframe);
+      const dashboardData =
+        await dashboardService.getDashboardData(debouncedTimeframe);
       setData(dashboardData);
       setLastRefresh(Date.now());
     } catch (err) {
@@ -76,7 +80,7 @@ export const useDashboardData = (timeframe = 'month', refreshInterval = 30000) =
       customerSatisfaction: data.kpis?.customerSatisfaction || 0,
       laborEfficiency: data.efficiencyStats?.laborEfficiency || 0,
       partsEfficiency: data.efficiencyStats?.partsEfficiency || 0,
-      bayUtilization: data.efficiencyStats?.bayUtilization || 0
+      bayUtilization: data.efficiencyStats?.bayUtilization || 0,
     };
   }, [data]);
 
@@ -86,7 +90,7 @@ export const useDashboardData = (timeframe = 'month', refreshInterval = 30000) =
     return {
       total: alerts.length,
       critical: alerts.filter(alert => alert.type === 'error').length,
-      warnings: alerts.filter(alert => alert.type === 'warning').length
+      warnings: alerts.filter(alert => alert.type === 'warning').length,
     };
   }, [alerts]);
 
@@ -99,7 +103,7 @@ export const useDashboardData = (timeframe = 'month', refreshInterval = 30000) =
     error,
     lastRefresh,
     refresh,
-    isStale: Date.now() - lastRefresh > refreshInterval * 2 // Data is considered stale if not refreshed in 2x interval
+    isStale: Date.now() - lastRefresh > refreshInterval * 2, // Data is considered stale if not refreshed in 2x interval
   };
 };
 

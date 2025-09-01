@@ -2,8 +2,18 @@
 // Custom hooks for intersection observers, reduced motion, and animation state management
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useInView, useMotionValue, useSpring, useTransform, useAnimation, useReducedMotion } from 'framer-motion';
-import { advancedSpringConfigs, premiumEasings } from '../utils/animations/index';
+import {
+  useInView,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useAnimation,
+  useReducedMotion,
+} from 'framer-motion';
+import {
+  advancedSpringConfigs,
+  premiumEasings,
+} from '../utils/animations/index';
 
 // Hook for intersection observer based animations
 export const useScrollAnimation = (options = {}) => {
@@ -12,7 +22,7 @@ export const useScrollAnimation = (options = {}) => {
     triggerOnce = true,
     rootMargin = '0px 0px -100px 0px',
     variants = {},
-    delay = 0
+    delay = 0,
   } = options;
 
   const controls = useAnimation();
@@ -20,7 +30,7 @@ export const useScrollAnimation = (options = {}) => {
   const isInView = useInView(ref, {
     threshold,
     triggerOnce,
-    rootMargin
+    rootMargin,
   });
 
   const shouldReduceMotion = useReducedMotion();
@@ -32,7 +42,7 @@ export const useScrollAnimation = (options = {}) => {
           // Provide reduced motion alternative
           controls.start({
             opacity: 1,
-            transition: { duration: 0.1 }
+            transition: { duration: 0.1 },
           });
         } else {
           controls.start('visible');
@@ -49,7 +59,7 @@ export const useScrollAnimation = (options = {}) => {
     ref,
     controls,
     isInView,
-    shouldReduceMotion
+    shouldReduceMotion,
   };
 };
 
@@ -59,7 +69,7 @@ export const useStaggeredAnimation = (items = [], options = {}) => {
     staggerDelay = 0.1,
     initialDelay = 0,
     triggerOnce = true,
-    threshold = 0.2
+    threshold = 0.2,
   } = options;
 
   const controls = useAnimation();
@@ -72,14 +82,14 @@ export const useStaggeredAnimation = (items = [], options = {}) => {
       // Instant reveal for reduced motion
       await controls.start({
         opacity: 1,
-        transition: { duration: 0.1 }
+        transition: { duration: 0.1 },
       });
     } else {
       await controls.start({
         transition: {
           staggerChildren: staggerDelay,
-          delayChildren: initialDelay
-        }
+          delayChildren: initialDelay,
+        },
       });
     }
   }, [controls, staggerDelay, initialDelay, shouldReduceMotion]);
@@ -94,7 +104,7 @@ export const useStaggeredAnimation = (items = [], options = {}) => {
     ref,
     controls,
     isInView,
-    itemCount: items.length
+    itemCount: items.length,
   };
 };
 
@@ -105,23 +115,26 @@ export const useAnimationState = (initialState = 'idle') => {
   const controls = useAnimation();
   const shouldReduceMotion = useReducedMotion();
 
-  const animate = useCallback(async (newState, options = {}) => {
-    if (isAnimating && !options.force) return;
+  const animate = useCallback(
+    async (newState, options = {}) => {
+      if (isAnimating && !options.force) return;
 
-    setIsAnimating(true);
-    setState(newState);
+      setIsAnimating(true);
+      setState(newState);
 
-    try {
-      if (shouldReduceMotion) {
-        // Provide immediate state change for reduced motion
-        await controls.set(newState);
-      } else {
-        await controls.start(newState, options);
+      try {
+        if (shouldReduceMotion) {
+          // Provide immediate state change for reduced motion
+          await controls.set(newState);
+        } else {
+          await controls.start(newState, options);
+        }
+      } finally {
+        setIsAnimating(false);
       }
-    } finally {
-      setIsAnimating(false);
-    }
-  }, [controls, isAnimating, shouldReduceMotion]);
+    },
+    [controls, isAnimating, shouldReduceMotion]
+  );
 
   const reset = useCallback(() => {
     setState(initialState);
@@ -135,40 +148,46 @@ export const useAnimationState = (initialState = 'idle') => {
     reset,
     isAnimating,
     controls,
-    shouldReduceMotion
+    shouldReduceMotion,
   };
 };
 
 // Hook for mouse tracking animations
-export const useMouseTracking = (strength = 1, springConfig = advancedSpringConfigs.responsive) => {
+export const useMouseTracking = (
+  strength = 1,
+  springConfig = advancedSpringConfigs.responsive
+) => {
   const ref = useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  
+
   const springX = useSpring(x, springConfig);
   const springY = useSpring(y, springConfig);
-  
+
   const rotateX = useTransform(springY, [-0.5, 0.5], [15, -15]);
   const rotateY = useTransform(springX, [-0.5, 0.5], [-15, 15]);
-  
+
   const shouldReduceMotion = useReducedMotion();
 
-  const handleMouseMove = useCallback((event) => {
-    if (!ref.current || shouldReduceMotion) return;
+  const handleMouseMove = useCallback(
+    event => {
+      if (!ref.current || shouldReduceMotion) return;
 
-    const rect = ref.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-    
-    const xPct = (mouseX / width - 0.5) * strength;
-    const yPct = (mouseY / height - 0.5) * strength;
-    
-    x.set(xPct);
-    y.set(yPct);
-  }, [x, y, strength, shouldReduceMotion]);
+      const rect = ref.current.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      const xPct = (mouseX / width - 0.5) * strength;
+      const yPct = (mouseY / height - 0.5) * strength;
+
+      x.set(xPct);
+      y.set(yPct);
+    },
+    [x, y, strength, shouldReduceMotion]
+  );
 
   const handleMouseLeave = useCallback(() => {
     x.set(0);
@@ -190,13 +209,15 @@ export const useMouseTracking = (strength = 1, springConfig = advancedSpringConf
 
   return {
     ref,
-    style: shouldReduceMotion ? {} : {
-      rotateX,
-      rotateY,
-      transformPerspective: 1000
-    },
+    style: shouldReduceMotion
+      ? {}
+      : {
+          rotateX,
+          rotateY,
+          transformPerspective: 1000,
+        },
     mouseX: springX,
-    mouseY: springY
+    mouseY: springY,
   };
 };
 
@@ -205,7 +226,7 @@ export const useParallax = (speed = 0.5, direction = 'vertical') => {
   const ref = useRef(null);
   const y = useMotionValue(0);
   const x = useMotionValue(0);
-  
+
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -235,15 +256,19 @@ export const useParallax = (speed = 0.5, direction = 'vertical') => {
 
   return {
     ref,
-    style: shouldReduceMotion ? {} : {
-      y: direction === 'vertical' ? y : 0,
-      x: direction === 'horizontal' ? x : 0
-    }
+    style: shouldReduceMotion
+      ? {}
+      : {
+          y: direction === 'vertical' ? y : 0,
+          x: direction === 'horizontal' ? x : 0,
+        },
   };
 };
 
 // Hook for managing loading states with animations
-export const useLoadingAnimation = (loadingStates = ['idle', 'loading', 'success', 'error']) => {
+export const useLoadingAnimation = (
+  loadingStates = ['idle', 'loading', 'success', 'error']
+) => {
   const [currentState, setCurrentState] = useState(loadingStates[0]);
   const [progress, setProgress] = useState(0);
   const controls = useAnimation();
@@ -258,38 +283,41 @@ export const useLoadingAnimation = (loadingStates = ['idle', 'loading', 'success
     } else {
       await controls.start({
         scale: [1, 1.02, 1],
-        transition: { duration: 0.3, ease: premiumEasings.executive }
+        transition: { duration: 0.3, ease: premiumEasings.executive },
       });
     }
   }, [controls, shouldReduceMotion]);
 
-  const updateProgress = useCallback((newProgress) => {
+  const updateProgress = useCallback(newProgress => {
     setProgress(Math.min(100, Math.max(0, newProgress)));
   }, []);
 
-  const finishLoading = useCallback(async (success = true) => {
-    const finalState = success ? 'success' : 'error';
-    setCurrentState(finalState);
-    setProgress(100);
+  const finishLoading = useCallback(
+    async (success = true) => {
+      const finalState = success ? 'success' : 'error';
+      setCurrentState(finalState);
+      setProgress(100);
 
-    if (shouldReduceMotion) {
-      await controls.set({ opacity: 1 });
-    } else {
-      await controls.start({
-        scale: success ? [1, 1.1, 1] : [1, 0.95, 1.02, 1],
-        transition: { 
-          duration: success ? 0.6 : 0.4,
-          ease: premiumEasings.appleBounce 
-        }
-      });
-    }
+      if (shouldReduceMotion) {
+        await controls.set({ opacity: 1 });
+      } else {
+        await controls.start({
+          scale: success ? [1, 1.1, 1] : [1, 0.95, 1.02, 1],
+          transition: {
+            duration: success ? 0.6 : 0.4,
+            ease: premiumEasings.appleBounce,
+          },
+        });
+      }
 
-    // Reset after delay
-    setTimeout(() => {
-      setCurrentState(loadingStates[0]);
-      setProgress(0);
-    }, 2000);
-  }, [controls, shouldReduceMotion, loadingStates]);
+      // Reset after delay
+      setTimeout(() => {
+        setCurrentState(loadingStates[0]);
+        setProgress(0);
+      }, 2000);
+    },
+    [controls, shouldReduceMotion, loadingStates]
+  );
 
   return {
     currentState,
@@ -300,26 +328,22 @@ export const useLoadingAnimation = (loadingStates = ['idle', 'loading', 'success
     finishLoading,
     isLoading: currentState === 'loading',
     isSuccess: currentState === 'success',
-    isError: currentState === 'error'
+    isError: currentState === 'error',
   };
 };
 
 // Hook for gesture-based animations
 export const useGestureAnimation = (options = {}) => {
-  const {
-    swipeThreshold = 50,
-    dragElastic = 0.2,
-    snapBack = true
-  } = options;
+  const { swipeThreshold = 50, dragElastic = 0.2, snapBack = true } = options;
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const scale = useMotionValue(1);
-  
+
   const springX = useSpring(x, advancedSpringConfigs.responsive);
   const springY = useSpring(y, advancedSpringConfigs.responsive);
   const springScale = useSpring(scale, advancedSpringConfigs.snappy);
-  
+
   const shouldReduceMotion = useReducedMotion();
 
   const handleDragStart = useCallback(() => {
@@ -327,31 +351,34 @@ export const useGestureAnimation = (options = {}) => {
     scale.set(1.05);
   }, [scale, shouldReduceMotion]);
 
-  const handleDragEnd = useCallback((event, info) => {
-    if (shouldReduceMotion) {
-      x.set(0);
-      y.set(0);
+  const handleDragEnd = useCallback(
+    (event, info) => {
+      if (shouldReduceMotion) {
+        x.set(0);
+        y.set(0);
+        scale.set(1);
+        return;
+      }
+
+      const { velocity, offset } = info;
+
+      // Check for swipe gesture
+      if (Math.abs(offset.x) > swipeThreshold || Math.abs(velocity.x) > 500) {
+        // Handle swipe
+        return { swiped: true, direction: offset.x > 0 ? 'right' : 'left' };
+      }
+
+      // Snap back to center
+      if (snapBack) {
+        x.set(0);
+        y.set(0);
+      }
+
       scale.set(1);
-      return;
-    }
-
-    const { velocity, offset } = info;
-    
-    // Check for swipe gesture
-    if (Math.abs(offset.x) > swipeThreshold || Math.abs(velocity.x) > 500) {
-      // Handle swipe
-      return { swiped: true, direction: offset.x > 0 ? 'right' : 'left' };
-    }
-
-    // Snap back to center
-    if (snapBack) {
-      x.set(0);
-      y.set(0);
-    }
-    
-    scale.set(1);
-    return { swiped: false };
-  }, [x, y, scale, swipeThreshold, snapBack, shouldReduceMotion]);
+      return { swiped: false };
+    },
+    [x, y, scale, swipeThreshold, snapBack, shouldReduceMotion]
+  );
 
   const resetPosition = useCallback(() => {
     x.set(0);
@@ -363,13 +390,15 @@ export const useGestureAnimation = (options = {}) => {
     x: springX,
     y: springY,
     scale: springScale,
-    dragControls: shouldReduceMotion ? {} : {
-      drag: true,
-      dragElastic,
-      onDragStart: handleDragStart,
-      onDragEnd: handleDragEnd
-    },
-    resetPosition
+    dragControls: shouldReduceMotion
+      ? {}
+      : {
+          drag: true,
+          dragElastic,
+          onDragStart: handleDragStart,
+          onDragEnd: handleDragEnd,
+        },
+    resetPosition,
   };
 };
 
@@ -385,7 +414,7 @@ export const useSequenceAnimation = (sequence = [], options = {}) => {
     if (isPlaying || shouldReduceMotion) return;
 
     setIsPlaying(true);
-    
+
     for (let i = 0; i < sequence.length; i++) {
       setCurrentStep(i);
       await controls.start(sequence[i], { delay: delay });
@@ -409,17 +438,17 @@ export const useSequenceAnimation = (sequence = [], options = {}) => {
     isPlaying,
     controls,
     playSequence,
-    stopSequence
+    stopSequence,
   };
 };
 
 // Hook for reduced motion preferences
-export const useAccessibleAnimation = (variants) => {
+export const useAccessibleAnimation = variants => {
   const shouldReduceMotion = useReducedMotion();
-  
+
   const accessibleVariants = useMemo(() => {
     if (!shouldReduceMotion) return variants;
-    
+
     // Create reduced motion variants
     const reducedVariants = {};
     Object.keys(variants).forEach(key => {
@@ -431,16 +460,16 @@ export const useAccessibleAnimation = (variants) => {
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        scale: Array.isArray(variant.scale) ? 1 : variant.scale
+        scale: Array.isArray(variant.scale) ? 1 : variant.scale,
       };
     });
-    
+
     return reducedVariants;
   }, [variants, shouldReduceMotion]);
 
   return {
     variants: accessibleVariants,
-    shouldReduceMotion
+    shouldReduceMotion,
   };
 };
 
@@ -455,16 +484,18 @@ export const useAnimationPerformance = () => {
     const measureFPS = () => {
       frameCount.current++;
       const now = performance.now();
-      
+
       if (now - lastTime.current >= 1000) {
-        const currentFps = Math.round((frameCount.current * 1000) / (now - lastTime.current));
+        const currentFps = Math.round(
+          (frameCount.current * 1000) / (now - lastTime.current)
+        );
         setFps(currentFps);
         setIsOptimized(currentFps >= 30); // Consider 30fps as minimum for smooth
-        
+
         frameCount.current = 0;
         lastTime.current = now;
       }
-      
+
       requestAnimationFrame(measureFPS);
     };
 
@@ -475,7 +506,7 @@ export const useAnimationPerformance = () => {
   return {
     fps,
     isOptimized,
-    quality: fps >= 50 ? 'high' : fps >= 30 ? 'medium' : 'low'
+    quality: fps >= 50 ? 'high' : fps >= 30 ? 'medium' : 'low',
   };
 };
 
@@ -489,5 +520,5 @@ export default {
   useGestureAnimation,
   useSequenceAnimation,
   useAccessibleAnimation,
-  useAnimationPerformance
+  useAnimationPerformance,
 };

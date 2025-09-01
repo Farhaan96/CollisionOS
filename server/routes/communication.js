@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { Job, Customer, Vehicle, User, Communication, CommunicationTemplate } = require('../database/models');
+const {
+  Job,
+  Customer,
+  Vehicle,
+  User,
+  Communication,
+  CommunicationTemplate,
+} = require('../database/models');
 const { realtimeService } = require('../services/realtimeService');
 const { auditLogger } = require('../middleware/security');
 const rateLimit = require('express-rate-limit');
@@ -20,106 +27,106 @@ const COMMUNICATION_CHANNELS = {
   EMAIL: 'email',
   PHONE: 'phone',
   PORTAL: 'portal',
-  IN_PERSON: 'in_person'
+  IN_PERSON: 'in_person',
 };
 
 // Communication types and triggers
 const COMMUNICATION_TYPES = {
-  'job_created': {
+  job_created: {
     name: 'Job Created',
     defaultChannels: ['email', 'sms'],
     autoSend: true,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'estimate_ready': {
+  estimate_ready: {
     name: 'Estimate Ready',
     defaultChannels: ['email', 'sms'],
     autoSend: true,
-    priority: 'high'
+    priority: 'high',
   },
-  'estimate_approved': {
+  estimate_approved: {
     name: 'Estimate Approved',
     defaultChannels: ['email'],
     autoSend: false,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'job_started': {
+  job_started: {
     name: 'Work Started',
     defaultChannels: ['sms'],
     autoSend: true,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'parts_ordered': {
+  parts_ordered: {
     name: 'Parts Ordered',
     defaultChannels: ['email'],
     autoSend: true,
-    priority: 'low'
+    priority: 'low',
   },
-  'parts_delay': {
+  parts_delay: {
     name: 'Parts Delayed',
     defaultChannels: ['email', 'sms'],
     autoSend: true,
-    priority: 'high'
+    priority: 'high',
   },
-  'progress_update': {
+  progress_update: {
     name: 'Progress Update',
     defaultChannels: ['sms'],
     autoSend: false,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'quality_check': {
+  quality_check: {
     name: 'Quality Check Complete',
     defaultChannels: ['email'],
     autoSend: false,
-    priority: 'low'
+    priority: 'low',
   },
-  'ready_pickup': {
+  ready_pickup: {
     name: 'Ready for Pickup',
     defaultChannels: ['email', 'sms'],
     autoSend: true,
-    priority: 'high'
+    priority: 'high',
   },
-  'pickup_reminder': {
+  pickup_reminder: {
     name: 'Pickup Reminder',
     defaultChannels: ['sms'],
     autoSend: true,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'delivered': {
+  delivered: {
     name: 'Vehicle Delivered',
     defaultChannels: ['email'],
     autoSend: true,
-    priority: 'medium'
+    priority: 'medium',
   },
-  'payment_due': {
+  payment_due: {
     name: 'Payment Due',
     defaultChannels: ['email', 'sms'],
     autoSend: true,
-    priority: 'high'
+    priority: 'high',
   },
-  'satisfaction_survey': {
+  satisfaction_survey: {
     name: 'Satisfaction Survey',
     defaultChannels: ['email'],
     autoSend: true,
-    priority: 'low'
+    priority: 'low',
   },
-  'appointment_reminder': {
+  appointment_reminder: {
     name: 'Appointment Reminder',
     defaultChannels: ['sms'],
     autoSend: true,
-    priority: 'high'
+    priority: 'high',
   },
-  'custom': {
+  custom: {
     name: 'Custom Message',
     defaultChannels: ['email', 'sms'],
     autoSend: false,
-    priority: 'medium'
-  }
+    priority: 'medium',
+  },
 };
 
 // Default message templates
 const DEFAULT_TEMPLATES = {
-  'job_created': {
+  job_created: {
     sms: "Hi {customerName}, we've received your {vehicleDescription} for repairs. Job #{jobNumber}. We'll keep you updated!",
     email: {
       subject: 'Your Vehicle Repair Job Has Been Created - #{jobNumber}',
@@ -136,18 +143,18 @@ const DEFAULT_TEMPLATES = {
         </ul>
         <p>You can track your repair progress anytime by visiting our customer portal.</p>
         <p>Best regards,<br/>The {shopName} Team</p>
-      `
-    }
+      `,
+    },
   },
-  'estimate_ready': {
-    sms: "Your repair estimate for {vehicleDescription} is ready! Total: {estimateAmount}. Please review and approve to begin work. Job #{jobNumber}",
+  estimate_ready: {
+    sms: 'Your repair estimate for {vehicleDescription} is ready! Total: {estimateAmount}. Please review and approve to begin work. Job #{jobNumber}',
     email: {
       subject: 'Repair Estimate Ready for Approval - #{jobNumber}',
-      html: '<h2>Your Repair Estimate is Ready</h2><p>Dear {customerName},</p><p>We have completed the assessment of your <strong>{vehicleDescription}</strong> and your repair estimate is now ready for review.</p><p><strong>Estimate Summary:</strong></p><ul><li>Total Estimate: <strong>{estimateAmount}</strong></li><li>Labor: {laborAmount}</li><li>Parts: {partsAmount}</li><li>Estimated Repair Time: {estimatedDays} days</li></ul><p>Please review and approve your estimate to begin the repair process.</p><p><a href="{approvalLink}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Review & Approve Estimate</a></p><p>If you have any questions, please don\'t hesitate to contact us.</p><p>Best regards,<br/>The {shopName} Team</p>'
-    }
+      html: '<h2>Your Repair Estimate is Ready</h2><p>Dear {customerName},</p><p>We have completed the assessment of your <strong>{vehicleDescription}</strong> and your repair estimate is now ready for review.</p><p><strong>Estimate Summary:</strong></p><ul><li>Total Estimate: <strong>{estimateAmount}</strong></li><li>Labor: {laborAmount}</li><li>Parts: {partsAmount}</li><li>Estimated Repair Time: {estimatedDays} days</li></ul><p>Please review and approve your estimate to begin the repair process.</p><p><a href="{approvalLink}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Review & Approve Estimate</a></p><p>If you have any questions, please don\'t hesitate to contact us.</p><p>Best regards,<br/>The {shopName} Team</p>',
+    },
   },
-  'ready_pickup': {
-    sms: "Great news! Your {vehicleDescription} is ready for pickup! Please bring your ID and payment method. Job #{jobNumber}",
+  ready_pickup: {
+    sms: 'Great news! Your {vehicleDescription} is ready for pickup! Please bring your ID and payment method. Job #{jobNumber}',
     email: {
       subject: 'Your Vehicle is Ready for Pickup! - #{jobNumber}',
       html: `
@@ -165,9 +172,9 @@ const DEFAULT_TEMPLATES = {
         <p>{workSummary}</p>
         <p>Thank you for trusting us with your vehicle repair needs!</p>
         <p>Best regards,<br/>The {shopName} Team</p>
-      `
-    }
-  }
+      `,
+    },
+  },
 };
 
 // POST /api/communication/send - Send communication to customer
@@ -183,29 +190,29 @@ router.post('/send', communicationLimit, async (req, res) => {
       templateId,
       templateVariables = {},
       sendImmediately = true,
-      scheduledDate = null
+      scheduledDate = null,
     } = req.body;
 
     const userId = req.user?.id;
     const shopId = req.user?.shopId || 1;
 
     if (!customerId || !type) {
-      return res.status(400).json({ error: 'Customer ID and communication type are required' });
+      return res
+        .status(400)
+        .json({ error: 'Customer ID and communication type are required' });
     }
 
     // Get customer and job details
     const customer = await Customer.findByPk(customerId, {
       include: [
-        { 
-          model: Job, 
+        {
+          model: Job,
           as: 'jobs',
           where: jobId ? { id: jobId } : {},
           required: !!jobId,
-          include: [
-            { model: Vehicle, as: 'vehicle' }
-          ]
-        }
-      ]
+          include: [{ model: Vehicle, as: 'vehicle' }],
+        },
+      ],
     });
 
     if (!customer) {
@@ -216,7 +223,8 @@ router.post('/send', communicationLimit, async (req, res) => {
 
     // Determine channels to use
     const communicationType = COMMUNICATION_TYPES[type];
-    const selectedChannels = channels || communicationType?.defaultChannels || ['email'];
+    const selectedChannels = channels ||
+      communicationType?.defaultChannels || ['email'];
 
     // Prepare template variables
     const variables = {
@@ -225,10 +233,16 @@ router.post('/send', communicationLimit, async (req, res) => {
       customerPhone: customer.phone,
       shopName: 'CollisionOS Auto Body',
       jobNumber: job?.jobNumber || 'N/A',
-      vehicleDescription: job?.vehicle ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}` : 'Vehicle',
-      dateCreated: job?.createdAt ? new Date(job.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-      estimatedCompletion: job?.estimatedCompletionDate ? new Date(job.estimatedCompletionDate).toLocaleDateString() : 'TBD',
-      ...templateVariables
+      vehicleDescription: job?.vehicle
+        ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`
+        : 'Vehicle',
+      dateCreated: job?.createdAt
+        ? new Date(job.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      estimatedCompletion: job?.estimatedCompletionDate
+        ? new Date(job.estimatedCompletionDate).toLocaleDateString()
+        : 'TBD',
+      ...templateVariables,
     };
 
     // Get or create message content
@@ -239,9 +253,12 @@ router.post('/send', communicationLimit, async (req, res) => {
         messageContent = this.processTemplate(template.content, variables);
       }
     } else if (message || subject) {
-      messageContent = { 
-        sms: message, 
-        email: { subject: subject || 'Update from Auto Body Shop', html: message || '' } 
+      messageContent = {
+        sms: message,
+        email: {
+          subject: subject || 'Update from Auto Body Shop',
+          html: message || '',
+        },
       };
     } else if (DEFAULT_TEMPLATES[type]) {
       messageContent = this.processTemplate(DEFAULT_TEMPLATES[type], variables);
@@ -256,18 +273,19 @@ router.post('/send', communicationLimit, async (req, res) => {
           customer,
           job,
           type,
-          content: messageContent[channel] || messageContent.sms || messageContent,
+          content:
+            messageContent[channel] || messageContent.sms || messageContent,
           sendImmediately,
           scheduledDate,
           userId,
-          shopId
+          shopId,
         });
         results.push(result);
       } catch (error) {
         results.push({
           channel,
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -288,8 +306,8 @@ router.post('/send', communicationLimit, async (req, res) => {
       metadata: {
         templateId,
         variables,
-        automaticSend: !sendImmediately
-      }
+        automaticSend: !sendImmediately,
+      },
     });
 
     // Audit logging
@@ -300,7 +318,7 @@ router.post('/send', communicationLimit, async (req, res) => {
       type,
       channels: selectedChannels,
       success: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length
+      failed: results.filter(r => !r.success).length,
     });
 
     // Real-time broadcast
@@ -308,7 +326,7 @@ router.post('/send', communicationLimit, async (req, res) => {
       communication,
       customer: { id: customer.id, name: customer.name },
       job: job ? { id: job.id, jobNumber: job.jobNumber } : null,
-      results
+      results,
     });
 
     res.json({
@@ -318,10 +336,9 @@ router.post('/send', communicationLimit, async (req, res) => {
       summary: {
         totalChannels: selectedChannels.length,
         successful: results.filter(r => r.success).length,
-        failed: results.filter(r => !r.success).length
-      }
+        failed: results.filter(r => !r.success).length,
+      },
     });
-
   } catch (error) {
     console.error('Error sending communication:', error);
     res.status(500).json({ error: 'Failed to send communication' });
@@ -335,14 +352,16 @@ router.post('/auto-trigger', async (req, res) => {
     const shopId = req.user?.shopId || 1;
 
     if (!jobId || !trigger) {
-      return res.status(400).json({ error: 'Job ID and trigger type are required' });
+      return res
+        .status(400)
+        .json({ error: 'Job ID and trigger type are required' });
     }
 
     const job = await Job.findByPk(jobId, {
       include: [
         { model: Customer, as: 'customer' },
-        { model: Vehicle, as: 'vehicle' }
-      ]
+        { model: Vehicle, as: 'vehicle' },
+      ],
     });
 
     if (!job) {
@@ -351,20 +370,22 @@ router.post('/auto-trigger', async (req, res) => {
 
     const communicationType = COMMUNICATION_TYPES[trigger];
     if (!communicationType || !communicationType.autoSend) {
-      return res.status(400).json({ error: 'Invalid or non-automatic communication trigger' });
+      return res
+        .status(400)
+        .json({ error: 'Invalid or non-automatic communication trigger' });
     }
 
     // Check customer communication preferences
     const customerPreferences = job.customer.communicationPreferences || {};
-    const allowedChannels = communicationType.defaultChannels.filter(channel => 
-      customerPreferences[channel] !== false
+    const allowedChannels = communicationType.defaultChannels.filter(
+      channel => customerPreferences[channel] !== false
     );
 
     if (allowedChannels.length === 0) {
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: 'Communication skipped due to customer preferences',
-        triggered: false 
+        triggered: false,
       });
     }
 
@@ -374,7 +395,7 @@ router.post('/auto-trigger', async (req, res) => {
       jobNumber: job.jobNumber,
       vehicleDescription: `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`,
       shopName: 'CollisionOS Auto Body',
-      ...additionalData
+      ...additionalData,
     };
 
     // Process and send communication
@@ -392,14 +413,14 @@ router.post('/auto-trigger', async (req, res) => {
           content: processedTemplate[channel],
           sendImmediately: true,
           userId: null, // Automatic
-          shopId
+          shopId,
         });
         results.push(result);
       } catch (error) {
         results.push({
           channel,
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -419,8 +440,8 @@ router.post('/auto-trigger', async (req, res) => {
       metadata: {
         automaticTrigger: trigger,
         variables,
-        automaticSend: true
-      }
+        automaticSend: true,
+      },
     });
 
     auditLogger.info('Automatic communication triggered', {
@@ -428,7 +449,7 @@ router.post('/auto-trigger', async (req, res) => {
       jobId,
       customerId: job.customer.id,
       channels: allowedChannels,
-      success: results.filter(r => r.success).length
+      success: results.filter(r => r.success).length,
     });
 
     res.json({
@@ -439,13 +460,14 @@ router.post('/auto-trigger', async (req, res) => {
       summary: {
         trigger,
         channels: allowedChannels.length,
-        successful: results.filter(r => r.success).length
-      }
+        successful: results.filter(r => r.success).length,
+      },
     });
-
   } catch (error) {
     console.error('Error triggering automatic communication:', error);
-    res.status(500).json({ error: 'Failed to trigger automatic communication' });
+    res
+      .status(500)
+      .json({ error: 'Failed to trigger automatic communication' });
   }
 });
 
@@ -461,28 +483,28 @@ router.get('/history/:customerId', async (req, res) => {
     const communications = await Communication.findAndCountAll({
       where: whereClause,
       include: [
-        { 
-          model: Job, 
+        {
+          model: Job,
           as: 'job',
           attributes: ['id', 'jobNumber', 'status'],
-          required: false
+          required: false,
         },
         {
           model: User,
           as: 'sender',
           attributes: ['id', 'name'],
-          required: false
-        }
+          required: false,
+        },
       ],
       order: [['sentAt', 'DESC']],
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
     });
 
     // Filter by channel if specified
     let filteredCommunications = communications.rows;
     if (channel) {
-      filteredCommunications = communications.rows.filter(comm => 
+      filteredCommunications = communications.rows.filter(comm =>
         comm.channels.includes(channel)
       );
     }
@@ -493,13 +515,13 @@ router.get('/history/:customerId', async (req, res) => {
       byType: {},
       byChannel: {},
       responseRate: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     };
 
     filteredCommunications.forEach(comm => {
       // Count by type
       metrics.byType[comm.type] = (metrics.byType[comm.type] || 0) + 1;
-      
+
       // Count by channel
       comm.channels.forEach(ch => {
         metrics.byChannel[ch] = (metrics.byChannel[ch] || 0) + 1;
@@ -511,17 +533,16 @@ router.get('/history/:customerId', async (req, res) => {
         ...comm.toJSON(),
         deliveryStatus: this.getDeliveryStatus(comm.results),
         responseRequired: this.requiresResponse(comm.type),
-        readStatus: comm.metadata?.readAt ? 'read' : 'unread'
+        readStatus: comm.metadata?.readAt ? 'read' : 'unread',
       })),
       pagination: {
         total: communications.count,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        hasMore: parseInt(offset) + parseInt(limit) < communications.count
+        hasMore: parseInt(offset) + parseInt(limit) < communications.count,
       },
-      metrics
+      metrics,
     });
-
   } catch (error) {
     console.error('Error fetching communication history:', error);
     res.status(500).json({ error: 'Failed to fetch communication history' });
@@ -536,7 +557,9 @@ router.post('/templates', async (req, res) => {
     const userId = req.user?.id;
 
     if (!name || !type || !content) {
-      return res.status(400).json({ error: 'Name, type, and content are required' });
+      return res
+        .status(400)
+        .json({ error: 'Name, type, and content are required' });
     }
 
     const template = await CommunicationTemplate.create({
@@ -547,21 +570,20 @@ router.post('/templates', async (req, res) => {
       isDefault,
       shopId,
       createdBy: userId,
-      isActive: true
+      isActive: true,
     });
 
     auditLogger.info('Communication template created', {
       templateId: template.id,
       name,
       type,
-      createdBy: userId
+      createdBy: userId,
     });
 
     res.status(201).json({
       success: true,
-      template
+      template,
     });
-
   } catch (error) {
     console.error('Error creating communication template:', error);
     res.status(500).json({ error: 'Failed to create communication template' });
@@ -579,13 +601,16 @@ router.get('/templates', async (req, res) => {
 
     const templates = await CommunicationTemplate.findAll({
       where: whereClause,
-      order: [['isDefault', 'DESC'], ['name', 'ASC']]
+      order: [
+        ['isDefault', 'DESC'],
+        ['name', 'ASC'],
+      ],
     });
 
     // Filter by channel if specified
     let filteredTemplates = templates;
     if (channel) {
-      filteredTemplates = templates.filter(template => 
+      filteredTemplates = templates.filter(template =>
         template.channels.includes(channel)
       );
     }
@@ -593,9 +618,8 @@ router.get('/templates', async (req, res) => {
     res.json({
       templates: filteredTemplates,
       availableTypes: Object.keys(COMMUNICATION_TYPES),
-      availableChannels: Object.values(COMMUNICATION_CHANNELS)
+      availableChannels: Object.values(COMMUNICATION_CHANNELS),
     });
-
   } catch (error) {
     console.error('Error fetching communication templates:', error);
     res.status(500).json({ error: 'Failed to fetch communication templates' });
@@ -605,7 +629,13 @@ router.get('/templates', async (req, res) => {
 // POST /api/communication/bulk-send - Send bulk communications
 router.post('/bulk-send', communicationLimit, async (req, res) => {
   try {
-    const { recipients, type, content, channels, sendImmediately = true } = req.body;
+    const {
+      recipients,
+      type,
+      content,
+      channels,
+      sendImmediately = true,
+    } = req.body;
     const userId = req.user?.id;
     const shopId = req.user?.shopId || 1;
 
@@ -614,7 +644,9 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
     }
 
     if (recipients.length > 100) {
-      return res.status(400).json({ error: 'Maximum 100 recipients allowed per bulk send' });
+      return res
+        .status(400)
+        .json({ error: 'Maximum 100 recipients allowed per bulk send' });
     }
 
     const results = [];
@@ -627,7 +659,7 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
           results.push({
             customerId: recipient.customerId,
             success: false,
-            error: 'Customer not found'
+            error: 'Customer not found',
           });
           summary.failed++;
           continue;
@@ -644,7 +676,7 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
             content: content[channel] || content,
             sendImmediately,
             userId,
-            shopId
+            shopId,
           });
           channelResults.push(result);
         }
@@ -656,21 +688,25 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
           type,
           channels,
           content,
-          status: channelResults.every(r => r.success) ? 'sent' : 'partial_failure',
+          status: channelResults.every(r => r.success)
+            ? 'sent'
+            : 'partial_failure',
           sentBy: userId,
           sentAt: sendImmediately ? new Date() : null,
           results: channelResults,
           metadata: {
             bulkSend: true,
-            bulkId: `BULK_${Date.now()}`
-          }
+            bulkId: `BULK_${Date.now()}`,
+          },
         });
 
         results.push({
           customerId: recipient.customerId,
           success: channelResults.some(r => r.success),
           channels: channelResults,
-          error: channelResults.every(r => !r.success) ? 'All channels failed' : null
+          error: channelResults.every(r => !r.success)
+            ? 'All channels failed'
+            : null,
         });
 
         if (channelResults.some(r => r.success)) {
@@ -678,12 +714,11 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
         } else {
           summary.failed++;
         }
-
       } catch (error) {
         results.push({
           customerId: recipient.customerId,
           success: false,
-          error: error.message
+          error: error.message,
         });
         summary.failed++;
       }
@@ -694,15 +729,14 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
       recipientCount: recipients.length,
       successful: summary.successful,
       failed: summary.failed,
-      userId
+      userId,
     });
 
     res.json({
       success: summary.successful > 0,
       results,
-      summary
+      summary,
     });
-
   } catch (error) {
     console.error('Error sending bulk communication:', error);
     res.status(500).json({ error: 'Failed to send bulk communication' });
@@ -710,7 +744,16 @@ router.post('/bulk-send', communicationLimit, async (req, res) => {
 });
 
 // Helper methods
-router.sendCommunication = async function({ channel, customer, job, type, content, sendImmediately, userId, shopId }) {
+router.sendCommunication = async function ({
+  channel,
+  customer,
+  job,
+  type,
+  content,
+  sendImmediately,
+  userId,
+  shopId,
+}) {
   try {
     switch (channel) {
       case COMMUNICATION_CHANNELS.SMS:
@@ -718,7 +761,12 @@ router.sendCommunication = async function({ channel, customer, job, type, conten
       case COMMUNICATION_CHANNELS.EMAIL:
         return await this.sendEmail(customer.email, content);
       case COMMUNICATION_CHANNELS.PHONE:
-        return { channel, success: true, message: 'Phone call logged', requiresManualAction: true };
+        return {
+          channel,
+          success: true,
+          message: 'Phone call logged',
+          requiresManualAction: true,
+        };
       default:
         throw new Error(`Unsupported communication channel: ${channel}`);
     }
@@ -727,56 +775,63 @@ router.sendCommunication = async function({ channel, customer, job, type, conten
   }
 };
 
-router.sendSMS = async function(phoneNumber, message) {
+router.sendSMS = async function (phoneNumber, message) {
   // Mock SMS sending - integrate with Twilio, TextMagic, etc.
   console.log(`SMS to ${phoneNumber}: ${message}`);
-  
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
-  
+
   // Mock success/failure
-  if (Math.random() > 0.1) { // 90% success rate
+  if (Math.random() > 0.1) {
+    // 90% success rate
     return {
       channel: 'sms',
       success: true,
       messageId: `SMS_${Date.now()}`,
       deliveredAt: new Date(),
-      cost: 0.015 // $0.015 per SMS
+      cost: 0.015, // $0.015 per SMS
     };
   } else {
     throw new Error('SMS delivery failed');
   }
 };
 
-router.sendEmail = async function(emailAddress, content) {
+router.sendEmail = async function (emailAddress, content) {
   // Mock email sending - integrate with SendGrid, Mailgun, etc.
-  const subject = typeof content === 'object' ? content.subject : 'Update from Auto Body Shop';
+  const subject =
+    typeof content === 'object'
+      ? content.subject
+      : 'Update from Auto Body Shop';
   const body = typeof content === 'object' ? content.html : content;
-  
+
   console.log(`Email to ${emailAddress}: ${subject}`);
-  
+
   // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000));
-  
+  await new Promise(resolve =>
+    setTimeout(resolve, Math.random() * 2000 + 1000)
+  );
+
   // Mock success/failure
-  if (Math.random() > 0.05) { // 95% success rate
+  if (Math.random() > 0.05) {
+    // 95% success rate
     return {
       channel: 'email',
       success: true,
       messageId: `EMAIL_${Date.now()}`,
       deliveredAt: new Date(),
-      cost: 0.001 // $0.001 per email
+      cost: 0.001, // $0.001 per email
     };
   } else {
     throw new Error('Email delivery failed');
   }
 };
 
-router.processTemplate = function(template, variables) {
+router.processTemplate = function (template, variables) {
   if (typeof template === 'string') {
     return this.replaceVariables(template, variables);
   }
-  
+
   if (typeof template === 'object') {
     const processed = {};
     Object.keys(template).forEach(key => {
@@ -785,17 +840,20 @@ router.processTemplate = function(template, variables) {
       } else if (typeof template[key] === 'object') {
         processed[key] = {};
         Object.keys(template[key]).forEach(subKey => {
-          processed[key][subKey] = this.replaceVariables(template[key][subKey], variables);
+          processed[key][subKey] = this.replaceVariables(
+            template[key][subKey],
+            variables
+          );
         });
       }
     });
     return processed;
   }
-  
+
   return template;
 };
 
-router.replaceVariables = function(template, variables) {
+router.replaceVariables = function (template, variables) {
   let result = template;
   Object.keys(variables).forEach(key => {
     const placeholder = `{${key}}`;
@@ -804,19 +862,23 @@ router.replaceVariables = function(template, variables) {
   return result;
 };
 
-router.getDeliveryStatus = function(results) {
+router.getDeliveryStatus = function (results) {
   if (!results || results.length === 0) return 'unknown';
-  
+
   const successful = results.filter(r => r.success).length;
   const total = results.length;
-  
+
   if (successful === 0) return 'failed';
   if (successful === total) return 'delivered';
   return 'partial';
 };
 
-router.requiresResponse = function(type) {
-  return ['estimate_ready', 'appointment_reminder', 'satisfaction_survey'].includes(type);
+router.requiresResponse = function (type) {
+  return [
+    'estimate_ready',
+    'appointment_reminder',
+    'satisfaction_survey',
+  ].includes(type);
 };
 
 module.exports = router;

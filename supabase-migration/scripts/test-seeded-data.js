@@ -11,62 +11,67 @@ class SeededDataTester {
   constructor() {
     this.configPath = path.join(__dirname, '..', 'supabase-config.json');
     this.logFile = path.join(__dirname, '..', 'test-results.txt');
-    
+
     if (!fs.existsSync(this.configPath)) {
-      throw new Error('Supabase configuration not found. Please run setup script first.');
+      throw new Error(
+        'Supabase configuration not found. Please run setup script first.'
+      );
     }
-    
+
     const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
     this.client = createClient(config.supabaseUrl, config.serviceRoleKey);
-    
+
     this.testResults = [];
   }
 
   log(message, type = 'info') {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-    
+
     console.log(logMessage);
     fs.appendFileSync(this.logFile, logMessage + '\n');
   }
 
   async runTest(testName, testFunction) {
     const startTime = Date.now();
-    
+
     try {
       this.log(`Running test: ${testName}`);
       const result = await testFunction();
       const duration = Date.now() - startTime;
-      
+
       this.testResults.push({
         name: testName,
         status: 'PASSED',
         duration,
         result,
-        error: null
+        error: null,
       });
-      
+
       this.log(`✅ Test passed: ${testName} (${duration}ms)`, 'success');
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       this.testResults.push({
         name: testName,
         status: 'FAILED',
         duration,
         result: null,
-        error: error.message
+        error: error.message,
       });
-      
-      this.log(`❌ Test failed: ${testName} - ${error.message} (${duration}ms)`, 'error');
+
+      this.log(
+        `❌ Test failed: ${testName} - ${error.message} (${duration}ms)`,
+        'error'
+      );
       throw error;
     }
   }
 
   async testAllData() {
     this.log('🧪 Starting comprehensive seeded data testing...');
-    
+
     try {
       // Test basic data existence
       await this.testShopData();
@@ -113,12 +118,12 @@ class SeededDataTester {
 
       if (error) throw new Error(`Failed to fetch shop data: ${error.message}`);
       if (!shops || shops.length === 0) throw new Error('No shop data found');
-      
+
       const shop = shops[0];
       if (shop.name !== 'CollisionOS Test Shop') {
         throw new Error(`Invalid shop name: ${shop.name}`);
       }
-      
+
       return { shop_count: shops.length, shop_name: shop.name };
     });
   }
@@ -136,8 +141,15 @@ class SeededDataTester {
       }
 
       const roles = users.map(u => u.role);
-      const expectedRoles = ['owner', 'manager', 'service_advisor', 'estimator', 'technician', 'parts_manager'];
-      
+      const expectedRoles = [
+        'owner',
+        'manager',
+        'service_advisor',
+        'estimator',
+        'technician',
+        'parts_manager',
+      ];
+
       for (const role of expectedRoles) {
         if (!roles.includes(role)) {
           throw new Error(`Missing user role: ${role}`);
@@ -155,21 +167,33 @@ class SeededDataTester {
         .select('*')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch customer data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch customer data: ${error.message}`);
       if (!customers || customers.length !== 5) {
-        throw new Error(`Expected 5 customers, found ${customers?.length || 0}`);
+        throw new Error(
+          `Expected 5 customers, found ${customers?.length || 0}`
+        );
       }
 
       const customerTypes = customers.map(c => c.customer_type);
-      const expectedTypes = ['individual', 'business', 'insurance', 'individual'];
-      
+      const expectedTypes = [
+        'individual',
+        'business',
+        'insurance',
+        'individual',
+      ];
+
       // Check for VIP customer
       const vipCustomer = customers.find(c => c.customer_status === 'vip');
       if (!vipCustomer) {
         throw new Error('VIP customer not found');
       }
 
-      return { customer_count: customers.length, types_found: customerTypes, has_vip: !!vipCustomer };
+      return {
+        customer_count: customers.length,
+        types_found: customerTypes,
+        has_vip: !!vipCustomer,
+      };
     });
   }
 
@@ -180,14 +204,15 @@ class SeededDataTester {
         .select('*')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch vehicle data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch vehicle data: ${error.message}`);
       if (!vehicles || vehicles.length !== 5) {
         throw new Error(`Expected 5 vehicles, found ${vehicles?.length || 0}`);
       }
 
       const makes = vehicles.map(v => v.make);
       const expectedMakes = ['Honda', 'Hyundai', 'Volkswagen', 'Ford', 'BMW'];
-      
+
       for (const make of expectedMakes) {
         if (!makes.includes(make)) {
           throw new Error(`Missing vehicle make: ${make}`);
@@ -205,14 +230,20 @@ class SeededDataTester {
         .select('*')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch vendor data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch vendor data: ${error.message}`);
       if (!vendors || vendors.length !== 4) {
         throw new Error(`Expected 4 vendors, found ${vendors?.length || 0}`);
       }
 
       const vendorTypes = vendors.map(v => v.vendor_type);
-      const expectedTypes = ['oem', 'aftermarket', 'paint_supplier', 'equipment_supplier'];
-      
+      const expectedTypes = [
+        'oem',
+        'aftermarket',
+        'paint_supplier',
+        'equipment_supplier',
+      ];
+
       for (const type of expectedTypes) {
         if (!vendorTypes.includes(type)) {
           throw new Error(`Missing vendor type: ${type}`);
@@ -230,14 +261,15 @@ class SeededDataTester {
         .select('*')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch parts data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch parts data: ${error.message}`);
       if (!parts || parts.length !== 5) {
         throw new Error(`Expected 5 parts, found ${parts?.length || 0}`);
       }
 
       const categories = parts.map(p => p.category);
       const expectedCategories = ['body', 'electrical', 'exterior', 'paint'];
-      
+
       for (const category of expectedCategories) {
         if (!categories.includes(category)) {
           throw new Error(`Missing part category: ${category}`);
@@ -248,7 +280,9 @@ class SeededDataTester {
       for (const part of parts) {
         const expectedPrice = part.cost * (1 + part.markup_percentage / 100);
         if (Math.abs(part.price - expectedPrice) > 0.01) {
-          throw new Error(`Invalid pricing for part ${part.name}: expected ${expectedPrice}, got ${part.price}`);
+          throw new Error(
+            `Invalid pricing for part ${part.name}: expected ${expectedPrice}, got ${part.price}`
+          );
         }
       }
 
@@ -269,8 +303,14 @@ class SeededDataTester {
       }
 
       const statuses = jobs.map(j => j.status);
-      const expectedStatuses = ['estimate', 'body_structure', 'quality_control', 'ready_pickup', 'intake'];
-      
+      const expectedStatuses = [
+        'estimate',
+        'body_structure',
+        'quality_control',
+        'ready_pickup',
+        'intake',
+      ];
+
       for (const status of expectedStatuses) {
         if (!statuses.includes(status)) {
           throw new Error(`Missing job status: ${status}`);
@@ -283,7 +323,11 @@ class SeededDataTester {
         throw new Error('VIP job not found');
       }
 
-      return { job_count: jobs.length, statuses_found: statuses, has_vip_job: !!vipJob };
+      return {
+        job_count: jobs.length,
+        statuses_found: statuses,
+        has_vip_job: !!vipJob,
+      };
     });
   }
 
@@ -293,16 +337,20 @@ class SeededDataTester {
         .from('job_parts')
         .select('*');
 
-      if (error) throw new Error(`Failed to fetch job parts data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch job parts data: ${error.message}`);
       if (!jobParts || jobParts.length !== 2) {
         throw new Error(`Expected 2 job parts, found ${jobParts?.length || 0}`);
       }
 
       // Check pricing logic
       for (const jobPart of jobParts) {
-        const expectedPrice = jobPart.cost * (1 + jobPart.markup_percentage / 100);
+        const expectedPrice =
+          jobPart.cost * (1 + jobPart.markup_percentage / 100);
         if (Math.abs(jobPart.price - expectedPrice) > 0.01) {
-          throw new Error(`Invalid pricing for job part: expected ${expectedPrice}, got ${jobPart.price}`);
+          throw new Error(
+            `Invalid pricing for job part: expected ${expectedPrice}, got ${jobPart.price}`
+          );
         }
       }
 
@@ -316,16 +364,21 @@ class SeededDataTester {
         .from('job_labor')
         .select('*');
 
-      if (error) throw new Error(`Failed to fetch job labor data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch job labor data: ${error.message}`);
       if (!jobLabor || jobLabor.length !== 4) {
-        throw new Error(`Expected 4 job labor records, found ${jobLabor?.length || 0}`);
+        throw new Error(
+          `Expected 4 job labor records, found ${jobLabor?.length || 0}`
+        );
       }
 
       // Check labor calculations
       for (const labor of jobLabor) {
         const expectedAmount = labor.hours * labor.rate;
         if (Math.abs(labor.amount - expectedAmount) > 0.01) {
-          throw new Error(`Invalid labor calculation: expected ${expectedAmount}, got ${labor.amount}`);
+          throw new Error(
+            `Invalid labor calculation: expected ${expectedAmount}, got ${labor.amount}`
+          );
         }
       }
 
@@ -339,14 +392,17 @@ class SeededDataTester {
         .from('job_updates')
         .select('*');
 
-      if (error) throw new Error(`Failed to fetch job updates data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch job updates data: ${error.message}`);
       if (!jobUpdates || jobUpdates.length !== 2) {
-        throw new Error(`Expected 2 job updates, found ${jobUpdates?.length || 0}`);
+        throw new Error(
+          `Expected 2 job updates, found ${jobUpdates?.length || 0}`
+        );
       }
 
       const updateTypes = jobUpdates.map(u => u.update_type);
       const expectedTypes = ['status_change', 'progress'];
-      
+
       for (const type of expectedTypes) {
         if (!updateTypes.includes(type)) {
           throw new Error(`Missing update type: ${type}`);
@@ -364,21 +420,27 @@ class SeededDataTester {
         .select('*')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch notifications data: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to fetch notifications data: ${error.message}`);
       if (!notifications || notifications.length !== 2) {
-        throw new Error(`Expected 2 notifications, found ${notifications?.length || 0}`);
+        throw new Error(
+          `Expected 2 notifications, found ${notifications?.length || 0}`
+        );
       }
 
       const notificationTypes = notifications.map(n => n.type);
       const expectedTypes = ['job_assigned', 'parts_low_stock'];
-      
+
       for (const type of expectedTypes) {
         if (!notificationTypes.includes(type)) {
           throw new Error(`Missing notification type: ${type}`);
         }
       }
 
-      return { notification_count: notifications.length, types_found: notificationTypes };
+      return {
+        notification_count: notifications.length,
+        types_found: notificationTypes,
+      };
     });
   }
 
@@ -386,7 +448,8 @@ class SeededDataTester {
     return this.runTest('Customer-Vehicle Relationships', async () => {
       const { data: relationships, error } = await this.client
         .from('customers')
-        .select(`
+        .select(
+          `
           id,
           first_name,
           last_name,
@@ -396,15 +459,21 @@ class SeededDataTester {
             model,
             year
           )
-        `)
+        `
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch customer-vehicle relationships: ${error.message}`);
-      
+      if (error)
+        throw new Error(
+          `Failed to fetch customer-vehicle relationships: ${error.message}`
+        );
+
       // Check that each customer has exactly one vehicle
       for (const customer of relationships) {
         if (!customer.vehicles || customer.vehicles.length !== 1) {
-          throw new Error(`Customer ${customer.first_name} ${customer.last_name} should have exactly 1 vehicle`);
+          throw new Error(
+            `Customer ${customer.first_name} ${customer.last_name} should have exactly 1 vehicle`
+          );
         }
       }
 
@@ -416,7 +485,8 @@ class SeededDataTester {
     return this.runTest('Job-Customer-Vehicle Relationships', async () => {
       const { data: jobs, error } = await this.client
         .from('jobs')
-        .select(`
+        .select(
+          `
           id,
           job_number,
           customers (
@@ -430,18 +500,24 @@ class SeededDataTester {
             model,
             year
           )
-        `)
+        `
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch job relationships: ${error.message}`);
-      
+      if (error)
+        throw new Error(`Failed to fetch job relationships: ${error.message}`);
+
       // Check that each job has exactly one customer and one vehicle
       for (const job of jobs) {
         if (!job.customers || job.customers.length !== 1) {
-          throw new Error(`Job ${job.job_number} should have exactly 1 customer`);
+          throw new Error(
+            `Job ${job.job_number} should have exactly 1 customer`
+          );
         }
         if (!job.vehicles || job.vehicles.length !== 1) {
-          throw new Error(`Job ${job.job_number} should have exactly 1 vehicle`);
+          throw new Error(
+            `Job ${job.job_number} should have exactly 1 vehicle`
+          );
         }
       }
 
@@ -453,7 +529,8 @@ class SeededDataTester {
     return this.runTest('Parts-Vendor Relationships', async () => {
       const { data: parts, error } = await this.client
         .from('parts')
-        .select(`
+        .select(
+          `
           id,
           name,
           vendors (
@@ -461,11 +538,15 @@ class SeededDataTester {
             name,
             vendor_type
           )
-        `)
+        `
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch parts-vendor relationships: ${error.message}`);
-      
+      if (error)
+        throw new Error(
+          `Failed to fetch parts-vendor relationships: ${error.message}`
+        );
+
       // Check that each part has exactly one vendor
       for (const part of parts) {
         if (!part.vendors || part.vendors.length !== 1) {
@@ -479,8 +560,7 @@ class SeededDataTester {
 
   async testJobPartsRelationships() {
     return this.runTest('Job-Parts Relationships', async () => {
-      const { data: jobParts, error } = await this.client
-        .from('job_parts')
+      const { data: jobParts, error } = await this.client.from('job_parts')
         .select(`
           id,
           jobs (
@@ -493,8 +573,11 @@ class SeededDataTester {
           )
         `);
 
-      if (error) throw new Error(`Failed to fetch job-parts relationships: ${error.message}`);
-      
+      if (error)
+        throw new Error(
+          `Failed to fetch job-parts relationships: ${error.message}`
+        );
+
       // Check that each job part has exactly one job and one part
       for (const jobPart of jobParts) {
         if (!jobPart.jobs || jobPart.jobs.length !== 1) {
@@ -517,9 +600,19 @@ class SeededDataTester {
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
       if (error) throw new Error(`Failed to fetch users: ${error.message}`);
-      
-      const validRoles = ['owner', 'manager', 'service_advisor', 'estimator', 'technician', 'parts_manager', 'receptionist', 'accountant', 'admin'];
-      
+
+      const validRoles = [
+        'owner',
+        'manager',
+        'service_advisor',
+        'estimator',
+        'technician',
+        'parts_manager',
+        'receptionist',
+        'accountant',
+        'admin',
+      ];
+
       for (const user of users) {
         if (!validRoles.includes(user.role)) {
           throw new Error(`Invalid role for user ${user.email}: ${user.role}`);
@@ -529,7 +622,11 @@ class SeededDataTester {
         }
       }
 
-      return { user_count: users.length, all_valid_roles: true, all_active: true };
+      return {
+        user_count: users.length,
+        all_valid_roles: true,
+        all_active: true,
+      };
     });
   }
 
@@ -537,27 +634,56 @@ class SeededDataTester {
     return this.runTest('Job Workflow Progression', async () => {
       const { data: jobs, error } = await this.client
         .from('jobs')
-        .select('id, job_number, status, priority, estimated_hours, actual_hours')
+        .select(
+          'id, job_number, status, priority, estimated_hours, actual_hours'
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
       if (error) throw new Error(`Failed to fetch jobs: ${error.message}`);
-      
-      const validStatuses = ['estimate', 'intake', 'blueprint', 'parts_ordering', 'parts_receiving', 'body_structure', 'paint_prep', 'paint_booth', 'reassembly', 'quality_control', 'calibration', 'detail', 'ready_pickup', 'delivered', 'on_hold', 'cancelled'];
+
+      const validStatuses = [
+        'estimate',
+        'intake',
+        'blueprint',
+        'parts_ordering',
+        'parts_receiving',
+        'body_structure',
+        'paint_prep',
+        'paint_booth',
+        'reassembly',
+        'quality_control',
+        'calibration',
+        'detail',
+        'ready_pickup',
+        'delivered',
+        'on_hold',
+        'cancelled',
+      ];
       const validPriorities = ['low', 'normal', 'high', 'urgent', 'rush'];
-      
+
       for (const job of jobs) {
         if (!validStatuses.includes(job.status)) {
-          throw new Error(`Invalid status for job ${job.job_number}: ${job.status}`);
+          throw new Error(
+            `Invalid status for job ${job.job_number}: ${job.status}`
+          );
         }
         if (!validPriorities.includes(job.priority)) {
-          throw new Error(`Invalid priority for job ${job.job_number}: ${job.priority}`);
+          throw new Error(
+            `Invalid priority for job ${job.job_number}: ${job.priority}`
+          );
         }
         if (job.estimated_hours <= 0) {
-          throw new Error(`Invalid estimated hours for job ${job.job_number}: ${job.estimated_hours}`);
+          throw new Error(
+            `Invalid estimated hours for job ${job.job_number}: ${job.estimated_hours}`
+          );
         }
       }
 
-      return { job_count: jobs.length, all_valid_statuses: true, all_valid_priorities: true };
+      return {
+        job_count: jobs.length,
+        all_valid_statuses: true,
+        all_valid_priorities: true,
+      };
     });
   }
 
@@ -566,7 +692,8 @@ class SeededDataTester {
       // Test job total calculations
       const { data: jobs, error } = await this.client
         .from('jobs')
-        .select(`
+        .select(
+          `
           id,
           job_number,
           job_parts (
@@ -576,29 +703,44 @@ class SeededDataTester {
           job_labor (
             amount
           )
-        `)
+        `
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch job financial data: ${error.message}`);
-      
+      if (error)
+        throw new Error(`Failed to fetch job financial data: ${error.message}`);
+
       for (const job of jobs) {
         let totalParts = 0;
         let totalLabor = 0;
-        
+
         if (job.job_parts) {
-          totalParts = job.job_parts.reduce((sum, part) => sum + (part.quantity * part.price), 0);
+          totalParts = job.job_parts.reduce(
+            (sum, part) => sum + part.quantity * part.price,
+            0
+          );
         }
-        
+
         if (job.job_labor) {
-          totalLabor = job.job_labor.reduce((sum, labor) => sum + labor.amount, 0);
+          totalLabor = job.job_labor.reduce(
+            (sum, labor) => sum + labor.amount,
+            0
+          );
         }
-        
+
         const total = totalParts + totalLabor;
-        
+
         // For jobs with parts and labor, verify calculations
-        if (job.job_parts && job.job_parts.length > 0 && job.job_labor && job.job_labor.length > 0) {
+        if (
+          job.job_parts &&
+          job.job_parts.length > 0 &&
+          job.job_labor &&
+          job.job_labor.length > 0
+        ) {
           if (total <= 0) {
-            throw new Error(`Invalid total calculation for job ${job.job_number}: ${total}`);
+            throw new Error(
+              `Invalid total calculation for job ${job.job_number}: ${total}`
+            );
           }
         }
       }
@@ -615,8 +757,11 @@ class SeededDataTester {
         .select('customer_id, vehicle_id, assigned_to')
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001');
 
-      if (error) throw new Error(`Failed to fetch jobs for integrity check: ${error.message}`);
-      
+      if (error)
+        throw new Error(
+          `Failed to fetch jobs for integrity check: ${error.message}`
+        );
+
       for (const job of jobs) {
         // Check customer exists
         const { data: customer } = await this.client
@@ -624,22 +769,26 @@ class SeededDataTester {
           .select('id')
           .eq('id', job.customer_id)
           .single();
-        
+
         if (!customer) {
-          throw new Error(`Job references non-existent customer: ${job.customer_id}`);
+          throw new Error(
+            `Job references non-existent customer: ${job.customer_id}`
+          );
         }
-        
+
         // Check vehicle exists
         const { data: vehicle } = await this.client
           .from('vehicles')
           .select('id')
           .eq('id', job.vehicle_id)
           .single();
-        
+
         if (!vehicle) {
-          throw new Error(`Job references non-existent vehicle: ${job.vehicle_id}`);
+          throw new Error(
+            `Job references non-existent vehicle: ${job.vehicle_id}`
+          );
         }
-        
+
         // Check assigned user exists (if assigned)
         if (job.assigned_to) {
           const { data: user } = await this.client
@@ -647,9 +796,11 @@ class SeededDataTester {
             .select('user_id')
             .eq('user_id', job.assigned_to)
             .single();
-          
+
           if (!user) {
-            throw new Error(`Job references non-existent user: ${job.assigned_to}`);
+            throw new Error(
+              `Job references non-existent user: ${job.assigned_to}`
+            );
           }
         }
       }
@@ -663,7 +814,8 @@ class SeededDataTester {
       // Test complex join query
       const { data: jobDetails, error } = await this.client
         .from('jobs')
-        .select(`
+        .select(
+          `
           job_number,
           status,
           priority,
@@ -690,11 +842,13 @@ class SeededDataTester {
             hours,
             amount
           )
-        `)
+        `
+        )
         .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001')
         .limit(3);
 
-      if (error) throw new Error(`Failed to execute complex query: ${error.message}`);
+      if (error)
+        throw new Error(`Failed to execute complex query: ${error.message}`);
       if (!jobDetails || jobDetails.length === 0) {
         throw new Error('No job details returned from complex query');
       }
@@ -706,14 +860,29 @@ class SeededDataTester {
   async testPerformanceQueries() {
     return this.runTest('Performance Queries', async () => {
       const startTime = Date.now();
-      
+
       // Test multiple concurrent queries
       const promises = [
-        this.client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
-        this.client.from('customers').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
-        this.client.from('vehicles').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
-        this.client.from('parts').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
-        this.client.from('vendors').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440001')
+        this.client
+          .from('jobs')
+          .select('*')
+          .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
+        this.client
+          .from('customers')
+          .select('*')
+          .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
+        this.client
+          .from('vehicles')
+          .select('*')
+          .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
+        this.client
+          .from('parts')
+          .select('*')
+          .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
+        this.client
+          .from('vendors')
+          .select('*')
+          .eq('shop_id', '550e8400-e29b-41d4-a716-446655440001'),
       ];
 
       const results = await Promise.all(promises);
@@ -728,7 +897,9 @@ class SeededDataTester {
 
       // Performance threshold: all queries should complete within 1 second
       if (duration > 1000) {
-        throw new Error(`Performance test failed: queries took ${duration}ms (threshold: 1000ms)`);
+        throw new Error(
+          `Performance test failed: queries took ${duration}ms (threshold: 1000ms)`
+        );
       }
 
       return { query_count: results.length, duration_ms: duration };
@@ -739,7 +910,7 @@ class SeededDataTester {
     return this.runTest('Realtime Subscriptions', async () => {
       // Test that realtime is enabled by checking if we can subscribe
       const channel = this.client.channel('test-channel');
-      
+
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Realtime subscription test timed out'));
@@ -754,7 +925,7 @@ class SeededDataTester {
             clearTimeout(timeout);
             resolve({ realtime_enabled: true });
           })
-          .subscribe((status) => {
+          .subscribe(status => {
             if (status === 'SUBSCRIBED') {
               clearTimeout(timeout);
               resolve({ realtime_enabled: true });
@@ -766,34 +937,44 @@ class SeededDataTester {
 
   generateTestReport() {
     this.log('📊 Generating test report...');
-    
+
     const passedTests = this.testResults.filter(r => r.status === 'PASSED');
     const failedTests = this.testResults.filter(r => r.status === 'FAILED');
-    const totalDuration = this.testResults.reduce((sum, r) => sum + r.duration, 0);
-    
+    const totalDuration = this.testResults.reduce(
+      (sum, r) => sum + r.duration,
+      0
+    );
+
     const report = {
       timestamp: new Date().toISOString(),
       summary: {
         total_tests: this.testResults.length,
         passed_tests: passedTests.length,
         failed_tests: failedTests.length,
-        success_rate: (passedTests.length / this.testResults.length * 100).toFixed(2) + '%',
+        success_rate:
+          ((passedTests.length / this.testResults.length) * 100).toFixed(2) +
+          '%',
         total_duration_ms: totalDuration,
-        average_duration_ms: Math.round(totalDuration / this.testResults.length)
+        average_duration_ms: Math.round(
+          totalDuration / this.testResults.length
+        ),
       },
       results: this.testResults,
-      failed_tests: failedTests.map(t => ({ name: t.name, error: t.error }))
+      failed_tests: failedTests.map(t => ({ name: t.name, error: t.error })),
     };
 
     const reportPath = path.join(__dirname, '..', 'test-report.json');
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    
+
     this.log('📋 Test report generated:', 'info');
     this.log(`   Total tests: ${report.summary.total_tests}`, 'info');
     this.log(`   Passed: ${report.summary.passed_tests}`, 'info');
     this.log(`   Failed: ${report.summary.failed_tests}`, 'info');
     this.log(`   Success rate: ${report.summary.success_rate}`, 'info');
-    this.log(`   Total duration: ${report.summary.total_duration_ms}ms`, 'info');
+    this.log(
+      `   Total duration: ${report.summary.total_duration_ms}ms`,
+      'info'
+    );
     this.log(`   Report saved to: ${reportPath}`, 'info');
 
     if (failedTests.length > 0) {
@@ -808,12 +989,13 @@ class SeededDataTester {
 // Run the tester if this file is executed directly
 if (require.main === module) {
   const tester = new SeededDataTester();
-  tester.testAllData()
+  tester
+    .testAllData()
     .then(() => {
       console.log('\n🎉 All seeded data tests completed successfully!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Testing failed:', error.message);
       process.exit(1);
     });

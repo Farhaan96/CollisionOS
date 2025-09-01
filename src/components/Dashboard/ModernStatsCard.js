@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  CardContent, 
-  Typography, 
-  Box, 
+import {
+  CardContent,
+  Typography,
+  Box,
   IconButton,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from '@mui/icons-material';
@@ -59,50 +59,54 @@ const ModernStatsCard = ({
   const ChangeIcon = getChangeIcon();
 
   return (
-    <ModernCard 
+    <ModernCard
       variant={variant}
       hover={true}
       sx={{
         height: '140px',
-        background: variant === 'gradient' ? 
-          `linear-gradient(135deg, ${alpha(selectedColor, isDark ? 0.15 : 0.08)} 0%, ${alpha(selectedColor, isDark ? 0.05 : 0.02)} 100%)`
-          : undefined,
-        ...props.sx
+        background:
+          variant === 'gradient'
+            ? `linear-gradient(135deg, ${alpha(selectedColor, isDark ? 0.15 : 0.08)} 0%, ${alpha(selectedColor, isDark ? 0.05 : 0.02)} 100%)`
+            : undefined,
+        ...props.sx,
       }}
       {...props}
     >
-      <CardContent 
-        sx={{ 
+      <CardContent
+        sx={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           p: 3,
-          '&:last-child': { pb: 3 }
+          '&:last-child': { pb: 3 },
         }}
       >
         {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Typography 
-            variant="subtitle2" 
-            sx={{ 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Typography
+            variant='subtitle2'
+            sx={{
               color: theme.palette.text.secondary,
               fontWeight: 500,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
-              fontSize: '0.75rem'
+              fontSize: '0.75rem',
             }}
           >
             {title?.toUpperCase()}
           </Typography>
-          
+
           {Icon && (
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
               <IconButton
-                size="small"
+                size='small'
                 sx={{
                   backgroundColor: alpha(selectedColor, isDark ? 0.2 : 0.1),
                   color: selectedColor,
@@ -115,7 +119,7 @@ const ModernStatsCard = ({
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                <Icon fontSize="small" />
+                <Icon fontSize='small' />
               </IconButton>
             </motion.div>
           )}
@@ -124,11 +128,11 @@ const ModernStatsCard = ({
         {/* Value */}
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <Typography
-            variant="h3"
+            variant='h3'
             sx={{
               fontWeight: 700,
               color: theme.palette.text.primary,
-              background: isDark 
+              background: isDark
                 ? `linear-gradient(135deg, ${selectedColor} 0%, ${alpha(selectedColor, 0.7)} 100%)`
                 : `linear-gradient(135deg, ${selectedColor} 0%, ${alpha(selectedColor, 0.8)} 100%)`,
               WebkitBackgroundClip: 'text',
@@ -145,29 +149,31 @@ const ModernStatsCard = ({
         {change !== undefined && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {ChangeIcon && (
-              <ChangeIcon 
-                sx={{ 
+              <ChangeIcon
+                sx={{
                   color: getChangeColor(),
-                  fontSize: '1rem'
-                }} 
+                  fontSize: '1rem',
+                }}
               />
             )}
             <Typography
-              variant="body2"
+              variant='body2'
               sx={{
                 color: getChangeColor(),
                 fontWeight: 600,
-                fontSize: '0.75rem'
+                fontSize: '0.75rem',
               }}
             >
-              {typeof change === 'number' ? `${change > 0 ? '+' : ''}${change}%` : change}
+              {typeof change === 'number'
+                ? `${change > 0 ? '+' : ''}${change}%`
+                : change}
             </Typography>
             <Typography
-              variant="body2"
+              variant='body2'
               sx={{
                 color: theme.palette.text.secondary,
                 fontSize: '0.75rem',
-                ml: 0.5
+                ml: 0.5,
               }}
             >
               vs last month

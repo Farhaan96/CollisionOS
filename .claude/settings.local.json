@@ -1,114 +1,29 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
-      "Bash(npx playwright:*)",
-      "Bash(npm run start:*)",
-      "Bash(npm run test:smoke:*)",
-      "Bash(npm install:*)",
       "Bash(node:*)",
       "Bash(curl:*)",
-      "Bash(npm run client:*)",
-      "Bash(timeout:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(npm start)",
-      "WebSearch",
+      "Bash(npm run server:*)",
+      "Bash(BashOutput bash_1)",
+      "Bash(pkill:*)",
       "Bash(taskkill:*)",
-      "Bash(set PORT=3002)",
-      "Bash(set SERVER_PORT=3002)",
-      "Bash(set REACT_APP_PORT=3003)",
-      "Bash(set PORT=3003)",
-      "Bash(npm run:*)",
-      "Read(/c:\\Users\\farha\\.cursor/**)",
-      "Bash(npx @playwright/mcp@latest:*)",
-      "Read(/C:\\Users\\farha\\.cursor/**)",
-      "Bash(copy:*)",
+      "Bash(dir \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\")",
       "Bash(powershell:*)",
-      "Bash(set BROWSER=none)",
-      "Bash(call \"Launch CollisionOS.bat\")",
-      "Bash(cmd.exe:*)",
-      "mcp__ide__executeCode",
-      "Bash(\"Launch CollisionOS.bat\")",
-      "Bash(set SERVER_PORT=3006)",
-      "Bash(set FAST_REFRESH=false)",
-      "Bash(npx react-scripts:*)",
-      "Bash(set PORT=3005)",
-      "Bash(set PORT=3006)",
-      "Bash(set PORT=3004)",
-      "Bash(cmd /c taskkill:*)",
-      "Bash(set SERVER_PORT=3007)",
-      "Bash(move:*)",
-      "Bash(npm audit:*)",
-      "Bash(npm outdated)",
-      "Bash(cat:*)",
-      "Bash(set SERVER_PORT=4001)",
-      "Bash(set REACT_APP_API_URL=http://localhost:4001)",
-      "Bash(mkdir:*)",
-      "Bash(touch:*)",
+      "Bash(npm start)",
       "Bash(dir:*)",
-      "Bash(npm test:*)",
-      "Bash(jest tests/unit/services/bmsService.test.js --detectOpenHandles --forceExit)",
-      "Bash(node -v)",
-      "Bash(npm -v)",
-      "Bash(pnpm -v)",
-      "Bash(yarn -v)",
-      "Bash(corepack enable)",
-      "Bash(npm install *)",
-      "Bash(npm ci)",
-      "Bash(npm run *)",
-      "Bash(npm test)",
-      "Bash(pnpm install *)",
-      "Bash(pnpm run *)",
-      "Bash(yarn install)",
-      "Bash(yarn run *)",
-      "Bash(npx *)",
-      "Bash(npx playwright *)",
-      "Bash(npx eslint *)",
-      "Bash(npx prettier *)",
-      "Bash(npx tsc *)",
-      "Bash(npx jest *)",
-      "Bash(git status)",
-      "Bash(git add *)",
-      "Bash(git add -A)",
-      "Bash(git commit -m *)",
-      "Bash(git tag *)",
-      "Bash(git branch *)",
-      "Bash(git checkout *)",
-      "Bash(git pull)",
-      "Bash(git push)",
-      "Bash(git log *)",
-      "Bash(git diff *)",
-      "Bash(electron *)",
-      "Bash(sh .claude/scripts/*)",
-      "Bash(ls *)",
-      "Bash(pwd)",
-      "Bash(cd *)",
-      "Bash(grep *)",
-      "Bash(find * -name *)"
+      "Read(C:\\Users\\farha\\.claude/**)",
+      "Read(C:\\Users\\farha\\.claude/**)",
+      "Read(C:\\Users\\farha/**)",
+      "Read(C:\\Users\\farha\\.claude/**)",
+      "Bash(npm:*)",
+      "Bash(timeout:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
-    "deny": [
-      "Bash(rm -rf /)",
-      "Bash(rm -rf /*)",
-      "Bash(sudo *)",
-      "Bash(curl * | bash)",
-      "Bash(wget * | bash)",
-      "Bash(ssh *)",
-      "Bash(scp *)",
-      "Bash(docker run * -v /:/host *)",
-      "Bash(chmod 777 *)",
-      "Bash(chown *)",
-      "Bash(kill -9 *)",
-      "Bash(pkill *)",
-      "Bash(> /dev/*)",
-      "ReadFile(.env*)",
-      "ReadFile(*secret*)",
-      "ReadFile(*.key)",
-      "ReadFile(*.pem)",
-      "WriteFile(.env*)",
-      "WriteFile(*secret*)",
-      "WriteFile(*.key)",
-      "WriteFile(*.pem)"
-    ]
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits"
   },
   "hooks": {
     "PreToolUse": [
@@ -117,7 +32,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_sensitive_writes.ps1\" \"{{ .tool_input.file_path }}\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\loop-detector.ps1\" \"check\" \"pre-edit\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\block_sensitive_writes.ps1\" \"{{ .tool_input.file_path }}\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\code-review.ps1\" \"{{ .tool_input.file_path }}\""
           }
         ]
       }
@@ -128,12 +51,50 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_on_edit.ps1\" \"{{ .tool_input.file_path }}\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\format_on_edit.ps1\" \"{{ .tool_input.file_path }}\""
           },
-
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\auto-test.ps1\" \"{{ .tool_input.file_path }}\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\progress-tracker.ps1\" \"{{ .tool_input.file_path }}\" \"{{ .tool_name }}\" \"{{ .agent_name }}\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\stabilization-check.ps1\" \"{{ .tool_input.file_path }}\" \"wait\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Task initiated. Orchestrator will analyze and delegate...' -ForegroundColor Cyan\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Subagent completed task. Results available.' -ForegroundColor Green\""
+          }
         ]
       }
     ]
+  },
+  "loopControl": {
+    "maxRestartsPerMinute": 5,
+    "hookCooldownMs": 2000,
+    "enableLoopDetection": true,
+    "maxConsecutiveFailures": 3,
+    "stabilizationDelayMs": 5000
   },
   "budgets": {
     "default": {

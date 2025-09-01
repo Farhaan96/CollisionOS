@@ -13,10 +13,10 @@ class SupabaseSetup {
     this.projectDir = path.resolve(__dirname, '..');
     this.configFile = path.join(this.projectDir, 'supabase-config.json');
     this.envFile = path.join(this.projectDir, '..', '.env.supabase');
-    
+
     this.rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
   }
 
@@ -32,9 +32,9 @@ class SupabaseSetup {
       success: '\x1b[32m', // green
       warning: '\x1b[33m', // yellow
       error: '\x1b[31m', // red
-      reset: '\x1b[0m'
+      reset: '\x1b[0m',
     };
-    
+
     const timestamp = new Date().toISOString().substr(11, 8);
     console.log(`${colors[type]}[${timestamp}] ${message}${colors.reset}`);
   }
@@ -46,7 +46,7 @@ class SupabaseSetup {
       return true;
     } catch (error) {
       this.log('Supabase CLI not found. Installing...', 'warning');
-      
+
       try {
         // Install Supabase CLI
         if (process.platform === 'win32') {
@@ -56,11 +56,14 @@ class SupabaseSetup {
         } else {
           execSync('npm install -g supabase', { stdio: 'inherit' });
         }
-        
+
         this.log('Supabase CLI installed successfully', 'success');
         return true;
       } catch (installError) {
-        this.log('Failed to install Supabase CLI. Please install manually.', 'error');
+        this.log(
+          'Failed to install Supabase CLI. Please install manually.',
+          'error'
+        );
         return false;
       }
     }
@@ -80,39 +83,47 @@ class SupabaseSetup {
 
   async collectProjectInfo() {
     this.log('Collecting project information...', 'info');
-    
-    const projectName = await this.question('Enter project name (collision-os): ') || 'collision-os';
+
+    const projectName =
+      (await this.question('Enter project name (collision-os): ')) ||
+      'collision-os';
     const organization = await this.question('Enter organization name: ');
-    const region = await this.question('Enter region (us-east-1): ') || 'us-east-1';
-    const plan = await this.question('Enter plan (free/pro/team/enterprise) [free]: ') || 'free';
-    
+    const region =
+      (await this.question('Enter region (us-east-1): ')) || 'us-east-1';
+    const plan =
+      (await this.question('Enter plan (free/pro/team/enterprise) [free]: ')) ||
+      'free';
+
     return {
       name: projectName,
       organization,
       region,
-      plan
+      plan,
     };
   }
 
   async createSupabaseProject(projectInfo) {
     try {
       this.log('Creating Supabase project...', 'info');
-      
+
       const command = [
         'supabase projects create',
         `"${projectInfo.name}"`,
-        '--org', `"${projectInfo.organization}"`,
-        '--region', projectInfo.region,
-        '--plan', projectInfo.plan
+        '--org',
+        `"${projectInfo.organization}"`,
+        '--region',
+        projectInfo.region,
+        '--plan',
+        projectInfo.plan,
       ].join(' ');
-      
+
       const output = execSync(command, { encoding: 'utf8' });
       this.log('Project created successfully', 'success');
-      
+
       // Extract project reference from output
       const projectRefMatch = output.match(/Project ref: ([a-z0-9]+)/);
       const projectRef = projectRefMatch ? projectRefMatch[1] : null;
-      
+
       if (projectRef) {
         this.log(`Project reference: ${projectRef}`, 'info');
         return projectRef;
@@ -128,23 +139,26 @@ class SupabaseSetup {
   async getProjectKeys(projectRef) {
     try {
       this.log('Retrieving project API keys...', 'info');
-      
-      const output = execSync(`supabase projects api-keys --project-ref ${projectRef}`, { 
-        encoding: 'utf8' 
-      });
-      
+
+      const output = execSync(
+        `supabase projects api-keys --project-ref ${projectRef}`,
+        {
+          encoding: 'utf8',
+        }
+      );
+
       // Parse the API keys from output
       const anonKeyMatch = output.match(/anon key:\s*([^\s]+)/);
       const serviceRoleKeyMatch = output.match(/service_role key:\s*([^\s]+)/);
-      
+
       if (!anonKeyMatch || !serviceRoleKeyMatch) {
         throw new Error('Could not extract API keys');
       }
-      
+
       return {
         anonKey: anonKeyMatch[1],
         serviceRoleKey: serviceRoleKeyMatch[1],
-        url: `https://${projectRef}.supabase.co`
+        url: `https://${projectRef}.supabase.co`,
       };
     } catch (error) {
       this.log(`Failed to retrieve API keys: ${error.message}`, 'error');
@@ -155,19 +169,19 @@ class SupabaseSetup {
   async setupLocalProject(projectRef) {
     try {
       this.log('Setting up local Supabase project...', 'info');
-      
+
       // Initialize local Supabase project
-      execSync(`supabase init`, { 
+      execSync(`supabase init`, {
         stdio: 'inherit',
-        cwd: this.projectDir
+        cwd: this.projectDir,
       });
-      
+
       // Link to remote project
-      execSync(`supabase link --project-ref ${projectRef}`, { 
+      execSync(`supabase link --project-ref ${projectRef}`, {
         stdio: 'inherit',
-        cwd: this.projectDir
+        cwd: this.projectDir,
       });
-      
+
       this.log('Local project setup completed', 'success');
     } catch (error) {
       this.log(`Failed to setup local project: ${error.message}`, 'error');
@@ -178,12 +192,12 @@ class SupabaseSetup {
   async configureAuthentication(projectRef) {
     try {
       this.log('Configuring authentication settings...', 'info');
-      
+
       const authConfig = {
         site_url: 'http://localhost:3000',
         additional_redirect_urls: [
           'http://localhost:3000/auth/callback',
-          'https://app.collisionos.com/auth/callback'
+          'https://app.collisionos.com/auth/callback',
         ],
         jwt_expiry: 3600,
         refresh_token_rotation_enabled: true,
@@ -192,12 +206,15 @@ class SupabaseSetup {
         email_confirm_signup: true,
         email_double_confirm_changes: true,
         enable_signup: false, // Disable public signup for business app
-        enable_manual_linking: true
+        enable_manual_linking: true,
       };
-      
+
       // Apply auth configuration (this would typically be done through the dashboard)
-      this.log('Authentication configuration completed (manual setup may be required)', 'warning');
-      
+      this.log(
+        'Authentication configuration completed (manual setup may be required)',
+        'warning'
+      );
+
       return authConfig;
     } catch (error) {
       this.log(`Failed to configure authentication: ${error.message}`, 'error');
@@ -208,46 +225,49 @@ class SupabaseSetup {
   async setupDatabase() {
     try {
       this.log('Setting up database schema...', 'info');
-      
+
       const schemaFiles = [
         'schema/01_initial_schema.sql',
         'schema/02_jobs_and_workflow.sql',
-        'schema/03_realtime_and_permissions.sql'
+        'schema/03_realtime_and_permissions.sql',
       ];
-      
+
       for (const schemaFile of schemaFiles) {
         const schemaPath = path.join(this.projectDir, schemaFile);
-        
+
         if (fs.existsSync(schemaPath)) {
           this.log(`Applying schema: ${schemaFile}`, 'info');
-          
+
           try {
-            execSync(`supabase db reset`, { 
+            execSync(`supabase db reset`, {
               stdio: 'inherit',
-              cwd: this.projectDir
+              cwd: this.projectDir,
             });
-            
+
             // Apply the schema file
             const sqlContent = fs.readFileSync(schemaPath, 'utf8');
             const tempFile = path.join(this.projectDir, 'temp-migration.sql');
             fs.writeFileSync(tempFile, sqlContent);
-            
-            execSync(`supabase db push`, { 
+
+            execSync(`supabase db push`, {
               stdio: 'inherit',
-              cwd: this.projectDir
+              cwd: this.projectDir,
             });
-            
+
             // Clean up temp file
             fs.unlinkSync(tempFile);
-            
+
             this.log(`Applied schema: ${schemaFile}`, 'success');
           } catch (schemaError) {
-            this.log(`Failed to apply schema ${schemaFile}: ${schemaError.message}`, 'error');
+            this.log(
+              `Failed to apply schema ${schemaFile}: ${schemaError.message}`,
+              'error'
+            );
             // Continue with other files
           }
         }
       }
-      
+
       this.log('Database schema setup completed', 'success');
     } catch (error) {
       this.log(`Failed to setup database: ${error.message}`, 'error');
@@ -258,25 +278,37 @@ class SupabaseSetup {
   async enableRealtime() {
     try {
       this.log('Enabling Realtime for tables...', 'info');
-      
+
       const tables = [
-        'shops', 'users', 'customers', 'vehicles', 'parts', 
-        'vendors', 'jobs', 'job_updates', 'job_parts', 
-        'job_labor', 'estimates', 'notifications'
+        'shops',
+        'users',
+        'customers',
+        'vehicles',
+        'parts',
+        'vendors',
+        'jobs',
+        'job_updates',
+        'job_parts',
+        'job_labor',
+        'estimates',
+        'notifications',
       ];
-      
+
       for (const table of tables) {
         try {
-          execSync(`supabase realtime on --table ${table}`, { 
+          execSync(`supabase realtime on --table ${table}`, {
             stdio: 'pipe',
-            cwd: this.projectDir
+            cwd: this.projectDir,
           });
           this.log(`Enabled realtime for: ${table}`, 'info');
         } catch (tableError) {
-          this.log(`Failed to enable realtime for ${table}: ${tableError.message}`, 'warning');
+          this.log(
+            `Failed to enable realtime for ${table}: ${tableError.message}`,
+            'warning'
+          );
         }
       }
-      
+
       this.log('Realtime configuration completed', 'success');
     } catch (error) {
       this.log(`Failed to setup realtime: ${error.message}`, 'error');
@@ -288,7 +320,7 @@ class SupabaseSetup {
     try {
       // Save configuration to JSON file
       fs.writeFileSync(this.configFile, JSON.stringify(config, null, 2));
-      
+
       // Create environment file
       const envContent = `
 # Supabase Configuration
@@ -304,9 +336,9 @@ SUPABASE_DB_URL=${config.databaseUrl}
 REACT_APP_APP_URL=${config.appUrl}
 REACT_APP_ENV=production
 `.trim();
-      
+
       fs.writeFileSync(this.envFile, envContent);
-      
+
       this.log('Configuration saved successfully', 'success');
       this.log(`Config file: ${this.configFile}`, 'info');
       this.log(`Environment file: ${this.envFile}`, 'info');
@@ -319,27 +351,30 @@ REACT_APP_ENV=production
   async setupStorageBuckets() {
     try {
       this.log('Setting up storage buckets...', 'info');
-      
+
       const buckets = [
         { name: 'avatars', public: true },
         { name: 'documents', public: false },
         { name: 'photos', public: false },
-        { name: 'attachments', public: false }
+        { name: 'attachments', public: false },
       ];
-      
+
       for (const bucket of buckets) {
         try {
           const publicity = bucket.public ? '--public' : '';
-          execSync(`supabase storage create ${bucket.name} ${publicity}`, { 
+          execSync(`supabase storage create ${bucket.name} ${publicity}`, {
             stdio: 'pipe',
-            cwd: this.projectDir
+            cwd: this.projectDir,
           });
           this.log(`Created bucket: ${bucket.name}`, 'info');
         } catch (bucketError) {
-          this.log(`Failed to create bucket ${bucket.name}: ${bucketError.message}`, 'warning');
+          this.log(
+            `Failed to create bucket ${bucket.name}: ${bucketError.message}`,
+            'warning'
+          );
         }
       }
-      
+
       this.log('Storage setup completed', 'success');
     } catch (error) {
       this.log(`Failed to setup storage: ${error.message}`, 'error');
@@ -350,41 +385,41 @@ REACT_APP_ENV=production
   async run() {
     try {
       this.log('Starting Supabase project setup...', 'info');
-      
+
       // Check CLI installation
       if (!(await this.checkSupabaseCLI())) {
         process.exit(1);
       }
-      
+
       // Login to Supabase
       if (!(await this.loginToSupabase())) {
         process.exit(1);
       }
-      
+
       // Collect project information
       const projectInfo = await this.collectProjectInfo();
-      
+
       // Create project
       const projectRef = await this.createSupabaseProject(projectInfo);
-      
+
       // Get API keys
       const keys = await this.getProjectKeys(projectRef);
-      
+
       // Setup local project
       await this.setupLocalProject(projectRef);
-      
+
       // Configure authentication
       const authConfig = await this.configureAuthentication(projectRef);
-      
+
       // Setup database
       await this.setupDatabase();
-      
+
       // Enable realtime
       await this.enableRealtime();
-      
+
       // Setup storage
       await this.setupStorageBuckets();
-      
+
       // Save configuration
       const config = {
         projectName: projectInfo.name,
@@ -395,18 +430,23 @@ REACT_APP_ENV=production
         databaseUrl: `${keys.url}/rest/v1/`,
         appUrl: 'http://localhost:3000',
         authConfig,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       this.saveConfiguration(config);
-      
+
       this.log('Supabase project setup completed successfully!', 'success');
       this.log('Next steps:', 'info');
-      this.log('1. Update your .env file with the new Supabase credentials', 'info');
+      this.log(
+        '1. Update your .env file with the new Supabase credentials',
+        'info'
+      );
       this.log('2. Run the data migration script', 'info');
-      this.log('3. Update your application code to use Supabase client', 'info');
+      this.log(
+        '3. Update your application code to use Supabase client',
+        'info'
+      );
       this.log('4. Test the application thoroughly', 'info');
-      
     } catch (error) {
       this.log(`Setup failed: ${error.message}`, 'error');
       process.exit(1);

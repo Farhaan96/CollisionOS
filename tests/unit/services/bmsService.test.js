@@ -251,7 +251,7 @@ describe('BMSService', () => {
   describe('parseBMSFile', () => {
     it('should parse a valid BMS XML file', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result).toBeDefined();
       expect(result.documentInfo).toBeDefined();
       expect(result.adminInfo).toBeDefined();
@@ -263,7 +263,7 @@ describe('BMSService', () => {
 
     it('should extract document information correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.documentInfo.bmsVersion).toBe('5.2.22');
       expect(result.documentInfo.documentType).toBe('E');
       expect(result.documentInfo.documentId).toBe('CX52401-1-A20250721224658');
@@ -273,7 +273,7 @@ describe('BMSService', () => {
 
     it('should extract customer information correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.adminInfo.policyHolder).toBeDefined();
       expect(result.adminInfo.policyHolder.firstName).toBe('JOHN');
       expect(result.adminInfo.policyHolder.lastName).toBe('DOE');
@@ -284,7 +284,7 @@ describe('BMSService', () => {
 
     it('should extract vehicle information correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.vehicleInfo.vin).toBe('JT2BG22K710532984');
       expect(result.vehicleInfo.license.plateNumber).toBe('452JWF');
       expect(result.vehicleInfo.license.stateProvince).toBe('BC');
@@ -292,13 +292,15 @@ describe('BMSService', () => {
       expect(result.vehicleInfo.description.makeDesc).toBe('Toyota');
       expect(result.vehicleInfo.description.modelName).toBe('Camry');
       expect(result.vehicleInfo.description.bodyStyle).toBe('4 Door Sedan');
-      expect(result.vehicleInfo.paint.exterior).toBe('8N7 - Sailfin Blue Pearl');
+      expect(result.vehicleInfo.paint.exterior).toBe(
+        '8N7 - Sailfin Blue Pearl'
+      );
       expect(result.vehicleInfo.odometer.reading).toBe('212013');
     });
 
     it('should extract claim information correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.claimInfo.claimNumber).toBe('CX52401-1-A');
       expect(result.claimInfo.policyNumber).toBe('2O.F3O');
       expect(result.claimInfo.coverage.deductible.amount).toBe('300.00');
@@ -308,15 +310,15 @@ describe('BMSService', () => {
 
     it('should extract damage line items correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.damageLines).toHaveLength(2);
-      
+
       const firstLine = result.damageLines[0];
       expect(firstLine.lineNum).toBe(1);
       expect(firstLine.lineDesc).toBe('Rear Bumper Cover Assy');
       expect(firstLine.partInfo.partNum).toBe('Existing');
       expect(firstLine.laborInfo.laborHours).toBe('1.70');
-      
+
       const secondLine = result.damageLines[1];
       expect(secondLine.lineNum).toBe(2);
       expect(secondLine.lineDesc).toBe('Rear Bumper Cover');
@@ -326,14 +328,18 @@ describe('BMSService', () => {
 
     it('should extract totals correctly', () => {
       const result = bmsService.parseBMSFile(mockBMSXML);
-      
+
       expect(result.totals.laborTotals.totalAmt).toBe('577.01');
       expect(result.totals.partsTotals.totalAmt).toBe('235.21');
-      
-      const grossTotal = result.totals.summaryTotals.find(t => t.totalSubType === 'CE');
+
+      const grossTotal = result.totals.summaryTotals.find(
+        t => t.totalSubType === 'CE'
+      );
       expect(grossTotal.totalAmt).toBe('1125.63');
-      
-      const netTotal = result.totals.summaryTotals.find(t => t.totalSubType === 'TT');
+
+      const netTotal = result.totals.summaryTotals.find(
+        t => t.totalSubType === 'TT'
+      );
       expect(netTotal.totalAmt).toBe('825.63');
     });
 
@@ -347,9 +353,9 @@ describe('BMSService', () => {
           <DocumentID>TEST-001</DocumentID>
         </DocumentInfo>
       </VehicleDamageEstimateAddRq>`;
-      
+
       const result = bmsService.parseBMSFile(minimalXML);
-      
+
       expect(result).toBeDefined();
       expect(result.documentInfo.claimNumber).toBe('TEST-001');
       expect(result.adminInfo.policyHolder).toBeNull();
@@ -359,7 +365,7 @@ describe('BMSService', () => {
 
     it('should throw error for invalid XML', () => {
       const invalidXML = '<invalid>xml</invalid>';
-      
+
       expect(() => {
         bmsService.parseBMSFile(invalidXML);
       }).toThrow('Failed to parse BMS file');
@@ -368,10 +374,12 @@ describe('BMSService', () => {
 
   describe('uploadBMSFile', () => {
     it('should process a file successfully', async () => {
-      const mockFile = new File([mockBMSXML], 'test.bms.xml', { type: 'text/xml' });
-      
+      const mockFile = new File([mockBMSXML], 'test.bms.xml', {
+        type: 'text/xml',
+      });
+
       const result = await bmsService.uploadBMSFile(mockFile);
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toBe('BMS file processed successfully');
       expect(result.data).toBeDefined();
@@ -381,11 +389,11 @@ describe('BMSService', () => {
       const mockFile = {
         name: 'test.xml',
         size: 100,
-        type: 'text/xml'
+        type: 'text/xml',
       };
-      
+
       const result = await bmsService.uploadBMSFile(mockFile);
-      
+
       expect(result.success).toBe(false);
       expect(result.message).toBe('Failed to process BMS file');
     });
@@ -397,7 +405,7 @@ describe('BMSService', () => {
         PersonInfo: {
           PersonName: {
             FirstName: 'John',
-            LastName: 'Doe'
+            LastName: 'Doe',
           },
           Communications: {
             CommQualifier: 'AL',
@@ -405,20 +413,20 @@ describe('BMSService', () => {
               Address1: '123 Main St',
               City: 'Vancouver',
               StateProvince: 'BC',
-              PostalCode: 'V6B 1A1'
-            }
-          }
+              PostalCode: 'V6B 1A1',
+            },
+          },
         },
         ContactInfo: {
           Communications: {
             CommQualifier: 'HP',
-            CommPhone: '604-555-1234'
-          }
-        }
+            CommPhone: '604-555-1234',
+          },
+        },
       };
-      
+
       const result = bmsService.extractPartyInfo(personParty);
-      
+
       expect(result.type).toBe('person');
       expect(result.firstName).toBe('John');
       expect(result.lastName).toBe('Doe');
@@ -437,20 +445,20 @@ describe('BMSService', () => {
               Address1: '456 Business Ave',
               City: 'Toronto',
               StateProvince: 'ON',
-              PostalCode: 'M5V 2H1'
-            }
-          }
+              PostalCode: 'M5V 2H1',
+            },
+          },
         },
         ContactInfo: {
           Communications: {
             CommQualifier: 'WP',
-            CommPhone: '416-555-5678'
-          }
-        }
+            CommPhone: '416-555-5678',
+          },
+        },
       };
-      
+
       const result = bmsService.extractPartyInfo(orgParty);
-      
+
       expect(result.type).toBe('organization');
       expect(result.companyName).toBe('Test Company');
       expect(result.phone).toBe('416-555-5678');
@@ -466,13 +474,13 @@ describe('BMSService', () => {
           LineDesc: 'Test Part',
           PartInfo: {
             PartNum: 'TEST-001',
-            PartPrice: '100.00'
-          }
-        }
+            PartPrice: '100.00',
+          },
+        },
       };
-      
+
       const result = bmsService.extractDamageLines(bmsData);
-      
+
       expect(result).toHaveLength(1);
       expect(result[0].lineNum).toBe(1);
       expect(result[0].lineDesc).toBe('Test Part');
@@ -484,18 +492,18 @@ describe('BMSService', () => {
           {
             LineNum: 1,
             LineDesc: 'Part 1',
-            PartInfo: { PartNum: 'P1' }
+            PartInfo: { PartNum: 'P1' },
           },
           {
             LineNum: 2,
             LineDesc: 'Part 2',
-            PartInfo: { PartNum: 'P2' }
-          }
-        ]
+            PartInfo: { PartNum: 'P2' },
+          },
+        ],
       };
-      
+
       const result = bmsService.extractDamageLines(bmsData);
-      
+
       expect(result).toHaveLength(2);
       expect(result[0].lineNum).toBe(1);
       expect(result[1].lineNum).toBe(2);
@@ -503,9 +511,9 @@ describe('BMSService', () => {
 
     it('should handle missing damage lines', () => {
       const bmsData = {};
-      
+
       const result = bmsService.extractDamageLines(bmsData);
-      
+
       expect(result).toHaveLength(0);
     });
   });

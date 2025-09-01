@@ -11,28 +11,30 @@ class TestDataSeeder {
   constructor() {
     this.configPath = path.join(__dirname, '..', 'supabase-config.json');
     this.logFile = path.join(__dirname, '..', 'seeding-log.txt');
-    
+
     if (!fs.existsSync(this.configPath)) {
-      throw new Error('Supabase configuration not found. Please run setup script first.');
+      throw new Error(
+        'Supabase configuration not found. Please run setup script first.'
+      );
     }
-    
+
     const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
     this.client = createClient(config.supabaseUrl, config.serviceRoleKey);
-    
+
     this.seedResults = [];
   }
 
   log(message, type = 'info') {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-    
+
     console.log(logMessage);
     fs.appendFileSync(this.logFile, logMessage + '\n');
   }
 
   async seedAllData() {
     this.log('🌱 Starting comprehensive test data seeding...');
-    
+
     try {
       // Seed in dependency order
       await this.seedShops();
@@ -46,7 +48,7 @@ class TestDataSeeder {
       await this.seedJobLabor();
       await this.seedJobUpdates();
       await this.seedNotifications();
-      
+
       this.log('✅ All test data seeded successfully!', 'success');
       this.generateSeedingReport();
     } catch (error) {
@@ -79,7 +81,7 @@ class TestDataSeeder {
       logo: null,
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     const { error } = await this.client
@@ -105,7 +107,7 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         user_id: '550e8400-e29b-41d4-a716-446655440003',
@@ -118,7 +120,7 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         user_id: '550e8400-e29b-41d4-a716-446655440004',
@@ -131,7 +133,7 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         user_id: '550e8400-e29b-41d4-a716-446655440005',
@@ -144,7 +146,7 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         user_id: '550e8400-e29b-41d4-a716-446655440006',
@@ -157,7 +159,7 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         user_id: '550e8400-e29b-41d4-a716-446655440007',
@@ -170,8 +172,8 @@ class TestDataSeeder {
         is_active: true,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -180,7 +182,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed users: ${error.message}`);
     this.log('✅ Users seeded');
-    this.seedResults.push({ entity: 'users', count: usersData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'users',
+      count: usersData.length,
+      status: 'success',
+    });
   }
 
   async seedCustomers() {
@@ -207,7 +213,7 @@ class TestDataSeeder {
         email_opt_in: true,
         marketing_opt_in: false,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440009',
@@ -230,7 +236,7 @@ class TestDataSeeder {
         email_opt_in: true,
         marketing_opt_in: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440010',
@@ -253,7 +259,7 @@ class TestDataSeeder {
         email_opt_in: true,
         marketing_opt_in: false,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440011',
@@ -276,7 +282,7 @@ class TestDataSeeder {
         email_opt_in: true,
         marketing_opt_in: false,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440012',
@@ -299,8 +305,8 @@ class TestDataSeeder {
         email_opt_in: true,
         marketing_opt_in: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -309,7 +315,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed customers: ${error.message}`);
     this.log('✅ Customers seeded');
-    this.seedResults.push({ entity: 'customers', count: customersData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'customers',
+      count: customersData.length,
+      status: 'success',
+    });
   }
 
   async seedVehicles() {
@@ -334,7 +344,7 @@ class TestDataSeeder {
         vehicle_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440014',
@@ -355,7 +365,7 @@ class TestDataSeeder {
         vehicle_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440015',
@@ -376,7 +386,7 @@ class TestDataSeeder {
         vehicle_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440016',
@@ -397,7 +407,7 @@ class TestDataSeeder {
         vehicle_status: 'active',
         warranty_type: 'none',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440017',
@@ -418,8 +428,8 @@ class TestDataSeeder {
         vehicle_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -428,7 +438,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed vehicles: ${error.message}`);
     this.log('✅ Vehicles seeded');
-    this.seedResults.push({ entity: 'vehicles', count: vehiclesData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'vehicles',
+      count: vehiclesData.length,
+      status: 'success',
+    });
   }
 
   async seedVendors() {
@@ -450,9 +464,9 @@ class TestDataSeeder {
         vendor_type: 'oem',
         vendor_status: 'active',
         payment_terms: 'net_30',
-        credit_limit: 50000.00,
+        credit_limit: 50000.0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440019',
@@ -470,9 +484,9 @@ class TestDataSeeder {
         vendor_type: 'aftermarket',
         vendor_status: 'active',
         payment_terms: 'net_15',
-        credit_limit: 25000.00,
+        credit_limit: 25000.0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440020',
@@ -490,9 +504,9 @@ class TestDataSeeder {
         vendor_type: 'paint_supplier',
         vendor_status: 'active',
         payment_terms: 'net_30',
-        credit_limit: 15000.00,
+        credit_limit: 15000.0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440021',
@@ -510,10 +524,10 @@ class TestDataSeeder {
         vendor_type: 'equipment_supplier',
         vendor_status: 'active',
         payment_terms: 'net_30',
-        credit_limit: 10000.00,
+        credit_limit: 10000.0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -522,7 +536,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed vendors: ${error.message}`);
     this.log('✅ Vendors seeded');
-    this.seedResults.push({ entity: 'vendors', count: vendorsData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'vendors',
+      count: vendorsData.length,
+      status: 'success',
+    });
   }
 
   async seedParts() {
@@ -537,15 +555,15 @@ class TestDataSeeder {
         description: 'OEM front bumper for 2020 Honda Civic',
         category: 'body',
         part_type: 'oem',
-        cost: 450.00,
-        price: 675.00,
-        markup_percentage: 50.00,
+        cost: 450.0,
+        price: 675.0,
+        markup_percentage: 50.0,
         stock_quantity: 2,
         reorder_point: 1,
         part_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440023',
@@ -556,15 +574,15 @@ class TestDataSeeder {
         description: 'OEM headlight assembly for 2020 Honda Civic',
         category: 'electrical',
         part_type: 'oem',
-        cost: 320.00,
-        price: 480.00,
-        markup_percentage: 50.00,
+        cost: 320.0,
+        price: 480.0,
+        markup_percentage: 50.0,
         stock_quantity: 3,
         reorder_point: 1,
         part_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440024',
@@ -575,15 +593,15 @@ class TestDataSeeder {
         description: 'OEM side mirror for 2019 Hyundai Tucson',
         category: 'exterior',
         part_type: 'oem',
-        cost: 280.00,
-        price: 420.00,
-        markup_percentage: 50.00,
+        cost: 280.0,
+        price: 420.0,
+        markup_percentage: 50.0,
         stock_quantity: 1,
         reorder_point: 1,
         part_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440025',
@@ -594,15 +612,15 @@ class TestDataSeeder {
         description: 'Professional paint gun for automotive use',
         category: 'paint',
         part_type: 'aftermarket',
-        cost: 150.00,
-        price: 225.00,
-        markup_percentage: 50.00,
+        cost: 150.0,
+        price: 225.0,
+        markup_percentage: 50.0,
         stock_quantity: 5,
         reorder_point: 2,
         part_status: 'active',
         warranty_type: 'vendor',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440026',
@@ -613,16 +631,16 @@ class TestDataSeeder {
         description: 'Automotive paint - Blue metallic',
         category: 'paint',
         part_type: 'oem',
-        cost: 85.00,
-        price: 127.50,
-        markup_percentage: 50.00,
+        cost: 85.0,
+        price: 127.5,
+        markup_percentage: 50.0,
         stock_quantity: 10,
         reorder_point: 3,
         part_status: 'active',
         warranty_type: 'manufacturer',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -631,7 +649,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed parts: ${error.message}`);
     this.log('✅ Parts seeded');
-    this.seedResults.push({ entity: 'parts', count: partsData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'parts',
+      count: partsData.length,
+      status: 'success',
+    });
   }
 
   async seedJobs() {
@@ -647,13 +669,17 @@ class TestDataSeeder {
         status: 'estimate',
         priority: 'normal',
         job_type: 'collision',
-        damage_description: 'Front end collision damage. Bumper, hood, and headlight damaged.',
-        notes: 'Customer reported accident on Highway 401. Insurance claim pending.',
+        damage_description:
+          'Front end collision damage. Bumper, hood, and headlight damaged.',
+        notes:
+          'Customer reported accident on Highway 401. Insurance claim pending.',
         estimated_hours: 12.5,
-        target_delivery_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        target_delivery_date: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         created_by: '550e8400-e29b-41d4-a716-446655440003',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440028',
@@ -665,15 +691,20 @@ class TestDataSeeder {
         status: 'body_structure',
         priority: 'high',
         job_type: 'collision',
-        damage_description: 'Side impact damage. Driver door, quarter panel, and wheel damaged.',
+        damage_description:
+          'Side impact damage. Driver door, quarter panel, and wheel damaged.',
         notes: 'Rush job for business customer. Parts ordered and received.',
         estimated_hours: 18.0,
         actual_hours: 8.5,
-        start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        target_delivery_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+        start_date: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        target_delivery_date: new Date(
+          Date.now() + 4 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         created_by: '550e8400-e29b-41d4-a716-446655440004',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440029',
@@ -685,15 +716,20 @@ class TestDataSeeder {
         status: 'quality_control',
         priority: 'normal',
         job_type: 'collision',
-        damage_description: 'Rear end collision. Bumper, trunk lid, and taillights damaged.',
+        damage_description:
+          'Rear end collision. Bumper, trunk lid, and taillights damaged.',
         notes: 'Fleet vehicle. Quality check in progress.',
         estimated_hours: 15.0,
         actual_hours: 14.5,
-        start_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        target_delivery_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        start_date: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        target_delivery_date: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         created_by: '550e8400-e29b-41d4-a716-446655440004',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440030',
@@ -705,16 +741,23 @@ class TestDataSeeder {
         status: 'ready_pickup',
         priority: 'normal',
         job_type: 'collision',
-        damage_description: 'Minor front end damage. Bumper and grille replacement.',
+        damage_description:
+          'Minor front end damage. Bumper and grille replacement.',
         notes: 'Insurance claim approved. Job completed successfully.',
         estimated_hours: 8.0,
         actual_hours: 7.5,
-        start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        completion_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        target_delivery_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+        start_date: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completion_date: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        target_delivery_date: new Date(
+          Date.now() + 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         created_by: '550e8400-e29b-41d4-a716-446655440005',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440031',
@@ -726,15 +769,18 @@ class TestDataSeeder {
         status: 'intake',
         priority: 'rush',
         job_type: 'collision',
-        damage_description: 'Scratch on passenger door. Minor paint repair needed.',
+        damage_description:
+          'Scratch on passenger door. Minor paint repair needed.',
         notes: 'VIP customer. Express service requested.',
         estimated_hours: 3.0,
-        target_delivery_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        target_delivery_date: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         is_vip: true,
         created_by: '550e8400-e29b-41d4-a716-446655440004',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -743,7 +789,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed jobs: ${error.message}`);
     this.log('✅ Jobs seeded');
-    this.seedResults.push({ entity: 'jobs', count: jobsData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'jobs',
+      count: jobsData.length,
+      status: 'success',
+    });
   }
 
   async seedJobParts() {
@@ -754,27 +804,27 @@ class TestDataSeeder {
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         part_id: '550e8400-e29b-41d4-a716-446655440022',
         quantity: 1,
-        cost: 450.00,
-        price: 675.00,
-        markup_percentage: 50.00,
+        cost: 450.0,
+        price: 675.0,
+        markup_percentage: 50.0,
         status: 'ordered',
         notes: 'Front bumper for Honda Civic',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440033',
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         part_id: '550e8400-e29b-41d4-a716-446655440023',
         quantity: 1,
-        cost: 320.00,
-        price: 480.00,
-        markup_percentage: 50.00,
+        cost: 320.0,
+        price: 480.0,
+        markup_percentage: 50.0,
         status: 'ordered',
         notes: 'Headlight assembly',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -783,7 +833,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed job parts: ${error.message}`);
     this.log('✅ Job parts seeded');
-    this.seedResults.push({ entity: 'job_parts', count: jobPartsData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'job_parts',
+      count: jobPartsData.length,
+      status: 'success',
+    });
   }
 
   async seedJobLabor() {
@@ -794,45 +848,45 @@ class TestDataSeeder {
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         operation: 'Remove and replace front bumper',
         hours: 2.5,
-        rate: 85.00,
-        amount: 212.50,
+        rate: 85.0,
+        amount: 212.5,
         notes: 'Standard bumper replacement',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440035',
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         operation: 'Remove and replace headlight assembly',
         hours: 1.0,
-        rate: 85.00,
-        amount: 85.00,
+        rate: 85.0,
+        amount: 85.0,
         notes: 'Headlight replacement',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440036',
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         operation: 'Paint preparation and painting',
         hours: 6.0,
-        rate: 85.00,
-        amount: 510.00,
+        rate: 85.0,
+        amount: 510.0,
         notes: 'Paint and blend work',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440037',
         job_id: '550e8400-e29b-41d4-a716-446655440027',
         operation: 'Quality control and testing',
         hours: 1.0,
-        rate: 85.00,
-        amount: 85.00,
+        rate: 85.0,
+        amount: 85.0,
         notes: 'Final inspection and testing',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -841,7 +895,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed job labor: ${error.message}`);
     this.log('✅ Job labor seeded');
-    this.seedResults.push({ entity: 'job_labor', count: jobLaborData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'job_labor',
+      count: jobLaborData.length,
+      status: 'success',
+    });
   }
 
   async seedJobUpdates() {
@@ -855,7 +913,7 @@ class TestDataSeeder {
         old_value: 'intake',
         new_value: 'estimate',
         message: 'Job moved to estimate stage',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440039',
@@ -865,8 +923,8 @@ class TestDataSeeder {
         old_value: '0%',
         new_value: '45%',
         message: 'Body structure work 45% complete',
-        created_at: new Date().toISOString()
-      }
+        created_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
@@ -875,7 +933,11 @@ class TestDataSeeder {
 
     if (error) throw new Error(`Failed to seed job updates: ${error.message}`);
     this.log('✅ Job updates seeded');
-    this.seedResults.push({ entity: 'job_updates', count: jobUpdatesData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'job_updates',
+      count: jobUpdatesData.length,
+      status: 'success',
+    });
   }
 
   async seedNotifications() {
@@ -890,7 +952,7 @@ class TestDataSeeder {
         message: 'You have been assigned to JOB001 - Honda Civic repair',
         is_read: false,
         metadata: { job_id: '550e8400-e29b-41d4-a716-446655440027' },
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440041',
@@ -901,26 +963,34 @@ class TestDataSeeder {
         message: 'Honda Civic Front Bumper stock is below reorder point',
         is_read: false,
         metadata: { part_id: '550e8400-e29b-41d4-a716-446655440022' },
-        created_at: new Date().toISOString()
-      }
+        created_at: new Date().toISOString(),
+      },
     ];
 
     const { error } = await this.client
       .from('notifications')
       .upsert(notificationsData, { onConflict: 'id' });
 
-    if (error) throw new Error(`Failed to seed notifications: ${error.message}`);
+    if (error)
+      throw new Error(`Failed to seed notifications: ${error.message}`);
     this.log('✅ Notifications seeded');
-    this.seedResults.push({ entity: 'notifications', count: notificationsData.length, status: 'success' });
+    this.seedResults.push({
+      entity: 'notifications',
+      count: notificationsData.length,
+      status: 'success',
+    });
   }
 
   generateSeedingReport() {
     this.log('📊 Generating seeding report...');
-    
+
     const report = {
       timestamp: new Date().toISOString(),
       total_entities: this.seedResults.length,
-      total_records: this.seedResults.reduce((sum, result) => sum + result.count, 0),
+      total_records: this.seedResults.reduce(
+        (sum, result) => sum + result.count,
+        0
+      ),
       results: this.seedResults,
       summary: {
         shops: 1,
@@ -933,13 +1003,13 @@ class TestDataSeeder {
         job_parts: 2,
         job_labor: 4,
         job_updates: 2,
-        notifications: 2
-      }
+        notifications: 2,
+      },
     };
 
     const reportPath = path.join(__dirname, '..', 'seeding-report.json');
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    
+
     this.log('📋 Seeding report generated:', 'info');
     this.log(`   Total entities: ${report.total_entities}`, 'info');
     this.log(`   Total records: ${report.total_records}`, 'info');
@@ -950,13 +1020,16 @@ class TestDataSeeder {
 // Run the seeder if this file is executed directly
 if (require.main === module) {
   const seeder = new TestDataSeeder();
-  seeder.seedAllData()
+  seeder
+    .seedAllData()
     .then(() => {
       console.log('\n🎉 Test data seeding completed successfully!');
-      console.log('You can now run the validation tests with: npm run validate');
+      console.log(
+        'You can now run the validation tests with: npm run validate'
+      );
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Seeding failed:', error.message);
       process.exit(1);
     });

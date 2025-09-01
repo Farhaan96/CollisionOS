@@ -3,7 +3,10 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
 import Login from '../../../../src/pages/Auth/Login';
-import { renderWithProviders, createMockUser } from '../../../../src/utils/testUtils';
+import {
+  renderWithProviders,
+  createMockUser,
+} from '../../../../src/utils/testUtils';
 
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
@@ -21,7 +24,7 @@ jest.mock('../../../../src/contexts/AuthContext', () => ({
     login: mockLogin,
     logout: jest.fn(),
     setIsLoading: jest.fn(),
-  })
+  }),
 }));
 
 describe('Login Component', () => {
@@ -50,10 +53,14 @@ describe('Login Component', () => {
       renderWithProviders(<Login />);
 
       expect(screen.getByText('CollisionOS')).toBeInTheDocument();
-      expect(screen.getByText('Executive-Grade Business Management Suite')).toBeInTheDocument();
+      expect(
+        screen.getByText('Executive-Grade Business Management Suite')
+      ).toBeInTheDocument();
       expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /sign in/i })
+      ).toBeInTheDocument();
     });
 
     test('renders premium demo accounts section', () => {
@@ -80,10 +87,13 @@ describe('Login Component', () => {
       renderWithProviders(<Login />);
 
       const usernameField = screen.getByLabelText(/username/i);
-      
-      await waitFor(() => {
-        expect(usernameField).toHaveFocus();
-      }, { timeout: 200 });
+
+      await waitFor(
+        () => {
+          expect(usernameField).toHaveFocus();
+        },
+        { timeout: 200 }
+      );
     });
 
     test('adds and removes login-page class from body', () => {
@@ -120,7 +130,9 @@ describe('Login Component', () => {
       renderWithProviders(<Login />);
 
       const passwordField = screen.getByLabelText(/password/i);
-      const toggleButton = screen.getByRole('button', { name: /toggle password visibility/i });
+      const toggleButton = screen.getByRole('button', {
+        name: /toggle password visibility/i,
+      });
 
       // Initially password type
       expect(passwordField).toHaveAttribute('type', 'password');
@@ -178,7 +190,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter both username and password')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter both username and password')
+        ).toBeInTheDocument();
       });
 
       expect(mockLogin).not.toHaveBeenCalled();
@@ -194,7 +208,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter both username and password')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter both username and password')
+        ).toBeInTheDocument();
       });
 
       expect(mockLogin).not.toHaveBeenCalled();
@@ -207,7 +223,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter both username and password')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter both username and password')
+        ).toBeInTheDocument();
       });
 
       expect(mockLogin).not.toHaveBeenCalled();
@@ -227,17 +245,20 @@ describe('Login Component', () => {
       await user.type(passwordField, 'admin123');
       await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith(
-          {
-            username: 'admin',
-            role: 'owner',
-            firstName: 'Admin',
-            avatar: 'A'
-          },
-          'dev-token'
-        );
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockLogin).toHaveBeenCalledWith(
+            {
+              username: 'admin',
+              role: 'owner',
+              firstName: 'Admin',
+              avatar: 'A',
+            },
+            'dev-token'
+          );
+        },
+        { timeout: 3000 }
+      );
 
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
@@ -254,17 +275,20 @@ describe('Login Component', () => {
       await user.type(passwordField, 'manager123');
       await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith(
-          {
-            username: 'manager',
-            role: 'manager',
-            firstName: 'Manager',
-            avatar: 'M'
-          },
-          'dev-token'
-        );
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockLogin).toHaveBeenCalledWith(
+            {
+              username: 'manager',
+              role: 'manager',
+              firstName: 'Manager',
+              avatar: 'M',
+            },
+            'dev-token'
+          );
+        },
+        { timeout: 3000 }
+      );
 
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
@@ -281,17 +305,20 @@ describe('Login Component', () => {
       await user.type(passwordField, 'estimator123');
       await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith(
-          {
-            username: 'estimator',
-            role: 'estimator',
-            firstName: 'Estimator',
-            avatar: 'E'
-          },
-          'dev-token'
-        );
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockLogin).toHaveBeenCalledWith(
+            {
+              username: 'estimator',
+              role: 'estimator',
+              firstName: 'Estimator',
+              avatar: 'E',
+            },
+            'dev-token'
+          );
+        },
+        { timeout: 3000 }
+      );
 
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
@@ -337,7 +364,9 @@ describe('Login Component', () => {
 
   describe('Loading State', () => {
     test('shows loading state during authentication', async () => {
-      mockLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      mockLogin.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 1000))
+      );
       renderWithProviders(<Login />);
 
       const usernameField = screen.getByLabelText(/username/i);
@@ -355,7 +384,9 @@ describe('Login Component', () => {
     });
 
     test('disables form during loading', async () => {
-      mockLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      mockLogin.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 1000))
+      );
       renderWithProviders(<Login />);
 
       const usernameField = screen.getByLabelText(/username/i);
@@ -430,7 +461,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter both username and password')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter both username and password')
+        ).toBeInTheDocument();
       });
 
       // Then, fill the form and submit again (should clear error)
@@ -439,7 +472,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.queryByText('Please enter both username and password')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Please enter both username and password')
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -456,7 +491,9 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Login failed. Please check your credentials.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Login failed. Please check your credentials.')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -472,8 +509,12 @@ describe('Login Component', () => {
     test('has proper button roles', () => {
       renderWithProviders(<Login />);
 
-      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /toggle password visibility/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /sign in/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /toggle password visibility/i })
+      ).toBeInTheDocument();
     });
 
     test('error messages are announced to screen readers', async () => {
@@ -485,7 +526,9 @@ describe('Login Component', () => {
       await waitFor(() => {
         const errorAlert = screen.getByRole('alert');
         expect(errorAlert).toBeInTheDocument();
-        expect(errorAlert).toHaveTextContent('Please enter both username and password');
+        expect(errorAlert).toHaveTextContent(
+          'Please enter both username and password'
+        );
       });
     });
   });

@@ -25,19 +25,51 @@ const LABOR_OPERATIONS = {
   LUNCH_START: 'lunch_start',
   LUNCH_END: 'lunch_end',
   OVERTIME_START: 'overtime_start',
-  OVERTIME_END: 'overtime_end'
+  OVERTIME_END: 'overtime_end',
 };
 
 // Skill categories for technician assignment
 const TECHNICIAN_SKILLS = {
-  'structural': { name: 'Structural Repair', rate: 1.2, certification: 'I-CAR Structural' },
-  'paint': { name: 'Paint & Refinishing', rate: 1.1, certification: 'Paint Manufacturer Certified' },
-  'electrical': { name: 'Electrical Systems', rate: 1.3, certification: 'Electrical Systems Certified' },
-  'adas': { name: 'ADAS Calibration', rate: 1.5, certification: 'ADAS Calibration Certified' },
-  'aluminum': { name: 'Aluminum Repair', rate: 1.4, certification: 'Aluminum Specialist' },
-  'frame': { name: 'Frame Straightening', rate: 1.2, certification: 'Frame Specialist' },
-  'mechanical': { name: 'Mechanical Repair', rate: 1.0, certification: 'ASE Certified' },
-  'detail': { name: 'Detail & Finishing', rate: 0.9, certification: 'Detail Specialist' }
+  structural: {
+    name: 'Structural Repair',
+    rate: 1.2,
+    certification: 'I-CAR Structural',
+  },
+  paint: {
+    name: 'Paint & Refinishing',
+    rate: 1.1,
+    certification: 'Paint Manufacturer Certified',
+  },
+  electrical: {
+    name: 'Electrical Systems',
+    rate: 1.3,
+    certification: 'Electrical Systems Certified',
+  },
+  adas: {
+    name: 'ADAS Calibration',
+    rate: 1.5,
+    certification: 'ADAS Calibration Certified',
+  },
+  aluminum: {
+    name: 'Aluminum Repair',
+    rate: 1.4,
+    certification: 'Aluminum Specialist',
+  },
+  frame: {
+    name: 'Frame Straightening',
+    rate: 1.2,
+    certification: 'Frame Specialist',
+  },
+  mechanical: {
+    name: 'Mechanical Repair',
+    rate: 1.0,
+    certification: 'ASE Certified',
+  },
+  detail: {
+    name: 'Detail & Finishing',
+    rate: 0.9,
+    certification: 'Detail Specialist',
+  },
 };
 
 // POST /api/labor/clock-operation - Time clock functionality
@@ -48,24 +80,37 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
     const shopId = req.user?.shopId || 1;
 
     if (!operation || !Object.values(LABOR_OPERATIONS).includes(operation)) {
-      return res.status(400).json({ error: 'Valid operation type is required' });
+      return res
+        .status(400)
+        .json({ error: 'Valid operation type is required' });
     }
 
     if (!technicianId) {
-      return res.status(401).json({ error: 'Technician authentication required' });
+      return res
+        .status(401)
+        .json({ error: 'Technician authentication required' });
     }
 
     const timestamp = new Date();
-    
+
     // Get technician details
     const technician = await User.findByPk(technicianId);
     if (!technician || technician.role !== 'technician') {
-      return res.status(403).json({ error: 'Access restricted to technicians' });
+      return res
+        .status(403)
+        .json({ error: 'Access restricted to technicians' });
     }
 
     // Validate job-specific operations
-    if ([LABOR_OPERATIONS.START_JOB, LABOR_OPERATIONS.STOP_JOB].includes(operation) && !jobId) {
-      return res.status(400).json({ error: 'Job ID required for job-specific operations' });
+    if (
+      [LABOR_OPERATIONS.START_JOB, LABOR_OPERATIONS.STOP_JOB].includes(
+        operation
+      ) &&
+      !jobId
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'Job ID required for job-specific operations' });
     }
 
     // Get current time entry state for technician
@@ -73,9 +118,9 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
       where: {
         technicianId,
         shopId,
-        endTime: null // Active entry
+        endTime: null, // Active entry
       },
-      order: [['startTime', 'DESC']]
+      order: [['startTime', 'DESC']],
     });
 
     let laborEntry;
@@ -83,7 +128,10 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
 
     switch (operation) {
       case LABOR_OPERATIONS.CLOCK_IN:
-        if (currentEntry && currentEntry.operation === LABOR_OPERATIONS.CLOCK_IN) {
+        if (
+          currentEntry &&
+          currentEntry.operation === LABOR_OPERATIONS.CLOCK_IN
+        ) {
           validationError = 'Already clocked in';
           break;
         }
@@ -94,12 +142,15 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
           operation,
           startTime: timestamp,
           notes,
-          hourlyRate: technician.hourlyRate || 25.00
+          hourlyRate: technician.hourlyRate || 25.0,
         });
         break;
 
       case LABOR_OPERATIONS.CLOCK_OUT:
-        if (!currentEntry || currentEntry.operation !== LABOR_OPERATIONS.CLOCK_IN) {
+        if (
+          !currentEntry ||
+          currentEntry.operation !== LABOR_OPERATIONS.CLOCK_IN
+        ) {
           validationError = 'Must clock in first';
           break;
         }
@@ -109,19 +160,22 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
         await currentEntry.update({
           endTime: timestamp,
           duration: calculateDuration(currentEntry.startTime, timestamp),
-          notes: notes || currentEntry.notes
+          notes: notes || currentEntry.notes,
         });
         laborEntry = currentEntry;
         break;
 
       case LABOR_OPERATIONS.START_JOB:
-        if (!currentEntry || currentEntry.operation !== LABOR_OPERATIONS.CLOCK_IN) {
+        if (
+          !currentEntry ||
+          currentEntry.operation !== LABOR_OPERATIONS.CLOCK_IN
+        ) {
           validationError = 'Must clock in before starting job work';
           break;
         }
         // End any other active job work
         await endActiveJobWork(technicianId, timestamp, jobId);
-        
+
         const job = await Job.findByPk(jobId);
         if (!job) {
           validationError = 'Job not found';
@@ -135,9 +189,9 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
           operation,
           startTime: timestamp,
           notes,
-          hourlyRate: technician.hourlyRate || 25.00,
+          hourlyRate: technician.hourlyRate || 25.0,
           skillCategory: determineSkillCategory(job.status),
-          skillMultiplier: getSkillMultiplier(technician.skills, job.status)
+          skillMultiplier: getSkillMultiplier(technician.skills, job.status),
         });
         break;
 
@@ -148,10 +202,10 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
             shopId,
             jobId,
             operation: LABOR_OPERATIONS.START_JOB,
-            endTime: null
-          }
+            endTime: null,
+          },
         });
-        
+
         if (!activeJobEntry) {
           validationError = 'No active job work to stop';
           break;
@@ -162,7 +216,11 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
           endTime: timestamp,
           duration,
           notes: notes || activeJobEntry.notes,
-          laborCost: calculateLaborCost(duration, activeJobEntry.hourlyRate, activeJobEntry.skillMultiplier)
+          laborCost: calculateLaborCost(
+            duration,
+            activeJobEntry.hourlyRate,
+            activeJobEntry.skillMultiplier
+          ),
         });
         laborEntry = activeJobEntry;
         break;
@@ -176,25 +234,26 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
           operation,
           startTime: timestamp,
           notes,
-          hourlyRate: 0 // Breaks are unpaid
+          hourlyRate: 0, // Breaks are unpaid
         });
         break;
 
       case LABOR_OPERATIONS.BREAK_END:
       case LABOR_OPERATIONS.LUNCH_END:
-        const breakOperation = operation === LABOR_OPERATIONS.BREAK_END 
-          ? LABOR_OPERATIONS.BREAK_START 
-          : LABOR_OPERATIONS.LUNCH_START;
-        
+        const breakOperation =
+          operation === LABOR_OPERATIONS.BREAK_END
+            ? LABOR_OPERATIONS.BREAK_START
+            : LABOR_OPERATIONS.LUNCH_START;
+
         const activeBreak = await LaborTimeEntry.findOne({
           where: {
             technicianId,
             shopId,
             operation: breakOperation,
-            endTime: null
-          }
+            endTime: null,
+          },
         });
-        
+
         if (!activeBreak) {
           validationError = 'No active break to end';
           break;
@@ -202,7 +261,7 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
 
         await activeBreak.update({
           endTime: timestamp,
-          duration: calculateDuration(activeBreak.startTime, timestamp)
+          duration: calculateDuration(activeBreak.startTime, timestamp),
         });
         laborEntry = activeBreak;
         break;
@@ -221,7 +280,7 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
       operation,
       jobId,
       timestamp,
-      entryId: laborEntry.id
+      entryId: laborEntry.id,
     });
 
     // Real-time broadcast
@@ -231,7 +290,7 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
       technicianName: technician.name,
       jobId,
       timestamp,
-      entry: laborEntry
+      entry: laborEntry,
     });
 
     // Calculate current shift summary
@@ -242,9 +301,11 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
       operation,
       entry: laborEntry,
       shiftSummary,
-      recommendations: generateTimeTrackingRecommendations(shiftSummary, operation)
+      recommendations: generateTimeTrackingRecommendations(
+        shiftSummary,
+        operation
+      ),
     });
-
   } catch (error) {
     console.error('Error processing labor operation:', error);
     res.status(500).json({ error: 'Failed to process labor operation' });
@@ -255,7 +316,7 @@ router.post('/clock-operation', laborTrackingLimit, async (req, res) => {
 router.get('/active-sessions', async (req, res) => {
   try {
     const shopId = req.user?.shopId || 1;
-    
+
     const activeSessions = await LaborTimeEntry.findAll({
       where: {
         shopId,
@@ -265,29 +326,29 @@ router.get('/active-sessions', async (req, res) => {
             LABOR_OPERATIONS.CLOCK_IN,
             LABOR_OPERATIONS.START_JOB,
             LABOR_OPERATIONS.BREAK_START,
-            LABOR_OPERATIONS.LUNCH_START
-          ]
-        }
+            LABOR_OPERATIONS.LUNCH_START,
+          ],
+        },
       },
       include: [
-        { 
-          model: User, 
+        {
+          model: User,
           as: 'technician',
-          attributes: ['id', 'name', 'email', 'hourlyRate', 'skills']
+          attributes: ['id', 'name', 'email', 'hourlyRate', 'skills'],
         },
-        { 
-          model: Job, 
+        {
+          model: Job,
           as: 'job',
           attributes: ['id', 'jobNumber', 'status', 'priority'],
-          required: false
-        }
+          required: false,
+        },
       ],
-      order: [['startTime', 'DESC']]
+      order: [['startTime', 'DESC']],
     });
 
     // Group by technician
     const sessionsByTechnician = {};
-    
+
     activeSessions.forEach(session => {
       const techId = session.technicianId;
       if (!sessionsByTechnician[techId]) {
@@ -297,12 +358,12 @@ router.get('/active-sessions', async (req, res) => {
           status: 'offline',
           currentJob: null,
           shiftStart: null,
-          totalHours: 0
+          totalHours: 0,
         };
       }
-      
+
       sessionsByTechnician[techId].sessions.push(session);
-      
+
       // Determine status
       if (session.operation === LABOR_OPERATIONS.CLOCK_IN) {
         sessionsByTechnician[techId].status = 'clocked_in';
@@ -310,8 +371,15 @@ router.get('/active-sessions', async (req, res) => {
       } else if (session.operation === LABOR_OPERATIONS.START_JOB) {
         sessionsByTechnician[techId].status = 'working';
         sessionsByTechnician[techId].currentJob = session.job;
-      } else if ([LABOR_OPERATIONS.BREAK_START, LABOR_OPERATIONS.LUNCH_START].includes(session.operation)) {
-        sessionsByTechnician[techId].status = session.operation === LABOR_OPERATIONS.BREAK_START ? 'on_break' : 'on_lunch';
+      } else if (
+        [LABOR_OPERATIONS.BREAK_START, LABOR_OPERATIONS.LUNCH_START].includes(
+          session.operation
+        )
+      ) {
+        sessionsByTechnician[techId].status =
+          session.operation === LABOR_OPERATIONS.BREAK_START
+            ? 'on_break'
+            : 'on_lunch';
       }
     });
 
@@ -327,12 +395,17 @@ router.get('/active-sessions', async (req, res) => {
       activeSessions: Object.values(sessionsByTechnician),
       summary: {
         totalTechnicians: Object.keys(sessionsByTechnician).length,
-        clockedIn: Object.values(sessionsByTechnician).filter(t => ['clocked_in', 'working', 'on_break', 'on_lunch'].includes(t.status)).length,
-        activelyWorking: Object.values(sessionsByTechnician).filter(t => t.status === 'working').length,
-        onBreak: Object.values(sessionsByTechnician).filter(t => ['on_break', 'on_lunch'].includes(t.status)).length
-      }
+        clockedIn: Object.values(sessionsByTechnician).filter(t =>
+          ['clocked_in', 'working', 'on_break', 'on_lunch'].includes(t.status)
+        ).length,
+        activelyWorking: Object.values(sessionsByTechnician).filter(
+          t => t.status === 'working'
+        ).length,
+        onBreak: Object.values(sessionsByTechnician).filter(t =>
+          ['on_break', 'on_lunch'].includes(t.status)
+        ).length,
+      },
     });
-
   } catch (error) {
     console.error('Error fetching active sessions:', error);
     res.status(500).json({ error: 'Failed to fetch active sessions' });
@@ -346,7 +419,9 @@ router.get('/productivity/:technicianId', async (req, res) => {
     const { startDate, endDate } = req.query;
     const shopId = req.user?.shopId || 1;
 
-    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
     const end = endDate ? new Date(endDate) : new Date();
 
     // Get all labor entries for period
@@ -355,18 +430,18 @@ router.get('/productivity/:technicianId', async (req, res) => {
         technicianId,
         shopId,
         startTime: {
-          [require('sequelize').Op.between]: [start, end]
-        }
+          [require('sequelize').Op.between]: [start, end],
+        },
       },
       include: [
-        { 
-          model: Job, 
+        {
+          model: Job,
           as: 'job',
           attributes: ['id', 'jobNumber', 'status', 'estimatedHours'],
-          required: false
-        }
+          required: false,
+        },
       ],
-      order: [['startTime', 'ASC']]
+      order: [['startTime', 'ASC']],
     });
 
     // Calculate metrics
@@ -380,7 +455,7 @@ router.get('/productivity/:technicianId', async (req, res) => {
       averageHourlyRate: 0,
       totalEarnings: 0,
       efficiency: 0,
-      utilization: 0
+      utilization: 0,
     };
 
     let totalRate = 0;
@@ -389,7 +464,7 @@ router.get('/productivity/:technicianId', async (req, res) => {
     laborEntries.forEach(entry => {
       if (entry.duration) {
         const hours = entry.duration / 60; // Convert minutes to hours
-        
+
         switch (entry.operation) {
           case LABOR_OPERATIONS.START_JOB:
             metrics.billableHours += hours;
@@ -415,8 +490,15 @@ router.get('/productivity/:technicianId', async (req, res) => {
 
     metrics.jobsWorked = metrics.jobsWorked.size;
     metrics.averageHourlyRate = rateCount > 0 ? totalRate / rateCount : 0;
-    metrics.utilization = metrics.totalHours > 0 ? (metrics.productiveHours / metrics.totalHours) * 100 : 0;
-    metrics.efficiency = await calculateDetailedEfficiency(technicianId, start, end);
+    metrics.utilization =
+      metrics.totalHours > 0
+        ? (metrics.productiveHours / metrics.totalHours) * 100
+        : 0;
+    metrics.efficiency = await calculateDetailedEfficiency(
+      technicianId,
+      start,
+      end
+    );
 
     // Daily breakdown
     const dailyBreakdown = {};
@@ -428,7 +510,7 @@ router.get('/productivity/:technicianId', async (req, res) => {
           totalHours: 0,
           billableHours: 0,
           jobs: new Set(),
-          earnings: 0
+          earnings: 0,
         };
       }
 
@@ -450,7 +532,7 @@ router.get('/productivity/:technicianId', async (req, res) => {
     const industryBenchmark = {
       utilization: 75,
       efficiency: 85,
-      hoursPerDay: 7.5
+      hoursPerDay: 7.5,
     };
 
     res.json({
@@ -463,12 +545,16 @@ router.get('/productivity/:technicianId', async (req, res) => {
         industryBenchmark,
         performance: {
           utilizationVsShop: metrics.utilization - shopAverage.utilization,
-          efficiencyVsIndustry: metrics.efficiency - industryBenchmark.efficiency
-        }
+          efficiencyVsIndustry:
+            metrics.efficiency - industryBenchmark.efficiency,
+        },
       },
-      recommendations: generateProductivityRecommendations(metrics, shopAverage, industryBenchmark)
+      recommendations: generateProductivityRecommendations(
+        metrics,
+        shopAverage,
+        industryBenchmark
+      ),
     });
-
   } catch (error) {
     console.error('Error fetching productivity data:', error);
     res.status(500).json({ error: 'Failed to fetch productivity data' });
@@ -478,18 +564,20 @@ router.get('/productivity/:technicianId', async (req, res) => {
 // POST /api/labor/work-order - Create digital work order
 router.post('/work-order', async (req, res) => {
   try {
-    const { 
-      jobId, 
-      operations, 
-      estimatedHours, 
+    const {
+      jobId,
+      operations,
+      estimatedHours,
       priority = 'normal',
       specialInstructions = null,
       requiredSkills = [],
-      assignedTechnicianId = null
+      assignedTechnicianId = null,
     } = req.body;
 
     if (!jobId || !operations || !Array.isArray(operations)) {
-      return res.status(400).json({ error: 'Job ID and operations array are required' });
+      return res
+        .status(400)
+        .json({ error: 'Job ID and operations array are required' });
     }
 
     const job = await Job.findByPk(jobId);
@@ -507,7 +595,7 @@ router.post('/work-order', async (req, res) => {
         status: 'pending',
         estimatedTime: op.estimatedTime || 1.0,
         actualTime: null,
-        technicianId: null
+        technicianId: null,
       })),
       estimatedTotalHours: estimatedHours,
       priority,
@@ -515,7 +603,7 @@ router.post('/work-order', async (req, res) => {
       requiredSkills,
       assignedTechnicianId,
       status: 'created',
-      createdBy: req.user?.id
+      createdBy: req.user?.id,
     });
 
     // Auto-assign technician if specified
@@ -523,7 +611,10 @@ router.post('/work-order', async (req, res) => {
       await assignWorkOrderToTechnician(workOrder.id, assignedTechnicianId);
     } else if (requiredSkills.length > 0) {
       // Auto-suggest technicians based on skills
-      const suggestedTechnicians = await findTechniciansBySkills(requiredSkills, req.user?.shopId);
+      const suggestedTechnicians = await findTechniciansBySkills(
+        requiredSkills,
+        req.user?.shopId
+      );
       workOrder.suggestedTechnicians = suggestedTechnicians;
     }
 
@@ -533,7 +624,7 @@ router.post('/work-order', async (req, res) => {
       jobId,
       operationCount: operations.length,
       estimatedHours,
-      createdBy: req.user?.id
+      createdBy: req.user?.id,
     });
 
     // Real-time broadcast
@@ -542,16 +633,15 @@ router.post('/work-order', async (req, res) => {
       job: {
         id: job.id,
         jobNumber: job.jobNumber,
-        customer: job.customer?.name
-      }
+        customer: job.customer?.name,
+      },
     });
 
     res.status(201).json({
       success: true,
       workOrder,
-      recommendations: generateWorkOrderRecommendations(workOrder, job)
+      recommendations: generateWorkOrderRecommendations(workOrder, job),
     });
-
   } catch (error) {
     console.error('Error creating work order:', error);
     res.status(500).json({ error: 'Failed to create work order' });
@@ -565,8 +655,10 @@ async function endActiveJobWork(technicianId, endTime, excludeJobId = null) {
       technicianId,
       operation: LABOR_OPERATIONS.START_JOB,
       endTime: null,
-      ...(excludeJobId && { jobId: { [require('sequelize').Op.ne]: excludeJobId } })
-    }
+      ...(excludeJobId && {
+        jobId: { [require('sequelize').Op.ne]: excludeJobId },
+      }),
+    },
   });
 
   for (const entry of activeJobEntries) {
@@ -574,7 +666,11 @@ async function endActiveJobWork(technicianId, endTime, excludeJobId = null) {
     await entry.update({
       endTime,
       duration,
-      laborCost: calculateLaborCost(duration, entry.hourlyRate, entry.skillMultiplier || 1.0)
+      laborCost: calculateLaborCost(
+        duration,
+        entry.hourlyRate,
+        entry.skillMultiplier || 1.0
+      ),
     });
   }
 }
@@ -583,19 +679,23 @@ function calculateDuration(startTime, endTime) {
   return Math.round((new Date(endTime) - new Date(startTime)) / (1000 * 60)); // minutes
 }
 
-function calculateLaborCost(durationMinutes, hourlyRate, skillMultiplier = 1.0) {
+function calculateLaborCost(
+  durationMinutes,
+  hourlyRate,
+  skillMultiplier = 1.0
+) {
   const hours = durationMinutes / 60;
-  return Math.round((hours * hourlyRate * skillMultiplier) * 100) / 100;
+  return Math.round(hours * hourlyRate * skillMultiplier * 100) / 100;
 }
 
 function determineSkillCategory(jobStatus) {
   const stageSkillMapping = {
-    'body_structure': 'structural',
-    'paint_prep': 'paint',
-    'paint_booth': 'paint',
-    'electrical': 'electrical',
-    'qc_calibration': 'adas',
-    'mechanical': 'mechanical'
+    body_structure: 'structural',
+    paint_prep: 'paint',
+    paint_booth: 'paint',
+    electrical: 'electrical',
+    qc_calibration: 'adas',
+    mechanical: 'mechanical',
   };
   return stageSkillMapping[jobStatus] || 'general';
 }
@@ -603,7 +703,7 @@ function determineSkillCategory(jobStatus) {
 function getSkillMultiplier(technicianSkills, jobStatus) {
   const requiredSkill = determineSkillCategory(jobStatus);
   const skillData = TECHNICIAN_SKILLS[requiredSkill];
-  
+
   if (technicianSkills && technicianSkills.includes(requiredSkill)) {
     return skillData?.rate || 1.0;
   }
@@ -613,15 +713,15 @@ function getSkillMultiplier(technicianSkills, jobStatus) {
 async function calculateShiftSummary(technicianId, shopId) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const entries = await LaborTimeEntry.findAll({
     where: {
       technicianId,
       shopId,
       startTime: {
-        [require('sequelize').Op.gte]: today
-      }
-    }
+        [require('sequelize').Op.gte]: today,
+      },
+    },
   });
 
   const summary = {
@@ -630,30 +730,35 @@ async function calculateShiftSummary(technicianId, shopId) {
     billableHours: 0,
     breakTime: 0,
     jobsWorked: new Set(),
-    earnings: 0
+    earnings: 0,
   };
 
   entries.forEach(entry => {
     if (entry.operation === LABOR_OPERATIONS.CLOCK_IN) {
       summary.clockInTime = entry.startTime;
     }
-    
+
     if (entry.duration) {
       const hours = entry.duration / 60;
-      
+
       if (entry.operation === LABOR_OPERATIONS.START_JOB) {
         summary.billableHours += hours;
         summary.earnings += entry.laborCost || 0;
         if (entry.jobId) summary.jobsWorked.add(entry.jobId);
-      } else if ([LABOR_OPERATIONS.BREAK_START, LABOR_OPERATIONS.LUNCH_START].includes(entry.operation)) {
+      } else if (
+        [LABOR_OPERATIONS.BREAK_START, LABOR_OPERATIONS.LUNCH_START].includes(
+          entry.operation
+        )
+      ) {
         summary.breakTime += hours;
       }
     }
   });
 
   summary.jobsWorked = summary.jobsWorked.size;
-  summary.totalHours = summary.clockInTime ? 
-    (new Date() - new Date(summary.clockInTime)) / (1000 * 60 * 60) : 0;
+  summary.totalHours = summary.clockInTime
+    ? (new Date() - new Date(summary.clockInTime)) / (1000 * 60 * 60)
+    : 0;
 
   return summary;
 }
@@ -661,19 +766,19 @@ async function calculateShiftSummary(technicianId, shopId) {
 async function calculateTechnicianDayHours(technicianId, shopId) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const clockInEntry = await LaborTimeEntry.findOne({
     where: {
       technicianId,
       shopId,
       operation: LABOR_OPERATIONS.CLOCK_IN,
       startTime: { [require('sequelize').Op.gte]: today },
-      endTime: null
-    }
+      endTime: null,
+    },
   });
 
   if (!clockInEntry) return 0;
-  
+
   return (new Date() - new Date(clockInEntry.startTime)) / (1000 * 60 * 60);
 }
 
@@ -682,7 +787,7 @@ async function calculateTechnicianProductivity(technicianId, shopId) {
   return {
     hoursWorked: Math.floor(Math.random() * 8) + 1,
     efficiency: Math.floor(Math.random() * 20) + 80,
-    jobsCompleted: Math.floor(Math.random() * 5) + 1
+    jobsCompleted: Math.floor(Math.random() * 5) + 1,
   };
 }
 
@@ -693,23 +798,23 @@ async function calculateTechnicianEfficiency(technicianId) {
 
 function generateTimeTrackingRecommendations(shiftSummary, operation) {
   const recommendations = [];
-  
+
   if (shiftSummary.totalHours > 8 && operation === LABOR_OPERATIONS.START_JOB) {
     recommendations.push({
       type: 'overtime_alert',
       message: 'You are approaching overtime hours',
-      action: 'Consider completing current task and clocking out'
+      action: 'Consider completing current task and clocking out',
     });
   }
-  
+
   if (shiftSummary.breakTime < 0.5 && shiftSummary.totalHours > 4) {
     recommendations.push({
       type: 'break_reminder',
-      message: 'You haven\'t taken a break in over 4 hours',
-      action: 'Take a 15-minute break to maintain productivity'
+      message: "You haven't taken a break in over 4 hours",
+      action: 'Take a 15-minute break to maintain productivity',
     });
   }
-  
+
   return recommendations;
 }
 
@@ -722,35 +827,45 @@ async function calculateShopAverageMetrics(shopId, startDate, endDate) {
   return {
     utilization: 72.5,
     efficiency: 83.2,
-    averageHourlyRate: 28.50,
-    jobsPerDay: 2.3
+    averageHourlyRate: 28.5,
+    jobsPerDay: 2.3,
   };
 }
 
-function generateProductivityRecommendations(metrics, shopAverage, industryBenchmark) {
+function generateProductivityRecommendations(
+  metrics,
+  shopAverage,
+  industryBenchmark
+) {
   const recommendations = [];
-  
+
   if (metrics.utilization < shopAverage.utilization - 10) {
     recommendations.push({
       type: 'utilization',
       message: 'Utilization is below shop average',
-      action: 'Focus on reducing non-productive time'
+      action: 'Focus on reducing non-productive time',
     });
   }
-  
+
   if (metrics.efficiency < industryBenchmark.efficiency - 5) {
     recommendations.push({
       type: 'efficiency',
       message: 'Efficiency is below industry standards',
-      action: 'Review work processes and consider additional training'
+      action: 'Review work processes and consider additional training',
     });
   }
-  
+
   return recommendations;
 }
 
 function generateOperationId() {
-  return 'OP' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  return (
+    'OP' +
+    Date.now().toString().slice(-6) +
+    Math.floor(Math.random() * 100)
+      .toString()
+      .padStart(2, '0')
+  );
 }
 
 async function assignWorkOrderToTechnician(workOrderId, technicianId) {
@@ -763,9 +878,9 @@ async function findTechniciansBySkills(requiredSkills, shopId) {
     where: {
       shopId,
       role: 'technician',
-      isActive: true
+      isActive: true,
     },
-    attributes: ['id', 'name', 'skills', 'hourlyRate']
+    attributes: ['id', 'name', 'skills', 'hourlyRate'],
   });
 
   return technicians
@@ -778,30 +893,32 @@ async function findTechniciansBySkills(requiredSkills, shopId) {
       name: tech.name,
       skills: tech.skills,
       hourlyRate: tech.hourlyRate,
-      matchedSkills: requiredSkills.filter(skill => tech.skills?.includes(skill))
+      matchedSkills: requiredSkills.filter(skill =>
+        tech.skills?.includes(skill)
+      ),
     }))
     .sort((a, b) => b.matchedSkills.length - a.matchedSkills.length);
 }
 
 function generateWorkOrderRecommendations(workOrder, job) {
   const recommendations = [];
-  
+
   if (workOrder.estimatedTotalHours > 40) {
     recommendations.push({
       type: 'large_job',
       message: 'This is a large job that may require multiple technicians',
-      action: 'Consider breaking into smaller work orders'
+      action: 'Consider breaking into smaller work orders',
     });
   }
-  
+
   if (workOrder.priority === 'rush') {
     recommendations.push({
       type: 'rush_job',
       message: 'Rush job detected',
-      action: 'Ensure adequate resources and overtime authorization'
+      action: 'Ensure adequate resources and overtime authorization',
     });
   }
-  
+
   return recommendations;
 }
 

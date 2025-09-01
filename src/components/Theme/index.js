@@ -3,23 +3,23 @@ export { ThemeProvider, useTheme as useThemeContext } from './ThemeProvider';
 export { ThemeSwitcher } from './ThemeSwitcher';
 
 // Theme utilities
-export { 
-  ThemeTransition, 
+export {
+  ThemeTransition,
   CSSVariableManager,
   themeTransitionPresets,
   globalThemeTransition,
   globalCSSVariables,
-  themeTransitionHelpers 
+  themeTransitionHelpers,
 } from '../../utils/themeTransition';
 
 // Hook exports
-export { 
+export {
   useTheme,
   useThemeColors,
   useThemeAnimations,
   useThemeResponsive,
   useThemeState,
-  withTheme
+  withTheme,
 } from '../../hooks/useTheme';
 
 // Theme objects

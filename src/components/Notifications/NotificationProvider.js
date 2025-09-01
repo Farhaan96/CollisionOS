@@ -1,9 +1,20 @@
 // NotificationProvider - Global notification context with queue management, priority system, and persistence
 // Executive-level notification management with sophisticated features
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { premiumColors, premiumShadows, premiumZIndex } from '../../theme/premiumDesignSystem';
+import {
+  premiumColors,
+  premiumShadows,
+  premiumZIndex,
+} from '../../theme/premiumDesignSystem';
 import { advancedSpringConfigs } from '../../utils/animations';
 import Toast from './Toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,9 +22,9 @@ import { v4 as uuidv4 } from 'uuid';
 // Notification priorities
 export const NOTIFICATION_PRIORITIES = {
   CRITICAL: 'critical',
-  HIGH: 'high', 
+  HIGH: 'high',
   NORMAL: 'normal',
-  LOW: 'low'
+  LOW: 'low',
 };
 
 // Notification types
@@ -22,14 +33,14 @@ export const NOTIFICATION_TYPES = {
   ERROR: 'error',
   WARNING: 'warning',
   INFO: 'info',
-  CUSTOM: 'custom'
+  CUSTOM: 'custom',
 };
 
 // Storage keys
 const STORAGE_KEYS = {
   NOTIFICATIONS: 'collisionos_notification_history',
   SETTINGS: 'collisionos_notification_settings',
-  DO_NOT_DISTURB: 'collisionos_notification_dnd'
+  DO_NOT_DISTURB: 'collisionos_notification_dnd',
 };
 
 // Initial state
@@ -44,15 +55,15 @@ const initialState = {
     vibrationEnabled: true,
     persistHistory: true,
     groupSimilar: true,
-    showPreview: true
+    showPreview: true,
   },
   doNotDisturb: {
     enabled: false,
     until: null,
-    allowCritical: true
+    allowCritical: true,
   },
   queue: [],
-  isProcessing: false
+  isProcessing: false,
 };
 
 // Reducer actions
@@ -66,7 +77,7 @@ const ACTIONS = {
   ADD_TO_HISTORY: 'ADD_TO_HISTORY',
   CLEAR_HISTORY: 'CLEAR_HISTORY',
   PROCESS_QUEUE: 'PROCESS_QUEUE',
-  SET_PROCESSING: 'SET_PROCESSING'
+  SET_PROCESSING: 'SET_PROCESSING',
 };
 
 // Priority order for queue processing
@@ -74,7 +85,7 @@ const PRIORITY_ORDER = {
   [NOTIFICATION_PRIORITIES.CRITICAL]: 0,
   [NOTIFICATION_PRIORITIES.HIGH]: 1,
   [NOTIFICATION_PRIORITIES.NORMAL]: 2,
-  [NOTIFICATION_PRIORITIES.LOW]: 3
+  [NOTIFICATION_PRIORITIES.LOW]: 3,
 };
 
 // Notification reducer
@@ -85,36 +96,37 @@ const notificationReducer = (state, action) => {
         id: uuidv4(),
         timestamp: Date.now(),
         read: false,
-        ...action.payload
+        ...action.payload,
       };
 
       // Check if we're in do not disturb mode
-      if (state.doNotDisturb.enabled && 
-          notification.priority !== NOTIFICATION_PRIORITIES.CRITICAL && 
-          !state.doNotDisturb.allowCritical) {
+      if (
+        state.doNotDisturb.enabled &&
+        notification.priority !== NOTIFICATION_PRIORITIES.CRITICAL &&
+        !state.doNotDisturb.allowCritical
+      ) {
         return {
           ...state,
-          queue: [...state.queue, notification].sort((a, b) => 
-            PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
-          )
+          queue: [...state.queue, notification].sort(
+            (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
+          ),
         };
       }
 
       // Check for similar notifications to group
       if (state.settings.groupSimilar) {
-        const similar = state.notifications.find(n => 
-          n.type === notification.type && 
-          n.title === notification.title
+        const similar = state.notifications.find(
+          n => n.type === notification.type && n.title === notification.title
         );
 
         if (similar) {
           return {
             ...state,
-            notifications: state.notifications.map(n => 
-              n.id === similar.id 
+            notifications: state.notifications.map(n =>
+              n.id === similar.id
                 ? { ...n, count: (n.count || 1) + 1, timestamp: Date.now() }
                 : n
-            )
+            ),
           };
         }
       }
@@ -123,42 +135,53 @@ const notificationReducer = (state, action) => {
 
       // Enforce max notifications limit
       if (newNotifications.length > state.settings.maxNotifications) {
-        const removed = newNotifications.splice(0, newNotifications.length - state.settings.maxNotifications);
+        const removed = newNotifications.splice(
+          0,
+          newNotifications.length - state.settings.maxNotifications
+        );
         // Move removed to history
         return {
           ...state,
           notifications: newNotifications,
-          history: [...removed.map(n => ({ ...n, dismissed: true })), ...state.history]
+          history: [
+            ...removed.map(n => ({ ...n, dismissed: true })),
+            ...state.history,
+          ],
         };
       }
 
       return {
         ...state,
-        notifications: newNotifications
+        notifications: newNotifications,
       };
     }
 
     case ACTIONS.REMOVE_NOTIFICATION: {
-      const notification = state.notifications.find(n => n.id === action.payload);
-      const filteredNotifications = state.notifications.filter(n => n.id !== action.payload);
-      
+      const notification = state.notifications.find(
+        n => n.id === action.payload
+      );
+      const filteredNotifications = state.notifications.filter(
+        n => n.id !== action.payload
+      );
+
       return {
         ...state,
         notifications: filteredNotifications,
-        history: notification ? 
-          [{ ...notification, dismissed: true, dismissedAt: Date.now() }, ...state.history] : 
-          state.history
+        history: notification
+          ? [
+              { ...notification, dismissed: true, dismissedAt: Date.now() },
+              ...state.history,
+            ]
+          : state.history,
       };
     }
 
     case ACTIONS.UPDATE_NOTIFICATION: {
       return {
         ...state,
-        notifications: state.notifications.map(n => 
-          n.id === action.payload.id 
-            ? { ...n, ...action.payload.updates }
-            : n
-        )
+        notifications: state.notifications.map(n =>
+          n.id === action.payload.id ? { ...n, ...action.payload.updates } : n
+        ),
       };
     }
 
@@ -166,55 +189,64 @@ const notificationReducer = (state, action) => {
       const dismissedNotifications = state.notifications.map(n => ({
         ...n,
         dismissed: true,
-        dismissedAt: Date.now()
+        dismissedAt: Date.now(),
       }));
 
       return {
         ...state,
         notifications: [],
-        history: [...dismissedNotifications, ...state.history]
+        history: [...dismissedNotifications, ...state.history],
       };
     }
 
     case ACTIONS.SET_SETTINGS: {
       const newSettings = { ...state.settings, ...action.payload };
-      
+
       // Persist settings
       if (typeof Storage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(newSettings));
+        localStorage.setItem(
+          STORAGE_KEYS.SETTINGS,
+          JSON.stringify(newSettings)
+        );
       }
 
       return {
         ...state,
-        settings: newSettings
+        settings: newSettings,
       };
     }
 
     case ACTIONS.SET_DO_NOT_DISTURB: {
       const dndSettings = { ...state.doNotDisturb, ...action.payload };
-      
+
       // Persist DND settings
       if (typeof Storage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEYS.DO_NOT_DISTURB, JSON.stringify(dndSettings));
+        localStorage.setItem(
+          STORAGE_KEYS.DO_NOT_DISTURB,
+          JSON.stringify(dndSettings)
+        );
       }
 
       return {
         ...state,
-        doNotDisturb: dndSettings
+        doNotDisturb: dndSettings,
       };
     }
 
     case ACTIONS.ADD_TO_HISTORY: {
       const newHistory = [action.payload, ...state.history].slice(0, 100); // Keep last 100
-      
+
       // Persist history
       if (state.settings.persistHistory && typeof Storage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(newHistory));
+        localStorage.setItem(
+          STORAGE_KEYS.NOTIFICATIONS,
+          JSON.stringify(newHistory)
+        );
       }
 
       return {
         ...state,
-        history: newHistory
+        history: newHistory,
       };
     }
 
@@ -225,7 +257,7 @@ const notificationReducer = (state, action) => {
 
       return {
         ...state,
-        history: []
+        history: [],
       };
     }
 
@@ -241,14 +273,14 @@ const notificationReducer = (state, action) => {
       return {
         ...state,
         queue: remainingQueue,
-        notifications: [...state.notifications, nextNotification]
+        notifications: [...state.notifications, nextNotification],
       };
     }
 
     case ACTIONS.SET_PROCESSING: {
       return {
         ...state,
-        isProcessing: action.payload
+        isProcessing: action.payload,
       };
     }
 
@@ -272,7 +304,7 @@ const loadPersistedData = () => {
     return {
       settings: settings ? JSON.parse(settings) : undefined,
       history: history ? JSON.parse(history) : undefined,
-      doNotDisturb: dnd ? JSON.parse(dnd) : undefined
+      doNotDisturb: dnd ? JSON.parse(dnd) : undefined,
     };
   } catch (error) {
     console.warn('Failed to load notification preferences:', error);
@@ -291,23 +323,30 @@ const playNotificationSound = (type, settings) => {
       error: 300,
       warning: 600,
       info: 500,
-      custom: 400
+      custom: 400,
     };
 
     // Create AudioContext for sound generation
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    oscillator.frequency.setValueAtTime(frequencies[type] || 500, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(
+      frequencies[type] || 500,
+      audioContext.currentTime
+    );
     oscillator.type = 'sine';
 
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
     gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.3
+    );
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
@@ -325,7 +364,7 @@ const triggerVibration = (pattern, settings) => {
       error: [100, 50, 100],
       warning: [200],
       info: [50],
-      critical: [200, 100, 200, 100, 200]
+      critical: [200, 100, 200, 100, 200],
     };
 
     navigator.vibrate(patterns[pattern] || [50]);
@@ -335,14 +374,21 @@ const triggerVibration = (pattern, settings) => {
 };
 
 // NotificationProvider component
-export const NotificationProvider = ({ children, customToastContainer, position = 'top-right' }) => {
+export const NotificationProvider = ({
+  children,
+  customToastContainer,
+  position = 'top-right',
+}) => {
   const persistedData = useMemo(() => loadPersistedData(), []);
-  
+
   const [state, dispatch] = useReducer(notificationReducer, {
     ...initialState,
     settings: { ...initialState.settings, ...persistedData.settings, position },
     history: persistedData.history || [],
-    doNotDisturb: { ...initialState.doNotDisturb, ...persistedData.doNotDisturb }
+    doNotDisturb: {
+      ...initialState.doNotDisturb,
+      ...persistedData.doNotDisturb,
+    },
   });
 
   // Process notification queue
@@ -361,33 +407,36 @@ export const NotificationProvider = ({ children, customToastContainer, position 
     if (state.doNotDisturb.enabled && state.doNotDisturb.until) {
       const now = Date.now();
       if (now >= state.doNotDisturb.until) {
-        dispatch({ 
-          type: ACTIONS.SET_DO_NOT_DISTURB, 
-          payload: { enabled: false, until: null } 
+        dispatch({
+          type: ACTIONS.SET_DO_NOT_DISTURB,
+          payload: { enabled: false, until: null },
         });
       }
     }
   }, [state.doNotDisturb]);
 
   // API functions
-  const addNotification = useCallback((notification) => {
-    const fullNotification = {
-      priority: NOTIFICATION_PRIORITIES.NORMAL,
-      type: NOTIFICATION_TYPES.INFO,
-      duration: state.settings.defaultDuration,
-      ...notification
-    };
+  const addNotification = useCallback(
+    notification => {
+      const fullNotification = {
+        priority: NOTIFICATION_PRIORITIES.NORMAL,
+        type: NOTIFICATION_TYPES.INFO,
+        duration: state.settings.defaultDuration,
+        ...notification,
+      };
 
-    // Play sound and vibration
-    playNotificationSound(fullNotification.type, state.settings);
-    triggerVibration(fullNotification.priority, state.settings);
+      // Play sound and vibration
+      playNotificationSound(fullNotification.type, state.settings);
+      triggerVibration(fullNotification.priority, state.settings);
 
-    dispatch({ type: ACTIONS.ADD_NOTIFICATION, payload: fullNotification });
+      dispatch({ type: ACTIONS.ADD_NOTIFICATION, payload: fullNotification });
 
-    return fullNotification.id;
-  }, [state.settings]);
+      return fullNotification.id;
+    },
+    [state.settings]
+  );
 
-  const removeNotification = useCallback((id) => {
+  const removeNotification = useCallback(id => {
     dispatch({ type: ACTIONS.REMOVE_NOTIFICATION, payload: id });
   }, []);
 
@@ -399,25 +448,31 @@ export const NotificationProvider = ({ children, customToastContainer, position 
     dispatch({ type: ACTIONS.CLEAR_ALL });
   }, []);
 
-  const updateSettings = useCallback((newSettings) => {
+  const updateSettings = useCallback(newSettings => {
     dispatch({ type: ACTIONS.SET_SETTINGS, payload: newSettings });
   }, []);
 
-  const setDoNotDisturb = useCallback((enabled, duration = null, allowCritical = true) => {
-    const until = enabled && duration ? Date.now() + duration : null;
-    dispatch({ 
-      type: ACTIONS.SET_DO_NOT_DISTURB, 
-      payload: { enabled, until, allowCritical } 
-    });
-  }, []);
+  const setDoNotDisturb = useCallback(
+    (enabled, duration = null, allowCritical = true) => {
+      const until = enabled && duration ? Date.now() + duration : null;
+      dispatch({
+        type: ACTIONS.SET_DO_NOT_DISTURB,
+        payload: { enabled, until, allowCritical },
+      });
+    },
+    []
+  );
 
   const clearHistory = useCallback(() => {
     dispatch({ type: ACTIONS.CLEAR_HISTORY });
   }, []);
 
-  const markAsRead = useCallback((id) => {
-    updateNotification(id, { read: true });
-  }, [updateNotification]);
+  const markAsRead = useCallback(
+    id => {
+      updateNotification(id, { read: true });
+    },
+    [updateNotification]
+  );
 
   const markAllAsRead = useCallback(() => {
     state.notifications.forEach(notification => {
@@ -428,81 +483,89 @@ export const NotificationProvider = ({ children, customToastContainer, position 
   }, [state.notifications, updateNotification]);
 
   // Context value
-  const contextValue = useMemo(() => ({
-    // State
-    notifications: state.notifications,
-    history: state.history,
-    settings: state.settings,
-    doNotDisturb: state.doNotDisturb,
-    queue: state.queue,
-    
-    // Stats
-    unreadCount: state.notifications.filter(n => !n.read).length,
-    totalCount: state.notifications.length,
-    historyCount: state.history.length,
-    
-    // Actions
-    addNotification,
-    removeNotification,
-    updateNotification,
-    clearAllNotifications,
-    updateSettings,
-    setDoNotDisturb,
-    clearHistory,
-    markAsRead,
-    markAllAsRead,
-    
-    // Convenience methods
-    success: (message, options = {}) => addNotification({
-      type: NOTIFICATION_TYPES.SUCCESS,
-      title: 'Success',
-      message,
-      ...options
+  const contextValue = useMemo(
+    () => ({
+      // State
+      notifications: state.notifications,
+      history: state.history,
+      settings: state.settings,
+      doNotDisturb: state.doNotDisturb,
+      queue: state.queue,
+
+      // Stats
+      unreadCount: state.notifications.filter(n => !n.read).length,
+      totalCount: state.notifications.length,
+      historyCount: state.history.length,
+
+      // Actions
+      addNotification,
+      removeNotification,
+      updateNotification,
+      clearAllNotifications,
+      updateSettings,
+      setDoNotDisturb,
+      clearHistory,
+      markAsRead,
+      markAllAsRead,
+
+      // Convenience methods
+      success: (message, options = {}) =>
+        addNotification({
+          type: NOTIFICATION_TYPES.SUCCESS,
+          title: 'Success',
+          message,
+          ...options,
+        }),
+      error: (message, options = {}) =>
+        addNotification({
+          type: NOTIFICATION_TYPES.ERROR,
+          title: 'Error',
+          message,
+          priority: NOTIFICATION_PRIORITIES.HIGH,
+          ...options,
+        }),
+      warning: (message, options = {}) =>
+        addNotification({
+          type: NOTIFICATION_TYPES.WARNING,
+          title: 'Warning',
+          message,
+          ...options,
+        }),
+      info: (message, options = {}) =>
+        addNotification({
+          type: NOTIFICATION_TYPES.INFO,
+          title: 'Info',
+          message,
+          ...options,
+        }),
+      critical: (message, options = {}) =>
+        addNotification({
+          type: NOTIFICATION_TYPES.ERROR,
+          title: 'Critical',
+          message,
+          priority: NOTIFICATION_PRIORITIES.CRITICAL,
+          duration: 0, // Don't auto-dismiss critical
+          ...options,
+        }),
     }),
-    error: (message, options = {}) => addNotification({
-      type: NOTIFICATION_TYPES.ERROR,
-      title: 'Error',
-      message,
-      priority: NOTIFICATION_PRIORITIES.HIGH,
-      ...options
-    }),
-    warning: (message, options = {}) => addNotification({
-      type: NOTIFICATION_TYPES.WARNING,
-      title: 'Warning',
-      message,
-      ...options
-    }),
-    info: (message, options = {}) => addNotification({
-      type: NOTIFICATION_TYPES.INFO,
-      title: 'Info',
-      message,
-      ...options
-    }),
-    critical: (message, options = {}) => addNotification({
-      type: NOTIFICATION_TYPES.ERROR,
-      title: 'Critical',
-      message,
-      priority: NOTIFICATION_PRIORITIES.CRITICAL,
-      duration: 0, // Don't auto-dismiss critical
-      ...options
-    })
-  }), [
-    state, 
-    addNotification, 
-    removeNotification, 
-    updateNotification, 
-    clearAllNotifications,
-    updateSettings, 
-    setDoNotDisturb, 
-    clearHistory, 
-    markAsRead, 
-    markAllAsRead
-  ]);
+    [
+      state,
+      addNotification,
+      removeNotification,
+      updateNotification,
+      clearAllNotifications,
+      updateSettings,
+      setDoNotDisturb,
+      clearHistory,
+      markAsRead,
+      markAllAsRead,
+    ]
+  );
 
   return (
     <NotificationContext.Provider value={contextValue}>
       {children}
-      
+
       {/* Toast Container */}
       {customToastContainer || (
         <div
@@ -515,19 +578,19 @@ export const NotificationProvider = ({ children, customToastContainer, position 
             flexDirection: 'column',
             gap: 12,
             maxWidth: '400px',
-            width: '100%'
+            width: '100%',
           }}
-          role="region"
-          aria-label="Notifications"
-          aria-live="polite"
+          role='region'
+          aria-label='Notifications'
+          aria-live='polite'
         >
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode='popLayout'>
             {state.notifications.map((notification, index) => (
               <Toast
                 key={notification.id}
                 notification={notification}
                 onDismiss={removeNotification}
-                onAction={(action) => action.handler?.(notification)}
+                onAction={action => action.handler?.(notification)}
                 index={index}
                 total={state.notifications.length}
                 settings={state.settings}
@@ -541,16 +604,16 @@ export const NotificationProvider = ({ children, customToastContainer, position 
 };
 
 // Position styles helper
-const getPositionStyles = (position) => {
+const getPositionStyles = position => {
   const positions = {
     'top-right': { top: 24, right: 24 },
     'top-left': { top: 24, left: 24 },
     'top-center': { top: 24, left: '50%', transform: 'translateX(-50%)' },
     'bottom-right': { bottom: 24, right: 24 },
     'bottom-left': { bottom: 24, left: 24 },
-    'bottom-center': { bottom: 24, left: '50%', transform: 'translateX(-50%)' }
+    'bottom-center': { bottom: 24, left: '50%', transform: 'translateX(-50%)' },
   };
-  
+
   return positions[position] || positions['top-right'];
 };
 
@@ -558,7 +621,9 @@ const getPositionStyles = (position) => {
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotification must be used within a NotificationProvider');
+    throw new Error(
+      'useNotification must be used within a NotificationProvider'
+    );
   }
   return context;
 };

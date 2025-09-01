@@ -4,7 +4,10 @@
  * Includes connection pooling, retry logic, and performance monitoring
  */
 
-const { getSupabaseClient, isSupabaseEnabled } = require('../../server/config/supabase');
+const {
+  getSupabaseClient,
+  isSupabaseEnabled,
+} = require('../../server/config/supabase');
 
 class EnhancedRealtimeService {
   constructor() {
@@ -17,17 +20,19 @@ class EnhancedRealtimeService {
       subscriptionsActive: 0,
       connectionTime: null,
       lastPing: null,
-      errors: 0
+      errors: 0,
     };
-    
+
     // Connection settings
     this.maxRetries = 3;
     this.retryDelay = 2000;
     this.pingInterval = 30000; // 30 seconds
     this.maxSubscriptionsPerChannel = 50;
-    
-    console.log(`🚀 Enhanced Real-time service initialized with ${this.useSupabase ? 'Supabase' : 'Socket.io'} backend`);
-    
+
+    console.log(
+      `🚀 Enhanced Real-time service initialized with ${this.useSupabase ? 'Supabase' : 'Socket.io'} backend`
+    );
+
     // Start monitoring
     if (this.useSupabase) {
       this.startConnectionMonitoring();
@@ -40,9 +45,9 @@ class EnhancedRealtimeService {
    */
   setSocketServer(io) {
     this.socketIoServer = io;
-    
+
     // Enhanced Socket.io connection handling
-    io.on('connection', (socket) => {
+    io.on('connection', socket => {
       this.handleSocketConnection(socket);
     });
   }
@@ -53,28 +58,28 @@ class EnhancedRealtimeService {
    */
   handleSocketConnection(socket) {
     const { userId, shopId } = socket;
-    
+
     console.log(`📱 Enhanced socket connected: ${userId} (Shop: ${shopId})`);
-    
+
     // Join shop-specific room
     socket.join(`shop_${shopId}`);
     socket.join(`user_${userId}`);
-    
+
     // Handle subscription requests from client
-    socket.on('subscribe_to_table', (data) => {
+    socket.on('subscribe_to_table', data => {
       this.handleClientSubscription(socket, data);
     });
-    
-    socket.on('unsubscribe_from_table', (data) => {
+
+    socket.on('unsubscribe_from_table', data => {
       this.handleClientUnsubscription(socket, data);
     });
-    
+
     // Handle heartbeat
     socket.on('ping', () => {
       socket.emit('pong', { timestamp: Date.now() });
       this.metrics.lastPing = new Date();
     });
-    
+
     socket.on('disconnect', () => {
       console.log(`📱 Socket disconnected: ${userId}`);
       this.cleanupSocketSubscriptions(socket);
@@ -89,27 +94,33 @@ class EnhancedRealtimeService {
   async handleClientSubscription(socket, data) {
     const { table, filter, event = '*' } = data;
     const subscriptionId = `${socket.id}_${table}_${JSON.stringify(filter)}`;
-    
+
     try {
       if (this.useSupabase) {
         await this.subscribeSupabase(subscriptionId, table, {
           event,
           filter,
-          callback: (payload) => {
+          callback: payload => {
             socket.emit(`${table}_change`, payload);
             this.metrics.messagesProcessed++;
           },
-          socketId: socket.id
+          socketId: socket.id,
         });
       } else {
         // For Socket.io fallback, just track the subscription
-        this.subscribeSocketIo(subscriptionId, table, { event, filter, socketId: socket.id });
+        this.subscribeSocketIo(subscriptionId, table, {
+          event,
+          filter,
+          socketId: socket.id,
+        });
       }
-      
+
       socket.emit('subscription_success', { subscriptionId, table });
-      
     } catch (error) {
-      console.error(`Failed to subscribe ${socket.id} to ${table}:`, error.message);
+      console.error(
+        `Failed to subscribe ${socket.id} to ${table}:`,
+        error.message
+      );
       socket.emit('subscription_error', { table, error: error.message });
       this.metrics.errors++;
     }
@@ -122,12 +133,15 @@ class EnhancedRealtimeService {
    */
   async handleClientUnsubscription(socket, data) {
     const { subscriptionId } = data;
-    
+
     try {
       await this.unsubscribe(subscriptionId);
       socket.emit('unsubscription_success', { subscriptionId });
     } catch (error) {
-      socket.emit('unsubscription_error', { subscriptionId, error: error.message });
+      socket.emit('unsubscription_error', {
+        subscriptionId,
+        error: error.message,
+      });
     }
   }
 
@@ -149,7 +163,13 @@ class EnhancedRealtimeService {
       throw new Error('Supabase not available for real-time subscriptions');
     }
 
-    const { event = '*', filter, callback, schema = 'public', socketId } = options;
+    const {
+      event = '*',
+      filter,
+      callback,
+      schema = 'public',
+      socketId,
+    } = options;
 
     // Use connection pooling for better performance
     let channelName = `${table}_changes`;
@@ -159,61 +179,72 @@ class EnhancedRealtimeService {
 
     // Check if we already have a channel for this pattern
     let channel = this.connectionPool.get(channelName);
-    const subscriptionsForChannel = Array.from(this.subscriptions.values())
-      .filter(sub => sub.channelName === channelName).length;
+    const subscriptionsForChannel = Array.from(
+      this.subscriptions.values()
+    ).filter(sub => sub.channelName === channelName).length;
 
-    if (!channel || subscriptionsForChannel >= this.maxSubscriptionsPerChannel) {
+    if (
+      !channel ||
+      subscriptionsForChannel >= this.maxSubscriptionsPerChannel
+    ) {
       // Create new channel
       const channelId = `${channelName}_${Date.now()}`;
-      
-      channel = supabase
-        .channel(channelId)
-        .on(
-          'postgres_changes',
-          {
-            event,
-            schema,
-            table,
-            filter: filter ? `${Object.keys(filter)[0]}=eq.${Object.values(filter)[0]}` : undefined
-          },
-          (payload) => {
-            // Broadcast to all subscribers of this channel
-            this.handleSupabaseEvent(channelName, payload);
-          }
-        );
+
+      channel = supabase.channel(channelId).on(
+        'postgres_changes',
+        {
+          event,
+          schema,
+          table,
+          filter: filter
+            ? `${Object.keys(filter)[0]}=eq.${Object.values(filter)[0]}`
+            : undefined,
+        },
+        payload => {
+          // Broadcast to all subscribers of this channel
+          this.handleSupabaseEvent(channelName, payload);
+        }
+      );
 
       // Subscribe with retry logic
       const subscribeWithRetry = async (retryCount = 0) => {
-        const subscriptionResponse = await channel.subscribe((status) => {
+        const subscriptionResponse = await channel.subscribe(status => {
           console.log(`📡 Enhanced subscription ${channelId} status:`, status);
-          
+
           if (status === 'SUBSCRIBED') {
             this.metrics.connectionTime = new Date();
             this.metrics.subscriptionsActive++;
           } else if (status === 'CHANNEL_ERROR') {
             this.metrics.errors++;
-            
+
             if (retryCount < this.maxRetries) {
-              setTimeout(() => {
-                console.log(`🔄 Retrying subscription ${channelId} (${retryCount + 1}/${this.maxRetries})`);
-                subscribeWithRetry(retryCount + 1);
-              }, this.retryDelay * (retryCount + 1));
+              setTimeout(
+                () => {
+                  console.log(
+                    `🔄 Retrying subscription ${channelId} (${retryCount + 1}/${this.maxRetries})`
+                  );
+                  subscribeWithRetry(retryCount + 1);
+                },
+                this.retryDelay * (retryCount + 1)
+              );
             } else {
-              console.error(`❌ Failed to establish subscription ${channelId} after ${this.maxRetries} retries`);
+              console.error(
+                `❌ Failed to establish subscription ${channelId} after ${this.maxRetries} retries`
+              );
             }
           }
         });
-        
+
         return subscriptionResponse;
       };
 
       await subscribeWithRetry();
-      
+
       this.connectionPool.set(channelName, {
         channel,
         channelId,
         subscriptions: new Map(),
-        createdAt: new Date()
+        createdAt: new Date(),
       });
     }
 
@@ -223,7 +254,7 @@ class EnhancedRealtimeService {
       callback,
       socketId,
       filter,
-      event
+      event,
     });
 
     const subscription = {
@@ -232,7 +263,7 @@ class EnhancedRealtimeService {
       table,
       channelName,
       options,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.subscriptions.set(subscriptionId, subscription);
@@ -256,12 +287,20 @@ class EnhancedRealtimeService {
           if (subscription.callback) {
             subscription.callback(payload);
           }
-          
+
           // Also emit to Socket.io for backwards compatibility
-          this.emitToSocketIo(`${payload.table}_change`, payload, null, subscription.socketId);
+          this.emitToSocketIo(
+            `${payload.table}_change`,
+            payload,
+            null,
+            subscription.socketId
+          );
         }
       } catch (error) {
-        console.error(`Error processing event for subscription ${subscriptionId}:`, error.message);
+        console.error(
+          `Error processing event for subscription ${subscriptionId}:`,
+          error.message
+        );
         this.metrics.errors++;
       }
     }
@@ -277,19 +316,19 @@ class EnhancedRealtimeService {
    */
   shouldProcessEvent(subscription, payload) {
     if (!subscription.filter) return true;
-    
+
     const { new: newRecord, old: oldRecord } = payload;
     const record = newRecord || oldRecord;
-    
+
     if (!record) return true;
-    
+
     // Check filter conditions
     for (const [key, value] of Object.entries(subscription.filter)) {
       if (record[key] !== value) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -306,12 +345,12 @@ class EnhancedRealtimeService {
       type: 'socket.io',
       table,
       options,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.subscriptions.set(subscriptionId, subscription);
     console.log(`📡 Socket.io subscription created: ${subscriptionId}`);
-    
+
     return subscription;
   }
 
@@ -332,7 +371,7 @@ class EnhancedRealtimeService {
       if (pooledChannel) {
         // Remove subscription from the pooled channel
         pooledChannel.subscriptions.delete(subscriptionId);
-        
+
         // If no more subscriptions, close the channel
         if (pooledChannel.subscriptions.size === 0) {
           const supabase = getSupabaseClient();
@@ -357,19 +396,21 @@ class EnhancedRealtimeService {
    */
   cleanupSocketSubscriptions(socket) {
     const subscriptionsToRemove = [];
-    
+
     for (const [subscriptionId, subscription] of this.subscriptions) {
       if (subscription.options?.socketId === socket.id) {
         subscriptionsToRemove.push(subscriptionId);
       }
     }
-    
+
     // Clean up subscriptions
     subscriptionsToRemove.forEach(subscriptionId => {
       this.unsubscribe(subscriptionId);
     });
-    
-    console.log(`🧹 Cleaned up ${subscriptionsToRemove.length} subscriptions for socket ${socket.id}`);
+
+    console.log(
+      `🧹 Cleaned up ${subscriptionsToRemove.length} subscriptions for socket ${socket.id}`
+    );
   }
 
   /**
@@ -403,7 +444,7 @@ class EnhancedRealtimeService {
         this.performHealthCheck();
       }
     }, this.pingInterval);
-    
+
     console.log('📊 Started connection monitoring');
   }
 
@@ -415,9 +456,12 @@ class EnhancedRealtimeService {
       const supabase = getSupabaseClient();
       if (supabase) {
         // Test connection with a lightweight query
-        const { data, error } = await supabase.from('_realtime').select('*').limit(1);
+        const { data, error } = await supabase
+          .from('_realtime')
+          .select('*')
+          .limit(1);
         this.metrics.lastPing = new Date();
-        
+
         if (error && !error.message.includes('does not exist')) {
           console.warn('⚠️ Health check failed:', error.message);
           this.metrics.errors++;
@@ -435,8 +479,10 @@ class EnhancedRealtimeService {
    */
   getMetrics() {
     const now = new Date();
-    const uptime = this.metrics.connectionTime ? (now - this.metrics.connectionTime) / 1000 : 0;
-    
+    const uptime = this.metrics.connectionTime
+      ? (now - this.metrics.connectionTime) / 1000
+      : 0;
+
     return {
       backend: this.useSupabase ? 'supabase' : 'socket.io',
       activeSubscriptions: this.subscriptions.size,
@@ -446,11 +492,18 @@ class EnhancedRealtimeService {
       uptime: uptime,
       lastPing: this.metrics.lastPing,
       performance: {
-        subscriptionsPerSecond: uptime > 0 ? (this.subscriptions.size / uptime).toFixed(2) : 0,
-        messagesPerSecond: uptime > 0 ? (this.metrics.messagesProcessed / uptime).toFixed(2) : 0,
-        errorRate: this.metrics.messagesProcessed > 0 ? 
-          (this.metrics.errors / this.metrics.messagesProcessed * 100).toFixed(2) : 0
-      }
+        subscriptionsPerSecond:
+          uptime > 0 ? (this.subscriptions.size / uptime).toFixed(2) : 0,
+        messagesPerSecond:
+          uptime > 0 ? (this.metrics.messagesProcessed / uptime).toFixed(2) : 0,
+        errorRate:
+          this.metrics.messagesProcessed > 0
+            ? (
+                (this.metrics.errors / this.metrics.messagesProcessed) *
+                100
+              ).toFixed(2)
+            : 0,
+      },
     };
   }
 
@@ -468,14 +521,23 @@ class EnhancedRealtimeService {
       type: eventType,
       data: jobData,
       timestamp: new Date().toISOString(),
-      table: 'jobs'
+      table: 'jobs',
     };
 
     // Broadcast to shop and assigned technician specifically
-    this.emitToSocketIo('job_update', payload, jobData.shopId || jobData.shop_id);
-    
+    this.emitToSocketIo(
+      'job_update',
+      payload,
+      jobData.shopId || jobData.shop_id
+    );
+
     if (jobData.assigned_to) {
-      this.emitToSocketIo('job_assignment_update', payload, null, `user_${jobData.assigned_to}`);
+      this.emitToSocketIo(
+        'job_assignment_update',
+        payload,
+        null,
+        `user_${jobData.assigned_to}`
+      );
     }
   }
 
@@ -490,7 +552,7 @@ class EnhancedRealtimeService {
     const payload = {
       ...data,
       priority,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // Add priority-specific handling
@@ -517,9 +579,9 @@ class EnhancedRealtimeService {
    */
   async cleanup() {
     console.log('🧹 Enhanced real-time service cleanup starting...');
-    
+
     const startTime = Date.now();
-    
+
     // Cleanup all subscriptions
     const subscriptionIds = Array.from(this.subscriptions.keys());
     for (const subscriptionId of subscriptionIds) {
@@ -538,8 +600,10 @@ class EnhancedRealtimeService {
     }
 
     const cleanupTime = Date.now() - startTime;
-    
-    console.log(`✅ Enhanced real-time service cleanup completed in ${cleanupTime}ms`);
+
+    console.log(
+      `✅ Enhanced real-time service cleanup completed in ${cleanupTime}ms`
+    );
     console.log(`📊 Final metrics:`, this.getMetrics());
   }
 }
@@ -549,5 +613,5 @@ const enhancedRealtimeService = new EnhancedRealtimeService();
 
 module.exports = {
   EnhancedRealtimeService,
-  enhancedRealtimeService
+  enhancedRealtimeService,
 };

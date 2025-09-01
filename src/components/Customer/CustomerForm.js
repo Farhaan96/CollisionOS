@@ -18,21 +18,17 @@ import {
   Divider,
   Alert,
   CircularProgress,
-  Chip,
   Avatar,
-  useTheme
+  useTheme,
+  InputAdornment,
 } from '@mui/material';
 import {
   Person,
   Business,
-  Phone,
-  Email,
   LocationOn,
   Star,
   Save,
-  Cancel,
-  Add,
-  DirectionsCar
+  DirectionsCar,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
@@ -68,7 +64,10 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
     paymentTerms: 'immediate',
     loyaltyPoints: 0,
     referralSource: '',
-    notes: ''
+    notes: '',
+    primaryInsuranceCompany: '',
+    policyNumber: '',
+    deductible: '',
   });
 
   // Reset form when customer changes
@@ -99,7 +98,10 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
         paymentTerms: customer.paymentTerms || 'immediate',
         loyaltyPoints: customer.loyaltyPoints || 0,
         referralSource: customer.referralSource || '',
-        notes: customer.notes || ''
+        notes: customer.notes || '',
+        primaryInsuranceCompany: customer.primaryInsuranceCompany || '',
+        policyNumber: customer.policyNumber || '',
+        deductible: customer.deductible || '',
       });
     } else {
       // Reset form for new customer
@@ -128,7 +130,10 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
         paymentTerms: 'immediate',
         loyaltyPoints: 0,
         referralSource: '',
-        notes: ''
+        notes: '',
+        primaryInsuranceCompany: '',
+        policyNumber: '',
+        deductible: '',
       });
     }
     setErrors({});
@@ -137,14 +142,14 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: null
+        [field]: null,
       }));
     }
   };
@@ -184,18 +189,21 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
       const customerData = {
         ...formData,
         creditLimit: parseFloat(formData.creditLimit) || 0,
-        loyaltyPoints: parseInt(formData.loyaltyPoints) || 0
+        loyaltyPoints: parseInt(formData.loyaltyPoints) || 0,
       };
 
+      let savedCustomer;
       if (customer) {
-        await customerService.updateCustomer(customer.id, customerData);
+        savedCustomer = await customerService.updateCustomer(
+          customer.id,
+          customerData
+        );
       } else {
-        await customerService.createCustomer(customerData);
+        savedCustomer = await customerService.createCustomer(customerData);
       }
 
-      onSave();
+      onSave(savedCustomer || customerData);
     } catch (error) {
-      console.error('Error saving customer:', error);
       setErrors({ submit: 'Failed to save customer. Please try again.' });
     } finally {
       setLoading(false);
@@ -210,25 +218,30 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
 
   const getCustomerTypeIcon = () => {
     switch (formData.customerType) {
-      case 'individual': return <Person />;
-      case 'business': return <Business />;
-      case 'insurance': return <Star />;
-      case 'fleet': return <DirectionsCar />;
-      default: return <Person />;
+      case 'individual':
+        return <Person />;
+      case 'business':
+        return <Business />;
+      case 'insurance':
+        return <Star />;
+      case 'fleet':
+        return <DirectionsCar />;
+      default:
+        return <Person />;
     }
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={handleClose}
-      maxWidth="md"
+      maxWidth='md'
       fullWidth
       PaperProps={{
         component: motion.div,
         initial: { opacity: 0, y: 50 },
         animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: 50 }
+        exit: { opacity: 0, y: 50 },
       }}
     >
       <DialogTitle>
@@ -236,7 +249,7 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
           <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
             {getCustomerTypeIcon()}
           </Avatar>
-          <Typography variant="h6">
+          <Typography variant='h6'>
             {customer ? 'Edit Customer' : 'Add New Customer'}
           </Typography>
         </Box>
@@ -244,203 +257,218 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
 
       <DialogContent>
         {errors.submit && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity='error' sx={{ mb: 2 }}>
             {errors.submit}
           </Alert>
         )}
 
         <Grid container spacing={3}>
           {/* Basic Information */}
-          <Grid item xs={12}>
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Grid xs={12}>
+            <Typography
+              variant='h6'
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <Person />
               Basic Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="First Name *"
+              label='First Name *'
               value={formData.firstName}
-              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              onChange={e => handleInputChange('firstName', e.target.value)}
               error={!!errors.firstName}
               helperText={errors.firstName}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Last Name *"
+              label='Last Name *'
               value={formData.lastName}
-              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              onChange={e => handleInputChange('lastName', e.target.value)}
               error={!!errors.lastName}
               helperText={errors.lastName}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Email"
-              type="email"
+              label='Email'
+              type='email'
               value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              onChange={e => handleInputChange('email', e.target.value)}
               error={!!errors.email}
               helperText={errors.email}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Phone"
+              label='Phone'
               value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              onChange={e => handleInputChange('phone', e.target.value)}
               error={!!errors.phone}
               helperText={errors.phone}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Mobile"
+              label='Mobile'
               value={formData.mobile}
-              onChange={(e) => handleInputChange('mobile', e.target.value)}
+              onChange={e => handleInputChange('mobile', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Driver License"
+              label='Driver License'
               value={formData.driverLicense}
-              onChange={(e) => handleInputChange('driverLicense', e.target.value)}
+              onChange={e => handleInputChange('driverLicense', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Date of Birth"
-              type="date"
+              label='Date of Birth'
+              type='date'
               value={formData.dateOfBirth}
-              onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+              onChange={e => handleInputChange('dateOfBirth', e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Preferred Contact</InputLabel>
               <Select
                 value={formData.preferredContact}
-                onChange={(e) => handleInputChange('preferredContact', e.target.value)}
-                label="Preferred Contact"
+                onChange={e =>
+                  handleInputChange('preferredContact', e.target.value)
+                }
+                label='Preferred Contact'
               >
-                <MenuItem value="phone">Phone</MenuItem>
-                <MenuItem value="email">Email</MenuItem>
-                <MenuItem value="sms">SMS</MenuItem>
-                <MenuItem value="mail">Mail</MenuItem>
+                <MenuItem value='phone'>Phone</MenuItem>
+                <MenuItem value='email'>Email</MenuItem>
+                <MenuItem value='sms'>SMS</MenuItem>
+                <MenuItem value='mail'>Mail</MenuItem>
               </Select>
             </FormControl>
           </Grid>
 
           {/* Address Information */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant='h6'
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <LocationOn />
               Address Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <TextField
               fullWidth
-              label="Address"
+              label='Address'
               multiline
               rows={2}
               value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
+              onChange={e => handleInputChange('address', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <TextField
               fullWidth
-              label="City"
+              label='City'
               value={formData.city}
-              onChange={(e) => handleInputChange('city', e.target.value)}
+              onChange={e => handleInputChange('city', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <TextField
               fullWidth
-              label="State/Province"
+              label='State/Province'
               value={formData.state}
-              onChange={(e) => handleInputChange('state', e.target.value)}
+              onChange={e => handleInputChange('state', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <TextField
               fullWidth
-              label="ZIP/Postal Code"
+              label='ZIP/Postal Code'
               value={formData.zipCode}
-              onChange={(e) => handleInputChange('zipCode', e.target.value)}
+              onChange={e => handleInputChange('zipCode', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Country"
+              label='Country'
               value={formData.country}
-              onChange={(e) => handleInputChange('country', e.target.value)}
+              onChange={e => handleInputChange('country', e.target.value)}
             />
           </Grid>
 
           {/* Customer Classification */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant='h6'
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <Business />
               Customer Classification
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Customer Type</InputLabel>
               <Select
                 value={formData.customerType}
-                onChange={(e) => handleInputChange('customerType', e.target.value)}
-                label="Customer Type"
+                onChange={e =>
+                  handleInputChange('customerType', e.target.value)
+                }
+                label='Customer Type'
               >
-                <MenuItem value="individual">Individual</MenuItem>
-                <MenuItem value="business">Business</MenuItem>
-                <MenuItem value="insurance">Insurance</MenuItem>
-                <MenuItem value="fleet">Fleet</MenuItem>
+                <MenuItem value='individual'>Individual</MenuItem>
+                <MenuItem value='business'>Business</MenuItem>
+                <MenuItem value='insurance'>Insurance</MenuItem>
+                <MenuItem value='fleet'>Fleet</MenuItem>
               </Select>
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Customer Status</InputLabel>
               <Select
                 value={formData.customerStatus}
-                onChange={(e) => handleInputChange('customerStatus', e.target.value)}
-                label="Customer Status"
+                onChange={e =>
+                  handleInputChange('customerStatus', e.target.value)
+                }
+                label='Customer Status'
               >
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-                <MenuItem value="prospect">Prospect</MenuItem>
-                <MenuItem value="vip">VIP</MenuItem>
+                <MenuItem value='active'>Active</MenuItem>
+                <MenuItem value='inactive'>Inactive</MenuItem>
+                <MenuItem value='prospect'>Prospect</MenuItem>
+                <MenuItem value='vip'>VIP</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -448,142 +476,204 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
           {/* Business Information (conditional) */}
           {formData.customerType === 'business' && (
             <>
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Company Name *"
+                  label='Company Name *'
                   value={formData.companyName}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  onChange={e =>
+                    handleInputChange('companyName', e.target.value)
+                  }
                   error={!!errors.companyName}
                   helperText={errors.companyName}
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Tax ID"
+                  label='Tax ID'
                   value={formData.taxId}
-                  onChange={(e) => handleInputChange('taxId', e.target.value)}
+                  onChange={e => handleInputChange('taxId', e.target.value)}
                 />
               </Grid>
             </>
           )}
 
-          {/* Financial Information */}
-          <Grid item xs={12}>
+          {/* Insurance Information for Collision Repair */}
+          <Grid xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant='h6'
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <Star />
+              Insurance Information
+            </Typography>
+          </Grid>
+
+          <Grid xs={12} md={4}>
+            <TextField
+              fullWidth
+              label='Primary Insurance Company'
+              value={formData.primaryInsuranceCompany}
+              onChange={e =>
+                handleInputChange('primaryInsuranceCompany', e.target.value)
+              }
+              placeholder='e.g., State Farm, GEICO, Progressive'
+            />
+          </Grid>
+
+          <Grid xs={12} md={4}>
+            <TextField
+              fullWidth
+              label='Policy Number'
+              value={formData.policyNumber}
+              onChange={e => handleInputChange('policyNumber', e.target.value)}
+            />
+          </Grid>
+
+          <Grid xs={12} md={4}>
+            <TextField
+              fullWidth
+              label='Deductible'
+              type='number'
+              value={formData.deductible}
+              onChange={e => handleInputChange('deductible', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              placeholder='500.00'
+            />
+          </Grid>
+
+          {/* Financial Information */}
+          <Grid xs={12}>
+            <Divider sx={{ my: 2 }} />
+            <Typography
+              variant='h6'
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <Star />
               Financial Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Credit Limit"
-              type="number"
+              label='Credit Limit'
+              type='number'
               value={formData.creditLimit}
-              onChange={(e) => handleInputChange('creditLimit', e.target.value)}
+              onChange={e => handleInputChange('creditLimit', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Payment Terms</InputLabel>
               <Select
                 value={formData.paymentTerms}
-                onChange={(e) => handleInputChange('paymentTerms', e.target.value)}
-                label="Payment Terms"
+                onChange={e =>
+                  handleInputChange('paymentTerms', e.target.value)
+                }
+                label='Payment Terms'
               >
-                <MenuItem value="immediate">Immediate</MenuItem>
-                <MenuItem value="net_15">Net 15</MenuItem>
-                <MenuItem value="net_30">Net 30</MenuItem>
-                <MenuItem value="net_60">Net 60</MenuItem>
+                <MenuItem value='immediate'>Immediate</MenuItem>
+                <MenuItem value='net_15'>Net 15</MenuItem>
+                <MenuItem value='net_30'>Net 30</MenuItem>
+                <MenuItem value='net_60'>Net 60</MenuItem>
               </Select>
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Loyalty Points"
-              type="number"
+              label='Loyalty Points'
+              type='number'
               value={formData.loyaltyPoints}
-              onChange={(e) => handleInputChange('loyaltyPoints', e.target.value)}
+              onChange={e => handleInputChange('loyaltyPoints', e.target.value)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
-              label="Referral Source"
+              label='Referral Source'
               value={formData.referralSource}
-              onChange={(e) => handleInputChange('referralSource', e.target.value)}
+              onChange={e =>
+                handleInputChange('referralSource', e.target.value)
+              }
             />
           </Grid>
 
           {/* Communication Preferences */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant='h6' sx={{ mb: 2 }}>
               Communication Preferences
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <FormControlLabel
               control={
                 <Switch
                   checked={formData.smsOptIn}
-                  onChange={(e) => handleInputChange('smsOptIn', e.target.checked)}
+                  onChange={e =>
+                    handleInputChange('smsOptIn', e.target.checked)
+                  }
                 />
               }
-              label="SMS Opt-in"
+              label='SMS Opt-in'
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <FormControlLabel
               control={
                 <Switch
                   checked={formData.emailOptIn}
-                  onChange={(e) => handleInputChange('emailOptIn', e.target.checked)}
+                  onChange={e =>
+                    handleInputChange('emailOptIn', e.target.checked)
+                  }
                 />
               }
-              label="Email Opt-in"
+              label='Email Opt-in'
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <FormControlLabel
               control={
                 <Switch
                   checked={formData.marketingOptIn}
-                  onChange={(e) => handleInputChange('marketingOptIn', e.target.checked)}
+                  onChange={e =>
+                    handleInputChange('marketingOptIn', e.target.checked)
+                  }
                 />
               }
-              label="Marketing Opt-in"
+              label='Marketing Opt-in'
             />
           </Grid>
 
           {/* Notes */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant='h6' sx={{ mb: 2 }}>
               Notes
             </Typography>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <TextField
               fullWidth
-              label="Notes"
+              label='Notes'
               multiline
               rows={4}
               value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
+              onChange={e => handleInputChange('notes', e.target.value)}
             />
           </Grid>
         </Grid>
@@ -595,11 +685,15 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
         </Button>
         <Button
           onClick={handleSubmit}
-          variant="contained"
+          variant='contained'
           startIcon={loading ? <CircularProgress size={20} /> : <Save />}
           disabled={loading}
         >
-          {loading ? 'Saving...' : (customer ? 'Update Customer' : 'Create Customer')}
+          {loading
+            ? 'Saving...'
+            : customer
+              ? 'Update Customer'
+              : 'Create Customer'}
         </Button>
       </DialogActions>
     </Dialog>

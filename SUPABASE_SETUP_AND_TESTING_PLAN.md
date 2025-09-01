@@ -7,6 +7,7 @@ This document provides a comprehensive plan for setting up, testing, and validat
 ## Phase 1: Environment Setup and Prerequisites
 
 ### 1.1 System Requirements Check
+
 - [ ] Node.js 16+ installed
 - [ ] npm 8+ installed
 - [ ] Git access to repository
@@ -14,6 +15,7 @@ This document provides a comprehensive plan for setting up, testing, and validat
 - [ ] Current database backup completed
 
 ### 1.2 Backup Current Data
+
 ```bash
 # Create backup of current SQLite database
 cp data/collisionos.db data/collisionos_backup_$(date +%Y%m%d_%H%M%S).db
@@ -23,6 +25,7 @@ sqlite3 data/collisionos_backup_*.db "PRAGMA integrity_check;"
 ```
 
 ### 1.3 Install Migration Tools
+
 ```bash
 cd supabase-migration
 npm install
@@ -31,11 +34,13 @@ npm install
 ## Phase 2: Supabase Project Setup
 
 ### 2.1 Create Supabase Project
+
 ```bash
 npm run setup
 ```
 
 This script will:
+
 - Install Supabase CLI if needed
 - Guide through project creation
 - Set up authentication configuration
@@ -46,6 +51,7 @@ This script will:
 ### 2.2 Manual Configuration Steps
 
 #### Authentication Settings
+
 1. Go to Supabase Dashboard > Authentication > Settings
 2. Set Site URL to: `http://localhost:3000` (for development)
 3. Add redirect URLs:
@@ -56,6 +62,7 @@ This script will:
 6. Set session timeout to 24 hours
 
 #### Storage Setup
+
 1. Create storage buckets:
    - `avatars` (public, max file size: 5MB)
    - `documents` (private, max file size: 50MB)
@@ -63,6 +70,7 @@ This script will:
    - `attachments` (private, max file size: 25MB)
 
 #### Database Configuration
+
 1. Review applied schema in Database > Tables
 2. Verify RLS policies are in place
 3. Check database functions are created
@@ -73,10 +81,11 @@ This script will:
 ### 3.1 Create Test Data Scripts
 
 #### 3.1.1 Shop Data
+
 ```sql
 -- Insert test shop
 INSERT INTO shops (
-  id, name, business_name, email, phone, address, city, state, 
+  id, name, business_name, email, phone, address, city, state,
   postal_code, country, timezone, currency, tax_number
 ) VALUES (
   '550e8400-e29b-41d4-a716-446655440001',
@@ -96,12 +105,13 @@ INSERT INTO shops (
 ```
 
 #### 3.1.2 User Data
+
 ```sql
 -- Insert test users with different roles
 INSERT INTO users (
-  user_id, shop_id, email, first_name, last_name, role, 
+  user_id, shop_id, email, first_name, last_name, role,
   phone, is_active, email_confirmed_at
-) VALUES 
+) VALUES
 -- Owner
 ('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440001', 'owner@collisionos.com', 'John', 'Smith', 'owner', '+1-555-0001', true, NOW()),
 -- Manager
@@ -117,13 +127,14 @@ INSERT INTO users (
 ```
 
 #### 3.1.3 Customer Data
+
 ```sql
 -- Insert test customers
 INSERT INTO customers (
   id, shop_id, customer_number, first_name, last_name, email, phone,
   address, city, state, postal_code, country, customer_type, customer_status,
   preferred_contact, sms_opt_in, email_opt_in
-) VALUES 
+) VALUES
 -- Individual Customer 1
 ('550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440001', 'CUST001', 'Alice', 'Thompson', 'alice.thompson@email.com', '+1-555-1001', '456 Oak Avenue', 'Toronto', 'ON', 'M5V 2H1', 'Canada', 'individual', 'active', 'phone', true, true),
 -- Individual Customer 2
@@ -137,13 +148,14 @@ INSERT INTO customers (
 ```
 
 #### 3.1.4 Vehicle Data
+
 ```sql
 -- Insert test vehicles
 INSERT INTO vehicles (
   id, shop_id, customer_id, vin, year, make, model, trim,
   body_style, fuel_type, color, mileage, mileage_unit,
   license_plate, province, vehicle_status, warranty_type
-) VALUES 
+) VALUES
 -- Vehicle for Customer 1
 ('550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440008', '1HGBH41JXMN109186', 2020, 'Honda', 'Civic', 'Sport', 'sedan', 'gasoline', 'Blue', 45000, 'miles', 'ABC123', 'ON', 'active', 'manufacturer'),
 -- Vehicle for Customer 2
@@ -157,13 +169,14 @@ INSERT INTO vehicles (
 ```
 
 #### 3.1.5 Vendor Data
+
 ```sql
 -- Insert test vendors
 INSERT INTO vendors (
   id, shop_id, vendor_number, name, contact_name, email, phone,
   address, city, state, postal_code, country, vendor_type,
   vendor_status, payment_terms, credit_limit
-) VALUES 
+) VALUES
 -- OEM Parts Vendor
 ('550e8400-e29b-41d4-a716-446655440018', '550e8400-e29b-41d4-a716-446655440001', 'VEND001', 'Honda Parts Direct', 'John Parts', 'parts@honda.com', '+1-555-2001', '123 Parts Ave', 'Toronto', 'ON', 'M5V 7P1', 'Canada', 'oem', 'active', 'net_30', 50000.00),
 -- Aftermarket Parts Vendor
@@ -175,13 +188,14 @@ INSERT INTO vendors (
 ```
 
 #### 3.1.6 Parts Data
+
 ```sql
 -- Insert test parts
 INSERT INTO parts (
   id, shop_id, vendor_id, part_number, name, description,
   category, part_type, cost, price, markup_percentage,
   stock_quantity, reorder_point, part_status, warranty_type
-) VALUES 
+) VALUES
 -- Honda Civic Parts
 ('550e8400-e29b-41d4-a716-446655440022', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440018', 'HON001', 'Honda Civic Front Bumper', 'OEM front bumper for 2020 Honda Civic', 'body', 'oem', 450.00, 675.00, 50.00, 2, 1, 'active', 'manufacturer'),
 ('550e8400-e29b-41d4-a716-446655440023', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440018', 'HON002', 'Honda Civic Headlight Assembly', 'OEM headlight assembly for 2020 Honda Civic', 'electrical', 'oem', 320.00, 480.00, 50.00, 3, 1, 'active', 'manufacturer'),
@@ -196,6 +210,7 @@ INSERT INTO parts (
 ### 3.2 Job Creation Scripts
 
 #### 3.2.1 Create Jobs with Different Statuses
+
 ```sql
 -- Job 1: Estimate Stage
 INSERT INTO jobs (
@@ -317,19 +332,20 @@ INSERT INTO jobs (
 ```
 
 #### 3.2.2 Job Parts and Labor
+
 ```sql
 -- Job Parts for Job 1
 INSERT INTO job_parts (
   id, job_id, part_id, quantity, cost, price, markup_percentage,
   status, notes
-) VALUES 
+) VALUES
 ('550e8400-e29b-41d4-a716-446655440032', '550e8400-e29b-41d4-a716-446655440027', '550e8400-e29b-41d4-a716-446655440022', 1, 450.00, 675.00, 50.00, 'ordered', 'Front bumper for Honda Civic'),
 ('550e8400-e29b-41d4-a716-446655440033', '550e8400-e29b-41d4-a716-446655440027', '550e8400-e29b-41d4-a716-446655440023', 1, 320.00, 480.00, 50.00, 'ordered', 'Headlight assembly');
 
 -- Job Labor for Job 1
 INSERT INTO job_labor (
   id, job_id, operation, hours, rate, amount, notes
-) VALUES 
+) VALUES
 ('550e8400-e29b-41d4-a716-446655440034', '550e8400-e29b-41d4-a716-446655440027', 'Remove and replace front bumper', 2.5, 85.00, 212.50, 'Standard bumper replacement'),
 ('550e8400-e29b-41d4-a716-446655440035', '550e8400-e29b-41d4-a716-446655440027', 'Remove and replace headlight assembly', 1.0, 85.00, 85.00, 'Headlight replacement'),
 ('550e8400-e29b-41d4-a716-446655440036', '550e8400-e29b-41d4-a716-446655440027', 'Paint preparation and painting', 6.0, 85.00, 510.00, 'Paint and blend work'),
@@ -349,18 +365,20 @@ const path = require('path');
 class TestDataSeeder {
   constructor() {
     this.configPath = path.join(__dirname, '..', 'supabase-config.json');
-    
+
     if (!fs.existsSync(this.configPath)) {
-      throw new Error('Supabase configuration not found. Please run setup script first.');
+      throw new Error(
+        'Supabase configuration not found. Please run setup script first.'
+      );
     }
-    
+
     const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
     this.client = createClient(config.supabaseUrl, config.serviceRoleKey);
   }
 
   async seedAllData() {
     console.log('🌱 Starting test data seeding...');
-    
+
     try {
       // Seed in dependency order
       await this.seedShops();
@@ -372,7 +390,7 @@ class TestDataSeeder {
       await this.seedJobs();
       await this.seedJobParts();
       await this.seedJobLabor();
-      
+
       console.log('✅ All test data seeded successfully!');
     } catch (error) {
       console.error('❌ Error seeding test data:', error);
@@ -395,7 +413,7 @@ class TestDataSeeder {
       country: 'Canada',
       timezone: 'America/Toronto',
       currency: 'CAD',
-      tax_number: '123456789RT0001'
+      tax_number: '123456789RT0001',
     };
 
     const { error } = await this.client
@@ -412,9 +430,10 @@ class TestDataSeeder {
 // Run the seeder
 if (require.main === module) {
   const seeder = new TestDataSeeder();
-  seeder.seedAllData()
+  seeder
+    .seedAllData()
     .then(() => process.exit(0))
-    .catch((error) => {
+    .catch(error => {
       console.error('Seeding failed:', error);
       process.exit(1);
     });
@@ -426,21 +445,25 @@ module.exports = TestDataSeeder;
 ## Phase 4: Data Migration and Testing
 
 ### 4.1 Export Current Data
+
 ```bash
 npm run export
 ```
 
 ### 4.2 Migrate Data to Supabase
+
 ```bash
 npm run migrate
 ```
 
 ### 4.3 Seed Additional Test Data
+
 ```bash
 node scripts/seed-test-data.js
 ```
 
 ### 4.4 Run Validation Tests
+
 ```bash
 npm run validate
 ```
@@ -448,6 +471,7 @@ npm run validate
 ## Phase 5: Comprehensive Testing
 
 ### 5.1 Database Structure Tests
+
 - [ ] All tables exist and are accessible
 - [ ] Foreign key constraints are working
 - [ ] Indexes are properly created
@@ -455,6 +479,7 @@ npm run validate
 - [ ] Triggers and functions are working
 
 ### 5.2 Authentication Tests
+
 - [ ] User registration and login
 - [ ] Role-based access control
 - [ ] Password reset functionality
@@ -462,6 +487,7 @@ npm run validate
 - [ ] Session management
 
 ### 5.3 Business Logic Tests
+
 - [ ] Customer creation and management
 - [ ] Vehicle registration and tracking
 - [ ] Job workflow progression
@@ -471,12 +497,14 @@ npm run validate
 - [ ] Payment processing
 
 ### 5.4 Realtime Functionality Tests
+
 - [ ] Job status updates
 - [ ] Customer notifications
 - [ ] Parts inventory alerts
 - [ ] User activity tracking
 
 ### 5.5 Performance Tests
+
 - [ ] Query response times < 100ms
 - [ ] Concurrent user access
 - [ ] Large dataset handling
@@ -485,6 +513,7 @@ npm run validate
 ## Phase 6: Application Integration Testing
 
 ### 6.1 Frontend Integration
+
 1. Update Supabase client configuration
 2. Test all user workflows
 3. Verify real-time updates
@@ -492,12 +521,14 @@ npm run validate
 5. Validate authentication flow
 
 ### 6.2 API Integration
+
 1. Replace existing API calls with Supabase
 2. Test all CRUD operations
 3. Verify error handling
 4. Test rate limiting and quotas
 
 ### 6.3 User Acceptance Testing
+
 1. Test all user roles and permissions
 2. Verify data accuracy across modules
 3. Test real-time updates and notifications
@@ -507,6 +538,7 @@ npm run validate
 ## Phase 7: Go-Live Preparation
 
 ### 7.1 Pre-Go-Live Checklist
+
 - [ ] All validation tests pass
 - [ ] User acceptance testing complete
 - [ ] Performance benchmarks met
@@ -516,6 +548,7 @@ npm run validate
 - [ ] Support team briefed
 
 ### 7.2 Monitoring Setup
+
 - [ ] Set up Supabase monitoring
 - [ ] Configure alerts for critical issues
 - [ ] Set up logging and error tracking
@@ -525,18 +558,21 @@ npm run validate
 ## Success Metrics
 
 ### Performance Targets
+
 - Page load times < 2 seconds
 - Query response times < 100ms
 - Realtime latency < 50ms
 - 99.9% uptime
 
 ### User Experience Targets
+
 - Zero data loss
 - All features working as expected
 - User satisfaction maintained
 - Support ticket volume normal
 
 ### Business Continuity Targets
+
 - No disruption to daily operations
 - All integrations functioning
 - Reports generating correctly
@@ -547,6 +583,7 @@ npm run validate
 ### Common Issues and Solutions
 
 #### Connection Issues
+
 ```bash
 # Check Supabase configuration
 cat supabase-config.json
@@ -561,6 +598,7 @@ client.from('shops').select('*').limit(1).then(console.log);
 ```
 
 #### RLS Policy Issues
+
 ```sql
 -- Temporarily disable RLS for testing
 ALTER TABLE shops DISABLE ROW LEVEL SECURITY;
@@ -570,6 +608,7 @@ ALTER TABLE shops ENABLE ROW LEVEL SECURITY;
 ```
 
 #### Data Migration Issues
+
 ```bash
 # Check migration logs
 tail -f migration-log.txt

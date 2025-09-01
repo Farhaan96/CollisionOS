@@ -4,19 +4,17 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
-import ValidationEngine, { 
-  ValidationDisplay, 
-  ValidationSummary, 
-  VALIDATION_TYPES, 
-  BUILT_IN_RULES 
+import ValidationEngine, {
+  ValidationDisplay,
+  ValidationSummary,
+  VALIDATION_TYPES,
+  BUILT_IN_RULES,
 } from '../../../../src/components/Forms/ValidationEngine';
 
 const theme = createTheme();
 
 const TestWrapper = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    {children}
-  </ThemeProvider>
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
 describe('ValidationEngine', () => {
@@ -29,11 +27,9 @@ describe('ValidationEngine', () => {
   describe('Built-in Validation Rules', () => {
     describe('REQUIRED validation', () => {
       it('validates required fields correctly', async () => {
-        const result = await validationEngine.validateField(
-          'testField',
-          '',
-          { validation: [{ type: VALIDATION_TYPES.REQUIRED }] }
-        );
+        const result = await validationEngine.validateField('testField', '', {
+          validation: [{ type: VALIDATION_TYPES.REQUIRED }],
+        });
 
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveLength(1);
@@ -54,14 +50,17 @@ describe('ValidationEngine', () => {
 
     describe('EMAIL validation', () => {
       it('validates email format correctly', async () => {
-        const invalidEmails = ['invalid', 'invalid@', '@invalid.com', 'invalid@invalid'];
-        
+        const invalidEmails = [
+          'invalid',
+          'invalid@',
+          '@invalid.com',
+          'invalid@invalid',
+        ];
+
         for (const email of invalidEmails) {
-          const result = await validationEngine.validateField(
-            'email',
-            email,
-            { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-          );
+          const result = await validationEngine.validateField('email', email, {
+            validation: [{ type: VALIDATION_TYPES.EMAIL }],
+          });
 
           expect(result.isValid).toBe(false);
           expect(result.errors[0].message).toContain('email');
@@ -72,15 +71,13 @@ describe('ValidationEngine', () => {
         const validEmails = [
           'test@example.com',
           'user.name@domain.co.uk',
-          'firstname+lastname@example.com'
+          'firstname+lastname@example.com',
         ];
 
         for (const email of validEmails) {
-          const result = await validationEngine.validateField(
-            'email',
-            email,
-            { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-          );
+          const result = await validationEngine.validateField('email', email, {
+            validation: [{ type: VALIDATION_TYPES.EMAIL }],
+          });
 
           expect(result.isValid).toBe(true);
           expect(result.errors).toHaveLength(0);
@@ -88,11 +85,9 @@ describe('ValidationEngine', () => {
       });
 
       it('passes validation for empty email when not required', async () => {
-        const result = await validationEngine.validateField(
-          'email',
-          '',
-          { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-        );
+        const result = await validationEngine.validateField('email', '', {
+          validation: [{ type: VALIDATION_TYPES.EMAIL }],
+        });
 
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -104,7 +99,11 @@ describe('ValidationEngine', () => {
         const result = await validationEngine.validateField(
           'testField',
           'abc',
-          { validation: [{ type: VALIDATION_TYPES.MIN_LENGTH, options: { min: 5 } }] }
+          {
+            validation: [
+              { type: VALIDATION_TYPES.MIN_LENGTH, options: { min: 5 } },
+            ],
+          }
         );
 
         expect(result.isValid).toBe(false);
@@ -115,7 +114,11 @@ describe('ValidationEngine', () => {
         const result = await validationEngine.validateField(
           'testField',
           'abcdef',
-          { validation: [{ type: VALIDATION_TYPES.MIN_LENGTH, options: { min: 5 } }] }
+          {
+            validation: [
+              { type: VALIDATION_TYPES.MIN_LENGTH, options: { min: 5 } },
+            ],
+          }
         );
 
         expect(result.isValid).toBe(true);
@@ -128,14 +131,16 @@ describe('ValidationEngine', () => {
         const result = await validationEngine.validateField(
           'testField',
           'abc123',
-          { 
-            validation: [{ 
-              type: VALIDATION_TYPES.PATTERN, 
-              options: { 
-                regex: /^[a-zA-Z]+$/,
-                message: 'Only letters allowed'
-              } 
-            }] 
+          {
+            validation: [
+              {
+                type: VALIDATION_TYPES.PATTERN,
+                options: {
+                  regex: /^[a-zA-Z]+$/,
+                  message: 'Only letters allowed',
+                },
+              },
+            ],
           }
         );
 
@@ -147,11 +152,13 @@ describe('ValidationEngine', () => {
         const result = await validationEngine.validateField(
           'testField',
           'abcdef',
-          { 
-            validation: [{ 
-              type: VALIDATION_TYPES.PATTERN, 
-              options: { regex: /^[a-zA-Z]+$/ } 
-            }] 
+          {
+            validation: [
+              {
+                type: VALIDATION_TYPES.PATTERN,
+                options: { regex: /^[a-zA-Z]+$/ },
+              },
+            ],
           }
         );
 
@@ -208,7 +215,7 @@ describe('ValidationEngine', () => {
         const validUrls = [
           'https://example.com',
           'http://subdomain.example.co.uk',
-          'https://example.com/path?query=value'
+          'https://example.com/path?query=value',
         ];
 
         for (const url of validUrls) {
@@ -228,9 +235,9 @@ describe('ValidationEngine', () => {
   describe('Custom Validation Rules', () => {
     it('allows adding custom validation rules', async () => {
       validationEngine.addRule('custom_uppercase', {
-        validate: (value) => !value || value === value.toUpperCase(),
+        validate: value => !value || value === value.toUpperCase(),
         message: 'Value must be uppercase',
-        severity: 'error'
+        severity: 'error',
       });
 
       const result = await validationEngine.validateField(
@@ -244,17 +251,16 @@ describe('ValidationEngine', () => {
     });
 
     it('supports custom validation functions in schema', async () => {
-      const result = await validationEngine.validateField(
-        'testField',
-        'test',
-        { 
-          validation: [{ 
+      const result = await validationEngine.validateField('testField', 'test', {
+        validation: [
+          {
             type: VALIDATION_TYPES.CUSTOM,
-            validate: (value) => value.length > 5 || 'Must be longer than 5 characters',
-            message: 'Custom validation failed'
-          }] 
-        }
-      );
+            validate: value =>
+              value.length > 5 || 'Must be longer than 5 characters',
+            message: 'Custom validation failed',
+          },
+        ],
+      });
 
       expect(result.isValid).toBe(false);
       expect(result.errors[0].message).toBe('Must be longer than 5 characters');
@@ -265,7 +271,7 @@ describe('ValidationEngine', () => {
     it('handles async validation correctly', async () => {
       const asyncValidator = jest.fn().mockResolvedValue({
         message: 'Async validation failed',
-        severity: 'error'
+        severity: 'error',
       });
 
       validationEngine.addAsyncValidator('testField', asyncValidator);
@@ -299,7 +305,9 @@ describe('ValidationEngine', () => {
     });
 
     it('handles async validation errors', async () => {
-      const asyncValidator = jest.fn().mockRejectedValue(new Error('Network error'));
+      const asyncValidator = jest
+        .fn()
+        .mockRejectedValue(new Error('Network error'));
       validationEngine.addAsyncValidator('testField', asyncValidator);
 
       const result = await validationEngine.validateField(
@@ -320,63 +328,63 @@ describe('ValidationEngine', () => {
       const crossFieldValidator = jest.fn().mockResolvedValue({
         confirmPassword: {
           isValid: false,
-          errors: [{ message: 'Passwords do not match', severity: 'error' }]
-        }
+          errors: [{ message: 'Passwords do not match', severity: 'error' }],
+        },
       });
 
       validationEngine.addCrossFieldValidator(crossFieldValidator);
 
       const result = await validationEngine.validateCrossFields({
         password: 'password123',
-        confirmPassword: 'different'
+        confirmPassword: 'different',
       });
 
       expect(crossFieldValidator).toHaveBeenCalledWith({
         password: 'password123',
-        confirmPassword: 'different'
+        confirmPassword: 'different',
       });
-      expect(result.confirmPassword.errors[0].message).toBe('Passwords do not match');
+      expect(result.confirmPassword.errors[0].message).toBe(
+        'Passwords do not match'
+      );
     });
   });
 
   describe('Validation Caching', () => {
     it('caches validation results by default', async () => {
-      const mockValidate = jest.spyOn(BUILT_IN_RULES[VALIDATION_TYPES.EMAIL], 'validate');
+      const mockValidate = jest.spyOn(
+        BUILT_IN_RULES[VALIDATION_TYPES.EMAIL],
+        'validate'
+      );
 
       // First validation
-      await validationEngine.validateField(
-        'email',
-        'test@example.com',
-        { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-      );
+      await validationEngine.validateField('email', 'test@example.com', {
+        validation: [{ type: VALIDATION_TYPES.EMAIL }],
+      });
 
       // Second validation with same parameters
-      await validationEngine.validateField(
-        'email',
-        'test@example.com',
-        { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-      );
+      await validationEngine.validateField('email', 'test@example.com', {
+        validation: [{ type: VALIDATION_TYPES.EMAIL }],
+      });
 
       // Should only validate once due to caching
       expect(mockValidate).toHaveBeenCalledTimes(1);
     });
 
     it('can clear validation cache', async () => {
-      await validationEngine.validateField(
-        'email',
-        'test@example.com',
-        { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
-      );
+      await validationEngine.validateField('email', 'test@example.com', {
+        validation: [{ type: VALIDATION_TYPES.EMAIL }],
+      });
 
       validationEngine.clearCache();
 
-      const mockValidate = jest.spyOn(BUILT_IN_RULES[VALIDATION_TYPES.EMAIL], 'validate');
-
-      await validationEngine.validateField(
-        'email',
-        'test@example.com',
-        { validation: [{ type: VALIDATION_TYPES.EMAIL }] }
+      const mockValidate = jest.spyOn(
+        BUILT_IN_RULES[VALIDATION_TYPES.EMAIL],
+        'validate'
       );
+
+      await validationEngine.validateField('email', 'test@example.com', {
+        validation: [{ type: VALIDATION_TYPES.EMAIL }],
+      });
 
       expect(mockValidate).toHaveBeenCalled();
     });
@@ -384,19 +392,15 @@ describe('ValidationEngine', () => {
 
   describe('Validation Severity Levels', () => {
     it('supports different severity levels', async () => {
-      const result = await validationEngine.validateField(
-        'testField',
-        'test',
-        { 
-          validation: [
-            { 
-              type: VALIDATION_TYPES.MIN_LENGTH, 
-              options: { min: 10 },
-              severity: 'warning'
-            }
-          ] 
-        }
-      );
+      const result = await validationEngine.validateField('testField', 'test', {
+        validation: [
+          {
+            type: VALIDATION_TYPES.MIN_LENGTH,
+            options: { min: 10 },
+            severity: 'warning',
+          },
+        ],
+      });
 
       expect(result.isValid).toBe(true); // Warnings don't make field invalid
       expect(result.warnings).toHaveLength(1);
@@ -409,14 +413,22 @@ describe('ValidationDisplay Component', () => {
   const mockValidationResult = {
     isValid: false,
     errors: [
-      { message: 'This field is required', severity: 'error', type: 'required' }
+      {
+        message: 'This field is required',
+        severity: 'error',
+        type: 'required',
+      },
     ],
     warnings: [
-      { message: 'Consider using a longer password', severity: 'warning', type: 'password_strength' }
+      {
+        message: 'Consider using a longer password',
+        severity: 'warning',
+        type: 'password_strength',
+      },
     ],
     infos: [
-      { message: 'Password strength: Medium', severity: 'info', type: 'info' }
-    ]
+      { message: 'Password strength: Medium', severity: 'info', type: 'info' },
+    ],
   };
 
   it('renders validation errors', () => {
@@ -451,7 +463,9 @@ describe('ValidationDisplay Component', () => {
     const expandButton = screen.getByLabelText(/expand/i);
     await user.click(expandButton);
 
-    expect(screen.getByText('Consider using a longer password')).toBeInTheDocument();
+    expect(
+      screen.getByText('Consider using a longer password')
+    ).toBeInTheDocument();
     expect(screen.getByText('Password strength: Medium')).toBeInTheDocument();
   });
 
@@ -460,13 +474,13 @@ describe('ValidationDisplay Component', () => {
     const asyncValidationResult = {
       isValid: false,
       errors: [
-        { message: 'Server validation failed', severity: 'error', async: true }
-      ]
+        { message: 'Server validation failed', severity: 'error', async: true },
+      ],
     };
 
     render(
       <TestWrapper>
-        <ValidationDisplay 
+        <ValidationDisplay
           validationResult={asyncValidationResult}
           onRetryAsync={mockRetry}
         />
@@ -485,7 +499,7 @@ describe('ValidationDisplay Component', () => {
       isValid: true,
       errors: [],
       warnings: [],
-      infos: []
+      infos: [],
     };
 
     render(
@@ -504,24 +518,22 @@ describe('ValidationSummary Component', () => {
       isValid: true,
       errors: [],
       warnings: [],
-      infos: []
+      infos: [],
     },
     email: {
       isValid: false,
-      errors: [
-        { message: 'Invalid email format', severity: 'error' }
-      ],
+      errors: [{ message: 'Invalid email format', severity: 'error' }],
       warnings: [],
-      infos: []
+      infos: [],
     },
     password: {
       isValid: true,
       errors: [],
       warnings: [
-        { message: 'Consider using a stronger password', severity: 'warning' }
+        { message: 'Consider using a stronger password', severity: 'warning' },
       ],
-      infos: []
-    }
+      infos: [],
+    },
   };
 
   it('renders validation summary with correct stats', () => {
@@ -584,7 +596,7 @@ describe('ValidationSummary Component', () => {
 
     render(
       <TestWrapper>
-        <ValidationSummary 
+        <ValidationSummary
           validationResults={mockValidationResults}
           onFieldFocus={mockOnFieldFocus}
         />
@@ -605,7 +617,7 @@ describe('ValidationSummary Component', () => {
   it('hides warnings when showWarnings is false', () => {
     render(
       <TestWrapper>
-        <ValidationSummary 
+        <ValidationSummary
           validationResults={mockValidationResults}
           showWarnings={false}
         />
@@ -620,7 +632,7 @@ describe('ValidationSummary Component', () => {
 
     render(
       <TestWrapper>
-        <ValidationSummary 
+        <ValidationSummary
           validationResults={mockValidationResults}
           showSuccessFields={true}
         />

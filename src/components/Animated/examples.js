@@ -6,19 +6,19 @@ import { Box, Typography, Grid } from '@mui/material';
 import { PlayArrow, Save, Star, Settings } from '@mui/icons-material';
 
 // Import animated components
-import AnimatedButton, { 
-  PremiumButton, 
-  ExecutiveButton, 
-  GlassButton, 
-  MagneticButton 
+import AnimatedButton, {
+  PremiumButton,
+  ExecutiveButton,
+  GlassButton,
+  MagneticButton,
 } from './AnimatedButton';
 
-import AnimatedCard, { 
-  PremiumCard, 
-  GlassCard, 
-  ExecutiveCard, 
+import AnimatedCard, {
+  PremiumCard,
+  GlassCard,
+  ExecutiveCard,
   FlipCard,
-  CardGrid 
+  CardGrid,
 } from './AnimatedCard';
 
 // Example: Button Showcase
@@ -37,13 +37,15 @@ export const ButtonShowcase = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Animated Button Examples
       </Typography>
-      
+
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <Typography variant="h6" gutterBottom>Premium Buttons</Typography>
+          <Typography variant='h6' gutterBottom>
+            Premium Buttons
+          </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <PremiumButton
               state={buttonState}
@@ -53,46 +55,34 @@ export const ButtonShowcase = () => {
               Premium Action
             </PremiumButton>
 
-            <ExecutiveButton
-              icon={<Save />}
-              endIcon={<Star />}
-            >
+            <ExecutiveButton icon={<Save />} endIcon={<Star />}>
               Executive Style
             </ExecutiveButton>
 
-            <GlassButton variant="glass">
-              Glass Morphism
-            </GlassButton>
+            <GlassButton variant='glass'>Glass Morphism</GlassButton>
 
-            <MagneticButton>
-              Magnetic Effect
-            </MagneticButton>
+            <MagneticButton>Magnetic Effect</MagneticButton>
           </Box>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Typography variant="h6" gutterBottom>Button Variants</Typography>
+          <Typography variant='h6' gutterBottom>
+            Button Variants
+          </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <AnimatedButton 
-              animation="ripple" 
-              variant="premium"
-            >
+            <AnimatedButton animation='ripple' variant='premium'>
               Ripple Animation
             </AnimatedButton>
 
-            <AnimatedButton 
-              animation="glow" 
-              variant="executive"
-              glowColor="#00ff88"
+            <AnimatedButton
+              animation='glow'
+              variant='executive'
+              glowColor='#00ff88'
             >
               Custom Glow
             </AnimatedButton>
 
-            <AnimatedButton 
-              animation="scale" 
-              variant="minimal"
-              size="large"
-            >
+            <AnimatedButton animation='scale' variant='minimal' size='large'>
               Large Minimal
             </AnimatedButton>
           </Box>
@@ -106,61 +96,59 @@ export const ButtonShowcase = () => {
 export const CardShowcase = () => {
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Animated Card Examples
       </Typography>
 
       <CardGrid>
         <PremiumCard
           header={{
-            title: "Premium Card",
-            subheader: "With 3D tilt effect"
+            title: 'Premium Card',
+            subheader: 'With 3D tilt effect',
           }}
           interactive
         >
           <Typography>
-            This premium card has a 3D tilt effect when you hover over it. 
-            The glassmorphism background creates a modern, executive feel.
+            This premium card has a 3D tilt effect when you hover over it. The
+            glassmorphism background creates a modern, executive feel.
           </Typography>
         </PremiumCard>
 
         <GlassCard
           header={{
-            title: "Glass Morphism",
-            subheader: "Ultra-modern design"
+            title: 'Glass Morphism',
+            subheader: 'Ultra-modern design',
           }}
-          elevation="high"
+          elevation='high'
         >
           <Typography>
-            This glass card uses advanced backdrop filters and subtle 
+            This glass card uses advanced backdrop filters and subtle
             transparency to create a sophisticated floating effect.
           </Typography>
         </GlassCard>
 
         <ExecutiveCard
           header={{
-            title: "Executive Style",
-            subheader: "Dark theme with glow"
+            title: 'Executive Style',
+            subheader: 'Dark theme with glow',
           }}
-          glowColor="#6366f1"
+          glowColor='#6366f1'
         >
           <Typography sx={{ color: 'white' }}>
-            Executive cards feature dark themes with premium glow effects 
-            that convey authority and sophistication.
+            Executive cards feature dark themes with premium glow effects that
+            convey authority and sophistication.
           </Typography>
         </ExecutiveCard>
 
         <FlipCard
           header={{
-            title: "Interactive Flip",
-            subheader: "Click to flip"
+            title: 'Interactive Flip',
+            subheader: 'Click to flip',
           }}
           backContent={
             <Box sx={{ textAlign: 'center' }}>
               <Settings sx={{ fontSize: 48, mb: 2, color: 'primary.main' }} />
-              <Typography variant="h6">
-                Back Side Content
-              </Typography>
+              <Typography variant='h6'>Back Side Content</Typography>
               <Typography>
                 This is the back of the card with different content!
               </Typography>
@@ -168,8 +156,8 @@ export const CardShowcase = () => {
           }
         >
           <Typography>
-            Click this card to see it flip with a 3D animation. 
-            Perfect for revealing additional information or actions.
+            Click this card to see it flip with a 3D animation. Perfect for
+            revealing additional information or actions.
           </Typography>
         </FlipCard>
       </CardGrid>
@@ -182,7 +170,7 @@ export const AnimationStatesDemo = () => {
   const [cardState, setCardState] = useState('idle');
 
   const states = ['idle', 'loading', 'success', 'error'];
-  
+
   const cycleState = () => {
     const currentIndex = states.indexOf(cardState);
     const nextIndex = (currentIndex + 1) % states.length;
@@ -191,7 +179,7 @@ export const AnimationStatesDemo = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Animation States Demo
       </Typography>
 
@@ -204,48 +192,48 @@ export const AnimationStatesDemo = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <AnimatedCard
-            variant="premium"
-            animation="scale"
+            variant='premium'
+            animation='scale'
             header={{
               title: `Card State: ${cardState}`,
-              subheader: "Premium variant"
+              subheader: 'Premium variant',
             }}
           >
             <Typography>
-              This card demonstrates different animation states. 
-              The current state is: <strong>{cardState}</strong>
+              This card demonstrates different animation states. The current
+              state is: <strong>{cardState}</strong>
             </Typography>
           </AnimatedCard>
         </Grid>
 
         <Grid item xs={12} md={4}>
           <AnimatedCard
-            variant="glass"
-            animation="glow"
+            variant='glass'
+            animation='glow'
             header={{
-              title: "Glass Variant",
-              subheader: "With glow animation"
+              title: 'Glass Variant',
+              subheader: 'With glow animation',
             }}
           >
             <Typography>
-              Glass morphism card with dynamic glow effects 
-              based on the current animation state.
+              Glass morphism card with dynamic glow effects based on the current
+              animation state.
             </Typography>
           </AnimatedCard>
         </Grid>
 
         <Grid item xs={12} md={4}>
           <AnimatedCard
-            variant="executive"
-            animation="tilt"
+            variant='executive'
+            animation='tilt'
             header={{
-              title: "Executive Variant",
-              subheader: "3D tilt interaction"
+              title: 'Executive Variant',
+              subheader: '3D tilt interaction',
             }}
           >
             <Typography sx={{ color: 'white' }}>
-              Executive style with 3D mouse tracking for 
-              premium interaction feedback.
+              Executive style with 3D mouse tracking for premium interaction
+              feedback.
             </Typography>
           </AnimatedCard>
         </Grid>

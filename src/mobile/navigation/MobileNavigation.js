@@ -8,13 +8,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { 
-  Platform, 
-  StatusBar, 
-  View, 
-  Text, 
+import {
+  Platform,
+  StatusBar,
+  View,
+  Text,
   TouchableOpacity,
-  Animated
+  Animated,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -47,36 +47,36 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         colors={['rgba(30, 41, 59, 0.95)', 'rgba(15, 23, 42, 0.95)']}
         style={styles.tabBarGradient}
       />
-      
+
       <View style={styles.tabBarContent}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel || options.title || route.name;
           const isFocused = state.index === index;
-          
+
           const onPress = () => {
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
               canPreventDefault: true,
             });
-            
+
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
           };
-          
+
           const onLongPress = () => {
             navigation.emit({
               type: 'tabLongPress',
               target: route.key,
             });
           };
-          
+
           return (
             <TouchableOpacity
               key={route.key}
-              accessibilityRole="button"
+              accessibilityRole='button'
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               testID={options.tabBarTestID}
@@ -84,18 +84,19 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               onLongPress={onLongPress}
               style={styles.tabButton}
             >
-              <Animated.View style={[
-                styles.tabIconContainer,
-                isFocused && styles.tabIconContainerActive
-              ]}>
-                {options.tabBarIcon && 
+              <Animated.View
+                style={[
+                  styles.tabIconContainer,
+                  isFocused && styles.tabIconContainerActive,
+                ]}
+              >
+                {options.tabBarIcon &&
                   options.tabBarIcon({
                     focused: isFocused,
                     color: isFocused ? '#6366F1' : '#9CA3AF',
-                    size: 24
-                  })
-                }
-                
+                    size: 24,
+                  })}
+
                 {options.tabBarBadge && (
                   <View style={styles.tabBadge}>
                     <Text style={styles.tabBadgeText}>
@@ -104,11 +105,13 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                   </View>
                 )}
               </Animated.View>
-              
-              <Text style={[
-                styles.tabLabel,
-                { color: isFocused ? '#6366F1' : '#9CA3AF' }
-              ]}>
+
+              <Text
+                style={[
+                  styles.tabLabel,
+                  { color: isFocused ? '#6366F1' : '#9CA3AF' },
+                ]}
+              >
                 {label}
               </Text>
             </TouchableOpacity>
@@ -129,63 +132,63 @@ const CustomerTab = createBottomTabNavigator();
 // Customer Tab Navigator
 const CustomerTabNavigator = () => (
   <CustomerTab.Navigator
-    tabBar={(props) => <CustomTabBar {...props} />}
+    tabBar={props => <CustomTabBar {...props} />}
     screenOptions={{
       headerShown: false,
     }}
   >
     <CustomerTab.Screen
-      name="JobStatus"
+      name='JobStatus'
       component={JobStatusScreen}
       options={{
         title: 'My Job',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="work" color={color} size={size} />
+          <MaterialIcons name='work' color={color} size={size} />
         ),
       }}
     />
-    
+
     <CustomerTab.Screen
-      name="Photos"
+      name='Photos'
       component={PhotosScreen}
       options={{
         title: 'Photos',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="photo-camera" color={color} size={size} />
+          <MaterialIcons name='photo-camera' color={color} size={size} />
         ),
       }}
     />
-    
+
     <CustomerTab.Screen
-      name="Messages"
+      name='Messages'
       component={MessagesScreen}
       options={{
         title: 'Messages',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="message" color={color} size={size} />
+          <MaterialIcons name='message' color={color} size={size} />
         ),
         tabBarBadge: 2, // Unread messages count
       }}
     />
-    
+
     <CustomerTab.Screen
-      name="Estimate"
+      name='Estimate'
       component={EstimateScreen}
       options={{
         title: 'Estimate',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="receipt" color={color} size={size} />
+          <MaterialIcons name='receipt' color={color} size={size} />
         ),
       }}
     />
-    
+
     <CustomerTab.Screen
-      name="Profile"
+      name='Profile'
       component={CustomerProfileScreen}
       options={{
         title: 'Profile',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="person" color={color} size={size} />
+          <MaterialIcons name='person' color={color} size={size} />
         ),
       }}
     />
@@ -225,13 +228,13 @@ export const CustomerAppNavigator = () => (
     }}
   >
     <CustomerStack.Screen
-      name="CustomerHome"
+      name='CustomerHome'
       component={CustomerTabNavigator}
       options={{ headerShown: false }}
     />
-    
+
     <CustomerStack.Screen
-      name="PhotoViewer"
+      name='PhotoViewer'
       component={PhotoViewerScreen}
       options={{
         title: 'Photo',
@@ -240,34 +243,34 @@ export const CustomerAppNavigator = () => (
         },
       }}
     />
-    
+
     <CustomerStack.Screen
-      name="EstimateDetails"
+      name='EstimateDetails'
       component={EstimateDetailsScreen}
       options={{
         title: 'Estimate Details',
       }}
     />
-    
+
     <CustomerStack.Screen
-      name="PaymentScreen"
+      name='PaymentScreen'
       component={PaymentScreen}
       options={{
         title: 'Payment',
         headerLeft: null, // Prevent back navigation during payment
       }}
     />
-    
+
     <CustomerStack.Screen
-      name="ChatScreen"
+      name='ChatScreen'
       component={ChatScreen}
       options={({ route }) => ({
         title: route.params?.contactName || 'Chat',
       })}
     />
-    
+
     <CustomerStack.Screen
-      name="SchedulePickup"
+      name='SchedulePickup'
       component={SchedulePickupScreen}
       options={{
         title: 'Schedule Pickup',
@@ -287,63 +290,63 @@ const TechnicianDrawer = createDrawerNavigator();
 // Technician Tab Navigator
 const TechnicianTabNavigator = () => (
   <TechnicianTab.Navigator
-    tabBar={(props) => <CustomTabBar {...props} />}
+    tabBar={props => <CustomTabBar {...props} />}
     screenOptions={{
       headerShown: false,
     }}
   >
     <TechnicianTab.Screen
-      name="Dashboard"
+      name='Dashboard'
       component={TechnicianDashboardScreen}
       options={{
         title: 'Tasks',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="dashboard" color={color} size={size} />
+          <MaterialIcons name='dashboard' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianTab.Screen
-      name="Scanner"
+      name='Scanner'
       component={QRScannerScreen}
       options={{
         title: 'Scan',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="qr-code-scanner" color={color} size={size} />
+          <MaterialIcons name='qr-code-scanner' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianTab.Screen
-      name="TimeTracker"
+      name='TimeTracker'
       component={TimeTrackerScreen}
       options={{
         title: 'Time',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="access-time" color={color} size={size} />
+          <MaterialIcons name='access-time' color={color} size={size} />
         ),
         tabBarBadge: 'ON', // Show if timer is running
       }}
     />
-    
+
     <TechnicianTab.Screen
-      name="Jobs"
+      name='Jobs'
       component={TechnicianJobsScreen}
       options={{
         title: 'Jobs',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="work" color={color} size={size} />
+          <MaterialIcons name='work' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianTab.Screen
-      name="Profile"
+      name='Profile'
       component={TechnicianProfileScreen}
       options={{
         title: 'Profile',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="person" color={color} size={size} />
+          <MaterialIcons name='person' color={color} size={size} />
         ),
       }}
     />
@@ -367,48 +370,48 @@ const TechnicianDrawerNavigator = () => (
         fontWeight: '500',
       },
     }}
-    drawerContent={(props) => <CustomDrawerContent {...props} />}
+    drawerContent={props => <CustomDrawerContent {...props} />}
   >
     <TechnicianDrawer.Screen
-      name="TechnicianMain"
+      name='TechnicianMain'
       component={TechnicianTabNavigator}
       options={{
         title: 'Dashboard',
         drawerIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="dashboard" color={color} size={size} />
+          <MaterialIcons name='dashboard' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianDrawer.Screen
-      name="QualityControl"
+      name='QualityControl'
       component={QualityControlScreen}
       options={{
         title: 'Quality Control',
         drawerIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="verified" color={color} size={size} />
+          <MaterialIcons name='verified' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianDrawer.Screen
-      name="Inventory"
+      name='Inventory'
       component={InventoryScreen}
       options={{
         title: 'Parts & Inventory',
         drawerIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="inventory" color={color} size={size} />
+          <MaterialIcons name='inventory' color={color} size={size} />
         ),
       }}
     />
-    
+
     <TechnicianDrawer.Screen
-      name="Reports"
+      name='Reports'
       component={ReportsScreen}
       options={{
         title: 'Reports',
         drawerIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="bar-chart" color={color} size={size} />
+          <MaterialIcons name='bar-chart' color={color} size={size} />
         ),
       }}
     />
@@ -434,29 +437,29 @@ export const TechnicianAppNavigator = () => (
     }}
   >
     <TechnicianStack.Screen
-      name="TechnicianHome"
+      name='TechnicianHome'
       component={TechnicianDrawerNavigator}
       options={{ headerShown: false }}
     />
-    
+
     <TechnicianStack.Screen
-      name="TaskDetails"
+      name='TaskDetails'
       component={TaskDetailsScreen}
       options={({ route }) => ({
         title: route.params?.taskTitle || 'Task Details',
       })}
     />
-    
+
     <TechnicianStack.Screen
-      name="JobDetails"
+      name='JobDetails'
       component={JobDetailsScreen}
       options={({ route }) => ({
         title: route.params?.jobNumber || 'Job Details',
       })}
     />
-    
+
     <TechnicianStack.Screen
-      name="PhotoCapture"
+      name='PhotoCapture'
       component={PhotoCaptureScreen}
       options={{
         title: 'Take Photo',
@@ -465,9 +468,9 @@ export const TechnicianAppNavigator = () => (
         },
       }}
     />
-    
+
     <TechnicianStack.Screen
-      name="QCInspection"
+      name='QCInspection'
       component={QCInspectionScreen}
       options={{
         title: 'Quality Inspection',
@@ -480,9 +483,9 @@ export const TechnicianAppNavigator = () => (
 // CUSTOM DRAWER CONTENT
 // =============================================
 
-const CustomDrawerContent = (props) => {
+const CustomDrawerContent = props => {
   const { state, navigation, descriptors } = props;
-  
+
   return (
     <View style={styles.drawerContainer}>
       {/* Header */}
@@ -501,59 +504,59 @@ const CustomDrawerContent = (props) => {
           </View>
         </View>
       </View>
-      
+
       {/* Navigation Items */}
       <View style={styles.drawerItems}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          
+
           const onPress = () => {
             navigation.navigate(route.name);
           };
-          
+
           return (
             <TouchableOpacity
               key={route.key}
               onPress={onPress}
-              style={[
-                styles.drawerItem,
-                isFocused && styles.drawerItemActive
-              ]}
+              style={[styles.drawerItem, isFocused && styles.drawerItemActive]}
             >
-              {options.drawerIcon && 
+              {options.drawerIcon &&
                 options.drawerIcon({
                   focused: isFocused,
                   color: isFocused ? '#6366F1' : '#9CA3AF',
-                  size: 24
-                })
-              }
-              <Text style={[
-                styles.drawerLabel,
-                { color: isFocused ? '#6366F1' : '#9CA3AF' }
-              ]}>
+                  size: 24,
+                })}
+              <Text
+                style={[
+                  styles.drawerLabel,
+                  { color: isFocused ? '#6366F1' : '#9CA3AF' },
+                ]}
+              >
                 {options.title}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
-      
+
       {/* Footer */}
       <View style={styles.drawerFooter}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate('Settings')}
         >
-          <MaterialIcons name="settings" color="#9CA3AF" size={20} />
+          <MaterialIcons name='settings' color='#9CA3AF' size={20} />
           <Text style={styles.settingsText}>Settings</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.logoutButton}
-          onPress={() => {/* Handle logout */}}
+          onPress={() => {
+            /* Handle logout */
+          }}
         >
-          <MaterialIcons name="logout" color="#EF4444" size={20} />
+          <MaterialIcons name='logout' color='#EF4444' size={20} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
@@ -591,10 +594,10 @@ export const AuthNavigator = () => (
       },
     }}
   >
-    <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
-    <AuthStack.Screen name="Login" component={LoginScreen} />
-    <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-    <AuthStack.Screen name="CreateAccount" component={CreateAccountScreen} />
+    <AuthStack.Screen name='Welcome' component={WelcomeScreen} />
+    <AuthStack.Screen name='Login' component={LoginScreen} />
+    <AuthStack.Screen name='ForgotPassword' component={ForgotPasswordScreen} />
+    <AuthStack.Screen name='CreateAccount' component={CreateAccountScreen} />
   </AuthStack.Navigator>
 );
 
@@ -604,12 +607,12 @@ export const AuthNavigator = () => (
 
 export const RootNavigator = ({ userType, isAuthenticated }) => (
   <NavigationContainer theme={navigationTheme}>
-    <StatusBar 
-      barStyle="light-content" 
-      backgroundColor="#0F172A"
+    <StatusBar
+      barStyle='light-content'
+      backgroundColor='#0F172A'
       translucent={Platform.OS === 'android'}
     />
-    
+
     {!isAuthenticated ? (
       <AuthNavigator />
     ) : userType === 'customer' ? (
@@ -631,7 +634,7 @@ const styles = {
     height: Platform.OS === 'ios' ? 90 : 70,
     paddingBottom: Platform.OS === 'ios' ? 20 : 10,
   },
-  
+
   tabBarGradient: {
     position: 'absolute',
     top: 0,
@@ -639,7 +642,7 @@ const styles = {
     right: 0,
     bottom: 0,
   },
-  
+
   tabBarContent: {
     flex: 1,
     flexDirection: 'row',
@@ -649,23 +652,23 @@ const styles = {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  
+
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
+
   tabIconContainer: {
     position: 'relative',
     padding: 8,
     borderRadius: 12,
   },
-  
+
   tabIconContainerActive: {
     backgroundColor: 'rgba(99, 102, 241, 0.2)',
   },
-  
+
   tabBadge: {
     position: 'absolute',
     top: 0,
@@ -677,30 +680,30 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
+
   tabBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  
+
   tabLabel: {
     fontSize: 12,
     fontWeight: '500',
     marginTop: 4,
   },
-  
+
   // Drawer Styles
   drawerContainer: {
     flex: 1,
     backgroundColor: 'rgba(30, 41, 59, 0.95)',
   },
-  
+
   drawerHeader: {
     height: 160,
     position: 'relative',
   },
-  
+
   drawerHeaderGradient: {
     position: 'absolute',
     top: 0,
@@ -708,7 +711,7 @@ const styles = {
     right: 0,
     bottom: 0,
   },
-  
+
   drawerHeaderContent: {
     flex: 1,
     flexDirection: 'row',
@@ -716,7 +719,7 @@ const styles = {
     padding: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
-  
+
   technicianAvatar: {
     width: 60,
     height: 60,
@@ -726,30 +729,30 @@ const styles = {
     justifyContent: 'center',
     marginRight: 16,
   },
-  
+
   avatarText: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  
+
   technicianName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  
+
   technicianRole: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 2,
   },
-  
+
   drawerItems: {
     flex: 1,
     paddingTop: 20,
   },
-  
+
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -758,42 +761,42 @@ const styles = {
     marginHorizontal: 12,
     borderRadius: 12,
   },
-  
+
   drawerItemActive: {
     backgroundColor: 'rgba(99, 102, 241, 0.2)',
   },
-  
+
   drawerLabel: {
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 16,
   },
-  
+
   drawerFooter: {
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  
+
   settingsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
   },
-  
+
   settingsText: {
     fontSize: 16,
     color: '#9CA3AF',
     marginLeft: 12,
   },
-  
+
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     marginTop: 8,
   },
-  
+
   logoutText: {
     fontSize: 16,
     color: '#EF4444',

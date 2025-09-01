@@ -1,7 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { ThemeProvider, useTheme } from '../../../../src/components/Theme/ThemeProvider';
+import {
+  ThemeProvider,
+  useTheme,
+} from '../../../../src/components/Theme/ThemeProvider';
 
 // Test component to access theme context
 const TestComponent = ({ onThemeChange }) => {
@@ -11,7 +20,7 @@ const TestComponent = ({ onThemeChange }) => {
     switchTheme,
     toggleTheme,
     themeConfigs,
-    getActiveTheme
+    getActiveTheme,
   } = useTheme();
 
   React.useEffect(() => {
@@ -19,23 +28,26 @@ const TestComponent = ({ onThemeChange }) => {
       onThemeChange({
         currentTheme,
         isDarkMode,
-        activeTheme: getActiveTheme()
+        activeTheme: getActiveTheme(),
       });
     }
   }, [currentTheme, isDarkMode, onThemeChange, getActiveTheme]);
 
   return (
-    <div data-testid="test-component">
-      <span data-testid="current-theme">{currentTheme}</span>
-      <span data-testid="is-dark">{isDarkMode ? 'dark' : 'light'}</span>
-      <span data-testid="theme-count">{Object.keys(themeConfigs).length}</span>
-      <button data-testid="switch-to-light" onClick={() => switchTheme('light')}>
+    <div data-testid='test-component'>
+      <span data-testid='current-theme'>{currentTheme}</span>
+      <span data-testid='is-dark'>{isDarkMode ? 'dark' : 'light'}</span>
+      <span data-testid='theme-count'>{Object.keys(themeConfigs).length}</span>
+      <button
+        data-testid='switch-to-light'
+        onClick={() => switchTheme('light')}
+      >
         Switch to Light
       </button>
-      <button data-testid="switch-to-dark" onClick={() => switchTheme('dark')}>
+      <button data-testid='switch-to-dark' onClick={() => switchTheme('dark')}>
         Switch to Dark
       </button>
-      <button data-testid="toggle-theme" onClick={toggleTheme}>
+      <button data-testid='toggle-theme' onClick={toggleTheme}>
         Toggle Theme
       </button>
     </div>
@@ -51,7 +63,7 @@ const mockLocalStorage = {
 };
 
 // Mock matchMedia
-const mockMatchMedia = (matches) => ({
+const mockMatchMedia = matches => ({
   matches,
   media: '(prefers-color-scheme: dark)',
   onchange: null,
@@ -90,10 +102,14 @@ describe('ThemeProvider', () => {
 
   it('provides default theme context', () => {
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -102,15 +118,21 @@ describe('ThemeProvider', () => {
   });
 
   it('detects system dark mode preference', () => {
-    window.matchMedia = jest.fn().mockImplementation(query => 
-      mockMatchMedia(query === '(prefers-color-scheme: dark)')
-    );
+    window.matchMedia = jest
+      .fn()
+      .mockImplementation(query =>
+        mockMatchMedia(query === '(prefers-color-scheme: dark)')
+      );
 
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -119,16 +141,20 @@ describe('ThemeProvider', () => {
   });
 
   it('loads saved theme from localStorage', () => {
-    mockLocalStorage.getItem.mockImplementation((key) => {
+    mockLocalStorage.getItem.mockImplementation(key => {
       if (key === 'collisionos-theme') return 'light';
       return null;
     });
 
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -138,10 +164,14 @@ describe('ThemeProvider', () => {
 
   it('switches themes correctly', async () => {
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -157,7 +187,10 @@ describe('ThemeProvider', () => {
     });
 
     // Verify localStorage was called
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('collisionos-theme', 'light');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'collisionos-theme',
+      'light'
+    );
 
     // Switch to dark theme
     act(() => {
@@ -168,15 +201,22 @@ describe('ThemeProvider', () => {
       expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('collisionos-theme', 'dark');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'collisionos-theme',
+      'dark'
+    );
   });
 
   it('toggles between themes correctly', async () => {
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -207,20 +247,26 @@ describe('ThemeProvider', () => {
 
   it('handles auto theme mode with system preference', async () => {
     // Mock dark system preference
-    window.matchMedia = jest.fn().mockImplementation(query => 
-      mockMatchMedia(query === '(prefers-color-scheme: dark)')
-    );
+    window.matchMedia = jest
+      .fn()
+      .mockImplementation(query =>
+        mockMatchMedia(query === '(prefers-color-scheme: dark)')
+      );
 
-    mockLocalStorage.getItem.mockImplementation((key) => {
+    mockLocalStorage.getItem.mockImplementation(key => {
       if (key === 'collisionos-theme') return 'auto';
       return null;
     });
 
     let themeData = {};
-    
+
     render(
       <ThemeProvider>
-        <TestComponent onThemeChange={(data) => { themeData = data; }} />
+        <TestComponent
+          onThemeChange={data => {
+            themeData = data;
+          }}
+        />
       </ThemeProvider>
     );
 
@@ -230,17 +276,22 @@ describe('ThemeProvider', () => {
 
   it('handles theme transitions', async () => {
     const transitionStates = [];
-    
+
     const TransitionTestComponent = () => {
       const { currentTheme, isTransitioning } = useTheme();
-      
+
       React.useEffect(() => {
-        transitionStates.push({ theme: currentTheme, transitioning: isTransitioning });
+        transitionStates.push({
+          theme: currentTheme,
+          transitioning: isTransitioning,
+        });
       }, [currentTheme, isTransitioning]);
 
       return (
         <div>
-          <span data-testid="transitioning">{isTransitioning ? 'true' : 'false'}</span>
+          <span data-testid='transitioning'>
+            {isTransitioning ? 'true' : 'false'}
+          </span>
         </div>
       );
     };
@@ -272,17 +323,19 @@ describe('ThemeProvider', () => {
           palette: {
             mode: 'light',
             primary: { main: '#ff0000' },
-            background: { default: '#ffffff' }
-          }
+            background: { default: '#ffffff' },
+          },
         });
       };
 
       return (
         <div>
-          <button data-testid="create-custom" onClick={handleCreateTheme}>
+          <button data-testid='create-custom' onClick={handleCreateTheme}>
             Create Custom
           </button>
-          <span data-testid="custom-count">{Object.keys(customThemes).length}</span>
+          <span data-testid='custom-count'>
+            {Object.keys(customThemes).length}
+          </span>
         </div>
       );
     };
@@ -320,16 +373,18 @@ describe('ThemeProvider', () => {
           lightStart: '07:00',
           darkStart: '20:00',
           lightTheme: 'light',
-          darkTheme: 'dark'
+          darkTheme: 'dark',
         });
       };
 
       return (
         <div>
-          <button data-testid="set-schedule" onClick={handleSetSchedule}>
+          <button data-testid='set-schedule' onClick={handleSetSchedule}>
             Set Schedule
           </button>
-          <span data-testid="has-schedule">{scheduledTheme ? 'true' : 'false'}</span>
+          <span data-testid='has-schedule'>
+            {scheduledTheme ? 'true' : 'false'}
+          </span>
         </div>
       );
     };
@@ -398,7 +453,9 @@ describe('ThemeProvider', () => {
 
     const MotionTestComponent = () => {
       const { canAnimate } = useTheme();
-      return <span data-testid="can-animate">{canAnimate ? 'true' : 'false'}</span>;
+      return (
+        <span data-testid='can-animate'>{canAnimate ? 'true' : 'false'}</span>
+      );
     };
 
     render(
@@ -413,7 +470,7 @@ describe('ThemeProvider', () => {
   it('provides theme history', async () => {
     const HistoryTestComponent = () => {
       const { themeHistory } = useTheme();
-      return <span data-testid="history-count">{themeHistory.length}</span>;
+      return <span data-testid='history-count'>{themeHistory.length}</span>;
     };
 
     render(

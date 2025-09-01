@@ -17,7 +17,7 @@ import {
   Zoom,
   CircularProgress,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   DragIndicator,
@@ -30,7 +30,7 @@ import {
   Add,
   GridView,
   ViewModule,
-  Dashboard as DashboardIcon
+  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,14 +40,14 @@ import { getGlassStyles, glassHoverEffects } from '../../utils/glassTheme';
 import { microAnimations, springConfigs } from '../../utils/animations';
 import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
 
-const WidgetGrid = ({ 
-  widgets, 
-  onWidgetUpdate, 
+const WidgetGrid = ({
+  widgets,
+  onWidgetUpdate,
   onLayoutChange,
   onWidgetRefresh,
   onAddWidget,
   layout = 'grid',
-  isEditing = false
+  isEditing = false,
 }) => {
   const theme = useTheme();
   const { mode } = useAppTheme();
@@ -69,67 +69,85 @@ const WidgetGrid = ({
   }, [widgets]);
 
   // Handle drag end
-  const onDragEnd = useCallback((result) => {
-    if (!result.destination) return;
+  const onDragEnd = useCallback(
+    result => {
+      if (!result.destination) return;
 
-    const newWidgets = Array.from(widgets);
-    const [reorderedWidget] = newWidgets.splice(result.source.index, 1);
-    newWidgets.splice(result.destination.index, 0, reorderedWidget);
+      const newWidgets = Array.from(widgets);
+      const [reorderedWidget] = newWidgets.splice(result.source.index, 1);
+      newWidgets.splice(result.destination.index, 0, reorderedWidget);
 
-    onLayoutChange?.(newWidgets);
-  }, [widgets, onLayoutChange]);
+      onLayoutChange?.(newWidgets);
+    },
+    [widgets, onLayoutChange]
+  );
 
   // Handle widget refresh
-  const handleRefreshWidget = useCallback(async (widgetId) => {
-    setRefreshingWidgets(prev => new Set([...prev, widgetId]));
-    
-    try {
-      await onWidgetRefresh?.(widgetId);
-    } finally {
-      setTimeout(() => {
-        setRefreshingWidgets(prev => {
-          const newSet = new Set([...prev]);
-          newSet.delete(widgetId);
-          return newSet;
-        });
-      }, 1000);
-    }
-  }, [onWidgetRefresh]);
+  const handleRefreshWidget = useCallback(
+    async widgetId => {
+      setRefreshingWidgets(prev => new Set([...prev, widgetId]));
+
+      try {
+        await onWidgetRefresh?.(widgetId);
+      } finally {
+        setTimeout(() => {
+          setRefreshingWidgets(prev => {
+            const newSet = new Set([...prev]);
+            newSet.delete(widgetId);
+            return newSet;
+          });
+        }, 1000);
+      }
+    },
+    [onWidgetRefresh]
+  );
 
   // Handle fullscreen toggle
-  const handleFullscreen = useCallback((widget) => {
-    setFullscreenWidget(fullscreenWidget?.id === widget.id ? null : widget);
-  }, [fullscreenWidget]);
+  const handleFullscreen = useCallback(
+    widget => {
+      setFullscreenWidget(fullscreenWidget?.id === widget.id ? null : widget);
+    },
+    [fullscreenWidget]
+  );
 
   // Handle widget visibility toggle
-  const handleVisibilityToggle = useCallback((widgetId) => {
-    setWidgetVisibility(prev => ({
-      ...prev,
-      [widgetId]: !prev[widgetId]
-    }));
-    
-    const widget = widgets.find(w => w.id === widgetId);
-    if (widget) {
-      onWidgetUpdate?.(widgetId, { ...widget, visible: !widgetVisibility[widgetId] });
-    }
-  }, [widgets, widgetVisibility, onWidgetUpdate]);
+  const handleVisibilityToggle = useCallback(
+    widgetId => {
+      setWidgetVisibility(prev => ({
+        ...prev,
+        [widgetId]: !prev[widgetId],
+      }));
+
+      const widget = widgets.find(w => w.id === widgetId);
+      if (widget) {
+        onWidgetUpdate?.(widgetId, {
+          ...widget,
+          visible: !widgetVisibility[widgetId],
+        });
+      }
+    },
+    [widgets, widgetVisibility, onWidgetUpdate]
+  );
 
   // Get widget grid size based on widget type and screen size
-  const getWidgetSize = useCallback((widget) => {
-    if (isMobile) {
-      return { xs: 12, sm: 12, md: 12 };
-    }
+  const getWidgetSize = useCallback(
+    widget => {
+      if (isMobile) {
+        return { xs: 12, sm: 12, md: 12 };
+      }
 
-    const sizeMap = {
-      small: { xs: 12, sm: 6, md: 4, lg: 3 },
-      medium: { xs: 12, sm: 6, md: 6, lg: 4 },
-      large: { xs: 12, sm: 12, md: 8, lg: 6 },
-      wide: { xs: 12, sm: 12, md: 12, lg: 8 },
-      tall: { xs: 12, sm: 6, md: 4, lg: 3 }
-    };
+      const sizeMap = {
+        small: { xs: 12, sm: 6, md: 4, lg: 3 },
+        medium: { xs: 12, sm: 6, md: 6, lg: 4 },
+        large: { xs: 12, sm: 12, md: 8, lg: 6 },
+        wide: { xs: 12, sm: 12, md: 12, lg: 8 },
+        tall: { xs: 12, sm: 6, md: 4, lg: 3 },
+      };
 
-    return sizeMap[widget.size] || sizeMap.medium;
-  }, [isMobile]);
+      return sizeMap[widget.size] || sizeMap.medium;
+    },
+    [isMobile]
+  );
 
   // Widget wrapper component
   const WidgetWrapper = ({ widget, index, isDragging }) => {
@@ -143,10 +161,10 @@ const WidgetGrid = ({
         <motion.div
           layout
           initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ 
-            opacity: isVisible || isEditing ? 1 : 0.3, 
+          animate={{
+            opacity: isVisible || isEditing ? 1 : 0.3,
             scale: 1,
-            filter: isDragging ? 'blur(2px)' : 'none'
+            filter: isDragging ? 'blur(2px)' : 'none',
           }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={springConfigs.gentle}
@@ -159,10 +177,12 @@ const WidgetGrid = ({
               position: 'relative',
               ...getGlassStyles(widget.variant || 'default', mode),
               ...(!isDragging && glassHoverEffects(mode, 2)),
-              border: isDragging ? `2px dashed ${theme.palette.primary.main}` : undefined,
+              border: isDragging
+                ? `2px dashed ${theme.palette.primary.main}`
+                : undefined,
               transform: isDragging ? 'rotate(2deg)' : 'none',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
             {/* Widget Controls */}
@@ -180,37 +200,41 @@ const WidgetGrid = ({
                 background: 'rgba(0, 0, 0, 0.1)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: 2,
-                p: 0.5
+                p: 0.5,
               }}
             >
               {isEditing && (
-                <Tooltip title="Drag to reorder">
+                <Tooltip title='Drag to reorder'>
                   <IconButton
-                    size="small"
+                    size='small'
                     sx={{
                       cursor: 'grab',
                       '&:active': { cursor: 'grabbing' },
-                      color: 'text.secondary'
+                      color: 'text.secondary',
                     }}
                   >
-                    <DragIndicator fontSize="small" />
+                    <DragIndicator fontSize='small' />
                   </IconButton>
                 </Tooltip>
               )}
 
               <Tooltip title={isVisible ? 'Hide widget' : 'Show widget'}>
                 <IconButton
-                  size="small"
+                  size='small'
                   onClick={() => handleVisibilityToggle(widget.id)}
                   sx={{ color: 'text.secondary' }}
                 >
-                  {isVisible ? <Visibility fontSize="small" /> : <VisibilityOff fontSize="small" />}
+                  {isVisible ? (
+                    <Visibility fontSize='small' />
+                  ) : (
+                    <VisibilityOff fontSize='small' />
+                  )}
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Refresh widget">
+              <Tooltip title='Refresh widget'>
                 <IconButton
-                  size="small"
+                  size='small'
                   onClick={() => handleRefreshWidget(widget.id)}
                   disabled={isRefreshing}
                   sx={{ color: 'text.secondary' }}
@@ -218,28 +242,28 @@ const WidgetGrid = ({
                   {isRefreshing ? (
                     <CircularProgress size={16} />
                   ) : (
-                    <Refresh fontSize="small" />
+                    <Refresh fontSize='small' />
                   )}
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Widget settings">
+              <Tooltip title='Widget settings'>
                 <IconButton
-                  size="small"
+                  size='small'
                   onClick={() => setWidgetSettings(widget)}
                   sx={{ color: 'text.secondary' }}
                 >
-                  <Settings fontSize="small" />
+                  <Settings fontSize='small' />
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Fullscreen">
+              <Tooltip title='Fullscreen'>
                 <IconButton
-                  size="small"
+                  size='small'
                   onClick={() => handleFullscreen(widget)}
                   sx={{ color: 'text.secondary' }}
                 >
-                  <Fullscreen fontSize="small" />
+                  <Fullscreen fontSize='small' />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -250,11 +274,11 @@ const WidgetGrid = ({
                 height: '100%',
                 opacity: isRefreshing ? 0.6 : 1,
                 transition: 'opacity 0.3s ease-in-out',
-                position: 'relative'
+                position: 'relative',
               }}
             >
               {widget.component}
-              
+
               {isRefreshing && (
                 <Box
                   sx={{
@@ -267,7 +291,7 @@ const WidgetGrid = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(5px)'
+                    backdropFilter: 'blur(5px)',
                   }}
                 >
                   <CircularProgress />
@@ -280,8 +304,8 @@ const WidgetGrid = ({
     );
   };
 
-  const visibleWidgets = useMemo(() => 
-    widgets.filter(widget => widgetVisibility[widget.id] || isEditing),
+  const visibleWidgets = useMemo(
+    () => widgets.filter(widget => widgetVisibility[widget.id] || isEditing),
     [widgets, widgetVisibility, isEditing]
   );
 
@@ -290,7 +314,7 @@ const WidgetGrid = ({
       {/* Grid Layout */}
       {layout === 'grid' ? (
         <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="widget-grid" direction="horizontal">
+          <Droppable droppableId='widget-grid' direction='horizontal'>
             {(provided, snapshot) => (
               <Box
                 ref={provided.innerRef}
@@ -298,17 +322,21 @@ const WidgetGrid = ({
                 sx={{
                   minHeight: 200,
                   borderRadius: 2,
-                  border: snapshot.isDraggingOver ? `2px dashed ${theme.palette.primary.main}` : 'none',
-                  background: snapshot.isDraggingOver ? 'rgba(59, 130, 246, 0.05)' : 'transparent',
-                  transition: 'all 0.3s ease-in-out'
+                  border: snapshot.isDraggingOver
+                    ? `2px dashed ${theme.palette.primary.main}`
+                    : 'none',
+                  background: snapshot.isDraggingOver
+                    ? 'rgba(59, 130, 246, 0.05)'
+                    : 'transparent',
+                  transition: 'all 0.3s ease-in-out',
                 }}
               >
                 <Grid container spacing={3}>
                   <AnimatePresence>
                     {visibleWidgets.map((widget, index) => (
-                      <Draggable 
-                        key={widget.id} 
-                        draggableId={widget.id} 
+                      <Draggable
+                        key={widget.id}
+                        draggableId={widget.id}
                         index={index}
                         isDragDisabled={!isEditing}
                       >
@@ -319,11 +347,11 @@ const WidgetGrid = ({
                             {...provided.dragHandleProps}
                             style={{
                               ...provided.draggableProps.style,
-                              width: '100%'
+                              width: '100%',
                             }}
                           >
-                            <WidgetWrapper 
-                              widget={widget} 
+                            <WidgetWrapper
+                              widget={widget}
                               index={index}
                               isDragging={snapshot.isDragging}
                             />
@@ -362,8 +390,8 @@ const WidgetGrid = ({
       {isEditing && (
         <Zoom in timeout={300}>
           <Fab
-            color="primary"
-            aria-label="add widget"
+            color='primary'
+            aria-label='add widget'
             onClick={onAddWidget}
             sx={{
               position: 'fixed',
@@ -372,8 +400,8 @@ const WidgetGrid = ({
               background: 'linear-gradient(135deg, #1e40af 0%, #10b981 100%)',
               '&:hover': {
                 background: 'linear-gradient(135deg, #1e3a8a 0%, #059669 100%)',
-                transform: 'scale(1.1)'
-              }
+                transform: 'scale(1.1)',
+              },
             }}
           >
             <Add />
@@ -388,28 +416,31 @@ const WidgetGrid = ({
         onClose={() => setFullscreenWidget(null)}
         PaperProps={{
           sx: {
-            background: mode === 'dark' ? 
-              'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' :
-              'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-            backdropFilter: 'blur(20px)'
-          }
+            background:
+              mode === 'dark'
+                ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+                : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            backdropFilter: 'blur(20px)',
+          },
         }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          background: 'rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: 'rgba(0, 0, 0, 0.05)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Typography variant='h6' sx={{ fontWeight: 600 }}>
             {fullscreenWidget?.title || 'Widget'}
           </Typography>
           <IconButton
-            edge="end"
-            color="inherit"
+            edge='end'
+            color='inherit'
             onClick={() => setFullscreenWidget(null)}
-            aria-label="close"
+            aria-label='close'
           >
             <FullscreenExit />
           </IconButton>
@@ -423,13 +454,13 @@ const WidgetGrid = ({
       <Dialog
         open={!!widgetSettings}
         onClose={() => setWidgetSettings(null)}
-        maxWidth="md"
+        maxWidth='md'
         fullWidth
         PaperProps={{
           sx: {
             ...getGlassStyles('elevated', mode),
-            backdropFilter: 'blur(20px)'
-          }
+            backdropFilter: 'blur(20px)',
+          },
         }}
       >
         <DialogTitle sx={{ fontWeight: 600 }}>
@@ -441,26 +472,29 @@ const WidgetGrid = ({
               control={
                 <Switch
                   checked={widgetVisibility[widgetSettings?.id] || false}
-                  onChange={() => widgetSettings && handleVisibilityToggle(widgetSettings.id)}
+                  onChange={() =>
+                    widgetSettings && handleVisibilityToggle(widgetSettings.id)
+                  }
                 />
               }
-              label="Visible"
+              label='Visible'
             />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              Additional widget-specific settings would go here based on the widget type.
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
+              Additional widget-specific settings would go here based on the
+              widget type.
             </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setWidgetSettings(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant='contained'
             onClick={() => setWidgetSettings(null)}
             sx={{
               background: 'linear-gradient(135deg, #1e40af 0%, #10b981 100%)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #1e3a8a 0%, #059669 100%)'
-              }
+                background: 'linear-gradient(135deg, #1e3a8a 0%, #059669 100%)',
+              },
             }}
           >
             Save Changes

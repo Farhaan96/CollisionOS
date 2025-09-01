@@ -16,6 +16,7 @@ Your Supabase project is fine - it just needs the CollisionOS schema and configu
 ## Step 2: Update Your Environment File
 
 ### Server-Side Environment (.env)
+
 Add these lines to your `.env` file (server-side only):
 
 ```env
@@ -29,6 +30,7 @@ ENABLE_SUPABASE=true
 ```
 
 ### Client-Side Environment (.env.local or .env.production)
+
 For your React/Next.js app, create a separate environment file:
 
 ```env
@@ -38,6 +40,7 @@ REACT_APP_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 **⚠️ SECURITY WARNING:**
+
 - The `SUPABASE_SERVICE_ROLE_KEY` should NEVER be exposed to users
 - Only use the `SUPABASE_ANON_KEY` in client-side code
 - The service role key bypasses Row Level Security (RLS)
@@ -46,6 +49,7 @@ REACT_APP_SUPABASE_ANON_KEY=your_anon_key_here
 ## Step 3: Deploy the Schema
 
 ### Option A: Using Admin Script (Recommended)
+
 Run this command to deploy the CollisionOS database schema:
 
 ```bash
@@ -53,6 +57,7 @@ node admin-setup-supabase.js
 ```
 
 ### Option B: Manual Deployment
+
 If you prefer to deploy manually:
 
 1. Go to your Supabase Dashboard → SQL Editor
@@ -67,6 +72,7 @@ This will create all the necessary tables with proper Row Level Security (RLS) p
 ## Step 4: Verify the Connection
 
 ### Test User Connection (Safe)
+
 Test that the client-side connection works:
 
 ```bash
@@ -74,6 +80,7 @@ node configure-supabase.js
 ```
 
 ### Test Admin Connection (Server-Side Only)
+
 Test admin operations (requires service role key):
 
 ```bash
@@ -100,6 +107,7 @@ npm run seed
 ## Expected Results
 
 After setup, your Supabase dashboard should show:
+
 - **Tables**: 20+ tables (instead of 0)
 - **Functions**: Several database functions
 - **Database Requests**: Active usage when you run tests
@@ -117,6 +125,7 @@ If you encounter issues:
 ## Next Steps
 
 Once configured:
+
 1. Start your CollisionOS application
 2. Run your tests
 3. You should see activity in your Supabase dashboard

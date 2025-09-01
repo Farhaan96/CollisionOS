@@ -5,7 +5,9 @@
 
 const { Op } = require('sequelize');
 const { APIError, ValidationError } = require('../utils/errorHandler');
-const { PartsSupplierIntegrationService } = require('./partsSupplierIntegration');
+const {
+  PartsSupplierIntegrationService,
+} = require('./partsSupplierIntegration');
 
 // Database models - handle missing models gracefully
 let Part, Vendor, PartCategory, Inventory, PurchaseOrder, realtimeService;
@@ -46,39 +48,42 @@ class PartsService {
           type: 'OEM',
           color: '#1976d2',
           rating: 4.8,
-          deliveryTime: '2-5 days'
+          deliveryTime: '2-5 days',
         },
         oe_connection: {
           name: 'OE Connection',
           type: 'OEM',
           color: '#2e7d32',
           rating: 4.6,
-          deliveryTime: '1-3 days'
+          deliveryTime: '1-3 days',
         },
         parts_trader: {
           name: 'PartsTrader',
           type: 'Aftermarket',
           color: '#ed6c02',
           rating: 4.4,
-          deliveryTime: '1-2 days'
+          deliveryTime: '1-2 days',
         },
         lkq: {
           name: 'LKQ/Recycled',
           type: 'Recycled',
           color: '#388e3c',
           rating: 4.2,
-          deliveryTime: '1-4 days'
+          deliveryTime: '1-4 days',
         },
         remanufactured: {
           name: 'Remanufactured Pro',
           type: 'Remanufactured',
           color: '#7b1fa2',
           rating: 4.5,
-          deliveryTime: '3-7 days'
-        }
+          deliveryTime: '3-7 days',
+        },
       };
 
-      console.log('🔧 Parts Service initialized with suppliers:', Object.keys(suppliers));
+      console.log(
+        '🔧 Parts Service initialized with suppliers:',
+        Object.keys(suppliers)
+      );
     } catch (error) {
       console.error('Failed to initialize suppliers:', error);
     }
@@ -98,7 +103,7 @@ class PartsService {
         sortBy = 'relevance',
         sortOrder = 'desc',
         limit = 50,
-        offset = 0
+        offset = 0,
       } = filters;
 
       let formattedResults = [];
@@ -108,13 +113,13 @@ class PartsService {
       if (Part && Op) {
         // Build where conditions
         const whereConditions = {};
-        
+
         // Text search across multiple fields
         if (searchQuery && searchQuery.trim()) {
           whereConditions[Op.or] = [
             { partNumber: { [Op.iLike]: `%${searchQuery}%` } },
             { description: { [Op.iLike]: `%${searchQuery}%` } },
-            { oemPartNumber: { [Op.iLike]: `%${searchQuery}%` } }
+            { oemPartNumber: { [Op.iLike]: `%${searchQuery}%` } },
           ];
         }
 
@@ -131,7 +136,7 @@ class PartsService {
         // Price range filter
         if (priceRange && priceRange.length === 2) {
           whereConditions.sellingPrice = {
-            [Op.between]: [priceRange[0], priceRange[1]]
+            [Op.between]: [priceRange[0], priceRange[1]],
           };
         }
 
@@ -162,13 +167,18 @@ class PartsService {
             order: orderClause,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            distinct: true
+            distinct: true,
           });
 
           // Format results
-          formattedResults = searchResults.rows.map(part => this.formatPartResult(part));
+          formattedResults = searchResults.rows.map(part =>
+            this.formatPartResult(part)
+          );
         } catch (dbError) {
-          console.warn('Database search failed, using supplier search only:', dbError.message);
+          console.warn(
+            'Database search failed, using supplier search only:',
+            dbError.message
+          );
         }
       }
 
@@ -176,7 +186,10 @@ class PartsService {
       let supplierResults = [];
       if (formattedResults.length === 0 && searchQuery) {
         try {
-          supplierResults = await this.searchSuppliersForParts(searchQuery, filters);
+          supplierResults = await this.searchSuppliersForParts(
+            searchQuery,
+            filters
+          );
         } catch (error) {
           console.warn('Supplier search failed:', error.message);
         }
@@ -194,9 +207,9 @@ class PartsService {
           pagination: {
             limit: parseInt(limit),
             offset: parseInt(offset),
-            hasMore: searchResults.count > (parseInt(offset) + parseInt(limit))
-          }
-        }
+            hasMore: searchResults.count > parseInt(offset) + parseInt(limit),
+          },
+        },
       };
     } catch (error) {
       console.error('Parts search error:', error);
@@ -214,10 +227,12 @@ class PartsService {
           {
             [Op.or]: [
               { fits: { [Op.iLike]: `%${make}%` } },
-              { vehicleApplications: { [Op.contains]: [{ make, model, year }] } }
-            ]
-          }
-        ]
+              {
+                vehicleApplications: { [Op.contains]: [{ make, model, year }] },
+              },
+            ],
+          },
+        ],
       };
 
       if (category) {
@@ -230,28 +245,33 @@ class PartsService {
           {
             model: Vendor,
             as: 'primaryVendor',
-            attributes: ['id', 'name', 'type', 'rating', 'deliveryTime']
+            attributes: ['id', 'name', 'type', 'rating', 'deliveryTime'],
           },
           {
             model: Inventory,
             as: 'inventory',
-            attributes: ['quantityOnHand', 'quantityAvailable']
-          }
+            attributes: ['quantityOnHand', 'quantityAvailable'],
+          },
         ],
         order: [['partNumber', 'ASC']],
-        limit: 100
+        limit: 100,
       });
 
-      const formattedResults = vehicleParts.map(part => this.formatPartResult(part));
+      const formattedResults = vehicleParts.map(part =>
+        this.formatPartResult(part)
+      );
 
       // Also search suppliers for vehicle-specific parts
       let supplierResults = [];
       try {
         const supplierSearchCriteria = {
           vehicleInfo: { make, model, year },
-          category
+          category,
         };
-        supplierResults = await this.searchSuppliersForParts(null, supplierSearchCriteria);
+        supplierResults = await this.searchSuppliersForParts(
+          null,
+          supplierSearchCriteria
+        );
       } catch (error) {
         console.warn('Supplier vehicle search failed:', error.message);
       }
@@ -262,8 +282,8 @@ class PartsService {
           vehicle: { make, model, year },
           category,
           totalResults: formattedResults.length + supplierResults.length,
-          parts: [...formattedResults, ...supplierResults]
-        }
+          parts: [...formattedResults, ...supplierResults],
+        },
       };
     } catch (error) {
       console.error('Vehicle parts search error:', error);
@@ -279,23 +299,20 @@ class PartsService {
       // First check local inventory
       const localPart = await Part.findOne({
         where: {
-          [Op.or]: [
-            { partNumber: partNumber },
-            { oemPartNumber: partNumber }
-          ]
+          [Op.or]: [{ partNumber: partNumber }, { oemPartNumber: partNumber }],
         },
         include: [
           {
             model: Vendor,
             as: 'primaryVendor',
-            attributes: ['id', 'name', 'type', 'rating', 'deliveryTime']
+            attributes: ['id', 'name', 'type', 'rating', 'deliveryTime'],
           },
           {
             model: Inventory,
             as: 'inventory',
-            attributes: ['quantityOnHand', 'quantityAvailable', 'location']
-          }
-        ]
+            attributes: ['quantityOnHand', 'quantityAvailable', 'location'],
+          },
+        ],
       });
 
       let result = null;
@@ -307,7 +324,10 @@ class PartsService {
       // If not found locally or supplier specified, search suppliers
       if (!result || supplierName) {
         try {
-          const supplierResults = await this.lookupPartFromSuppliers(partNumber, supplierName);
+          const supplierResults = await this.lookupPartFromSuppliers(
+            partNumber,
+            supplierName
+          );
           if (supplierResults.length > 0) {
             result = supplierResults[0];
             result.source = 'supplier';
@@ -323,7 +343,7 @@ class PartsService {
 
       return {
         success: true,
-        data: result
+        data: result,
       };
     } catch (error) {
       if (error instanceof APIError) throw error;
@@ -342,15 +362,14 @@ class PartsService {
       // Check local inventory first
       const localPart = await Part.findOne({
         where: {
-          [Op.or]: [
-            { partNumber },
-            { oemPartNumber: partNumber }
-          ]
+          [Op.or]: [{ partNumber }, { oemPartNumber: partNumber }],
         },
-        include: [{
-          model: Vendor,
-          as: 'primaryVendor'
-        }]
+        include: [
+          {
+            model: Vendor,
+            as: 'primaryVendor',
+          },
+        ],
       });
 
       if (localPart) {
@@ -360,20 +379,23 @@ class PartsService {
             type: 'Internal',
             color: '#4caf50',
             rating: 5.0,
-            deliveryTime: 'Immediate'
+            deliveryTime: 'Immediate',
           },
           partNumber: localPart.partNumber,
           description: localPart.description,
           price: localPart.sellingPrice,
           availability: localPart.inventory?.quantityAvailable > 0,
           quantity: localPart.inventory?.quantityAvailable || 0,
-          source: 'local'
+          source: 'local',
         });
       }
 
       // Search supplier integrations
       try {
-        const supplierComparisons = await this.supplierService.comparePrices([partNumber], suppliers);
+        const supplierComparisons = await this.supplierService.comparePrices(
+          [partNumber],
+          suppliers
+        );
         const partComparison = supplierComparisons[partNumber];
 
         if (partComparison && partComparison.providers) {
@@ -384,7 +406,7 @@ class PartsService {
               price: provider.price,
               availability: provider.availability,
               deliveryTime: provider.deliveryTime,
-              source: 'supplier'
+              source: 'supplier',
             });
           });
         }
@@ -401,8 +423,8 @@ class PartsService {
           partNumber,
           totalOptions: comparisons.length,
           comparisons,
-          bestPrice: comparisons.length > 0 ? comparisons[0] : null
-        }
+          bestPrice: comparisons.length > 0 ? comparisons[0] : null,
+        },
       };
     } catch (error) {
       console.error('Price comparison error:', error);
@@ -424,19 +446,21 @@ class PartsService {
 
       const inventoryStats = await Part.findAll({
         where: whereConditions,
-        include: [{
-          model: Inventory,
-          as: 'inventory',
-          required: true
-        }],
+        include: [
+          {
+            model: Inventory,
+            as: 'inventory',
+            required: true,
+          },
+        ],
         attributes: [
           'id',
           'partNumber',
           'description',
           'category',
           'costPrice',
-          'sellingPrice'
-        ]
+          'sellingPrice',
+        ],
       });
 
       const stats = {
@@ -445,13 +469,13 @@ class PartsService {
         outOfStockParts: 0,
         totalValue: 0,
         lowStockItems: [],
-        outOfStockItems: []
+        outOfStockItems: [],
       };
 
       inventoryStats.forEach(part => {
         const quantity = part.inventory?.quantityOnHand || 0;
         const value = quantity * (part.costPrice || 0);
-        
+
         stats.totalValue += value;
 
         if (quantity === 0) {
@@ -465,7 +489,7 @@ class PartsService {
 
       return {
         success: true,
-        data: stats
+        data: stats,
       };
     } catch (error) {
       console.error('Inventory status error:', error);
@@ -483,12 +507,15 @@ class PartsService {
         partType: filters.partType,
         category: filters.category,
         vehicleInfo: filters.vehicleInfo,
-        priceRange: filters.priceRange
+        priceRange: filters.priceRange,
       };
 
       // Mock supplier search results - in production, this would call real supplier APIs
-      const mockResults = this.generateMockSupplierResults(searchQuery, searchCriteria);
-      
+      const mockResults = this.generateMockSupplierResults(
+        searchQuery,
+        searchCriteria
+      );
+
       return mockResults;
     } catch (error) {
       console.error('Supplier search error:', error);
@@ -529,16 +556,18 @@ class PartsService {
         availability: Math.random() > 0.3,
         condition: 'New',
         warranty: '12 months',
-        fits: criteria.vehicleInfo ? `${criteria.vehicleInfo.year} ${criteria.vehicleInfo.make} ${criteria.vehicleInfo.model}` : 'Universal',
+        fits: criteria.vehicleInfo
+          ? `${criteria.vehicleInfo.year} ${criteria.vehicleInfo.make} ${criteria.vehicleInfo.model}`
+          : 'Universal',
         supplier: {
           name: 'PartsTrader',
           type: 'Aftermarket',
           color: '#ed6c02',
           rating: 4.4,
-          deliveryTime: '1-2 days'
+          deliveryTime: '1-2 days',
         },
         source: 'supplier',
-        images: []
+        images: [],
       },
       {
         id: `supplier_${Date.now()}_2`,
@@ -552,24 +581,33 @@ class PartsService {
         availability: Math.random() > 0.2,
         condition: 'New',
         warranty: '24 months',
-        fits: criteria.vehicleInfo ? `${criteria.vehicleInfo.year} ${criteria.vehicleInfo.make} ${criteria.vehicleInfo.model}` : 'Specific Vehicle',
+        fits: criteria.vehicleInfo
+          ? `${criteria.vehicleInfo.year} ${criteria.vehicleInfo.make} ${criteria.vehicleInfo.model}`
+          : 'Specific Vehicle',
         supplier: {
           name: 'OE Connection',
           type: 'OEM',
           color: '#2e7d32',
           rating: 4.6,
-          deliveryTime: '1-3 days'
+          deliveryTime: '1-3 days',
         },
         source: 'supplier',
-        images: []
-      }
+        images: [],
+      },
     ];
 
     // Filter results based on criteria
     return mockParts.filter(part => {
-      if (criteria.partType && part.partType !== criteria.partType) return false;
-      if (criteria.category && part.category !== criteria.category) return false;
-      if (criteria.priceRange && (part.price < criteria.priceRange[0] || part.price > criteria.priceRange[1])) return false;
+      if (criteria.partType && part.partType !== criteria.partType)
+        return false;
+      if (criteria.category && part.category !== criteria.category)
+        return false;
+      if (
+        criteria.priceRange &&
+        (part.price < criteria.priceRange[0] ||
+          part.price > criteria.priceRange[1])
+      )
+        return false;
       return true;
     });
   }
@@ -578,22 +616,24 @@ class PartsService {
    * Generate mock part lookup results
    */
   generateMockPartLookup(partNumber, supplierName) {
-    return [{
-      id: `lookup_${Date.now()}`,
-      partNumber,
-      oemPartNumber: partNumber,
-      description: `Part for ${partNumber}`,
-      category: 'body',
-      partType: 'aftermarket',
-      manufacturer: 'Generic Parts',
-      price: Math.floor(Math.random() * 300) + 25,
-      availability: true,
-      condition: 'New',
-      warranty: '6 months',
-      fits: 'Multiple Vehicles',
-      supplier: this.getSupplierInfo(supplierName || 'parts_trader'),
-      source: 'supplier'
-    }];
+    return [
+      {
+        id: `lookup_${Date.now()}`,
+        partNumber,
+        oemPartNumber: partNumber,
+        description: `Part for ${partNumber}`,
+        category: 'body',
+        partType: 'aftermarket',
+        manufacturer: 'Generic Parts',
+        price: Math.floor(Math.random() * 300) + 25,
+        availability: true,
+        condition: 'New',
+        warranty: '6 months',
+        fits: 'Multiple Vehicles',
+        supplier: this.getSupplierInfo(supplierName || 'parts_trader'),
+        source: 'supplier',
+      },
+    ];
   }
 
   /**
@@ -601,11 +641,41 @@ class PartsService {
    */
   getSupplierInfo(supplierKey) {
     const suppliers = {
-      oem_direct: { name: 'OEM Direct', type: 'OEM', color: '#1976d2', rating: 4.8, deliveryTime: '2-5 days' },
-      oe_connection: { name: 'OE Connection', type: 'OEM', color: '#2e7d32', rating: 4.6, deliveryTime: '1-3 days' },
-      parts_trader: { name: 'PartsTrader', type: 'Aftermarket', color: '#ed6c02', rating: 4.4, deliveryTime: '1-2 days' },
-      lkq: { name: 'LKQ/Recycled', type: 'Recycled', color: '#388e3c', rating: 4.2, deliveryTime: '1-4 days' },
-      remanufactured: { name: 'Remanufactured Pro', type: 'Remanufactured', color: '#7b1fa2', rating: 4.5, deliveryTime: '3-7 days' }
+      oem_direct: {
+        name: 'OEM Direct',
+        type: 'OEM',
+        color: '#1976d2',
+        rating: 4.8,
+        deliveryTime: '2-5 days',
+      },
+      oe_connection: {
+        name: 'OE Connection',
+        type: 'OEM',
+        color: '#2e7d32',
+        rating: 4.6,
+        deliveryTime: '1-3 days',
+      },
+      parts_trader: {
+        name: 'PartsTrader',
+        type: 'Aftermarket',
+        color: '#ed6c02',
+        rating: 4.4,
+        deliveryTime: '1-2 days',
+      },
+      lkq: {
+        name: 'LKQ/Recycled',
+        type: 'Recycled',
+        color: '#388e3c',
+        rating: 4.2,
+        deliveryTime: '1-4 days',
+      },
+      remanufactured: {
+        name: 'Remanufactured Pro',
+        type: 'Remanufactured',
+        color: '#7b1fa2',
+        rating: 4.5,
+        deliveryTime: '3-7 days',
+      },
     };
 
     return suppliers[supplierKey] || suppliers.parts_trader;
@@ -633,16 +703,18 @@ class PartsService {
       location: part.inventory?.location,
       fits: part.fits,
       vehicleApplications: part.vehicleApplications,
-      supplier: part.primaryVendor ? {
-        id: part.primaryVendor.id,
-        name: part.primaryVendor.name,
-        type: part.primaryVendor.type,
-        rating: part.primaryVendor.rating,
-        deliveryTime: part.primaryVendor.deliveryTime
-      } : null,
+      supplier: part.primaryVendor
+        ? {
+            id: part.primaryVendor.id,
+            name: part.primaryVendor.name,
+            type: part.primaryVendor.type,
+            rating: part.primaryVendor.rating,
+            deliveryTime: part.primaryVendor.deliveryTime,
+          }
+        : null,
       source: 'local',
       createdAt: part.createdAt,
-      updatedAt: part.updatedAt
+      updatedAt: part.updatedAt,
     };
   }
 
@@ -657,25 +729,25 @@ class PartsService {
           [Op.or]: [
             { barcode },
             { partNumber: barcode },
-            { oemPartNumber: barcode }
-          ]
+            { oemPartNumber: barcode },
+          ],
         },
         include: [
           {
             model: Vendor,
-            as: 'primaryVendor'
+            as: 'primaryVendor',
           },
           {
             model: Inventory,
-            as: 'inventory'
-          }
-        ]
+            as: 'inventory',
+          },
+        ],
       });
 
       if (localPart) {
         return {
           success: true,
-          data: this.formatPartResult(localPart)
+          data: this.formatPartResult(localPart),
         };
       }
 
@@ -685,7 +757,7 @@ class PartsService {
         if (supplierResults.length > 0) {
           return {
             success: true,
-            data: supplierResults[0]
+            data: supplierResults[0],
           };
         }
       } catch (error) {
@@ -719,7 +791,7 @@ class PartsService {
         fits: partData.fits,
         vehicleApplications: partData.vehicleApplications,
         primaryVendorId: partData.primaryVendorId,
-        barcode: partData.barcode
+        barcode: partData.barcode,
       });
 
       // Create initial inventory record if provided
@@ -728,13 +800,13 @@ class PartsService {
           partId: newPart.id,
           quantityOnHand: partData.initialQuantity,
           quantityAvailable: partData.initialQuantity,
-          location: partData.location || 'Main Warehouse'
+          location: partData.location || 'Main Warehouse',
         });
       }
 
       return {
         success: true,
-        data: await this.getPartById(newPart.id)
+        data: await this.getPartById(newPart.id),
       };
     } catch (error) {
       console.error('Create part error:', error);
@@ -751,13 +823,13 @@ class PartsService {
         include: [
           {
             model: Vendor,
-            as: 'primaryVendor'
+            as: 'primaryVendor',
           },
           {
             model: Inventory,
-            as: 'inventory'
-          }
-        ]
+            as: 'inventory',
+          },
+        ],
       });
 
       if (!part) {
@@ -766,7 +838,7 @@ class PartsService {
 
       return {
         success: true,
-        data: this.formatPartResult(part)
+        data: this.formatPartResult(part),
       };
     } catch (error) {
       if (error instanceof APIError) throw error;
@@ -780,13 +852,13 @@ class PartsService {
    */
   async getAllParts(filters = {}) {
     try {
-      const { 
-        category = '', 
-        partType = '', 
-        limit = 50, 
+      const {
+        category = '',
+        partType = '',
+        limit = 50,
         offset = 0,
         sortBy = 'partNumber',
-        sortOrder = 'ASC'
+        sortOrder = 'ASC',
       } = filters;
 
       const whereConditions = {};
@@ -798,16 +870,16 @@ class PartsService {
         include: [
           {
             model: Vendor,
-            as: 'primaryVendor'
+            as: 'primaryVendor',
           },
           {
             model: Inventory,
-            as: 'inventory'
-          }
+            as: 'inventory',
+          },
         ],
         order: [[sortBy, sortOrder]],
         limit: parseInt(limit),
-        offset: parseInt(offset)
+        offset: parseInt(offset),
       });
 
       return {
@@ -818,9 +890,9 @@ class PartsService {
           pagination: {
             limit: parseInt(limit),
             offset: parseInt(offset),
-            hasMore: parts.count > (parseInt(offset) + parseInt(limit))
-          }
-        }
+            hasMore: parts.count > parseInt(offset) + parseInt(limit),
+          },
+        },
       };
     } catch (error) {
       console.error('Get all parts error:', error);

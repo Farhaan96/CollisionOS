@@ -2,7 +2,7 @@
 
 /**
  * Comprehensive Dashboard Navigation Test Runner
- * 
+ *
  * This script runs all dashboard navigation tests systematically and generates
  * detailed reports for the CollisionOS auto body shop management system.
  */
@@ -15,17 +15,17 @@ const path = require('path');
 const testConfig = {
   testFiles: [
     'tests/e2e/dashboard-navigation.spec.js',
-    'tests/e2e/dashboard-mobile-navigation.spec.js', 
+    'tests/e2e/dashboard-mobile-navigation.spec.js',
     'tests/e2e/dashboard-performance-navigation.spec.js',
-    'tests/e2e/dashboard-accessibility-navigation.spec.js'
+    'tests/e2e/dashboard-accessibility-navigation.spec.js',
   ],
   browsers: ['chromium'],
   viewports: {
     desktop: { width: 1280, height: 720 },
     tablet: { width: 768, height: 1024 },
-    mobile: { width: 375, height: 667 }
+    mobile: { width: 375, height: 667 },
   },
-  outputDir: 'test-results/dashboard-navigation'
+  outputDir: 'test-results/dashboard-navigation',
 };
 
 // Colors for console output
@@ -35,7 +35,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 };
 
 class DashboardNavigationTestRunner {
@@ -47,11 +47,15 @@ class DashboardNavigationTestRunner {
       skipped: 0,
       total: 0,
       testFiles: {},
-      errors: []
+      errors: [],
     };
-    
-    console.log(`${colors.bold}${colors.blue}🚗 CollisionOS Dashboard Navigation Test Suite${colors.reset}`);
-    console.log(`${colors.blue}═══════════════════════════════════════════════════════${colors.reset}\n`);
+
+    console.log(
+      `${colors.bold}${colors.blue}🚗 CollisionOS Dashboard Navigation Test Suite${colors.reset}`
+    );
+    console.log(
+      `${colors.blue}═══════════════════════════════════════════════════════${colors.reset}\n`
+    );
   }
 
   async ensureOutputDirectory() {
@@ -64,94 +68,103 @@ class DashboardNavigationTestRunner {
   async runTest(testFile, options = {}) {
     const testName = path.basename(testFile, '.spec.js');
     const timestamp = new Date().toISOString();
-    
+
     console.log(`${colors.yellow}📋 Running: ${testName}${colors.reset}`);
-    
+
     try {
       const command = `npx playwright test ${testFile} --reporter=json ${options.args || ''}`;
       const startTime = Date.now();
-      
+
       const output = execSync(command, {
         cwd: process.cwd(),
         encoding: 'utf-8',
-        stdio: ['inherit', 'pipe', 'pipe']
+        stdio: ['inherit', 'pipe', 'pipe'],
       });
-      
+
       const duration = Date.now() - startTime;
       const result = JSON.parse(output);
-      
+
       this.results.testFiles[testName] = {
         status: 'passed',
         duration,
         timestamp,
         stats: result.stats || {},
-        errors: []
+        errors: [],
       };
-      
+
       this.results.passed += result.stats?.expected || 0;
       this.results.total += result.stats?.total || 0;
-      
-      console.log(`${colors.green}✅ ${testName} completed in ${duration}ms${colors.reset}`);
-      
+
+      console.log(
+        `${colors.green}✅ ${testName} completed in ${duration}ms${colors.reset}`
+      );
+
       return { success: true, result };
-      
     } catch (error) {
       const duration = Date.now() - Date.now();
-      
+
       this.results.testFiles[testName] = {
         status: 'failed',
         duration,
         timestamp,
         error: error.message,
         stderr: error.stderr?.toString() || '',
-        stdout: error.stdout?.toString() || ''
+        stdout: error.stdout?.toString() || '',
       };
-      
+
       this.results.failed++;
       this.results.errors.push({
         testFile: testName,
         error: error.message,
-        stderr: error.stderr?.toString()
+        stderr: error.stderr?.toString(),
       });
-      
-      console.log(`${colors.red}❌ ${testName} failed: ${error.message}${colors.reset}`);
-      
+
+      console.log(
+        `${colors.red}❌ ${testName} failed: ${error.message}${colors.reset}`
+      );
+
       return { success: false, error };
     }
   }
 
   async runAllTests() {
-    console.log(`${colors.blue}🔍 Running ${testConfig.testFiles.length} test suites...${colors.reset}\n`);
-    
+    console.log(
+      `${colors.blue}🔍 Running ${testConfig.testFiles.length} test suites...${colors.reset}\n`
+    );
+
     await this.ensureOutputDirectory();
-    
+
     // Run core navigation tests first
     await this.runTest('tests/e2e/dashboard-navigation.spec.js', {
-      args: '--project=chromium'
+      args: '--project=chromium',
     });
-    
+
     // Run mobile-specific tests
     await this.runTest('tests/e2e/dashboard-mobile-navigation.spec.js', {
-      args: '--project=chromium'
+      args: '--project=chromium',
     });
-    
+
     // Run performance tests (may take longer)
-    console.log(`${colors.yellow}⚡ Running performance tests (may take 2-3 minutes)...${colors.reset}`);
+    console.log(
+      `${colors.yellow}⚡ Running performance tests (may take 2-3 minutes)...${colors.reset}`
+    );
     await this.runTest('tests/e2e/dashboard-performance-navigation.spec.js', {
-      args: '--project=chromium --timeout=60000'
+      args: '--project=chromium --timeout=60000',
     });
-    
+
     // Run accessibility tests
     await this.runTest('tests/e2e/dashboard-accessibility-navigation.spec.js', {
-      args: '--project=chromium'
+      args: '--project=chromium',
     });
   }
 
   generateReport() {
     const totalDuration = Date.now() - this.startTime;
-    const successRate = this.results.total > 0 ? 
-      ((this.results.passed / this.results.total) * 100).toFixed(1) : 0;
-    
+    const successRate =
+      this.results.total > 0
+        ? ((this.results.passed / this.results.total) * 100).toFixed(1)
+        : 0;
+
     const report = {
       summary: {
         timestamp: new Date().toISOString(),
@@ -160,32 +173,48 @@ class DashboardNavigationTestRunner {
         passed: this.results.passed,
         failed: this.results.failed,
         skipped: this.results.skipped,
-        successRate: `${successRate}%`
+        successRate: `${successRate}%`,
       },
       testFiles: this.results.testFiles,
       errors: this.results.errors,
       testCoverage: {
-        kpiCardNavigation: this.results.testFiles['dashboard-navigation']?.status === 'passed',
-        activityFeedNavigation: this.results.testFiles['dashboard-navigation']?.status === 'passed',
-        technicianPerformance: this.results.testFiles['dashboard-navigation']?.status === 'passed',
-        alertNavigation: this.results.testFiles['dashboard-navigation']?.status === 'passed',
-        mobileNavigation: this.results.testFiles['dashboard-mobile-navigation']?.status === 'passed',
-        performanceOptimization: this.results.testFiles['dashboard-performance-navigation']?.status === 'passed',
-        accessibilityCompliance: this.results.testFiles['dashboard-accessibility-navigation']?.status === 'passed'
-      }
+        kpiCardNavigation:
+          this.results.testFiles['dashboard-navigation']?.status === 'passed',
+        activityFeedNavigation:
+          this.results.testFiles['dashboard-navigation']?.status === 'passed',
+        technicianPerformance:
+          this.results.testFiles['dashboard-navigation']?.status === 'passed',
+        alertNavigation:
+          this.results.testFiles['dashboard-navigation']?.status === 'passed',
+        mobileNavigation:
+          this.results.testFiles['dashboard-mobile-navigation']?.status ===
+          'passed',
+        performanceOptimization:
+          this.results.testFiles['dashboard-performance-navigation']?.status ===
+          'passed',
+        accessibilityCompliance:
+          this.results.testFiles['dashboard-accessibility-navigation']
+            ?.status === 'passed',
+      },
     };
-    
+
     return report;
   }
 
   async saveReport(report) {
-    const reportPath = path.join(testConfig.outputDir, 'dashboard-navigation-report.json');
+    const reportPath = path.join(
+      testConfig.outputDir,
+      'dashboard-navigation-report.json'
+    );
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    
-    const htmlReportPath = path.join(testConfig.outputDir, 'dashboard-navigation-report.html');
+
+    const htmlReportPath = path.join(
+      testConfig.outputDir,
+      'dashboard-navigation-report.html'
+    );
     const htmlReport = this.generateHTMLReport(report);
     fs.writeFileSync(htmlReportPath, htmlReport);
-    
+
     console.log(`\n${colors.blue}📊 Reports saved:${colors.reset}`);
     console.log(`   JSON: ${reportPath}`);
     console.log(`   HTML: ${htmlReportPath}`);
@@ -193,7 +222,7 @@ class DashboardNavigationTestRunner {
 
   generateHTMLReport(report) {
     const { summary, testFiles, testCoverage, errors } = report;
-    
+
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -300,7 +329,9 @@ class DashboardNavigationTestRunner {
         </div>
 
         <h2>📋 Test File Results</h2>
-        ${Object.entries(testFiles).map(([name, data]) => `
+        ${Object.entries(testFiles)
+          .map(
+            ([name, data]) => `
         <div class="coverage-item">
             <div>
                 <strong>${name}</strong><br>
@@ -310,20 +341,30 @@ class DashboardNavigationTestRunner {
                 ${data.status.toUpperCase()}
             </span>
         </div>
-        `).join('')}
+        `
+          )
+          .join('')}
 
-        ${errors.length > 0 ? `
+        ${
+          errors.length > 0
+            ? `
         <div class="errors">
             <h2>❌ Errors</h2>
-            ${errors.map(error => `
+            ${errors
+              .map(
+                error => `
             <div class="error-item">
                 <strong>${error.testFile}</strong>
                 <p>${error.error}</p>
                 ${error.stderr ? `<pre style="font-size: 0.8em; color: #dc2626;">${error.stderr}</pre>` : ''}
             </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; color: #64748b; text-align: center;">
             <p>CollisionOS Dashboard Navigation Test Suite • Auto Body Shop Management System</p>
@@ -335,24 +376,38 @@ class DashboardNavigationTestRunner {
 
   printSummary() {
     const totalDuration = Date.now() - this.startTime;
-    const successRate = this.results.total > 0 ? 
-      ((this.results.passed / this.results.total) * 100).toFixed(1) : 0;
-    
-    console.log(`\n${colors.bold}${colors.blue}📊 Dashboard Navigation Test Summary${colors.reset}`);
-    console.log(`${colors.blue}═══════════════════════════════════════${colors.reset}`);
+    const successRate =
+      this.results.total > 0
+        ? ((this.results.passed / this.results.total) * 100).toFixed(1)
+        : 0;
+
+    console.log(
+      `\n${colors.bold}${colors.blue}📊 Dashboard Navigation Test Summary${colors.reset}`
+    );
+    console.log(
+      `${colors.blue}═══════════════════════════════════════${colors.reset}`
+    );
     console.log(`⏱️  Duration: ${(totalDuration / 1000).toFixed(1)} seconds`);
     console.log(`📋 Total Tests: ${this.results.total}`);
-    console.log(`${colors.green}✅ Passed: ${this.results.passed}${colors.reset}`);
-    console.log(`${colors.red}❌ Failed: ${this.results.failed}${colors.reset}`);
-    console.log(`📈 Success Rate: ${colors.bold}${successRate >= 90 ? colors.green : successRate >= 70 ? colors.yellow : colors.red}${successRate}%${colors.reset}`);
-    
+    console.log(
+      `${colors.green}✅ Passed: ${this.results.passed}${colors.reset}`
+    );
+    console.log(
+      `${colors.red}❌ Failed: ${this.results.failed}${colors.reset}`
+    );
+    console.log(
+      `📈 Success Rate: ${colors.bold}${successRate >= 90 ? colors.green : successRate >= 70 ? colors.yellow : colors.red}${successRate}%${colors.reset}`
+    );
+
     if (this.results.errors.length > 0) {
       console.log(`\n${colors.red}💥 Errors encountered:${colors.reset}`);
       this.results.errors.forEach(error => {
-        console.log(`   ${colors.red}• ${error.testFile}: ${error.error}${colors.reset}`);
+        console.log(
+          `   ${colors.red}• ${error.testFile}: ${error.error}${colors.reset}`
+        );
       });
     }
-    
+
     console.log(`\n${colors.green}🎯 Navigation test coverage:${colors.reset}`);
     console.log(`   • KPI Card Navigation & URL Parameters`);
     console.log(`   • Activity Feed Interactive Links`);
@@ -370,12 +425,13 @@ class DashboardNavigationTestRunner {
       const report = this.generateReport();
       await this.saveReport(report);
       this.printSummary();
-      
+
       // Exit with error code if tests failed
       process.exit(this.results.failed > 0 ? 1 : 0);
-      
     } catch (error) {
-      console.error(`${colors.red}💥 Test runner failed: ${error.message}${colors.reset}`);
+      console.error(
+        `${colors.red}💥 Test runner failed: ${error.message}${colors.reset}`
+      );
       process.exit(1);
     }
   }

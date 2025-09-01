@@ -14,7 +14,7 @@ const sampleFiles = [
   'major_collision_estimate.xml',
   'luxury_vehicle_estimate.xml',
   'paint_only_estimate.xml',
-  'glass_replacement_estimate.xml'
+  'glass_replacement_estimate.xml',
 ];
 
 describe('BMS Integration Tests', () => {
@@ -29,7 +29,10 @@ describe('BMS Integration Tests', () => {
           const content = readFileSync(filePath, 'utf8');
           sampleFileContents[filename] = content;
         } catch (error) {
-          console.warn(`Could not load sample file ${filename}:`, error.message);
+          console.warn(
+            `Could not load sample file ${filename}:`,
+            error.message
+          );
           // Create mock content for missing files
           sampleFileContents[filename] = createMockBMSContent(filename);
         }
@@ -42,47 +45,52 @@ describe('BMS Integration Tests', () => {
   describe('BMS File Processing', () => {
     it('should successfully parse all sample BMS files', async () => {
       const results = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         try {
           const parsed = bmsService.parseBMSFile(content);
           results[filename] = {
             success: true,
             data: parsed,
-            hasRequiredFields: validateRequiredFields(parsed)
+            hasRequiredFields: validateRequiredFields(parsed),
           };
         } catch (error) {
           results[filename] = {
             success: false,
-            error: error.message
+            error: error.message,
           };
         }
       }
 
       // All files should parse successfully
-      const failedFiles = Object.entries(results).filter(([_, result]) => !result.success);
+      const failedFiles = Object.entries(results).filter(
+        ([_, result]) => !result.success
+      );
       if (failedFiles.length > 0) {
         console.error('Failed to parse files:', failedFiles);
       }
-      
+
       expect(failedFiles.length).toBe(0);
 
       // All parsed files should have required fields
-      const filesWithMissingFields = Object.entries(results)
-        .filter(([_, result]) => result.success && !result.hasRequiredFields);
-      
+      const filesWithMissingFields = Object.entries(results).filter(
+        ([_, result]) => result.success && !result.hasRequiredFields
+      );
+
       expect(filesWithMissingFields.length).toBe(0);
     });
 
     it('should extract customer information consistently', async () => {
       const customerData = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         try {
           const parsed = bmsService.parseBMSFile(content);
           customerData[filename] = {
             policyHolder: parsed.adminInfo?.policyHolder,
-            hasValidCustomer: validateCustomerData(parsed.adminInfo?.policyHolder)
+            hasValidCustomer: validateCustomerData(
+              parsed.adminInfo?.policyHolder
+            ),
           };
         } catch (error) {
           customerData[filename] = { error: error.message };
@@ -90,21 +98,22 @@ describe('BMS Integration Tests', () => {
       }
 
       // At least some files should have valid customer data
-      const validCustomers = Object.values(customerData)
-        .filter(data => data.hasValidCustomer);
-      
+      const validCustomers = Object.values(customerData).filter(
+        data => data.hasValidCustomer
+      );
+
       expect(validCustomers.length).toBeGreaterThan(0);
     });
 
     it('should extract vehicle information consistently', async () => {
       const vehicleData = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         try {
           const parsed = bmsService.parseBMSFile(content);
           vehicleData[filename] = {
             vehicle: parsed.vehicleInfo,
-            hasValidVehicle: validateVehicleData(parsed.vehicleInfo)
+            hasValidVehicle: validateVehicleData(parsed.vehicleInfo),
           };
         } catch (error) {
           vehicleData[filename] = { error: error.message };
@@ -112,22 +121,23 @@ describe('BMS Integration Tests', () => {
       }
 
       // All files should have some vehicle information
-      const validVehicles = Object.values(vehicleData)
-        .filter(data => data.hasValidVehicle);
-      
+      const validVehicles = Object.values(vehicleData).filter(
+        data => data.hasValidVehicle
+      );
+
       expect(validVehicles.length).toBeGreaterThan(0);
     });
 
     it('should extract damage line information consistently', async () => {
       const damageData = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         try {
           const parsed = bmsService.parseBMSFile(content);
           damageData[filename] = {
             damageLines: parsed.damageLines,
             lineCount: parsed.damageLines?.length || 0,
-            hasValidDamage: parsed.damageLines && parsed.damageLines.length > 0
+            hasValidDamage: parsed.damageLines && parsed.damageLines.length > 0,
           };
         } catch (error) {
           damageData[filename] = { error: error.message };
@@ -135,21 +145,22 @@ describe('BMS Integration Tests', () => {
       }
 
       // Most files should have damage line information
-      const filesWithDamage = Object.values(damageData)
-        .filter(data => data.hasValidDamage);
-      
+      const filesWithDamage = Object.values(damageData).filter(
+        data => data.hasValidDamage
+      );
+
       expect(filesWithDamage.length).toBeGreaterThan(0);
     });
 
     it('should extract totals information consistently', async () => {
       const totalsData = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         try {
           const parsed = bmsService.parseBMSFile(content);
           totalsData[filename] = {
             totals: parsed.totals,
-            hasValidTotals: validateTotalsData(parsed.totals)
+            hasValidTotals: validateTotalsData(parsed.totals),
           };
         } catch (error) {
           totalsData[filename] = { error: error.message };
@@ -157,9 +168,10 @@ describe('BMS Integration Tests', () => {
       }
 
       // Most files should have totals information
-      const validTotals = Object.values(totalsData)
-        .filter(data => data.hasValidTotals);
-      
+      const validTotals = Object.values(totalsData).filter(
+        data => data.hasValidTotals
+      );
+
       expect(validTotals.length).toBeGreaterThan(0);
     });
   });
@@ -167,7 +179,7 @@ describe('BMS Integration Tests', () => {
   describe('File Upload Simulation', () => {
     it('should handle file upload end-to-end for all sample files', async () => {
       const uploadResults = {};
-      
+
       for (const [filename, content] of Object.entries(sampleFileContents)) {
         // Create mock File object
         const mockFile = {
@@ -175,7 +187,7 @@ describe('BMS Integration Tests', () => {
           size: content.length,
           type: 'text/xml',
           lastModified: Date.now(),
-          [Symbol.toStringTag]: 'File'
+          [Symbol.toStringTag]: 'File',
         };
 
         // Mock FileReader
@@ -194,32 +206,41 @@ describe('BMS Integration Tests', () => {
         } catch (error) {
           uploadResults[filename] = {
             success: false,
-            error: error.message
+            error: error.message,
           };
         }
       }
 
       // Check results
-      const successfulUploads = Object.values(uploadResults)
-        .filter(result => result.success);
-      
-      const failedUploads = Object.values(uploadResults)
-        .filter(result => !result.success);
+      const successfulUploads = Object.values(uploadResults).filter(
+        result => result.success
+      );
 
-      console.log(`Successful uploads: ${successfulUploads.length}/${Object.keys(uploadResults).length}`);
+      const failedUploads = Object.values(uploadResults).filter(
+        result => !result.success
+      );
+
+      console.log(
+        `Successful uploads: ${successfulUploads.length}/${Object.keys(uploadResults).length}`
+      );
       if (failedUploads.length > 0) {
-        console.warn('Failed uploads:', failedUploads.map(f => f.error));
+        console.warn(
+          'Failed uploads:',
+          failedUploads.map(f => f.error)
+        );
       }
 
       // At least 60% of uploads should succeed
-      expect(successfulUploads.length / Object.keys(uploadResults).length).toBeGreaterThanOrEqual(0.6);
+      expect(
+        successfulUploads.length / Object.keys(uploadResults).length
+      ).toBeGreaterThanOrEqual(0.6);
     });
   });
 
   describe('Error Handling', () => {
     it('should handle malformed XML gracefully', async () => {
       const malformedXML = '<invalid>xml<unclosed>';
-      
+
       expect(() => {
         bmsService.parseBMSFile(malformedXML);
       }).toThrow();
@@ -227,7 +248,7 @@ describe('BMS Integration Tests', () => {
 
     it('should handle empty files gracefully', async () => {
       const emptyContent = '';
-      
+
       expect(() => {
         bmsService.parseBMSFile(emptyContent);
       }).toThrow();
@@ -238,7 +259,7 @@ describe('BMS Integration Tests', () => {
         <root>
           <data>This is not a BMS file</data>
         </root>`;
-      
+
       try {
         const result = bmsService.parseBMSFile(nonBMSXML);
         // Should return an object but with missing BMS fields
@@ -253,7 +274,7 @@ describe('BMS Integration Tests', () => {
       const mockFile = {
         name: 'test.xml',
         size: 100,
-        type: 'text/xml'
+        type: 'text/xml',
       };
 
       // Mock FileReader that fails
@@ -273,13 +294,13 @@ describe('BMS Integration Tests', () => {
   describe('Performance Tests', () => {
     it('should parse large BMS files within reasonable time', async () => {
       const largeBMSContent = createLargeMockBMSContent();
-      
+
       const startTime = Date.now();
       const result = bmsService.parseBMSFile(largeBMSContent);
       const endTime = Date.now();
-      
+
       const processingTime = endTime - startTime;
-      
+
       expect(result).toBeDefined();
       expect(processingTime).toBeLessThan(5000); // Should complete within 5 seconds
     });
@@ -287,12 +308,14 @@ describe('BMS Integration Tests', () => {
     it('should handle multiple concurrent file uploads', async () => {
       const concurrentUploads = [];
       const numUploads = 5;
-      
+
       // Mock FileReader
       global.FileReader = class {
         readAsText(file) {
           setTimeout(() => {
-            this.result = sampleFileContents['minor_collision_estimate.xml'] || createMockBMSContent('test.xml');
+            this.result =
+              sampleFileContents['minor_collision_estimate.xml'] ||
+              createMockBMSContent('test.xml');
             this.onload({ target: { result: this.result } });
           }, Math.random() * 100);
         }
@@ -302,15 +325,15 @@ describe('BMS Integration Tests', () => {
         const mockFile = {
           name: `test_${i}.xml`,
           size: 1000,
-          type: 'text/xml'
+          type: 'text/xml',
         };
-        
+
         concurrentUploads.push(bmsService.uploadBMSFile(mockFile));
       }
 
       const results = await Promise.all(concurrentUploads);
       const successfulResults = results.filter(r => r.success);
-      
+
       expect(successfulResults.length).toBeGreaterThanOrEqual(numUploads * 0.8); // 80% success rate
     });
   });
@@ -335,10 +358,7 @@ function validateCustomerData(customer) {
 }
 
 function validateVehicleData(vehicle) {
-  return !!(
-    vehicle &&
-    (vehicle.vin || vehicle.description)
-  );
+  return !!(vehicle && (vehicle.vin || vehicle.description));
 }
 
 function validateTotalsData(totals) {
@@ -349,10 +369,15 @@ function validateTotalsData(totals) {
 }
 
 function createMockBMSContent(filename) {
-  const estimateType = filename.includes('major') ? 'Major' : 
-                      filename.includes('luxury') ? 'Luxury' :
-                      filename.includes('paint') ? 'Paint' :
-                      filename.includes('glass') ? 'Glass' : 'Minor';
+  const estimateType = filename.includes('major')
+    ? 'Major'
+    : filename.includes('luxury')
+      ? 'Luxury'
+      : filename.includes('paint')
+        ? 'Paint'
+        : filename.includes('glass')
+          ? 'Glass'
+          : 'Minor';
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <VehicleDamageEstimateAddRq>
@@ -421,7 +446,7 @@ function createMockBMSContent(filename) {
 
 function createLargeMockBMSContent() {
   const baseContent = createMockBMSContent('large_test.xml');
-  
+
   // Create a large BMS file by adding many damage lines
   const damageLines = [];
   for (let i = 1; i <= 100; i++) {
@@ -438,7 +463,7 @@ function createLargeMockBMSContent() {
       </LaborInfo>
     </DamageLineInfo>`);
   }
-  
+
   // Insert damage lines into the base content
   return baseContent.replace(
     '<DamageLineInfo>',

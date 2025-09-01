@@ -1,5 +1,11 @@
 import { Decimal } from 'decimal.js';
-import { NormalizedPayload, CustomerData, VehicleData, EstimateLine, PartData } from './types';
+import {
+  NormalizedPayload,
+  CustomerData,
+  VehicleData,
+  EstimateLine,
+  PartData,
+} from './types';
 
 /**
  * EMS (Estimating Management System) Parser for pipe-delimited format
@@ -16,8 +22,11 @@ class EMSParser {
   async parseEMS(emsContent: string): Promise<NormalizedPayload> {
     try {
       this.unknownFields.clear();
-      
-      const lines = emsContent.split('\n').map(line => line.trim()).filter(line => line);
+
+      const lines = emsContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line);
       const sections = this.parseEMSSections(lines);
 
       const identities = this.extractIdentities(sections);
@@ -35,12 +44,14 @@ class EMSParser {
         meta: {
           source_system: this.detectSourceSystem(sections),
           import_timestamp: new Date(),
-          unknown_tags: Array.from(this.unknownFields)
-        }
+          unknown_tags: Array.from(this.unknownFields),
+        },
       };
     } catch (error) {
       console.error('Error parsing EMS file:', error);
-      throw new Error(`EMS parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `EMS parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -113,7 +124,7 @@ class EMSParser {
       system: fields[3] || '',
       date: fields[4] || '',
       time: fields[5] || '',
-      timestamp: this.parseEMSDateTime(fields[4], fields[5])
+      timestamp: this.parseEMSDateTime(fields[4], fields[5]),
     };
   }
 
@@ -129,7 +140,7 @@ class EMSParser {
       deductible: this.parseDecimal(fields[3]),
       lossDate: this.parseEMSDate(fields[4]),
       adjuster: fields[5] || '',
-      insuranceCompany: fields[6] || ''
+      insuranceCompany: fields[6] || '',
     };
   }
 
@@ -149,7 +160,7 @@ class EMSParser {
       zipCode: fields[7] || '',
       phone: fields[8] || '',
       email: fields[9] || '',
-      gstPayable: fields[10]?.toUpperCase() === 'Y' || !!fields[3] // Business customers pay GST
+      gstPayable: fields[10]?.toUpperCase() === 'Y' || !!fields[3], // Business customers pay GST
     };
   }
 
@@ -171,7 +182,7 @@ class EMSParser {
       odometer: parseInt(fields[9]) || 0,
       engine: fields[10] || '',
       transmission: fields[11] || '',
-      fuelType: fields[12] || ''
+      fuelType: fields[12] || '',
     };
   }
 
@@ -188,7 +199,7 @@ class EMSParser {
       totalLabor: this.parseDecimal(fields[4]),
       totalParts: this.parseDecimal(fields[5]),
       totalMaterials: this.parseDecimal(fields[6]),
-      grossTotal: this.parseDecimal(fields[7])
+      grossTotal: this.parseDecimal(fields[7]),
     };
   }
 
@@ -204,7 +215,7 @@ class EMSParser {
       lineType: fields[3] || '',
       amount: this.parseDecimal(fields[4]),
       taxable: fields[5]?.toUpperCase() === 'Y',
-      parentLine: parseInt(fields[6]) || undefined
+      parentLine: parseInt(fields[6]) || undefined,
     };
   }
 
@@ -223,7 +234,7 @@ class EMSParser {
       price: this.parseDecimal(fields[6]),
       partType: fields[7] || 'oem',
       sourceCode: fields[8] || 'OEM',
-      taxable: fields[9]?.toUpperCase() === 'Y'
+      taxable: fields[9]?.toUpperCase() === 'Y',
     };
   }
 
@@ -240,7 +251,7 @@ class EMSParser {
       rate: this.parseDecimal(fields[4]),
       laborType: fields[5] || 'repair',
       taxable: fields[6]?.toUpperCase() === 'Y',
-      paintStages: parseInt(fields[7]) || undefined
+      paintStages: parseInt(fields[7]) || undefined,
     };
   }
 
@@ -255,7 +266,7 @@ class EMSParser {
       materialType: fields[2] || '',
       description: fields[3] || '',
       price: this.parseDecimal(fields[4]),
-      taxable: fields[5]?.toUpperCase() === 'Y'
+      taxable: fields[5]?.toUpperCase() === 'Y',
     };
   }
 
@@ -270,7 +281,7 @@ class EMSParser {
       totalSubType: fields[2] || '',
       amount: this.parseDecimal(fields[3]),
       taxableAmount: this.parseDecimal(fields[4]),
-      taxAmount: this.parseDecimal(fields[5])
+      taxAmount: this.parseDecimal(fields[5]),
     };
   }
 
@@ -287,7 +298,11 @@ class EMSParser {
   /**
    * Extract job identities from EMS sections
    */
-  private extractIdentities(sections: Map<string, any[]>): { ro_number: string; claim_number: string; vin: string } {
+  private extractIdentities(sections: Map<string, any[]>): {
+    ro_number: string;
+    claim_number: string;
+    vin: string;
+  } {
     const estimateRecords = sections.get('EST') || [];
     const claimRecords = sections.get('CLM') || [];
     const vehicleRecords = sections.get('VEH') || [];
@@ -295,14 +310,16 @@ class EMSParser {
     return {
       ro_number: estimateRecords[0]?.estimateNumber || '',
       claim_number: claimRecords[0]?.claimNumber || '',
-      vin: vehicleRecords[0]?.vin || ''
+      vin: vehicleRecords[0]?.vin || '',
     };
   }
 
   /**
    * Extract customer data from EMS sections
    */
-  private extractCustomerData(sections: Map<string, any[]>): CustomerData & { gst_payable: boolean } {
+  private extractCustomerData(
+    sections: Map<string, any[]>
+  ): CustomerData & { gst_payable: boolean } {
     const customerRecords = sections.get('CST') || [];
     const customer = customerRecords[0];
 
@@ -311,7 +328,7 @@ class EMSParser {
         type: 'person',
         firstName: 'Unknown',
         lastName: 'Customer',
-        gst_payable: false
+        gst_payable: false,
       };
     }
 
@@ -320,17 +337,20 @@ class EMSParser {
     return {
       type: isCompany ? 'organization' : 'person',
       firstName: customer.firstName || (isCompany ? 'Business' : 'Unknown'),
-      lastName: customer.lastName || (isCompany ? customer.companyName : 'Customer'),
+      lastName:
+        customer.lastName || (isCompany ? customer.companyName : 'Customer'),
       companyName: customer.companyName,
       email: customer.email,
       phone: customer.phone,
-      address: customer.address ? {
-        address1: customer.address,
-        city: customer.city,
-        stateProvince: customer.state,
-        postalCode: customer.zipCode
-      } : undefined,
-      gst_payable: customer.gstPayable || isCompany
+      address: customer.address
+        ? {
+            address1: customer.address,
+            city: customer.city,
+            stateProvince: customer.state,
+            postalCode: customer.zipCode,
+          }
+        : undefined,
+      gst_payable: customer.gstPayable || isCompany,
     };
   }
 
@@ -346,7 +366,7 @@ class EMSParser {
         vin: '',
         year: 2020,
         make: 'Unknown',
-        model: 'Unknown'
+        model: 'Unknown',
       };
     }
 
@@ -364,8 +384,8 @@ class EMSParser {
       transmission: vehicle.transmission,
       fuelType: vehicle.fuelType,
       license: {
-        plateNumber: vehicle.licensePlate
-      }
+        plateNumber: vehicle.licensePlate,
+      },
     };
   }
 
@@ -385,7 +405,9 @@ class EMSParser {
 
     partRecords.forEach(part => partsByLine.set(part.lineNumber, part));
     laborRecords.forEach(labor => laborByLine.set(labor.lineNumber, labor));
-    materialRecords.forEach(material => materialsByLine.set(material.lineNumber, material));
+    materialRecords.forEach(material =>
+      materialsByLine.set(material.lineNumber, material)
+    );
 
     return lineRecords.map(line => {
       const partInfo = partsByLine.get(line.lineNumber);
@@ -400,31 +422,42 @@ class EMSParser {
         parentLineNum: line.parentLine,
         lineDesc: line.description || 'EMS Line Item',
         lineType: line.lineType || 'repair',
-        partInfo: partInfo ? {
-          partNumber: partInfo.partNumber,
-          oemPartNumber: partInfo.oemPartNumber,
-          description: partInfo.description,
-          price: partInfo.price,
-          quantity: partInfo.quantity,
-          partType: partInfo.partType,
-          sourceCode: partInfo.sourceCode,
-          taxable: partInfo.taxable
-        } : undefined,
-        laborInfo: laborInfo ? {
-          laborType: laborInfo.laborType,
-          operation: laborInfo.operation,
-          hours: laborInfo.hours,
-          rate: laborInfo.rate,
-          taxable: laborInfo.taxable,
-          paintStages: laborInfo.paintStages
-        } : undefined,
-        otherChargesInfo: materialInfo ? {
-          type: materialInfo.materialType,
-          price: materialInfo.price,
-          taxable: materialInfo.taxable
-        } : undefined,
-        taxable: line.taxable || partInfo?.taxable || laborInfo?.taxable || materialInfo?.taxable || false,
-        amount
+        partInfo: partInfo
+          ? {
+              partNumber: partInfo.partNumber,
+              oemPartNumber: partInfo.oemPartNumber,
+              description: partInfo.description,
+              price: partInfo.price,
+              quantity: partInfo.quantity,
+              partType: partInfo.partType,
+              sourceCode: partInfo.sourceCode,
+              taxable: partInfo.taxable,
+            }
+          : undefined,
+        laborInfo: laborInfo
+          ? {
+              laborType: laborInfo.laborType,
+              operation: laborInfo.operation,
+              hours: laborInfo.hours,
+              rate: laborInfo.rate,
+              taxable: laborInfo.taxable,
+              paintStages: laborInfo.paintStages,
+            }
+          : undefined,
+        otherChargesInfo: materialInfo
+          ? {
+              type: materialInfo.materialType,
+              price: materialInfo.price,
+              taxable: materialInfo.taxable,
+            }
+          : undefined,
+        taxable:
+          line.taxable ||
+          partInfo?.taxable ||
+          laborInfo?.taxable ||
+          materialInfo?.taxable ||
+          false,
+        amount,
       };
     });
   }
@@ -443,7 +476,7 @@ class EMSParser {
         quantity: line.partInfo!.quantity,
         supplier: line.partInfo!.sourceCode,
         partType: line.partInfo!.partType,
-        lineNumber: line.lineNum
+        lineNumber: line.lineNum,
       }));
   }
 
@@ -459,10 +492,13 @@ class EMSParser {
     const vendor = header.vendor?.toLowerCase() || '';
     const system = header.system?.toLowerCase() || '';
 
-    if (vendor.includes('mitchell') || system.includes('mitchell')) return 'Mitchell EMS';
+    if (vendor.includes('mitchell') || system.includes('mitchell'))
+      return 'Mitchell EMS';
     if (vendor.includes('ccc') || system.includes('ccc')) return 'CCC ONE EMS';
-    if (vendor.includes('audatex') || system.includes('audatex')) return 'Audatex EMS';
-    if (vendor.includes('qapter') || system.includes('qapter')) return 'Qapter EMS';
+    if (vendor.includes('audatex') || system.includes('audatex'))
+      return 'Audatex EMS';
+    if (vendor.includes('qapter') || system.includes('qapter'))
+      return 'Qapter EMS';
 
     return `EMS ${header.vendor || 'Unknown'}`;
   }
@@ -478,19 +514,30 @@ class EMSParser {
       const year = parseInt(dateStr.substr(0, 4));
       const month = parseInt(dateStr.substr(4, 2));
       const day = parseInt(dateStr.substr(6, 2));
-      
+
       // Validate date components
-      if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+      if (
+        year < 1900 ||
+        year > 2100 ||
+        month < 1 ||
+        month > 12 ||
+        day < 1 ||
+        day > 31
+      ) {
         return undefined;
       }
-      
+
       const date = new Date(year, month - 1, day); // Month is 0-indexed
-      
+
       // Check if the date is valid (handles leap years, month lengths, etc.)
-      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+      ) {
         return undefined;
       }
-      
+
       return date;
     }
 
@@ -511,7 +558,7 @@ class EMSParser {
       const hours = parseInt(timeStr.substr(0, 2));
       const minutes = parseInt(timeStr.substr(2, 2));
       const seconds = parseInt(timeStr.substr(4, 2));
-      
+
       date.setHours(hours, minutes, seconds);
     }
 
@@ -523,10 +570,10 @@ class EMSParser {
    */
   private parseDecimal(value: string): Decimal {
     if (!value) return new Decimal(0);
-    
+
     const cleaned = value.toString().replace(/[^\d.-]/g, '');
     const parsed = parseFloat(cleaned);
-    
+
     return new Decimal(isNaN(parsed) ? 0 : parsed);
   }
 

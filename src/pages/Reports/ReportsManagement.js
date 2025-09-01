@@ -8,14 +8,14 @@ const ReportsManagement = () => {
     // Implement report generation logic
   };
 
-  const handleReportSchedule = (reportConfig) => {
+  const handleReportSchedule = reportConfig => {
     console.log('Scheduling report:', reportConfig);
     // Implement report scheduling logic
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <ReportingSystem 
+      <ReportingSystem
         onReportGenerate={handleReportGenerate}
         onReportSchedule={handleReportSchedule}
       />

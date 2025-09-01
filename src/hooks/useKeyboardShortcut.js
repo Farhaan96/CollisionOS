@@ -3,7 +3,7 @@ import { useShortcutManager } from '../components/KeyboardShortcuts/ShortcutMana
 
 /**
  * Hook for registering keyboard shortcuts with cleanup
- * 
+ *
  * @param {string} shortcut - Keyboard shortcut (e.g., 'cmd+k', 'ctrl+shift+n')
  * @param {function} handler - Function to execute when shortcut is pressed
  * @param {object} options - Configuration options
@@ -14,9 +14,9 @@ import { useShortcutManager } from '../components/KeyboardShortcuts/ShortcutMana
  * @param {array} deps - Dependency array for effect
  */
 export const useKeyboardShortcut = (
-  shortcut, 
-  handler, 
-  options = {}, 
+  shortcut,
+  handler,
+  options = {},
   deps = []
 ) => {
   const { registerShortcut, unregisterShortcut } = useShortcutManager();
@@ -35,7 +35,7 @@ export const useKeyboardShortcut = (
       return;
     }
 
-    const wrappedHandler = (event) => {
+    const wrappedHandler = event => {
       if (optionsRef.current.preventDefault !== false) {
         event.preventDefault();
       }
@@ -47,7 +47,7 @@ export const useKeyboardShortcut = (
 
     const success = registerShortcut(shortcut, wrappedHandler, {
       ...optionsRef.current,
-      id: `hook-${shortcut}-${Date.now()}`
+      id: `hook-${shortcut}-${Date.now()}`,
     });
 
     if (success) {
@@ -55,17 +55,27 @@ export const useKeyboardShortcut = (
         unregisterShortcut(shortcut);
       };
     }
-  }, [shortcut, registerShortcut, unregisterShortcut, options.enabled, ...deps]);
+  }, [
+    shortcut,
+    registerShortcut,
+    unregisterShortcut,
+    options.enabled,
+    ...deps,
+  ]);
 };
 
 /**
  * Hook for registering multiple keyboard shortcuts
- * 
+ *
  * @param {object} shortcuts - Object mapping shortcuts to handlers
  * @param {object} globalOptions - Global options applied to all shortcuts
  * @param {array} deps - Dependency array for effect
  */
-export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) => {
+export const useKeyboardShortcuts = (
+  shortcuts,
+  globalOptions = {},
+  deps = []
+) => {
   const { registerShortcut, unregisterShortcut } = useShortcutManager();
   const shortcutsRef = useRef(shortcuts);
   const globalOptionsRef = useRef(globalOptions);
@@ -83,7 +93,7 @@ export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) =
       if (!shortcut || !config) return;
 
       let handler, options;
-      
+
       if (typeof config === 'function') {
         handler = config;
         options = {};
@@ -95,8 +105,8 @@ export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) =
       if (!handler || options.enabled === false) return;
 
       const mergedOptions = { ...globalOptionsRef.current, ...options };
-      
-      const wrappedHandler = (event) => {
+
+      const wrappedHandler = event => {
         if (mergedOptions.preventDefault !== false) {
           event.preventDefault();
         }
@@ -108,7 +118,7 @@ export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) =
 
       const success = registerShortcut(shortcut, wrappedHandler, {
         ...mergedOptions,
-        id: `hook-multi-${shortcut}-${Date.now()}`
+        id: `hook-multi-${shortcut}-${Date.now()}`,
       });
 
       if (success) {
@@ -124,7 +134,7 @@ export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) =
 
 /**
  * Hook for conditional keyboard shortcuts
- * 
+ *
  * @param {string} shortcut - Keyboard shortcut
  * @param {function} handler - Handler function
  * @param {function|boolean} condition - Condition function or boolean
@@ -132,25 +142,26 @@ export const useKeyboardShortcuts = (shortcuts, globalOptions = {}, deps = []) =
  * @param {array} deps - Dependency array
  */
 export const useConditionalKeyboardShortcut = (
-  shortcut, 
-  handler, 
-  condition, 
-  options = {}, 
+  shortcut,
+  handler,
+  condition,
+  options = {},
   deps = []
 ) => {
-  const conditionMet = typeof condition === 'function' ? condition() : condition;
-  
+  const conditionMet =
+    typeof condition === 'function' ? condition() : condition;
+
   useKeyboardShortcut(
-    shortcut, 
-    handler, 
-    { ...options, enabled: conditionMet }, 
+    shortcut,
+    handler,
+    { ...options, enabled: conditionMet },
     deps
   );
 };
 
 /**
  * Hook for form-specific shortcuts
- * 
+ *
  * @param {object} shortcuts - Form shortcuts configuration
  * @param {boolean} formActive - Whether form is active
  */
@@ -158,16 +169,16 @@ export const useFormShortcuts = (shortcuts = {}, formActive = true) => {
   const defaultFormShortcuts = {
     'cmd+enter': shortcuts.submit || (() => {}),
     'cmd+s': shortcuts.save || (() => {}),
-    'escape': shortcuts.cancel || (() => {}),
-    ...shortcuts
+    escape: shortcuts.cancel || (() => {}),
+    ...shortcuts,
   };
 
   useKeyboardShortcuts(
     defaultFormShortcuts,
-    { 
+    {
       scope: 'form',
       enabled: formActive,
-      preventDefault: true
+      preventDefault: true,
     },
     [formActive]
   );
@@ -175,60 +186,67 @@ export const useFormShortcuts = (shortcuts = {}, formActive = true) => {
 
 /**
  * Hook for navigation shortcuts
- * 
+ *
  * @param {function} navigate - Navigation function from react-router
  * @param {object} routes - Routes configuration
  */
 export const useNavigationShortcuts = (navigate, routes = {}) => {
   const defaultRoutes = {
     'cmd+1': '/dashboard',
-    'cmd+2': '/customers', 
+    'cmd+2': '/customers',
     'cmd+3': '/production',
     'cmd+4': '/parts',
     'cmd+5': '/estimates',
     'cmd+6': '/reports',
     'cmd+7': '/settings',
-    ...routes
+    ...routes,
   };
 
-  const navigationShortcuts = Object.entries(defaultRoutes).reduce((acc, [shortcut, path]) => {
-    acc[shortcut] = () => navigate(path);
-    return acc;
-  }, {});
+  const navigationShortcuts = Object.entries(defaultRoutes).reduce(
+    (acc, [shortcut, path]) => {
+      acc[shortcut] = () => navigate(path);
+      return acc;
+    },
+    {}
+  );
 
   useKeyboardShortcuts(navigationShortcuts, {
     category: 'Navigation',
     global: true,
-    preventDefault: true
+    preventDefault: true,
   });
 };
 
 /**
  * Hook for modal/dialog shortcuts
- * 
+ *
  * @param {boolean} isOpen - Whether modal is open
  * @param {function} onClose - Close handler
  * @param {function} onSubmit - Submit handler (optional)
  */
 export const useModalShortcuts = (isOpen, onClose, onSubmit) => {
   const shortcuts = {
-    'escape': onClose
+    escape: onClose,
   };
 
   if (onSubmit) {
     shortcuts['cmd+enter'] = onSubmit;
   }
 
-  useKeyboardShortcuts(shortcuts, {
-    scope: 'modal',
-    enabled: isOpen,
-    preventDefault: true
-  }, [isOpen]);
+  useKeyboardShortcuts(
+    shortcuts,
+    {
+      scope: 'modal',
+      enabled: isOpen,
+      preventDefault: true,
+    },
+    [isOpen]
+  );
 };
 
 /**
  * Hook for search shortcuts
- * 
+ *
  * @param {function} onSearch - Search handler
  * @param {function} onFocus - Focus search input handler
  * @param {function} onClear - Clear search handler
@@ -252,13 +270,13 @@ export const useSearchShortcuts = (onSearch, onFocus, onClear) => {
   useKeyboardShortcuts(shortcuts, {
     category: 'Search',
     global: true,
-    preventDefault: true
+    preventDefault: true,
   });
 };
 
 /**
  * Hook for data table shortcuts
- * 
+ *
  * @param {object} tableActions - Table action handlers
  */
 export const useTableShortcuts = (tableActions = {}) => {
@@ -291,13 +309,13 @@ export const useTableShortcuts = (tableActions = {}) => {
   useKeyboardShortcuts(shortcuts, {
     category: 'Table',
     scope: 'table',
-    preventDefault: true
+    preventDefault: true,
   });
 };
 
 /**
  * Hook for development shortcuts (only in development mode)
- * 
+ *
  * @param {object} devActions - Development action handlers
  */
 export const useDevShortcuts = (devActions = {}) => {
@@ -320,7 +338,7 @@ export const useDevShortcuts = (devActions = {}) => {
   useKeyboardShortcuts(shortcuts, {
     category: 'Development',
     enabled: isDev,
-    preventDefault: false
+    preventDefault: false,
   });
 };
 

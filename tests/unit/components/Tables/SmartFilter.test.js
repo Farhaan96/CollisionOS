@@ -18,21 +18,21 @@ const theme = createTheme({
 });
 
 const mockColumns = [
-  { 
-    id: 'name', 
-    label: 'Name', 
+  {
+    id: 'name',
+    label: 'Name',
     type: 'text',
     quickFilter: true,
   },
-  { 
-    id: 'email', 
-    label: 'Email', 
+  {
+    id: 'email',
+    label: 'Email',
     type: 'text',
     quickFilter: true,
   },
-  { 
-    id: 'department', 
-    label: 'Department', 
+  {
+    id: 'department',
+    label: 'Department',
     type: 'select',
     options: [
       { value: 'sales', label: 'Sales' },
@@ -41,19 +41,19 @@ const mockColumns = [
     ],
     quickFilter: true,
   },
-  { 
-    id: 'salary', 
-    label: 'Salary', 
+  {
+    id: 'salary',
+    label: 'Salary',
     type: 'number',
   },
-  { 
-    id: 'startDate', 
-    label: 'Start Date', 
+  {
+    id: 'startDate',
+    label: 'Start Date',
     type: 'date',
   },
-  { 
-    id: 'isActive', 
-    label: 'Active', 
+  {
+    id: 'isActive',
+    label: 'Active',
     type: 'boolean',
   },
 ];
@@ -62,24 +62,20 @@ const mockSavedPresets = [
   {
     id: 'active-employees',
     name: 'Active Employees',
-    filters: [
-      { column: 'isActive', operator: 'equals', value: true },
-    ],
+    filters: [{ column: 'isActive', operator: 'equals', value: true }],
     searchValue: '',
     createdAt: '2024-01-01T10:00:00Z',
   },
   {
     id: 'high-salary',
     name: 'High Salary',
-    filters: [
-      { column: 'salary', operator: 'greaterThan', value: 100000 },
-    ],
+    filters: [{ column: 'salary', operator: 'greaterThan', value: 100000 }],
     searchValue: '',
     createdAt: '2024-01-02T15:30:00Z',
   },
 ];
 
-const renderWithProviders = (component) => {
+const renderWithProviders = component => {
   return render(
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -112,32 +108,40 @@ describe('SmartFilter', () => {
   });
 
   test('renders search input with placeholder', () => {
-    renderWithProviders(<SmartFilter {...defaultProps} searchPlaceholder="Search records..." />);
-    
-    expect(screen.getByPlaceholderText('Search records...')).toBeInTheDocument();
+    renderWithProviders(
+      <SmartFilter {...defaultProps} searchPlaceholder='Search records...' />
+    );
+
+    expect(
+      screen.getByPlaceholderText('Search records...')
+    ).toBeInTheDocument();
   });
 
   test('handles search input with debouncing', async () => {
     const onSearchChange = jest.fn();
-    renderWithProviders(<SmartFilter {...defaultProps} onSearchChange={onSearchChange} />);
-    
+    renderWithProviders(
+      <SmartFilter {...defaultProps} onSearchChange={onSearchChange} />
+    );
+
     const searchInput = screen.getByPlaceholderText('Search...');
     fireEvent.change(searchInput, { target: { value: 'test search' } });
-    
+
     // Should not call immediately
     expect(onSearchChange).not.toHaveBeenCalled();
-    
+
     // Fast-forward time to trigger debounced call
     jest.advanceTimersByTime(300);
-    
+
     await waitFor(() => {
       expect(onSearchChange).toHaveBeenCalledWith('test search');
     });
   });
 
   test('displays quick filters', () => {
-    renderWithProviders(<SmartFilter {...defaultProps} enableQuickFilters={true} />);
-    
+    renderWithProviders(
+      <SmartFilter {...defaultProps} enableQuickFilters={true} />
+    );
+
     expect(screen.getByText('Quick Filters:')).toBeInTheDocument();
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Email')).toBeInTheDocument();
@@ -147,17 +151,17 @@ describe('SmartFilter', () => {
   test('handles quick filter toggle', () => {
     const onFiltersChange = jest.fn();
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
+      <SmartFilter
+        {...defaultProps}
         onFiltersChange={onFiltersChange}
         enableQuickFilters={true}
       />
     );
-    
+
     // Click on a quick filter
     const nameFilter = screen.getByText('Name');
     fireEvent.click(nameFilter);
-    
+
     // Should add a new filter
     expect(onFiltersChange).toHaveBeenCalled();
   });
@@ -172,9 +176,11 @@ describe('SmartFilter', () => {
         label: 'Name contains john',
       },
     ];
-    
-    renderWithProviders(<SmartFilter {...defaultProps} filters={activeFilters} />);
-    
+
+    renderWithProviders(
+      <SmartFilter {...defaultProps} filters={activeFilters} />
+    );
+
     expect(screen.getByText('Name contains john')).toBeInTheDocument();
   });
 
@@ -189,37 +195,39 @@ describe('SmartFilter', () => {
         label: 'Name contains john',
       },
     ];
-    
+
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
+      <SmartFilter
+        {...defaultProps}
         filters={activeFilters}
         onFiltersChange={onFiltersChange}
       />
     );
-    
+
     // Click the delete button on the filter chip
     const deleteButton = screen.getByTestId('HighlightOffIcon');
     fireEvent.click(deleteButton);
-    
+
     expect(onFiltersChange).toHaveBeenCalledWith([]);
   });
 
   test('opens advanced filter builder', () => {
-    renderWithProviders(<SmartFilter {...defaultProps} enableAdvancedBuilder={true} />);
-    
+    renderWithProviders(
+      <SmartFilter {...defaultProps} enableAdvancedBuilder={true} />
+    );
+
     const advancedButton = screen.getByText('Advanced Filters');
     fireEvent.click(advancedButton);
-    
+
     expect(screen.getByText('Advanced Filter Builder')).toBeInTheDocument();
   });
 
   test('displays preset management menu', () => {
     renderWithProviders(<SmartFilter {...defaultProps} enablePresets={true} />);
-    
+
     const presetsButton = screen.getByText('Presets');
     fireEvent.click(presetsButton);
-    
+
     expect(screen.getByText('Save Current Filters')).toBeInTheDocument();
     expect(screen.getByText('Active Employees')).toBeInTheDocument();
     expect(screen.getByText('High Salary')).toBeInTheDocument();
@@ -228,53 +236,53 @@ describe('SmartFilter', () => {
   test('handles preset loading', () => {
     const onLoadPreset = jest.fn();
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
+      <SmartFilter
+        {...defaultProps}
         onLoadPreset={onLoadPreset}
         enablePresets={true}
       />
     );
-    
+
     // Open presets menu
     const presetsButton = screen.getByText('Presets');
     fireEvent.click(presetsButton);
-    
+
     // Click on a preset
     const presetItem = screen.getByText('Active Employees');
     fireEvent.click(presetItem);
-    
+
     expect(onLoadPreset).toHaveBeenCalledWith(mockSavedPresets[0]);
   });
 
   test('handles preset saving', async () => {
     const onSavePreset = jest.fn();
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
+      <SmartFilter
+        {...defaultProps}
         onSavePreset={onSavePreset}
         enablePresets={true}
       />
     );
-    
+
     // Open presets menu
     const presetsButton = screen.getByText('Presets');
     fireEvent.click(presetsButton);
-    
+
     // Click save current filters
     const saveButton = screen.getByText('Save Current Filters');
     fireEvent.click(saveButton);
-    
+
     // Should open save dialog
     expect(screen.getByText('Save Filter Preset')).toBeInTheDocument();
-    
+
     // Enter preset name
     const nameInput = screen.getByLabelText('Preset Name');
     fireEvent.change(nameInput, { target: { value: 'My Custom Preset' } });
-    
+
     // Click save
     const dialogSaveButton = screen.getByRole('button', { name: 'Save' });
     fireEvent.click(dialogSaveButton);
-    
+
     await waitFor(() => {
       expect(onSavePreset).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -288,21 +296,21 @@ describe('SmartFilter', () => {
   test('handles preset deletion', () => {
     const onDeletePreset = jest.fn();
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
+      <SmartFilter
+        {...defaultProps}
         onDeletePreset={onDeletePreset}
         enablePresets={true}
       />
     );
-    
+
     // Open presets menu
     const presetsButton = screen.getByText('Presets');
     fireEvent.click(presetsButton);
-    
+
     // Click delete button on first preset
     const deleteButtons = screen.getAllByTestId('DeleteIcon');
     fireEvent.click(deleteButtons[0]);
-    
+
     expect(onDeletePreset).toHaveBeenCalledWith('active-employees');
   });
 
@@ -318,20 +326,20 @@ describe('SmartFilter', () => {
         label: 'Name contains john',
       },
     ];
-    
+
     renderWithProviders(
-      <SmartFilter 
+      <SmartFilter
         {...defaultProps}
         filters={activeFilters}
-        searchValue="test"
+        searchValue='test'
         onFiltersChange={onFiltersChange}
         onSearchChange={onSearchChange}
       />
     );
-    
+
     const clearButton = screen.getByText('Clear All');
     fireEvent.click(clearButton);
-    
+
     expect(onFiltersChange).toHaveBeenCalledWith([]);
   });
 
@@ -352,16 +360,16 @@ describe('SmartFilter', () => {
         label: 'Email contains @test.com',
       },
     ];
-    
+
     renderWithProviders(
-      <SmartFilter 
+      <SmartFilter
         {...defaultProps}
         filters={activeFilters}
-        searchValue="test"
+        searchValue='test'
         enableAdvancedBuilder={true}
       />
     );
-    
+
     // Should show count of 3 (2 filters + 1 search)
     const badge = screen.getByText('3');
     expect(badge).toBeInTheDocument();
@@ -369,9 +377,11 @@ describe('SmartFilter', () => {
 
   test('applies glassmorphism styles', () => {
     renderWithProviders(<SmartFilter {...defaultProps} />);
-    
+
     // Check if the main container has glassmorphism styles
-    const filterContainer = screen.getByPlaceholderText('Search...').closest('.MuiPaper-root');
+    const filterContainer = screen
+      .getByPlaceholderText('Search...')
+      .closest('.MuiPaper-root');
     expect(filterContainer).toHaveStyle({
       backdropFilter: 'blur(20px)',
     });
@@ -381,7 +391,7 @@ describe('SmartFilter', () => {
     // This would test the filter value input rendering for different operators
     // The actual implementation would depend on the advanced filter builder
     renderWithProviders(<SmartFilter {...defaultProps} />);
-    
+
     // Test would verify that different input types are shown for different operators
     // (text inputs, date pickers, number inputs, selects, etc.)
   });
@@ -389,20 +399,20 @@ describe('SmartFilter', () => {
   test('handles search input clearing', () => {
     const onSearchChange = jest.fn();
     renderWithProviders(
-      <SmartFilter 
-        {...defaultProps} 
-        searchValue="test search"
+      <SmartFilter
+        {...defaultProps}
+        searchValue='test search'
         onSearchChange={onSearchChange}
       />
     );
-    
+
     // Clear button should appear when there's search text
     const clearButton = screen.getByTestId('ClearIcon');
     fireEvent.click(clearButton);
-    
+
     // Should clear the search
     jest.advanceTimersByTime(300);
-    
+
     waitFor(() => {
       expect(onSearchChange).toHaveBeenCalledWith('');
     });
@@ -415,9 +425,9 @@ describe('SmartFilter', () => {
       { id: 'filter1', column: 'name', operator: 'contains', value: 'john' },
       { id: 'filter2', column: 'email', operator: 'contains', value: 'test' },
     ];
-    
+
     renderWithProviders(
-      <SmartFilter 
+      <SmartFilter
         {...defaultProps}
         filters={existingFilters}
         onFiltersChange={onFiltersChange}
@@ -425,11 +435,11 @@ describe('SmartFilter', () => {
         enableQuickFilters={true}
       />
     );
-    
+
     // Trying to add another filter should not work if at max limit
     const quickFilter = screen.getByText('Department');
     fireEvent.click(quickFilter);
-    
+
     // Should not add new filter since we're at the limit
     expect(onFiltersChange).not.toHaveBeenCalled();
   });

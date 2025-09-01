@@ -1,0 +1,75 @@
+{
+  "success": true,
+  "importId": "cc775d8d-5e31-4f4c-a338-995538b1a20a",
+  "message": "BMS file processed successfully",
+  "data": {
+    "importId": "cc775d8d-5e31-4f4c-a338-995538b1a20a",
+    "customer": {
+      "firstName": "",
+      "lastName": "",
+      "name": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "city": "",
+      "state": "",
+      "zip": "",
+      "insurance": ""
+    },
+    "vehicle": {
+      "year": null,
+      "make": "",
+      "model": "",
+      "vin": "",
+      "license": "",
+      "mileage": null,
+      "color": "",
+      "engine": "",
+      "transmission": ""
+    },
+    "job": {
+      "id": "4233539d-562f-42dd-a2f4-b184cc34cf16",
+      "jobNumber": "JOB-1756706388365",
+      "status": "estimate",
+      "estimateNumber": "JOB-1756706388365",
+      "roNumber": null,
+      "dateCreated": "2025-09-01T05:59:48.365Z",
+      "totalAmount": 0,
+      "partsCount": 0,
+      "laborCount": 0,
+      "lineItemsCount": 0
+    },
+    "documentInfo": {},
+    "claimInfo": {},
+    "damage": {
+      "damageLines": [],
+      "totalLines": 0,
+      "totalAmount": 0,
+      "partsTotal": 0,
+      "laborTotal": 0,
+      "taxTotal": 0
+    },
+    "validation": {
+      "isValid": false,
+      "errors": ["Total amount must be greater than zero"],
+      "warnings": [
+        "Customer name is missing",
+        "Vehicle make/model is missing",
+        "Vehicle year is missing",
+        "No parts or labor items found"
+      ],
+      "score": 40
+    },
+    "metadata": {
+      "parserVersion": "3.2-patched",
+      "parseDate": "2025-09-01T05:59:48.365Z",
+      "sourceFormat": "BMS XML",
+      "unknownTags": [],
+      "processingTime": 1,
+      "importId": "cc775d8d-5e31-4f4c-a338-995538b1a20a"
+    },
+    "autoCreationSuccess": false,
+    "autoCreationError": "Could not find the 'zip' column of 'customers' in the schema cache",
+    "requiresManualIntervention": true
+  }
+}

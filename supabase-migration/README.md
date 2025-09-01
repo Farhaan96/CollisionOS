@@ -7,6 +7,7 @@ This document outlines the complete migration strategy from the current Sequeliz
 ## Current Architecture Analysis
 
 ### Database Models
+
 - **Shop**: Multi-tenant root entity with complex settings and subscription management
 - **User**: Comprehensive user management with role-based permissions (9 roles)
 - **Job**: Complex workflow management with 13+ status stages
@@ -16,11 +17,13 @@ This document outlines the complete migration strategy from the current Sequeliz
 - **Vendor**: Supplier management with performance tracking
 
 ### Multi-Tenant Architecture
+
 - Shop-based isolation using `shopId` foreign keys
 - All entities belong to a specific shop
 - Hierarchical permissions and access control
 
 ### Current Tech Stack
+
 - **Backend**: Node.js with Express
 - **ORM**: Sequelize
 - **Database**: PostgreSQL (production) / SQLite (development)
@@ -32,24 +35,28 @@ This document outlines the complete migration strategy from the current Sequeliz
 ## Migration Benefits
 
 ### Performance Improvements
+
 - **Edge Functions**: Replace Node.js server with serverless functions
 - **Global CDN**: Faster data access worldwide
 - **Connection Pooling**: Automatic connection management
 - **Query Optimization**: Built-in query optimization
 
 ### Security Enhancements
+
 - **Row Level Security (RLS)**: Database-level security
 - **Built-in Authentication**: OAuth, MFA, and social logins
 - **Automatic SSL**: End-to-end encryption
 - **Audit Logging**: Built-in activity tracking
 
 ### Developer Experience
+
 - **Auto-generated APIs**: Instant REST and GraphQL APIs
 - **Real-time Subscriptions**: Replace Socket.io with Supabase Realtime
 - **Type Safety**: Auto-generated TypeScript types
 - **Dashboard**: Built-in database management
 
 ### Operational Benefits
+
 - **Managed Infrastructure**: No server maintenance
 - **Automatic Backups**: Point-in-time recovery
 - **Scaling**: Automatic horizontal scaling
@@ -58,6 +65,7 @@ This document outlines the complete migration strategy from the current Sequeliz
 ## Migration Strategy
 
 ### Phase 1: Infrastructure Setup (Week 1)
+
 1. **Supabase Project Setup**
    - Create new Supabase project
    - Configure project settings and regions
@@ -74,6 +82,7 @@ This document outlines the complete migration strategy from the current Sequeliz
    - Implement custom claims for shop isolation
 
 ### Phase 2: Data Migration (Week 2)
+
 1. **Data Export**
    - Export existing data to SQL format
    - Handle data transformations and cleaning
@@ -90,6 +99,7 @@ This document outlines the complete migration strategy from the current Sequeliz
    - Performance testing
 
 ### Phase 3: Application Migration (Week 3-4)
+
 1. **Backend Migration**
    - Replace Sequelize with Supabase client
    - Migrate authentication system
@@ -106,6 +116,7 @@ This document outlines the complete migration strategy from the current Sequeliz
    - Security validation
 
 ### Phase 4: Deployment and Cutover (Week 5)
+
 1. **Staged Deployment**
    - Deploy to staging environment
    - User acceptance testing
@@ -124,18 +135,21 @@ This document outlines the complete migration strategy from the current Sequeliz
 ## Risk Mitigation
 
 ### Data Integrity
+
 - **Parallel Testing**: Run both systems in parallel
 - **Rollback Plan**: Complete rollback strategy within 4 hours
 - **Data Validation**: Automated data consistency checks
 - **Backup Strategy**: Multiple backup points before migration
 
 ### Performance Considerations
+
 - **Connection Pooling**: Supabase automatic connection management
 - **Query Optimization**: Review and optimize all queries
 - **Caching Strategy**: Implement appropriate caching layers
 - **Load Testing**: Comprehensive performance testing
 
 ### Security Validation
+
 - **RLS Testing**: Comprehensive Row Level Security validation
 - **Authentication Testing**: All authentication flows
 - **Authorization Testing**: Role-based access controls
@@ -144,12 +158,14 @@ This document outlines the complete migration strategy from the current Sequeliz
 ## Success Metrics
 
 ### Performance Metrics
+
 - **Query Performance**: <100ms for 95% of queries
 - **Real-time Latency**: <50ms for real-time updates
 - **Uptime**: 99.9% availability target
 - **Error Rate**: <0.1% error rate
 
 ### Business Metrics
+
 - **Migration Downtime**: <2 hours planned downtime
 - **User Satisfaction**: No degradation in user experience
 - **Feature Parity**: 100% feature compatibility

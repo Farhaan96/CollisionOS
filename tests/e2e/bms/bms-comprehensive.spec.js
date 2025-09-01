@@ -13,7 +13,7 @@ const TEST_TIMEOUT = 30000;
 
 test.describe('BMS Import - Comprehensive E2E Tests', () => {
   test.setTimeout(TEST_TIMEOUT);
-  
+
   const sampleFiles = [];
 
   test.beforeAll(async () => {
@@ -21,11 +21,11 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
     const expectedFiles = [
       'minor_collision_estimate.xml',
       'major_collision_estimate.xml',
-      'luxury_vehicle_estimate.xml', 
+      'luxury_vehicle_estimate.xml',
       'paint_only_estimate.xml',
-      'glass_replacement_estimate.xml'
+      'glass_replacement_estimate.xml',
     ];
-    
+
     for (const filename of expectedFiles) {
       const filePath = path.join(BMS_SAMPLES_PATH, filename);
       if (fs.existsSync(filePath)) {
@@ -37,12 +37,14 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         sampleFiles.push({ name: filename, path: filePath });
       }
     }
-    
+
     console.log(`Loaded ${sampleFiles.length} BMS sample files for testing`);
   });
 
   test.describe('Web Application BMS Upload', () => {
-    test('should navigate to BMS import page successfully', async ({ page }) => {
+    test('should navigate to BMS import page successfully', async ({
+      page,
+    }) => {
       await page.goto('/');
       await page.waitForTimeout(2000);
 
@@ -52,7 +54,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         'text=BMS Import',
         'text=BMS Dashboard',
         '[href*="bms"]',
-        '[href*="BMS"]'
+        '[href*="BMS"]',
       ];
 
       let bmsLinkFound = false;
@@ -73,7 +75,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         await page.waitForTimeout(1000);
         const pageTitle = await page.title();
         const pageContent = await page.content();
-        
+
         expect(pageContent).toMatch(/BMS|import|upload/i);
         console.log('✅ Successfully navigated to BMS page');
       } else {
@@ -93,14 +95,14 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         'text=Upload',
         'text=Drop files',
         'text=Browse',
-        '[accept*="xml"]'
+        '[accept*="xml"]',
       ];
 
       let uploadInterfaceFound = false;
       for (const selector of uploadSelectors) {
         try {
           const element = await page.locator(selector).first();
-          if (await element.count() > 0) {
+          if ((await element.count()) > 0) {
             uploadInterfaceFound = true;
             console.log(`✅ Found upload interface element: ${selector}`);
             break;
@@ -111,25 +113,27 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
       }
 
       if (!uploadInterfaceFound) {
-        console.log('⚠️  Upload interface not immediately visible, checking for buttons to reveal it');
-        
+        console.log(
+          '⚠️  Upload interface not immediately visible, checking for buttons to reveal it'
+        );
+
         const buttonSelectors = [
           'button:has-text("Upload")',
           'button:has-text("BMS")',
           'button:has-text("Import")',
-          'button[data-testid*="upload"]'
+          'button[data-testid*="upload"]',
         ];
-        
+
         for (const buttonSelector of buttonSelectors) {
           try {
             const button = page.locator(buttonSelector).first();
             if (await button.isVisible()) {
               await button.click();
               await page.waitForTimeout(1000);
-              
+
               // Check again for upload interface
               const fileInput = page.locator('input[type="file"]').first();
-              if (await fileInput.count() > 0) {
+              if ((await fileInput.count()) > 0) {
                 uploadInterfaceFound = true;
                 console.log('✅ Upload interface revealed after button click');
                 break;
@@ -176,7 +180,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
           'text=uploaded',
           'text=processed',
           '.success',
-          '[data-testid*="success"]'
+          '[data-testid*="success"]',
         ];
 
         let uploadSuccess = false;
@@ -199,7 +203,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
             'text=error',
             'text=failed',
             '.error',
-            '[data-testid*="error"]'
+            '[data-testid*="error"]',
           ];
 
           for (const indicator of errorIndicators) {
@@ -216,16 +220,18 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         }
 
         // Check for XML parsing errors specifically
-        const xmlErrors = consoleErrors.filter(error => 
-          error.includes('Objects are not valid as a React child') ||
-          error.includes('#text') ||
-          error.includes('@_xmlns') ||
-          error.includes('XML')
+        const xmlErrors = consoleErrors.filter(
+          error =>
+            error.includes('Objects are not valid as a React child') ||
+            error.includes('#text') ||
+            error.includes('@_xmlns') ||
+            error.includes('XML')
         );
 
         expect(xmlErrors.length).toBe(0);
-        console.log(`✅ Single file upload test completed - ${xmlErrors.length} XML errors found`);
-
+        console.log(
+          `✅ Single file upload test completed - ${xmlErrors.length} XML errors found`
+        );
       } catch (error) {
         console.log(`⚠️  File upload test encountered error: ${error.message}`);
         // Test should still pass if the basic UI is functional
@@ -245,8 +251,10 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
 
       const testFiles = sampleFiles.slice(0, Math.min(3, sampleFiles.length));
       const filePaths = testFiles.map(f => f.path);
-      
-      console.log(`Testing multiple upload with: ${testFiles.map(f => f.name).join(', ')}`);
+
+      console.log(
+        `Testing multiple upload with: ${testFiles.map(f => f.name).join(', ')}`
+      );
 
       try {
         // Upload multiple files
@@ -258,7 +266,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
           'text=files',
           'text=uploaded',
           'text=processed',
-          '[data-testid*="file-count"]'
+          '[data-testid*="file-count"]',
         ];
 
         let multipleFilesDetected = false;
@@ -275,10 +283,13 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
           }
         }
 
-        console.log(`✅ Multiple file upload test completed - ${multipleFilesDetected ? 'detected' : 'not detected'} multiple files`);
-
+        console.log(
+          `✅ Multiple file upload test completed - ${multipleFilesDetected ? 'detected' : 'not detected'} multiple files`
+        );
       } catch (error) {
-        console.log(`⚠️  Multiple file upload test encountered error: ${error.message}`);
+        console.log(
+          `⚠️  Multiple file upload test encountered error: ${error.message}`
+        );
       }
     });
 
@@ -292,17 +303,17 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
       await page.waitForTimeout(2000);
 
       const testFile = sampleFiles[0];
-      
+
       try {
         await page.setInputFiles('input[type="file"]', testFile.path);
-        
+
         // Check for progress indicators
         const progressIndicators = [
           '[role="progressbar"]',
           '.progress',
           'text=processing',
           'text=%',
-          '[data-testid*="progress"]'
+          '[data-testid*="progress"]',
         ];
 
         let progressFound = false;
@@ -322,10 +333,13 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         // Wait for completion
         await page.waitForTimeout(3000);
 
-        console.log(`✅ Progress feedback test completed - progress ${progressFound ? 'shown' : 'not shown'}`);
-
+        console.log(
+          `✅ Progress feedback test completed - progress ${progressFound ? 'shown' : 'not shown'}`
+        );
       } catch (error) {
-        console.log(`⚠️  Progress feedback test encountered error: ${error.message}`);
+        console.log(
+          `⚠️  Progress feedback test encountered error: ${error.message}`
+        );
       }
     });
 
@@ -335,7 +349,11 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
 
       // Create an invalid file for testing
       const invalidFilePath = path.join(__dirname, 'invalid_test_file.txt');
-      fs.writeFileSync(invalidFilePath, 'This is not a valid BMS XML file', 'utf8');
+      fs.writeFileSync(
+        invalidFilePath,
+        'This is not a valid BMS XML file',
+        'utf8'
+      );
 
       try {
         await page.setInputFiles('input[type="file"]', invalidFilePath);
@@ -347,7 +365,7 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
           'text=invalid',
           'text=failed',
           '.error',
-          '[role="alert"]'
+          '[role="alert"]',
         ];
 
         let errorHandled = false;
@@ -364,10 +382,13 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
           }
         }
 
-        console.log(`✅ Error handling test completed - errors ${errorHandled ? 'handled' : 'not explicitly handled'}`);
-
+        console.log(
+          `✅ Error handling test completed - errors ${errorHandled ? 'handled' : 'not explicitly handled'}`
+        );
       } catch (error) {
-        console.log(`⚠️  Error handling test encountered error: ${error.message}`);
+        console.log(
+          `⚠️  Error handling test encountered error: ${error.message}`
+        );
       } finally {
         // Clean up
         if (fs.existsSync(invalidFilePath)) {
@@ -381,14 +402,14 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
     test('should work in Electron environment', async ({ page }) => {
       // This test would be specifically for Electron
       // For now, we'll simulate Electron-specific behavior
-      
+
       await page.addInitScript(() => {
         // Mock Electron APIs
         window.electronAPI = {
           database: {
             query: () => Promise.resolve([]),
-            transaction: () => Promise.resolve()
-          }
+            transaction: () => Promise.resolve(),
+          },
         };
       });
 
@@ -414,23 +435,29 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
         // Basic functionality test
         const title = await page.title();
         expect(title).toBeTruthy();
-        
+
         const content = await page.content();
         expect(content).toContain('CollisionOS');
 
         // Check for BMS-related functionality
-        const hasFileInput = await page.locator('input[type="file"]').count() > 0;
-        const hasBMSContent = content.toLowerCase().includes('bms') || 
-                             content.toLowerCase().includes('upload') ||
-                             content.toLowerCase().includes('import');
+        const hasFileInput =
+          (await page.locator('input[type="file"]').count()) > 0;
+        const hasBMSContent =
+          content.toLowerCase().includes('bms') ||
+          content.toLowerCase().includes('upload') ||
+          content.toLowerCase().includes('import');
 
-        console.log(`✅ ${browserName} compatibility test completed - File input: ${hasFileInput}, BMS content: ${hasBMSContent}`);
+        console.log(
+          `✅ ${browserName} compatibility test completed - File input: ${hasFileInput}, BMS content: ${hasBMSContent}`
+        );
       });
     });
   });
 
   test.describe('Performance and Load Testing', () => {
-    test('should handle BMS upload within performance thresholds', async ({ page }) => {
+    test('should handle BMS upload within performance thresholds', async ({
+      page,
+    }) => {
       if (sampleFiles.length === 0) {
         test.skip('No BMS sample files available');
         return;
@@ -438,35 +465,34 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
 
       // Monitor performance
       const performanceMetrics = {};
-      
+
       page.on('response', response => {
         if (response.url().includes('api') || response.url().includes('bms')) {
           performanceMetrics[response.url()] = {
             status: response.status(),
-            timing: Date.now()
+            timing: Date.now(),
           };
         }
       });
 
       await page.goto('/');
       const startTime = Date.now();
-      
+
       await page.waitForTimeout(2000);
-      
+
       const testFile = sampleFiles[0];
-      
+
       try {
         await page.setInputFiles('input[type="file"]', testFile.path);
         await page.waitForTimeout(5000);
-        
+
         const endTime = Date.now();
         const totalTime = endTime - startTime;
-        
+
         // Performance should be reasonable (under 10 seconds for file upload)
         expect(totalTime).toBeLessThan(10000);
-        
-        console.log(`✅ Performance test completed in ${totalTime}ms`);
 
+        console.log(`✅ Performance test completed in ${totalTime}ms`);
       } catch (error) {
         console.log(`⚠️  Performance test encountered error: ${error.message}`);
       }
@@ -476,10 +502,15 @@ test.describe('BMS Import - Comprehensive E2E Tests', () => {
 
 // Helper function to create mock BMS content
 function createMockBMSContent(filename) {
-  const estimateType = filename.includes('major') ? 'Major' : 
-                      filename.includes('luxury') ? 'Luxury' :
-                      filename.includes('paint') ? 'Paint' :
-                      filename.includes('glass') ? 'Glass' : 'Minor';
+  const estimateType = filename.includes('major')
+    ? 'Major'
+    : filename.includes('luxury')
+      ? 'Luxury'
+      : filename.includes('paint')
+        ? 'Paint'
+        : filename.includes('glass')
+          ? 'Glass'
+          : 'Minor';
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <VehicleDamageEstimateAddRq>

@@ -45,7 +45,7 @@ import {
   TableHead,
   TableRow,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -86,7 +86,7 @@ import {
   Speed,
   Timeline,
   LocalShipping,
-  Inventory
+  Inventory,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -100,8 +100,8 @@ const QC_CHECKPOINTS = {
       'Vehicle condition documented',
       'Parts inventory verified',
       'Customer belongings secured',
-      'Work area prepared'
-    ]
+      'Work area prepared',
+    ],
   },
   teardown: {
     title: 'Teardown/Blueprint',
@@ -109,8 +109,8 @@ const QC_CHECKPOINTS = {
       'Hidden damage identified',
       'Structural integrity assessed',
       'Additional parts needed documented',
-      'Photos of all damage taken'
-    ]
+      'Photos of all damage taken',
+    ],
   },
   repair_progress: {
     title: 'Repair Progress',
@@ -118,8 +118,8 @@ const QC_CHECKPOINTS = {
       'Work completed per estimate',
       'Quality standards maintained',
       'Safety procedures followed',
-      'Progress photos taken'
-    ]
+      'Progress photos taken',
+    ],
   },
   paint_prep: {
     title: 'Paint Preparation',
@@ -127,8 +127,8 @@ const QC_CHECKPOINTS = {
       'Surface properly prepared',
       'Primer applied correctly',
       'Masking completed',
-      'Environment controlled'
-    ]
+      'Environment controlled',
+    ],
   },
   paint_complete: {
     title: 'Paint Complete',
@@ -136,8 +136,8 @@ const QC_CHECKPOINTS = {
       'Color match verified',
       'Finish quality acceptable',
       'No defects present',
-      'Cure time documented'
-    ]
+      'Cure time documented',
+    ],
   },
   reassembly: {
     title: 'Reassembly',
@@ -145,8 +145,8 @@ const QC_CHECKPOINTS = {
       'All parts properly installed',
       'Torque specifications met',
       'Hardware replaced as needed',
-      'Function tests completed'
-    ]
+      'Function tests completed',
+    ],
   },
   pre_delivery: {
     title: 'Pre-Delivery Inspection',
@@ -154,8 +154,8 @@ const QC_CHECKPOINTS = {
       'All work completed',
       'Vehicle cleaned and detailed',
       'Systems functioning properly',
-      'Customer walkthrough prepared'
-    ]
+      'Customer walkthrough prepared',
+    ],
   },
   adas_calibration: {
     title: 'ADAS Calibration',
@@ -163,9 +163,9 @@ const QC_CHECKPOINTS = {
       'Systems requiring calibration identified',
       'Proper equipment used',
       'Calibration completed successfully',
-      'Documentation provided'
-    ]
-  }
+      'Documentation provided',
+    ],
+  },
 };
 
 // Training modules
@@ -176,7 +176,7 @@ const TRAINING_MODULES = [
     duration: '45 min',
     type: 'certification',
     status: 'completed',
-    score: 95
+    score: 95,
   },
   {
     id: '2',
@@ -184,7 +184,7 @@ const TRAINING_MODULES = [
     duration: '30 min',
     type: 'skill',
     status: 'in_progress',
-    progress: 60
+    progress: 60,
   },
   {
     id: '3',
@@ -192,13 +192,13 @@ const TRAINING_MODULES = [
     duration: '60 min',
     type: 'certification',
     status: 'available',
-    required: true
-  }
+    required: true,
+  },
 ];
 
 const TechnicianConsole = ({ technicianId, currentUser }) => {
   const theme = useTheme();
-  
+
   const [activeJobs, setActiveJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
@@ -222,7 +222,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
     hoursToday: 6.5,
     targetHours: 8.0,
     flagHours: 7.2,
-    completedJobs: 3
+    completedJobs: 3,
   };
 
   // Sample job data
@@ -235,14 +235,24 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
       status: 'in_progress',
       priority: 'high',
       assignedTasks: [
-        { id: '1', name: 'Replace front bumper', status: 'completed', hours: 2.5 },
-        { id: '2', name: 'Paint front bumper', status: 'in_progress', hours: 1.5 },
-        { id: '3', name: 'Install bumper', status: 'pending', hours: 1.0 }
+        {
+          id: '1',
+          name: 'Replace front bumper',
+          status: 'completed',
+          hours: 2.5,
+        },
+        {
+          id: '2',
+          name: 'Paint front bumper',
+          status: 'in_progress',
+          hours: 1.5,
+        },
+        { id: '3', name: 'Install bumper', status: 'pending', hours: 1.0 },
       ],
       totalHours: 5.0,
       completedHours: 2.5,
       targetCompletion: '2024-01-20',
-      lastUpdate: '2024-01-16T10:30:00Z'
+      lastUpdate: '2024-01-16T10:30:00Z',
     },
     {
       id: '2',
@@ -252,14 +262,19 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
       status: 'pending',
       priority: 'normal',
       assignedTasks: [
-        { id: '4', name: 'Repair quarter panel', status: 'pending', hours: 4.0 },
-        { id: '5', name: 'Paint quarter panel', status: 'pending', hours: 2.0 }
+        {
+          id: '4',
+          name: 'Repair quarter panel',
+          status: 'pending',
+          hours: 4.0,
+        },
+        { id: '5', name: 'Paint quarter panel', status: 'pending', hours: 2.0 },
       ],
       totalHours: 6.0,
       completedHours: 0,
       targetCompletion: '2024-01-22',
-      lastUpdate: '2024-01-16T08:00:00Z'
-    }
+      lastUpdate: '2024-01-16T08:00:00Z',
+    },
   ];
 
   useEffect(() => {
@@ -282,13 +297,13 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
     setActiveTask(task);
     setIsTimerRunning(true);
     setElapsedTime(0);
-    
+
     // Create time entry
     setTimeEntry({
       jobId: job.id,
       taskId: task.id,
       startTime: new Date(),
-      technicianId: technicianData.id
+      technicianId: technicianData.id,
     });
   };
 
@@ -300,7 +315,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
         ...timeEntry,
         endTime: new Date(),
         duration: elapsedTime,
-        flagHours: activeTask?.hours || 0
+        flagHours: activeTask?.hours || 0,
       };
       console.log('Time entry completed:', completedEntry);
     }
@@ -322,14 +337,16 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
       setCheckedItems(prev => ({ ...prev, [index]: checked }));
     };
 
-    const allItemsChecked = checkpoint.points.every((_, index) => checkedItems[index]);
+    const allItemsChecked = checkpoint.points.every(
+      (_, index) => checkedItems[index]
+    );
 
     return (
       <Box>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           {checkpoint.title}
         </Typography>
-        
+
         <List>
           {checkpoint.points.map((point, index) => (
             <ListItem key={index} disablePadding>
@@ -337,7 +354,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                 control={
                   <Checkbox
                     checked={checkedItems[index] || false}
-                    onChange={(e) => handleItemCheck(index, e.target.checked)}
+                    onChange={e => handleItemCheck(index, e.target.checked)}
                   />
                 }
                 label={point}
@@ -351,16 +368,16 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
           fullWidth
           multiline
           rows={3}
-          label="Notes (optional)"
+          label='Notes (optional)'
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={e => setNotes(e.target.value)}
           sx={{ mt: 2, mb: 2 }}
         />
 
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Button
             startIcon={<PhotoCamera />}
-            variant="outlined"
+            variant='outlined'
             onClick={() => setPhotoDialog(true)}
           >
             Add Photos ({photos.length})
@@ -369,7 +386,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
 
         <Button
           fullWidth
-          variant="contained"
+          variant='contained'
           disabled={!allItemsChecked}
           onClick={() => onComplete({ checkedItems, notes, photos })}
         >
@@ -383,80 +400,105 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
   const JobCard = ({ job, isActive = false }) => {
     const progress = (job.completedHours / job.totalHours) * 100;
     const isOverdue = new Date(job.targetCompletion) < new Date();
-    
+
     return (
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Card
           sx={{
-            border: isActive ? `2px solid ${theme.palette.primary.main}` : '1px solid',
+            border: isActive
+              ? `2px solid ${theme.palette.primary.main}`
+              : '1px solid',
             borderColor: isActive ? theme.palette.primary.main : 'divider',
             cursor: 'pointer',
-            mb: 2
+            mb: 2,
           }}
           onClick={() => setSelectedJob(job)}
         >
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                mb: 2,
+              }}
+            >
               <Box>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant='h6' fontWeight='bold'>
                   {job.jobNumber}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {job.customer.name}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
                 </Typography>
               </Box>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: 0.5,
+                }}
+              >
                 <Chip
-                  size="small"
+                  size='small'
                   label={job.priority.toUpperCase()}
-                  color={job.priority === 'high' ? 'error' : job.priority === 'normal' ? 'primary' : 'default'}
+                  color={
+                    job.priority === 'high'
+                      ? 'error'
+                      : job.priority === 'normal'
+                        ? 'primary'
+                        : 'default'
+                  }
                 />
                 {isOverdue && (
                   <Chip
-                    size="small"
+                    size='small'
                     icon={<Warning />}
-                    label="OVERDUE"
-                    color="error"
+                    label='OVERDUE'
+                    color='error'
                   />
                 )}
               </Box>
             </Box>
 
             <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body2" color="text.secondary">
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  mb: 0.5,
+                }}
+              >
+                <Typography variant='body2' color='text.secondary'>
                   Progress
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {job.completedHours}h / {job.totalHours}h
                 </Typography>
               </Box>
               <LinearProgress
-                variant="determinate"
+                variant='determinate'
                 value={progress}
                 sx={{
                   height: 8,
                   borderRadius: 4,
                   backgroundColor: alpha(theme.palette.primary.main, 0.2),
                   '& .MuiLinearProgress-bar': {
-                    borderRadius: 4
-                  }
+                    borderRadius: 4,
+                  },
                 }}
               />
             </Box>
 
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
               Target: {format(new Date(job.targetCompletion), 'MMM dd, yyyy')}
             </Typography>
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               Last update: {formatDistanceToNow(new Date(job.lastUpdate))} ago
             </Typography>
           </CardContent>
@@ -471,12 +513,12 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
 
     return (
       <Box>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           Tasks for {job.jobNumber}
         </Typography>
-        
+
         <List>
-          {job.assignedTasks.map((task) => (
+          {job.assignedTasks.map(task => (
             <ListItem
               key={task.id}
               sx={{
@@ -484,56 +526,60 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                 borderColor: 'divider',
                 borderRadius: 1,
                 mb: 1,
-                backgroundColor: activeTask?.id === task.id ? alpha(theme.palette.primary.main, 0.1) : 'background.paper'
+                backgroundColor:
+                  activeTask?.id === task.id
+                    ? alpha(theme.palette.primary.main, 0.1)
+                    : 'background.paper',
               }}
             >
               <ListItemIcon>
                 {task.status === 'completed' ? (
-                  <CheckCircle color="success" />
+                  <CheckCircle color='success' />
                 ) : task.status === 'in_progress' ? (
-                  <PlayArrow color="primary" />
+                  <PlayArrow color='primary' />
                 ) : (
-                  <Schedule color="disabled" />
+                  <Schedule color='disabled' />
                 )}
               </ListItemIcon>
-              
+
               <ListItemText
                 primary={task.name}
                 secondary={`${task.hours} flag hours • ${task.status}`}
               />
-              
+
               <ListItemSecondaryAction>
                 {task.status === 'pending' && (
                   <Button
-                    size="small"
-                    variant="contained"
+                    size='small'
+                    variant='contained'
                     startIcon={<PlayArrow />}
                     onClick={() => startTimer(job, task)}
                   >
                     Start
                   </Button>
                 )}
-                {task.status === 'in_progress' && activeTask?.id === task.id && (
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Typography variant="body2" fontWeight="bold">
-                      {formatTime(elapsedTime)}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={pauseTimer}
-                      disabled={!isTimerRunning}
-                    >
-                      <Pause />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="success"
-                      onClick={stopTimer}
-                    >
-                      <Stop />
-                    </IconButton>
-                  </Box>
-                )}
+                {task.status === 'in_progress' &&
+                  activeTask?.id === task.id && (
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <Typography variant='body2' fontWeight='bold'>
+                        {formatTime(elapsedTime)}
+                      </Typography>
+                      <IconButton
+                        size='small'
+                        onClick={pauseTimer}
+                        disabled={!isTimerRunning}
+                      >
+                        <Pause />
+                      </IconButton>
+                      <IconButton
+                        size='small'
+                        color='success'
+                        onClick={stopTimer}
+                      >
+                        <Stop />
+                      </IconButton>
+                    </Box>
+                  )}
               </ListItemSecondaryAction>
             </ListItem>
           ))}
@@ -545,30 +591,38 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
   // Training component
   const TrainingCenter = () => (
     <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant='h6' gutterBottom>
         Training & Certifications
       </Typography>
-      
+
       <Grid container spacing={2}>
-        {TRAINING_MODULES.map((module) => (
+        {TRAINING_MODULES.map(module => (
           <Grid item xs={12} sm={6} md={4} key={module.id}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Avatar
                     sx={{
-                      bgcolor: module.status === 'completed' ? 'success.main' : 
-                               module.status === 'in_progress' ? 'primary.main' : 'grey.500',
-                      mr: 2
+                      bgcolor:
+                        module.status === 'completed'
+                          ? 'success.main'
+                          : module.status === 'in_progress'
+                            ? 'primary.main'
+                            : 'grey.500',
+                      mr: 2,
                     }}
                   >
-                    {module.type === 'certification' ? <EmojiEvents /> : <School />}
+                    {module.type === 'certification' ? (
+                      <EmojiEvents />
+                    ) : (
+                      <School />
+                    )}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle1" fontWeight="bold">
+                    <Typography variant='subtitle1' fontWeight='bold'>
                       {module.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant='body2' color='text.secondary'>
                       {module.duration} • {module.type}
                     </Typography>
                   </Box>
@@ -577,7 +631,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                 {module.status === 'completed' && (
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Star sx={{ color: '#ffc107', mr: 0.5 }} />
-                    <Typography variant="body2">
+                    <Typography variant='body2'>
                       Score: {module.score}%
                     </Typography>
                   </Box>
@@ -586,11 +640,11 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                 {module.status === 'in_progress' && (
                   <Box sx={{ mb: 1 }}>
                     <LinearProgress
-                      variant="determinate"
+                      variant='determinate'
                       value={module.progress}
                       sx={{ mb: 0.5 }}
                     />
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant='body2' color='text.secondary'>
                       {module.progress}% complete
                     </Typography>
                   </Box>
@@ -602,8 +656,11 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                   color={module.status === 'completed' ? 'success' : 'primary'}
                   disabled={module.status === 'completed'}
                 >
-                  {module.status === 'completed' ? 'Completed' :
-                   module.status === 'in_progress' ? 'Continue' : 'Start'}
+                  {module.status === 'completed'
+                    ? 'Completed'
+                    : module.status === 'in_progress'
+                      ? 'Continue'
+                      : 'Start'}
                 </Button>
               </CardContent>
             </Card>
@@ -617,21 +674,35 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar src={technicianData.avatar} sx={{ mr: 2, width: 56, height: 56 }}>
+            <Avatar
+              src={technicianData.avatar}
+              sx={{ mr: 2, width: 56, height: 56 }}
+            >
               {technicianData.name.charAt(0)}
             </Avatar>
             <Box>
-              <Typography variant="h5" fontWeight="bold">
+              <Typography variant='h5' fontWeight='bold'>
                 {technicianData.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 {technicianData.specialties.join(' • ')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                 {technicianData.certifications.map((cert, index) => (
-                  <Chip key={index} size="small" label={cert} variant="outlined" />
+                  <Chip
+                    key={index}
+                    size='small'
+                    label={cert}
+                    variant='outlined'
+                  />
                 ))}
               </Box>
             </Box>
@@ -641,20 +712,20 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
           <Grid container spacing={2} sx={{ maxWidth: 400 }}>
             <Grid item xs={6}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary" fontWeight="bold">
+                <Typography variant='h4' color='primary' fontWeight='bold'>
                   {technicianData.hoursToday}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   Hours Today
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="success.main" fontWeight="bold">
+                <Typography variant='h4' color='success.main' fontWeight='bold'>
                   {technicianData.efficiency}%
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   Efficiency
                 </Typography>
               </Box>
@@ -665,17 +736,17 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
         {/* Active timer */}
         {isTimerRunning && activeTask && (
           <Alert
-            severity="info"
+            severity='info'
             sx={{ mt: 2 }}
             action={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant='h6' fontWeight='bold'>
                   {formatTime(elapsedTime)}
                 </Typography>
-                <IconButton color="inherit" onClick={pauseTimer}>
+                <IconButton color='inherit' onClick={pauseTimer}>
                   <Pause />
                 </IconButton>
-                <IconButton color="inherit" onClick={stopTimer}>
+                <IconButton color='inherit' onClick={stopTimer}>
                   <Stop />
                 </IconButton>
               </Box>
@@ -690,11 +761,11 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
       <Box sx={{ display: 'flex', flex: 1, gap: 2 }}>
         {/* Left panel - Jobs */}
         <Paper sx={{ width: 400, p: 2, overflowY: 'auto' }}>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             My Jobs ({activeJobs.length})
           </Typography>
-          
-          {activeJobs.map((job) => (
+
+          {activeJobs.map(job => (
             <JobCard
               key={job.id}
               job={job}
@@ -709,7 +780,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
             <TaskList job={selectedJob} />
           ) : (
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" color="text.secondary">
+              <Typography variant='h6' color='text.secondary'>
                 Select a job to view tasks
               </Typography>
             </Box>
@@ -737,15 +808,15 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
 
           {activeTab === 'tools' && (
             <Box>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Quick Actions
               </Typography>
-              
+
               <Grid container spacing={1}>
                 <Grid item xs={6}>
                   <Button
                     fullWidth
-                    variant="outlined"
+                    variant='outlined'
                     startIcon={<CheckCircle />}
                     onClick={() => setQcDialog(true)}
                   >
@@ -755,7 +826,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                 <Grid item xs={6}>
                   <Button
                     fullWidth
-                    variant="outlined"
+                    variant='outlined'
                     startIcon={<PhotoCamera />}
                     onClick={() => setPhotoDialog(true)}
                   >
@@ -763,20 +834,12 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<QrCode />}
-                  >
+                  <Button fullWidth variant='outlined' startIcon={<QrCode />}>
                     Scan Part
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Flag />}
-                  >
+                  <Button fullWidth variant='outlined' startIcon={<Flag />}>
                     Flag Issue
                   </Button>
                 </Grid>
@@ -789,12 +852,17 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
       </Box>
 
       {/* Quality Control Dialog */}
-      <Dialog open={qcDialog} onClose={() => setQcDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={qcDialog}
+        onClose={() => setQcDialog(false)}
+        maxWidth='md'
+        fullWidth
+      >
         <DialogTitle>Quality Control Checkpoint</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Select Checkpoint</InputLabel>
-            <Select defaultValue="">
+            <Select defaultValue=''>
               {Object.entries(QC_CHECKPOINTS).map(([key, checkpoint]) => (
                 <MenuItem key={key} value={key}>
                   {checkpoint.title}
@@ -802,7 +870,7 @@ const TechnicianConsole = ({ technicianId, currentUser }) => {
               ))}
             </Select>
           </FormControl>
-          
+
           {/* QC content would be rendered here based on selection */}
         </DialogContent>
         <DialogActions>

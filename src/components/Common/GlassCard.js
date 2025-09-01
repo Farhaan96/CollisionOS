@@ -16,12 +16,16 @@ export const GlassCard = ({ children, asMotion = true, sx, ...props }) => {
     willChange: 'transform',
     // Ensure proper stacking context
     position: 'relative',
-    zIndex: 1
+    zIndex: 1,
   };
 
   if (!asMotion) {
     return (
-      <Card className="glassmorphic-card" sx={{ ...baseStyles, ...sx }} {...props}>
+      <Card
+        className='glassmorphic-card'
+        sx={{ ...baseStyles, ...sx }}
+        {...props}
+      >
         {children}
       </Card>
     );
@@ -29,24 +33,24 @@ export const GlassCard = ({ children, asMotion = true, sx, ...props }) => {
 
   return (
     <MotionCard
-      className="glassmorphic-card"
-      whileHover={{ 
+      className='glassmorphic-card'
+      whileHover={{
         scale: 1.01, // Reduced from 1.02 to minimize focus issues
-        y: -2 // Add subtle lift instead of just scale
+        y: -2, // Add subtle lift instead of just scale
       }}
-      transition={{ 
-        type: 'spring', 
+      transition={{
+        type: 'spring',
         stiffness: 300, // Reduced stiffness for smoother animation
         damping: 25, // Increased damping for less bounce
-        duration: 0.2 // Faster animation
+        duration: 0.2, // Faster animation
       }}
-      sx={{ 
-        ...baseStyles, 
+      sx={{
+        ...baseStyles,
         ...sx,
         // Ensure hover doesn't break layout
         '&:hover': {
-          zIndex: 2 // Slightly higher z-index on hover
-        }
+          zIndex: 2, // Slightly higher z-index on hover
+        },
       }}
       {...props}
     >

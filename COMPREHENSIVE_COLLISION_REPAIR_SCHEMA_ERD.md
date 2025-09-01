@@ -1,7 +1,9 @@
 # CollisionOS Phase 1 - Comprehensive Collision Repair Database Schema
+
 ## Enterprise-Grade Entity Relationship Diagram & Documentation
 
 ### Executive Summary
+
 This document outlines the comprehensive database architecture for CollisionOS Phase 1, designed to rival CCC ONE and Mitchell's collision repair management capabilities. The schema supports complete collision repair workflows from initial customer contact through final delivery.
 
 ---
@@ -9,6 +11,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 ## Database Schema Overview
 
 ### Core Statistics
+
 - **Total Models**: 35 (25 existing + 10 new Phase 1 models)
 - **Total Tables**: 35 production-ready tables
 - **Total Relationships**: 150+ foreign key associations
@@ -17,6 +20,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Triggers**: 15+ automatic calculation triggers
 
 ### Database Architecture Levels
+
 1. **Foundation Layer**: Shop, User, Customer management
 2. **Vehicle & Claims Layer**: VehicleProfile, ClaimManagement
 3. **Workflow Layer**: RepairOrderManagement, ProductionWorkflow
@@ -30,7 +34,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 ## Phase 1 New Models (10 Tables)
 
 ### 1. ContactTimeline
+
 **Purpose**: Complete customer communication tracking and automation
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, customerId, jobId, userId, templateId
 - **Key Features**:
@@ -44,7 +50,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Communication preference compliance, retry limits
 
 ### 2. VehicleProfile
+
 **Purpose**: Comprehensive vehicle information beyond basic YMMT
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, customerId, createdBy, updatedBy
 - **Key Features**:
@@ -60,7 +68,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: VIN validation, odometer tracking, title status management
 
 ### 3. ClaimManagement
+
 **Purpose**: Complete insurance claim lifecycle management
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, customerId, vehicleProfileId, insuranceCompanyId
 - **Key Features**:
@@ -76,7 +86,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Claim number uniqueness, deductible validation, supplement limits
 
 ### 4. RepairOrderManagement
+
 **Purpose**: Central RO management with 1:1 claim relationship
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, customerId, vehicleProfileId, claimManagementId, estimateId
 - **Key Features**:
@@ -92,7 +104,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Status transition validation, financial calculations, SLA monitoring
 
 ### 5. ProductionWorkflow
+
 **Purpose**: Detailed stage-by-stage production tracking
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, repairOrderId, productionStageId, assignedTechnician
 - **Key Features**:
@@ -108,7 +122,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Stage dependency validation, resource allocation, quality gates
 
 ### 6. SchedulingCapacity
+
 **Purpose**: Advanced technician and bay capacity planning
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, createdBy, updatedBy
 - **Key Features**:
@@ -124,7 +140,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Capacity validation, utilization limits, skill matching
 
 ### 7. LoanerFleetManagement
+
 **Purpose**: Complete courtesy car fleet tracking
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, currentRenterId, damageReportedBy
 - **Key Features**:
@@ -140,7 +158,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: VIN validation, odometer progression, service intervals
 
 ### 8. LoanerReservation
+
 **Purpose**: Complete loaner vehicle reservation system
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, customerId, repairOrderId, loanerVehicleId, claimManagementId
 - **Key Features**:
@@ -156,7 +176,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Reservation conflicts, mileage calculations, damage assessment
 
 ### 9. AdvancedPartsManagement
+
 **Purpose**: Enterprise-grade parts workflow management
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, repairOrderId, estimateLineItemId, partsOrderId, vendorId
 - **Key Features**:
@@ -172,7 +194,9 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **Business Rules**: Quantity validation, margin guardrails, core return requirements
 
 ### 10. PurchaseOrderSystem
+
 **Purpose**: Advanced PO system with structured numbering
+
 - **Primary Keys**: id (INTEGER, AUTO_INCREMENT)
 - **Foreign Keys**: shopId, repairOrderId, vendorId, multiple user assignments
 - **Key Features**:
@@ -194,6 +218,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 ### Primary Relationships (1:Many)
 
 #### Shop → All Entities
+
 - **shop** (1) → **contact_timeline** (Many)
 - **shop** (1) → **vehicle_profiles** (Many)
 - **shop** (1) → **claim_management** (Many)
@@ -206,6 +231,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **shop** (1) → **purchase_order_system** (Many)
 
 #### Customer Relationships
+
 - **customer** (1) → **vehicle_profiles** (Many)
 - **customer** (1) → **claim_management** (Many)
 - **customer** (1) → **repair_order_management** (Many)
@@ -213,6 +239,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **customer** (1) → **loaner_reservations** (Many)
 
 #### Core Workflow Chain
+
 - **vehicle_profiles** (1) → **claim_management** (Many)
 - **claim_management** (1) → **repair_order_management** (Many)
 - **repair_order_management** (1) → **production_workflow** (Many)
@@ -220,12 +247,14 @@ This document outlines the comprehensive database architecture for CollisionOS P
 - **repair_order_management** (1) → **purchase_order_system** (Many)
 
 #### Parts and Vendor Relationships
+
 - **vendor** (1) → **advanced_parts_management** (Many)
 - **vendor** (1) → **purchase_order_system** (Many)
 - **parts_orders** (1) → **advanced_parts_management** (Many)
 - **estimate_line_items** (1) → **advanced_parts_management** (Many)
 
 #### Fleet Management Relationships
+
 - **loaner_fleet_management** (1) → **loaner_reservations** (Many)
 - **repair_order_management** (1) → **loaner_reservations** (Many)
 - **claim_management** (1) → **loaner_reservations** (Many)
@@ -233,6 +262,7 @@ This document outlines the comprehensive database architecture for CollisionOS P
 ### User Assignment Relationships
 
 Each table maintains comprehensive user tracking:
+
 - **createdBy** → User who created the record
 - **updatedBy** → User who last updated the record
 - **assignedTechnician** → Technician assigned to work
@@ -245,6 +275,7 @@ Each table maintains comprehensive user tracking:
 ## Performance Optimization Strategy
 
 ### Index Strategy
+
 1. **Primary Access Patterns**: shopId, customerId, repairOrderId
 2. **Status-Based Queries**: All status fields indexed
 3. **Date Range Queries**: All date fields indexed
@@ -253,12 +284,14 @@ Each table maintains comprehensive user tracking:
 6. **Foreign Key Indexes**: All foreign keys indexed for join performance
 
 ### Database Triggers
+
 1. **Automatic Calculations**: Financial totals, capacity utilization
 2. **Status Transitions**: Workflow progression validation
 3. **Audit Trails**: Timestamp updates, change tracking
 4. **Business Rules**: Quantity calculations, mileage tracking
 
 ### Query Performance Features
+
 - **Partitioning Ready**: Date-based partitioning for historical data
 - **Archival Strategy**: Old records migration capability
 - **Caching Layer**: Redis integration points identified
@@ -269,6 +302,7 @@ Each table maintains comprehensive user tracking:
 ## Business Intelligence & Analytics
 
 ### KPI Tracking Capabilities
+
 1. **Shop Performance**: Throughput, cycle times, efficiency
 2. **Technician Performance**: Productivity, quality scores, utilization
 3. **Parts Performance**: Fill rates, vendor performance, margins
@@ -276,6 +310,7 @@ Each table maintains comprehensive user tracking:
 5. **Financial Performance**: Revenue, margins, cost control
 
 ### Reporting Data Sources
+
 - **Daily Operations**: Production workflow, scheduling capacity
 - **Financial Analysis**: Advanced parts management, purchase orders
 - **Customer Insights**: Contact timeline, loaner reservations
@@ -287,6 +322,7 @@ Each table maintains comprehensive user tracking:
 ## Integration Architecture
 
 ### External System Integration Points
+
 1. **Estimating Systems**: Mitchell, Audatex, CCC
 2. **Parts Systems**: Vendor catalogs, pricing feeds
 3. **Payment Systems**: Credit card processing, ACH
@@ -294,6 +330,7 @@ Each table maintains comprehensive user tracking:
 5. **Accounting Systems**: QuickBooks, NetSuite integration
 
 ### API Design Considerations
+
 - **RESTful Endpoints**: Standard CRUD operations
 - **GraphQL Support**: Complex query requirements
 - **Webhook Architecture**: Real-time notifications
@@ -305,6 +342,7 @@ Each table maintains comprehensive user tracking:
 ## Security & Compliance
 
 ### Data Security Features
+
 1. **Role-Based Access**: User permissions by function
 2. **Audit Trails**: Complete change logging
 3. **Data Encryption**: Sensitive field protection
@@ -312,6 +350,7 @@ Each table maintains comprehensive user tracking:
 5. **GDPR Compliance**: Consent and deletion capabilities
 
 ### Backup & Recovery
+
 - **Point-in-Time Recovery**: Transaction log backups
 - **Cross-Region Replication**: Disaster recovery
 - **Data Validation**: Integrity checking
@@ -322,6 +361,7 @@ Each table maintains comprehensive user tracking:
 ## Implementation Phases
 
 ### Phase 1 Complete ✅
+
 - All 10 new models implemented
 - Complete relationship mapping
 - Performance optimization
@@ -329,6 +369,7 @@ Each table maintains comprehensive user tracking:
 - Documentation complete
 
 ### Phase 2 Roadmap
+
 - Advanced analytics and reporting models
 - Integration layer implementation
 - Mobile app supporting schemas
@@ -336,6 +377,7 @@ Each table maintains comprehensive user tracking:
 - Advanced workflow automation
 
 ### Phase 3 Future
+
 - AI/ML integration models
 - Predictive analytics schemas
 - IoT device integration
@@ -349,6 +391,7 @@ Each table maintains comprehensive user tracking:
 The CollisionOS Phase 1 database schema provides enterprise-grade collision repair management capabilities that match or exceed industry leaders like CCC ONE and Mitchell. With 35 comprehensive models, 150+ relationships, and advanced performance optimization, this architecture supports complete collision repair workflows from customer contact through final delivery.
 
 The schema is designed for:
+
 - **Scalability**: Supports high-volume operations
 - **Performance**: Optimized for real-time operations
 - **Flexibility**: Configurable workflows and processes

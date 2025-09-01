@@ -7,5 +7,5 @@ export { default as CustomerCommunicationCenter } from './CustomerCommunicationC
 
 // Re-export for convenience
 export default {
-  CustomerCommunicationCenter: require('./CustomerCommunicationCenter').default
+  CustomerCommunicationCenter: require('./CustomerCommunicationCenter').default,
 };

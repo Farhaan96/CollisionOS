@@ -17,7 +17,7 @@ import {
   Backdrop,
   useTheme,
   alpha,
-  Portal
+  Portal,
 } from '@mui/material';
 import {
   CloseRounded,
@@ -29,10 +29,19 @@ import {
   SecurityRounded,
   DeleteForeverRounded,
   SaveRounded,
-  CancelRounded
+  CancelRounded,
 } from '@mui/icons-material';
-import { premiumColors, premiumShadows, premiumBorderRadius, premiumEffects } from '../../theme/premiumDesignSystem';
-import { advancedSpringConfigs, statusAnimations, microInteractions } from '../../utils/animations';
+import {
+  premiumColors,
+  premiumShadows,
+  premiumBorderRadius,
+  premiumEffects,
+} from '../../theme/premiumDesignSystem';
+import {
+  advancedSpringConfigs,
+  statusAnimations,
+  microInteractions,
+} from '../../utils/animations';
 import { useAnimationState } from '../../hooks/useAnimation';
 
 // Dialog types and their configurations
@@ -43,7 +52,7 @@ export const DIALOG_TYPES = {
   INFO: 'info',
   SUCCESS: 'success',
   DESTRUCTIVE: 'destructive',
-  SECURITY: 'security'
+  SECURITY: 'security',
 };
 
 // Default configurations by type
@@ -55,7 +64,7 @@ const TYPE_CONFIGS = {
     confirmText: 'Confirm',
     cancelText: 'Cancel',
     confirmColor: 'primary',
-    severity: 'info'
+    severity: 'info',
   },
   [DIALOG_TYPES.WARNING]: {
     icon: WarningAmberRounded,
@@ -64,7 +73,7 @@ const TYPE_CONFIGS = {
     confirmText: 'Proceed',
     cancelText: 'Cancel',
     confirmColor: 'warning',
-    severity: 'warning'
+    severity: 'warning',
   },
   [DIALOG_TYPES.ERROR]: {
     icon: ErrorOutlineRounded,
@@ -73,7 +82,7 @@ const TYPE_CONFIGS = {
     confirmText: 'OK',
     cancelText: null,
     confirmColor: 'error',
-    severity: 'error'
+    severity: 'error',
   },
   [DIALOG_TYPES.INFO]: {
     icon: InfoOutlined,
@@ -82,7 +91,7 @@ const TYPE_CONFIGS = {
     confirmText: 'OK',
     cancelText: null,
     confirmColor: 'info',
-    severity: 'info'
+    severity: 'info',
   },
   [DIALOG_TYPES.SUCCESS]: {
     icon: CheckCircleOutlined,
@@ -91,7 +100,7 @@ const TYPE_CONFIGS = {
     confirmText: 'OK',
     cancelText: null,
     confirmColor: 'success',
-    severity: 'success'
+    severity: 'success',
   },
   [DIALOG_TYPES.DESTRUCTIVE]: {
     icon: DeleteForeverRounded,
@@ -100,7 +109,7 @@ const TYPE_CONFIGS = {
     confirmText: 'Delete',
     cancelText: 'Cancel',
     confirmColor: 'error',
-    severity: 'error'
+    severity: 'error',
   },
   [DIALOG_TYPES.SECURITY]: {
     icon: SecurityRounded,
@@ -109,8 +118,8 @@ const TYPE_CONFIGS = {
     confirmText: 'Authorize',
     cancelText: 'Cancel',
     confirmColor: 'warning',
-    severity: 'warning'
-  }
+    severity: 'warning',
+  },
 };
 
 // Animation variants
@@ -119,14 +128,14 @@ const dialogVariants = {
     opacity: 0,
     scale: 0.8,
     y: 50,
-    filter: 'blur(10px)'
+    filter: 'blur(10px)',
   },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
     filter: 'blur(0px)',
-    transition: advancedSpringConfigs.executive
+    transition: advancedSpringConfigs.executive,
   },
   exit: {
     opacity: 0,
@@ -135,9 +144,9 @@ const dialogVariants = {
     filter: 'blur(5px)',
     transition: {
       duration: 0.25,
-      ease: [0.4, 0, 1, 1]
-    }
-  }
+      ease: [0.4, 0, 1, 1],
+    },
+  },
 };
 
 const backdropVariants = {
@@ -146,16 +155,16 @@ const backdropVariants = {
     opacity: 1,
     transition: {
       duration: 0.3,
-      ease: 'easeOut'
-    }
+      ease: 'easeOut',
+    },
   },
   exit: {
     opacity: 0,
     transition: {
       duration: 0.2,
-      ease: 'easeIn'
-    }
-  }
+      ease: 'easeIn',
+    },
+  },
 };
 
 const iconVariants = {
@@ -165,9 +174,9 @@ const iconVariants = {
     rotate: 0,
     transition: {
       ...advancedSpringConfigs.premium,
-      delay: 0.2
-    }
-  }
+      delay: 0.2,
+    },
+  },
 };
 
 // Custom backdrop component
@@ -177,9 +186,9 @@ const CustomBackdrop = ({ open, onClose, blur = true }) => (
       <Portal>
         <motion.div
           variants={backdropVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
+          initial='hidden'
+          animate='visible'
+          exit='exit'
           onClick={onClose}
           style={{
             position: 'fixed',
@@ -189,7 +198,7 @@ const CustomBackdrop = ({ open, onClose, blur = true }) => (
             bottom: 0,
             background: `linear-gradient(135deg, ${alpha('#000', 0.4)} 0%, ${alpha('#000', 0.6)} 100%)`,
             backdropFilter: blur ? 'blur(20px) saturate(180%)' : 'none',
-            zIndex: 1300
+            zIndex: 1300,
           }}
         />
       </Portal>
@@ -209,7 +218,7 @@ const useFocusTrap = (isOpen, containerRef) => {
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
-    const handleTabKey = (e) => {
+    const handleTabKey = e => {
       if (e.key !== 'Tab') return;
 
       if (e.shiftKey) {
@@ -235,11 +244,16 @@ const useFocusTrap = (isOpen, containerRef) => {
 };
 
 // Keyboard shortcuts hook
-const useKeyboardShortcuts = (isOpen, onConfirm, onCancel, disabled = false) => {
+const useKeyboardShortcuts = (
+  isOpen,
+  onConfirm,
+  onCancel,
+  disabled = false
+) => {
   useEffect(() => {
     if (!isOpen || disabled) return;
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       switch (e.key) {
         case 'Escape':
           e.preventDefault();
@@ -297,33 +311,37 @@ const AlertDialog = ({
   const IconComponent = CustomIcon || config.icon;
 
   // Animation state management
-  const { animate: animateIcon, controls: iconControls } = useAnimationState('hidden');
+  const { animate: animateIcon, controls: iconControls } =
+    useAnimationState('hidden');
 
   // Focus trap
   useFocusTrap(open, containerRef);
 
   // Keyboard shortcuts
   useKeyboardShortcuts(
-    open, 
-    onConfirm, 
-    onCancel || onClose, 
+    open,
+    onConfirm,
+    onCancel || onClose,
     disableKeyboardShortcuts || loading
   );
 
   // Handle backdrop click
-  const handleBackdropClick = useCallback((e) => {
-    if (disableBackdropClick || persistent) return;
-    if (e.target === e.currentTarget) {
-      onClose?.();
-    }
-  }, [disableBackdropClick, persistent, onClose]);
+  const handleBackdropClick = useCallback(
+    e => {
+      if (disableBackdropClick || persistent) return;
+      if (e.target === e.currentTarget) {
+        onClose?.();
+      }
+    },
+    [disableBackdropClick, persistent, onClose]
+  );
 
   // Handle close with animation
   const handleClose = useCallback(async () => {
     if (persistent && !onCancel && !onClose) return;
-    
+
     setIsClosing(true);
-    
+
     // Small delay for exit animation
     setTimeout(() => {
       setIsClosing(false);
@@ -334,7 +352,7 @@ const AlertDialog = ({
   // Handle confirm
   const handleConfirm = useCallback(async () => {
     if (loading) return;
-    
+
     try {
       await onConfirm?.();
     } catch (error) {
@@ -351,26 +369,27 @@ const AlertDialog = ({
 
   // Resolved props
   const resolvedConfirmText = confirmText || config.confirmText;
-  const resolvedCancelText = cancelText !== undefined ? cancelText : config.cancelText;
+  const resolvedCancelText =
+    cancelText !== undefined ? cancelText : config.cancelText;
   const resolvedConfirmColor = confirmColor || config.confirmColor;
   const resolvedGradient = gradient || config.gradient;
 
   return (
     <>
-      <CustomBackdrop 
-        open={open && !isClosing} 
+      <CustomBackdrop
+        open={open && !isClosing}
         onClose={disableBackdropClick ? undefined : handleClose}
         blur={blur}
       />
-      
-      <AnimatePresence mode="wait">
-        {(open && !isClosing) && (
+
+      <AnimatePresence mode='wait'>
+        {open && !isClosing && (
           <Portal>
             <motion.div
               variants={dialogVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial='hidden'
+              animate='visible'
+              exit='exit'
               onClick={handleBackdropClick}
               style={{
                 position: 'fixed',
@@ -382,12 +401,12 @@ const AlertDialog = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: 24,
-                zIndex: 1400
+                zIndex: 1400,
               }}
             >
               <Box
                 ref={containerRef}
-                onClick={(e) => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
                 sx={{
                   background: `linear-gradient(135deg, ${premiumColors.glass.white[12]} 0%, ${premiumColors.glass.white[8]} 100%)`,
                   backdropFilter: premiumEffects.backdrop.xl,
@@ -398,17 +417,17 @@ const AlertDialog = ({
                   width: fullWidth ? '100%' : 'auto',
                   minWidth: 400,
                   overflow: 'hidden',
-                  outline: 'none'
+                  outline: 'none',
                 }}
                 {...props}
               >
                 {/* Header */}
                 <Box sx={{ p: 3, pb: 2 }}>
-                  <Stack direction="row" alignItems="flex-start" spacing={2}>
+                  <Stack direction='row' alignItems='flex-start' spacing={2}>
                     {/* Icon */}
                     <motion.div
                       variants={iconVariants}
-                      initial="hidden"
+                      initial='hidden'
                       animate={iconControls}
                     >
                       <Box
@@ -421,28 +440,32 @@ const AlertDialog = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           boxShadow: `0 4px 12px ${alpha(config.color, 0.3)}`,
-                          mt: 0.5
+                          mt: 0.5,
                         }}
                       >
-                        <IconComponent 
-                          sx={{ 
-                            fontSize: 24, 
+                        <IconComponent
+                          sx={{
+                            fontSize: 24,
                             color: 'white',
-                            filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))'
-                          }} 
+                            filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+                          }}
                         />
                       </Box>
                     </motion.div>
 
                     {/* Content */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Stack
+                        direction='row'
+                        alignItems='center'
+                        justifyContent='space-between'
+                      >
                         <Typography
-                          variant="h6"
+                          variant='h6'
                           sx={{
                             fontWeight: 600,
                             color: theme.palette.text.primary,
-                            mb: 1
+                            mb: 1,
                           }}
                         >
                           {title}
@@ -450,15 +473,18 @@ const AlertDialog = ({
 
                         {showCloseButton && !persistent && (
                           <IconButton
-                            size="small"
+                            size='small'
                             onClick={handleClose}
                             disabled={loading}
                             sx={{
                               color: theme.palette.text.secondary,
                               '&:hover': {
-                                backgroundColor: alpha(theme.palette.text.primary, 0.05),
-                                transform: 'scale(1.1)'
-                              }
+                                backgroundColor: alpha(
+                                  theme.palette.text.primary,
+                                  0.05
+                                ),
+                                transform: 'scale(1.1)',
+                              },
                             }}
                           >
                             <CloseRounded />
@@ -468,10 +494,10 @@ const AlertDialog = ({
 
                       {message && (
                         <Typography
-                          variant="body2"
+                          variant='body2'
                           sx={{
                             color: theme.palette.text.secondary,
-                            lineHeight: 1.5
+                            lineHeight: 1.5,
                           }}
                         >
                           {message}
@@ -485,32 +511,42 @@ const AlertDialog = ({
                 {children && (
                   <>
                     <Divider sx={{ opacity: 0.1 }} />
-                    <Box sx={{ p: 3, py: 2 }}>
-                      {children}
-                    </Box>
+                    <Box sx={{ p: 3, py: 2 }}>{children}</Box>
                   </>
                 )}
 
                 {/* Actions */}
-                {(customActions || resolvedConfirmText || resolvedCancelText) && (
+                {(customActions ||
+                  resolvedConfirmText ||
+                  resolvedCancelText) && (
                   <>
                     <Divider sx={{ opacity: 0.1 }} />
                     <Box sx={{ p: 3, pt: 2 }}>
                       {customActions || (
-                        <Stack direction="row" spacing={2} justifyContent="flex-end">
+                        <Stack
+                          direction='row'
+                          spacing={2}
+                          justifyContent='flex-end'
+                        >
                           {resolvedCancelText && (
                             <Button
-                              variant="outlined"
+                              variant='outlined'
                               onClick={handleClose}
                               disabled={loading}
                               startIcon={<CancelRounded />}
                               sx={{
                                 minWidth: 100,
-                                borderColor: alpha(theme.palette.text.secondary, 0.3),
+                                borderColor: alpha(
+                                  theme.palette.text.secondary,
+                                  0.3
+                                ),
                                 color: theme.palette.text.secondary,
                                 '&:hover': {
-                                  backgroundColor: alpha(theme.palette.text.secondary, 0.05)
-                                }
+                                  backgroundColor: alpha(
+                                    theme.palette.text.secondary,
+                                    0.05
+                                  ),
+                                },
                               }}
                             >
                               {resolvedCancelText}
@@ -519,14 +555,17 @@ const AlertDialog = ({
 
                           {resolvedConfirmText && (
                             <Button
-                              variant="contained"
+                              variant='contained'
                               color={resolvedConfirmColor}
                               onClick={handleConfirm}
                               disabled={loading}
                               autoFocus={autoFocus}
                               startIcon={
-                                loading ? null : (
-                                  type === DIALOG_TYPES.DESTRUCTIVE ? <DeleteForeverRounded /> : <SaveRounded />
+                                loading ? null : type ===
+                                  DIALOG_TYPES.DESTRUCTIVE ? (
+                                  <DeleteForeverRounded />
+                                ) : (
+                                  <SaveRounded />
                                 )
                               }
                               sx={{
@@ -535,12 +574,12 @@ const AlertDialog = ({
                                 boxShadow: `0 4px 12px ${alpha(config.color, 0.3)}`,
                                 '&:hover': {
                                   boxShadow: `0 6px 16px ${alpha(config.color, 0.4)}`,
-                                  transform: 'translateY(-1px)'
+                                  transform: 'translateY(-1px)',
                                 },
                                 '&:disabled': {
-                                  background: alpha(config.color, 0.3)
+                                  background: alpha(config.color, 0.3),
                                 },
-                                ...microInteractions.executiveButton
+                                ...microInteractions.executiveButton,
                               }}
                             >
                               {resolvedConfirmText}
@@ -556,11 +595,11 @@ const AlertDialog = ({
                 {!disableKeyboardShortcuts && (
                   <Box sx={{ px: 3, pb: 2 }}>
                     <Typography
-                      variant="caption"
+                      variant='caption'
                       sx={{
                         color: theme.palette.text.disabled,
                         fontSize: '0.7rem',
-                        fontStyle: 'italic'
+                        fontStyle: 'italic',
                       }}
                     >
                       Press ESC to cancel • ⌘+Enter to confirm
@@ -577,50 +616,50 @@ const AlertDialog = ({
 };
 
 // Convenience methods
-AlertDialog.confirm = (props) => {
+AlertDialog.confirm = props => {
   return new Promise((resolve, reject) => {
     const handleConfirm = () => resolve(true);
     const handleCancel = () => resolve(false);
-    
+
     // This would need to be implemented with a context provider
     // For now, returning the component props
     return {
       ...props,
       type: DIALOG_TYPES.CONFIRMATION,
       onConfirm: handleConfirm,
-      onCancel: handleCancel
+      onCancel: handleCancel,
     };
   });
 };
 
-AlertDialog.alert = (props) => {
+AlertDialog.alert = props => {
   return {
     ...props,
     type: DIALOG_TYPES.INFO,
-    cancelText: null
+    cancelText: null,
   };
 };
 
-AlertDialog.warning = (props) => {
+AlertDialog.warning = props => {
   return {
     ...props,
-    type: DIALOG_TYPES.WARNING
+    type: DIALOG_TYPES.WARNING,
   };
 };
 
-AlertDialog.error = (props) => {
+AlertDialog.error = props => {
   return {
     ...props,
     type: DIALOG_TYPES.ERROR,
-    cancelText: null
+    cancelText: null,
   };
 };
 
-AlertDialog.destructive = (props) => {
+AlertDialog.destructive = props => {
   return {
     ...props,
     type: DIALOG_TYPES.DESTRUCTIVE,
-    persistent: true
+    persistent: true,
   };
 };
 

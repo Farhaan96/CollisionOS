@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
@@ -11,22 +17,22 @@ import { ShortcutManager } from '../../../../src/components/KeyboardShortcuts/Sh
 jest.mock('../../../../src/hooks/useAuth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'admin', name: 'Test User' },
-    logout: jest.fn()
-  })
+    logout: jest.fn(),
+  }),
 }));
 
 jest.mock('../../../../src/hooks/useNotification', () => ({
   useNotification: () => ({
-    showNotification: jest.fn()
-  })
+    showNotification: jest.fn(),
+  }),
 }));
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: { main: '#1976d2' },
-    background: { paper: '#ffffff' }
-  }
+    background: { paper: '#ffffff' },
+  },
 });
 
 // Test wrapper component
@@ -34,9 +40,7 @@ const TestWrapper = ({ children }) => (
   <BrowserRouter>
     <ThemeProvider theme={theme}>
       <ShortcutManager>
-        <CommandProvider>
-          {children}
-        </CommandProvider>
+        <CommandProvider>{children}</CommandProvider>
       </ShortcutManager>
     </ThemeProvider>
   </BrowserRouter>
@@ -58,7 +62,9 @@ describe('CommandPalette', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Command Palette')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Type a command or search...')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Type a command or search...')
+    ).toBeInTheDocument();
   });
 
   it('does not render when open prop is false', () => {
@@ -79,22 +85,26 @@ describe('CommandPalette', () => {
     );
 
     await waitFor(() => {
-      const searchInput = screen.getByPlaceholderText('Type a command or search...');
+      const searchInput = screen.getByPlaceholderText(
+        'Type a command or search...'
+      );
       expect(searchInput).toHaveFocus();
     });
   });
 
   it('filters commands based on search query', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
-    
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
+
     // Search for dashboard
     await user.type(searchInput, 'dashboard');
 
@@ -106,14 +116,16 @@ describe('CommandPalette', () => {
 
   it('highlights search terms in results', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     await user.type(searchInput, 'dash');
 
     await waitFor(() => {
@@ -126,36 +138,42 @@ describe('CommandPalette', () => {
 
   it('navigates through commands with arrow keys', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     searchInput.focus();
 
     // Press arrow down to select first item
     await user.keyboard('{ArrowDown}');
-    
+
     // First command item should be selected (have selected styling)
     await waitFor(() => {
-      const selectedItem = document.querySelector('[role="button"].Mui-selected');
+      const selectedItem = document.querySelector(
+        '[role="button"].Mui-selected'
+      );
       expect(selectedItem).toBeInTheDocument();
     });
   });
 
   it('executes command on Enter key', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     searchInput.focus();
 
     // Select first command and press Enter
@@ -170,14 +188,16 @@ describe('CommandPalette', () => {
 
   it('closes on Escape key', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     searchInput.focus();
 
     await user.keyboard('{Escape}');
@@ -200,7 +220,7 @@ describe('CommandPalette', () => {
 
   it('filters by category when category chip is clicked', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
@@ -233,32 +253,38 @@ describe('CommandPalette', () => {
 
   it('shows no results message for empty search', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     await user.type(searchInput, 'nonexistentcommand');
 
     await waitFor(() => {
       expect(screen.getByText('No commands found')).toBeInTheDocument();
-      expect(screen.getByText('Try a different search term')).toBeInTheDocument();
+      expect(
+        screen.getByText('Try a different search term')
+      ).toBeInTheDocument();
     });
   });
 
   it('clears search when clear button is clicked', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     await user.type(searchInput, 'test');
 
     // Find and click clear button
@@ -293,17 +319,21 @@ describe('CommandPalette', () => {
 
   it('handles command execution errors gracefully', async () => {
     const user = userEvent.setup();
-    
+
     // Mock console.error to avoid error output in tests
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     searchInput.focus();
 
     // Try to execute a command (first one)
@@ -312,21 +342,23 @@ describe('CommandPalette', () => {
 
     // Should not crash the component
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    
+
     consoleSpy.mockRestore();
   });
 
   it('supports fuzzy search functionality', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
       </TestWrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
-    
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
+
     // Type partial/fuzzy match for "customers"
     await user.type(searchInput, 'cust');
 
@@ -337,7 +369,7 @@ describe('CommandPalette', () => {
 
   it('closes when backdrop is clicked', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <CommandPalette open={true} onClose={mockOnClose} />
@@ -361,10 +393,12 @@ describe('CommandPalette', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeInTheDocument();
-    
-    const searchInput = screen.getByPlaceholderText('Type a command or search...');
+
+    const searchInput = screen.getByPlaceholderText(
+      'Type a command or search...'
+    );
     expect(searchInput).toHaveAttribute('type', 'text');
-    
+
     // Should have proper list structure
     const list = screen.getByRole('list');
     expect(list).toBeInTheDocument();

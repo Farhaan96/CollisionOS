@@ -12,7 +12,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 async function deployAIFunctions() {
   console.log('🚀 Deploying AI Assistant Database Functions to Supabase...');
-  
+
   // Initialize Supabase client with service role
   const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -22,7 +22,7 @@ async function deployAIFunctions() {
   try {
     // Read the AI functions SQL file
     const sqlFilePath = path.join(__dirname, 'supabase-ai-functions.sql');
-    
+
     if (!fs.existsSync(sqlFilePath)) {
       throw new Error(`AI functions SQL file not found at: ${sqlFilePath}`);
     }
@@ -44,24 +44,26 @@ async function deployAIFunctions() {
       if (statement.length === 0) continue;
 
       console.log(`   [${i + 1}/${statements.length}] Executing...`);
-      
+
       try {
-        const { data, error } = await supabase.rpc('exec_sql', { 
-          sql: statement + ';' 
+        const { data, error } = await supabase.rpc('exec_sql', {
+          sql: statement + ';',
         });
-        
+
         if (error) {
           // Try direct query if rpc fails
           const { error: queryError } = await supabase
             .from('_dummy')
             .select('1')
             .limit(0);
-          
+
           // Execute via raw SQL if available
           console.log(`   ⚠️  Using alternative execution method...`);
         }
       } catch (execError) {
-        console.log(`   ⚠️  Statement ${i + 1} may have executed with warnings`);
+        console.log(
+          `   ⚠️  Statement ${i + 1} may have executed with warnings`
+        );
       }
     }
 
@@ -70,35 +72,51 @@ async function deployAIFunctions() {
 
     // Test calculate_average_cycle_time function
     try {
-      const { data: cycleTimeData, error: cycleTimeError } = await supabase
-        .rpc('calculate_average_cycle_time', {
+      const { data: cycleTimeData, error: cycleTimeError } = await supabase.rpc(
+        'calculate_average_cycle_time',
+        {
           shop_uuid: '00000000-0000-0000-0000-000000000000', // Test UUID
-          days_back: 30
-        });
+          days_back: 30,
+        }
+      );
 
       if (cycleTimeError) {
-        console.log('   ⚠️  calculate_average_cycle_time function may need manual deployment');
+        console.log(
+          '   ⚠️  calculate_average_cycle_time function may need manual deployment'
+        );
       } else {
-        console.log('   ✅ calculate_average_cycle_time function deployed successfully');
+        console.log(
+          '   ✅ calculate_average_cycle_time function deployed successfully'
+        );
       }
     } catch (error) {
-      console.log('   ⚠️  calculate_average_cycle_time test failed - manual deployment may be needed');
+      console.log(
+        '   ⚠️  calculate_average_cycle_time test failed - manual deployment may be needed'
+      );
     }
 
     // Test get_shop_performance_metrics function
     try {
-      const { data: metricsData, error: metricsError } = await supabase
-        .rpc('get_shop_performance_metrics', {
-          shop_uuid: '00000000-0000-0000-0000-000000000000' // Test UUID
-        });
+      const { data: metricsData, error: metricsError } = await supabase.rpc(
+        'get_shop_performance_metrics',
+        {
+          shop_uuid: '00000000-0000-0000-0000-000000000000', // Test UUID
+        }
+      );
 
       if (metricsError) {
-        console.log('   ⚠️  get_shop_performance_metrics function may need manual deployment');
+        console.log(
+          '   ⚠️  get_shop_performance_metrics function may need manual deployment'
+        );
       } else {
-        console.log('   ✅ get_shop_performance_metrics function deployed successfully');
+        console.log(
+          '   ✅ get_shop_performance_metrics function deployed successfully'
+        );
       }
     } catch (error) {
-      console.log('   ⚠️  get_shop_performance_metrics test failed - manual deployment may be needed');
+      console.log(
+        '   ⚠️  get_shop_performance_metrics test failed - manual deployment may be needed'
+      );
     }
 
     console.log('\n🎉 AI functions deployment completed!');
@@ -107,13 +125,14 @@ async function deployAIFunctions() {
     console.log('   • calculate_monthly_revenue(shop_uuid)');
     console.log('   • get_pending_parts_summary(shop_uuid)');
     console.log('   • get_shop_performance_metrics(shop_uuid)');
-    console.log('   • ai_search_entities(shop_uuid, search_term, entity_types)');
+    console.log(
+      '   • ai_search_entities(shop_uuid, search_term, entity_types)'
+    );
     console.log('   • ai_shop_metrics view');
 
     console.log('\n🤖 Your AI Assistant is now connected to real data!');
     console.log('   Try asking: "What\'s our average cycle time?"');
     console.log('   Or: "Show me all Honda vehicles"');
-
   } catch (error) {
     console.error('❌ AI functions deployment failed:', error);
     console.log('\n📋 Manual Deployment Instructions:');

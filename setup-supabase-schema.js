@@ -10,7 +10,7 @@ require('dotenv').config();
 
 async function setupSupabaseSchema() {
   console.log('🚀 Setting up Supabase schema...');
-  
+
   // Check environment variables
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('❌ Missing Supabase credentials in .env file');
@@ -24,8 +24,8 @@ async function setupSupabaseSchema() {
     {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     }
   );
 
@@ -33,7 +33,10 @@ async function setupSupabaseSchema() {
 
   // Test connection
   try {
-    const { data, error } = await supabase.from('_realtime').select('*').limit(1);
+    const { data, error } = await supabase
+      .from('_realtime')
+      .select('*')
+      .limit(1);
     if (error && !error.message.includes('does not exist')) {
       throw error;
     }
@@ -246,7 +249,7 @@ async function setupSupabaseSchema() {
     if (error) {
       // Try alternative method - execute via REST API
       console.log('⚠️ RPC method failed, trying direct execution...');
-      
+
       // Split the SQL into individual statements and execute them
       const statements = basicSchema
         .split(';')
@@ -259,7 +262,7 @@ async function setupSupabaseSchema() {
           console.log('⏭️ Skipping DO block (execute manually if needed)');
           continue;
         }
-        
+
         try {
           console.log(`Executing: ${statement.substring(0, 50)}...`);
           const { error: stmtError } = await supabase.from('_sql').select('*');
@@ -271,17 +274,20 @@ async function setupSupabaseSchema() {
     }
 
     console.log('✅ Basic schema created successfully!');
-
   } catch (error) {
     console.error('❌ Failed to create schema:', error.message);
     console.log('\n📋 Manual Setup Required:');
-    console.log('Please go to your Supabase dashboard > SQL Editor and run the schema manually.');
-    console.log('Schema file location: supabase-migration/schema/01_initial_schema.sql');
+    console.log(
+      'Please go to your Supabase dashboard > SQL Editor and run the schema manually.'
+    );
+    console.log(
+      'Schema file location: supabase-migration/schema/01_initial_schema.sql'
+    );
   }
 
   // Insert sample data
   console.log('📝 Creating sample data...');
-  
+
   try {
     // Create a sample shop
     const { data: shop, error: shopError } = await supabase
@@ -292,8 +298,8 @@ async function setupSupabaseSchema() {
           name: 'Demo Auto Body Shop',
           email: 'demo@collisionos.com',
           phone: '555-0123',
-          address: '123 Main St, Demo City, DC 12345'
-        }
+          address: '123 Main St, Demo City, DC 12345',
+        },
       ])
       .select()
       .single();
@@ -316,8 +322,8 @@ async function setupSupabaseSchema() {
           last_name: 'Doe',
           email: 'john.doe@example.com',
           phone: '555-0124',
-          address: '456 Oak St, Demo City, DC 12345'
-        }
+          address: '456 Oak St, Demo City, DC 12345',
+        },
       ])
       .select()
       .single();
@@ -329,16 +335,17 @@ async function setupSupabaseSchema() {
     }
 
     console.log('✅ Sample data created successfully!');
-
   } catch (error) {
     console.log('⚠️ Sample data creation failed:', error.message);
-    console.log('This is normal if tables don\'t exist yet.');
+    console.log("This is normal if tables don't exist yet.");
   }
 
   console.log('\n🎉 Supabase setup completed!');
   console.log('📋 Next steps:');
   console.log('1. Go to your Supabase dashboard > SQL Editor');
-  console.log('2. Run the complete schema from: supabase-migration/schema/01_initial_schema.sql');
+  console.log(
+    '2. Run the complete schema from: supabase-migration/schema/01_initial_schema.sql'
+  );
   console.log('3. Test the application with: npm start');
   console.log('4. Check the health endpoint: http://localhost:4000/health');
 }

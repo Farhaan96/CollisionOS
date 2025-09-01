@@ -5,17 +5,17 @@ class BMSService {
   constructor() {
     this.parser = new XMLParser({
       ignoreAttributes: false,
-      attributeNamePrefix: "@_",
-      textNodeName: "#text",
+      attributeNamePrefix: '@_',
+      textNodeName: '#text',
       parseAttributeValue: true,
       parseTagValue: true,
-      trimValues: true
+      trimValues: true,
     });
-    
+
     // Initialize validation and error tracking
     this.validationErrors = [];
     this.processingWarnings = [];
-    
+
     // Initialize field mapping system
     this.fieldMapper = new BMSFieldMapper();
   }
@@ -31,7 +31,7 @@ class BMSService {
       // Clear previous validation errors
       this.validationErrors = [];
       this.processingWarnings = [];
-      
+
       const parsed = this.parser.parse(xmlContent);
       const bmsData = parsed.VehicleDamageEstimateAddRq;
 
@@ -43,20 +43,20 @@ class BMSService {
         damageLines: this.extractDamageLines(bmsData),
         totals: this.extractTotals(bmsData),
         profileInfo: this.extractProfileInfo(bmsData),
-        eventInfo: this.extractEventInfo(bmsData)
+        eventInfo: this.extractEventInfo(bmsData),
       };
 
       // Perform validation if requested
       if (options.validate !== false) {
         const validation = this.validateBMSData(extractedData);
         extractedData.validation = validation;
-        
+
         // Log validation results
         if (validation.warnings.length > 0) {
           console.warn('BMS Data Validation Warnings:', validation.warnings);
           this.processingWarnings.push(...validation.warnings);
         }
-        
+
         if (validation.errors.length > 0) {
           console.error('BMS Data Validation Errors:', validation.errors);
           this.validationErrors.push(...validation.errors);
@@ -89,8 +89,8 @@ class BMSService {
       currency: {
         code: docInfo.CurrencyInfo?.CurCode,
         baseCode: docInfo.CurrencyInfo?.BaseCurCode,
-        rate: docInfo.CurrencyInfo?.CurRate
-      }
+        rate: docInfo.CurrencyInfo?.CurRate,
+      },
     };
   }
 
@@ -99,20 +99,20 @@ class BMSService {
    */
   extractAdminInfo(bmsData) {
     const admin = bmsData.AdminInfo;
-    
+
     return {
       insuranceCompany: this.extractPartyInfo(admin.InsuranceCompany?.Party),
       policyHolder: this.extractPartyInfo(admin.PolicyHolder?.Party),
       owner: this.extractPartyInfo(admin.Owner?.Party),
       estimator: {
         ...this.extractPartyInfo(admin.Estimator?.Party),
-        affiliation: admin.Estimator?.Affiliation
+        affiliation: admin.Estimator?.Affiliation,
       },
       inspectionSite: this.extractPartyInfo(admin.InspectionSite?.Party),
       repairFacility: this.extractPartyInfo(admin.RepairFacility?.Party),
       adjuster: this.extractPartyInfo(admin.Adjuster?.Party),
       supplier: this.extractPartyInfo(admin.Supplier?.Party),
-      sender: this.extractPartyInfo(admin.Sender?.Party)
+      sender: this.extractPartyInfo(admin.Sender?.Party),
     };
   }
 
@@ -131,10 +131,11 @@ class BMSService {
         type: 'person',
         firstName: personInfo.PersonName?.FirstName,
         lastName: personInfo.PersonName?.LastName,
-        fullName: `${personInfo.PersonName?.FirstName || ''} ${personInfo.PersonName?.LastName || ''}`.trim(),
+        fullName:
+          `${personInfo.PersonName?.FirstName || ''} ${personInfo.PersonName?.LastName || ''}`.trim(),
         address: this.extractAddress(personInfo.Communications),
         phone: this.extractPhone(contactInfo?.Communications),
-        email: this.extractEmail(contactInfo?.Communications)
+        email: this.extractEmail(contactInfo?.Communications),
       };
     } else if (orgInfo) {
       return {
@@ -143,10 +144,12 @@ class BMSService {
         address: this.extractAddress(orgInfo.Communications),
         phone: this.extractPhone(contactInfo?.Communications),
         email: this.extractEmail(contactInfo?.Communications),
-        idInfo: orgInfo.IDInfo ? {
-          qualifier: orgInfo.IDInfo.IDQualifierCode,
-          number: orgInfo.IDInfo.IDNum
-        } : null
+        idInfo: orgInfo.IDInfo
+          ? {
+              qualifier: orgInfo.IDInfo.IDQualifierCode,
+              number: orgInfo.IDInfo.IDNum,
+            }
+          : null,
       };
     }
 
@@ -159,9 +162,11 @@ class BMSService {
   extractAddress(communications) {
     if (!communications) return null;
 
-    const addressComm = Array.isArray(communications) 
+    const addressComm = Array.isArray(communications)
       ? communications.find(comm => comm.CommQualifier === 'AL')
-      : communications.CommQualifier === 'AL' ? communications : null;
+      : communications.CommQualifier === 'AL'
+        ? communications
+        : null;
 
     if (!addressComm?.Address) return null;
 
@@ -169,7 +174,7 @@ class BMSService {
       address1: addressComm.Address.Address1,
       city: addressComm.Address.City,
       stateProvince: addressComm.Address.StateProvince,
-      postalCode: addressComm.Address.PostalCode
+      postalCode: addressComm.Address.PostalCode,
     };
   }
 
@@ -180,8 +185,12 @@ class BMSService {
     if (!communications) return null;
 
     const phoneComm = Array.isArray(communications)
-      ? communications.find(comm => ['HP', 'WP', 'CP'].includes(comm.CommQualifier))
-      : ['HP', 'WP', 'CP'].includes(communications.CommQualifier) ? communications : null;
+      ? communications.find(comm =>
+          ['HP', 'WP', 'CP'].includes(comm.CommQualifier)
+        )
+      : ['HP', 'WP', 'CP'].includes(communications.CommQualifier)
+        ? communications
+        : null;
 
     return phoneComm?.CommPhone || null;
   }
@@ -194,7 +203,9 @@ class BMSService {
 
     const emailComm = Array.isArray(communications)
       ? communications.find(comm => comm.CommQualifier === 'EM')
-      : communications.CommQualifier === 'EM' ? communications : null;
+      : communications.CommQualifier === 'EM'
+        ? communications
+        : null;
 
     return emailComm?.CommEmail || null;
   }
@@ -204,26 +215,34 @@ class BMSService {
    */
   extractClaimInfo(bmsData) {
     const claim = bmsData.ClaimInfo;
-    
+
     return {
       claimNumber: claim.ClaimNum,
       policyNumber: claim.PolicyInfo?.PolicyNum,
-      coverage: claim.PolicyInfo?.CoverageInfo?.Coverage ? {
-        category: claim.PolicyInfo.CoverageInfo.Coverage.CoverageCategory,
-        deductible: {
-          status: claim.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo?.DeductibleStatus,
-          amount: claim.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo?.DeductibleAmt
-        }
-      } : null,
-      loss: claim.LossInfo ? {
-        dateTime: claim.LossInfo.Facts?.LossDateTime,
-        reportedDateTime: claim.LossInfo.Facts?.ReportedDateTime,
-        primaryPOI: claim.LossInfo.Facts?.PrimaryPOI?.POICode,
-        damageMemo: claim.LossInfo.Facts?.DamageMemo,
-        lossMemo: claim.LossInfo.Facts?.LossMemo,
-        totalLoss: claim.LossInfo.TotalLossInd === 'Y'
-      } : null,
-      customElements: this.extractCustomElements(claim.CustomElement)
+      coverage: claim.PolicyInfo?.CoverageInfo?.Coverage
+        ? {
+            category: claim.PolicyInfo.CoverageInfo.Coverage.CoverageCategory,
+            deductible: {
+              status:
+                claim.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo
+                  ?.DeductibleStatus,
+              amount:
+                claim.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo
+                  ?.DeductibleAmt,
+            },
+          }
+        : null,
+      loss: claim.LossInfo
+        ? {
+            dateTime: claim.LossInfo.Facts?.LossDateTime,
+            reportedDateTime: claim.LossInfo.Facts?.ReportedDateTime,
+            primaryPOI: claim.LossInfo.Facts?.PrimaryPOI?.POICode,
+            damageMemo: claim.LossInfo.Facts?.DamageMemo,
+            lossMemo: claim.LossInfo.Facts?.LossMemo,
+            totalLoss: claim.LossInfo.TotalLossInd === 'Y',
+          }
+        : null,
+      customElements: this.extractCustomElements(claim.CustomElement),
     };
   }
 
@@ -233,7 +252,9 @@ class BMSService {
   extractCustomElements(customElements) {
     if (!customElements) return {};
 
-    const elements = Array.isArray(customElements) ? customElements : [customElements];
+    const elements = Array.isArray(customElements)
+      ? customElements
+      : [customElements];
     const result = {};
 
     elements.forEach(element => {
@@ -241,7 +262,7 @@ class BMSService {
         result[element.CustomElementID] = {
           text: element.CustomElementText,
           decimal: element.CustomElementDecimal,
-          indicator: element.CustomElementInd
+          indicator: element.CustomElementInd,
         };
       }
     });
@@ -254,12 +275,12 @@ class BMSService {
    */
   extractVehicleInfo(bmsData) {
     const vehicle = bmsData.VehicleInfo;
-    
+
     return {
       vin: vehicle.VINInfo?.VIN?.VINNum,
       license: {
         plateNumber: vehicle.License?.LicensePlateNum,
-        stateProvince: vehicle.License?.LicensePlateStateProvince
+        stateProvince: vehicle.License?.LicensePlateStateProvince,
       },
       description: {
         productionDate: vehicle.VehicleDesc?.ProductionDate,
@@ -273,28 +294,35 @@ class BMSService {
         bodyStyle: vehicle.Body?.BodyStyle,
         engineDesc: vehicle.Powertrain?.EngineDesc,
         engineCode: vehicle.Powertrain?.EngineCode,
-        transmissionDesc: vehicle.Powertrain?.TransmissionInfo?.TransmissionDesc,
-        fuelType: vehicle.Powertrain?.FuelType
+        transmissionDesc:
+          vehicle.Powertrain?.TransmissionInfo?.TransmissionDesc,
+        fuelType: vehicle.Powertrain?.FuelType,
       },
-      odometer: vehicle.VehicleDesc?.OdometerInfo ? {
-        reading: vehicle.VehicleDesc.OdometerInfo.OdometerReading,
-        measure: vehicle.VehicleDesc.OdometerInfo.OdometerReadingMeasure
-      } : null,
+      odometer: vehicle.VehicleDesc?.OdometerInfo
+        ? {
+            reading: vehicle.VehicleDesc.OdometerInfo.OdometerReading,
+            measure: vehicle.VehicleDesc.OdometerInfo.OdometerReadingMeasure,
+          }
+        : null,
       paint: {
         exterior: vehicle.Paint?.Exterior?.Color?.ColorName,
-        interior: vehicle.Paint?.Interior?.Color?.ColorName
+        interior: vehicle.Paint?.Interior?.Color?.ColorName,
       },
-      condition: vehicle.Condition ? {
-        conditionCode: vehicle.Condition.ConditionCode,
-        drivable: vehicle.Condition.DrivableInd === 'Y',
-        priorDamage: vehicle.Condition.PriorDamageInd === 'Y',
-        priorDamageMemo: vehicle.Condition.PriorDamageMemo
-      } : null,
-      valuation: vehicle.Valuation ? {
-        type: vehicle.Valuation.ValuationType,
-        amount: vehicle.Valuation.ValuationAmt
-      } : null,
-      options: this.extractVehicleOptions(vehicle.VehicleDesc?.VehicleOptions)
+      condition: vehicle.Condition
+        ? {
+            conditionCode: vehicle.Condition.ConditionCode,
+            drivable: vehicle.Condition.DrivableInd === 'Y',
+            priorDamage: vehicle.Condition.PriorDamageInd === 'Y',
+            priorDamageMemo: vehicle.Condition.PriorDamageMemo,
+          }
+        : null,
+      valuation: vehicle.Valuation
+        ? {
+            type: vehicle.Valuation.ValuationType,
+            amount: vehicle.Valuation.ValuationAmt,
+          }
+        : null,
+      options: this.extractVehicleOptions(vehicle.VehicleDesc?.VehicleOptions),
     };
   }
 
@@ -304,11 +332,13 @@ class BMSService {
   extractVehicleOptions(options) {
     if (!options?.Option) return [];
 
-    const optionList = Array.isArray(options.Option) ? options.Option : [options.Option];
-    
+    const optionList = Array.isArray(options.Option)
+      ? options.Option
+      : [options.Option];
+
     return optionList.map(option => ({
       code: option.OptionCode,
-      description: option.OptionDesc
+      description: option.OptionDesc,
     }));
   }
 
@@ -318,8 +348,8 @@ class BMSService {
   extractDamageLines(bmsData) {
     if (!bmsData.DamageLineInfo) return [];
 
-    const lines = Array.isArray(bmsData.DamageLineInfo) 
-      ? bmsData.DamageLineInfo 
+    const lines = Array.isArray(bmsData.DamageLineInfo)
+      ? bmsData.DamageLineInfo
       : [bmsData.DamageLineInfo];
 
     return lines.map(line => ({
@@ -334,7 +364,7 @@ class BMSService {
       laborInfo: this.extractLaborInfo(line.LaborInfo),
       materialType: line.MaterialType,
       otherChargesInfo: this.extractOtherChargesInfo(line.OtherChargesInfo),
-      appliedAdjustment: line.AppliedAdjustment
+      appliedAdjustment: line.AppliedAdjustment,
     }));
   }
 
@@ -353,13 +383,15 @@ class BMSService {
       oemPartPrice: partInfo.OEMPartPrice,
       quantity: partInfo.Quantity,
       taxable: partInfo.TaxableInd === '1',
-      nonOEM: partInfo.NonOEM ? {
-        partType: partInfo.NonOEM.PartType,
-        partNum: partInfo.NonOEM.NonOEMPartNum,
-        price: partInfo.NonOEM.NonOEMPartPrice,
-        supplierRef: partInfo.NonOEM.SupplierRefNum,
-        selected: partInfo.NonOEM.PartSelectedInd === '1'
-      } : null
+      nonOEM: partInfo.NonOEM
+        ? {
+            partType: partInfo.NonOEM.PartType,
+            partNum: partInfo.NonOEM.NonOEMPartNum,
+            price: partInfo.NonOEM.NonOEMPartPrice,
+            supplierRef: partInfo.NonOEM.SupplierRefNum,
+            selected: partInfo.NonOEM.PartSelectedInd === '1',
+          }
+        : null,
     };
   }
 
@@ -378,7 +410,7 @@ class BMSService {
       laborIncl: laborInfo.LaborInclInd === '1',
       taxable: laborInfo.TaxableInd === '1',
       paintStagesNum: laborInfo.PaintStagesNum,
-      blendAsterisk: laborInfo.BlendAsteriskInd === 'true'
+      blendAsterisk: laborInfo.BlendAsteriskInd === 'true',
     };
   }
 
@@ -392,7 +424,7 @@ class BMSService {
       type: otherChargesInfo.OtherChargesType,
       price: otherChargesInfo.Price,
       taxable: otherChargesInfo.TaxableInd === '1',
-      priceIncl: otherChargesInfo.PriceInclInd === '1'
+      priceIncl: otherChargesInfo.PriceInclInd === '1',
     };
   }
 
@@ -407,7 +439,7 @@ class BMSService {
       laborTotals: this.extractTotalInfo(totals.LaborTotalsInfo),
       partsTotals: this.extractTotalInfo(totals.PartsTotalsInfo),
       otherChargesTotals: this.extractTotalInfo(totals.OtherChargesTotalsInfo),
-      summaryTotals: this.extractSummaryTotals(totals.SummaryTotalsInfo)
+      summaryTotals: this.extractSummaryTotals(totals.SummaryTotalsInfo),
     };
   }
 
@@ -423,7 +455,7 @@ class BMSService {
       taxableAmt: totalInfo.TaxableAmt,
       taxTotalAmt: totalInfo.TaxTotalAmt,
       totalAmt: totalInfo.TotalAmt,
-      taxInfo: this.extractTaxInfo(totalInfo.TotalTaxInfo)
+      taxInfo: this.extractTaxInfo(totalInfo.TotalTaxInfo),
     };
   }
 
@@ -434,11 +466,11 @@ class BMSService {
     if (!taxInfo) return [];
 
     const taxes = Array.isArray(taxInfo) ? taxInfo : [taxInfo];
-    
+
     return taxes.map(tax => ({
       taxType: tax.TaxType,
       tierNum: tax.TierNum,
-      taxAmt: tax.TaxAmt
+      taxAmt: tax.TaxAmt,
     }));
   }
 
@@ -448,17 +480,21 @@ class BMSService {
   extractSummaryTotals(summaryTotals) {
     if (!summaryTotals) return [];
 
-    const totals = Array.isArray(summaryTotals) ? summaryTotals : [summaryTotals];
-    
+    const totals = Array.isArray(summaryTotals)
+      ? summaryTotals
+      : [summaryTotals];
+
     return totals.map(total => ({
       totalType: total.TotalType,
       totalSubType: total.TotalSubType,
       totalTypeDesc: total.TotalTypeDesc,
       totalAmt: total.TotalAmt,
-      adjustment: total.TotalAdjustmentInfo ? {
-        type: total.TotalAdjustmentInfo.AdjustmentType,
-        amount: total.TotalAdjustmentInfo.TotalAdjustmentAmt
-      } : null
+      adjustment: total.TotalAdjustmentInfo
+        ? {
+            type: total.TotalAdjustmentInfo.AdjustmentType,
+            amount: total.TotalAdjustmentInfo.TotalAdjustmentAmt,
+          }
+        : null,
     }));
   }
 
@@ -473,12 +509,17 @@ class BMSService {
       profileName: profile.ProfileName,
       profileUUID: profile.ProfileUUID,
       rates: this.extractRateInfo(profile.RateInfo),
-      alternatePartInfo: this.extractAlternatePartInfo(profile.AlternatePartInfo),
-      partCertification: profile.PartCertification ? {
-        certificationType: profile.PartCertification.CertificationType,
-        certifiedOnly: profile.PartCertification.CertifiedOnlyInd === '1',
-        certifiedPreferred: profile.PartCertification.CertifiedPreferredInd === '1'
-      } : null
+      alternatePartInfo: this.extractAlternatePartInfo(
+        profile.AlternatePartInfo
+      ),
+      partCertification: profile.PartCertification
+        ? {
+            certificationType: profile.PartCertification.CertificationType,
+            certifiedOnly: profile.PartCertification.CertifiedOnlyInd === '1',
+            certifiedPreferred:
+              profile.PartCertification.CertifiedPreferredInd === '1',
+          }
+        : null,
     };
   }
 
@@ -489,13 +530,13 @@ class BMSService {
     if (!rateInfo) return [];
 
     const rates = Array.isArray(rateInfo) ? rateInfo : [rateInfo];
-    
+
     return rates.map(rate => ({
       type: rate.RateType,
       description: rate.RateDesc,
       rate: rate.RateTierInfo?.[0]?.Rate,
       percentage: rate.RateTierInfo?.[0]?.Percentage,
-      taxable: rate.TaxableInd === '1'
+      taxable: rate.TaxableInd === '1',
     }));
   }
 
@@ -505,8 +546,10 @@ class BMSService {
   extractAlternatePartInfo(alternatePartInfo) {
     if (!alternatePartInfo) return [];
 
-    const parts = Array.isArray(alternatePartInfo) ? alternatePartInfo : [alternatePartInfo];
-    
+    const parts = Array.isArray(alternatePartInfo)
+      ? alternatePartInfo
+      : [alternatePartInfo];
+
     return parts.map(part => ({
       partType: part.PartType,
       searchSourceCode: part.SearchSourceCode,
@@ -517,8 +560,8 @@ class BMSService {
         id: part.OnlinePartProfileID,
         name: part.OnlinePartProfileName,
         version: part.OnlinePartProfileVersion,
-        dateTime: part.OnlinePartProfileDateTime
-      }
+        dateTime: part.OnlinePartProfileDateTime,
+      },
     }));
   }
 
@@ -530,16 +573,20 @@ class BMSService {
     if (!events) return null;
 
     return {
-      assignment: events.AssignmentEvent ? {
-        createDateTime: events.AssignmentEvent.CreateDateTime,
-        inspectionDateTime: events.AssignmentEvent.InspectionDateTime
-      } : null,
-      estimate: events.EstimateEvent ? {
-        commitDateTime: events.EstimateEvent.CommitDateTime,
-        uploadDateTime: events.EstimateEvent.UploadDateTime,
-        printDateTime: events.EstimateEvent.PrintDateTime
-      } : null,
-      otherEvents: this.extractOtherEvents(events.OtherEvent)
+      assignment: events.AssignmentEvent
+        ? {
+            createDateTime: events.AssignmentEvent.CreateDateTime,
+            inspectionDateTime: events.AssignmentEvent.InspectionDateTime,
+          }
+        : null,
+      estimate: events.EstimateEvent
+        ? {
+            commitDateTime: events.EstimateEvent.CommitDateTime,
+            uploadDateTime: events.EstimateEvent.UploadDateTime,
+            printDateTime: events.EstimateEvent.PrintDateTime,
+          }
+        : null,
+      otherEvents: this.extractOtherEvents(events.OtherEvent),
     };
   }
 
@@ -550,11 +597,11 @@ class BMSService {
     if (!otherEvents) return [];
 
     const events = Array.isArray(otherEvents) ? otherEvents : [otherEvents];
-    
+
     return events.map(event => ({
       type: event.OtherEventType,
       dateTime: event.OtherEventDateTime,
-      memo: event.OtherEventMemo
+      memo: event.OtherEventMemo,
     }));
   }
 
@@ -575,7 +622,7 @@ class BMSService {
         error: error.message,
         message: 'Failed to process BMS file',
         validationErrors: this.validationErrors,
-        processingWarnings: this.processingWarnings
+        processingWarnings: this.processingWarnings,
       };
     }
   }
@@ -586,8 +633,8 @@ class BMSService {
   readFileAsText(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = (e) => reject(new Error('Failed to read file'));
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(new Error('Failed to read file'));
       reader.readAsText(file);
     });
   }
@@ -598,7 +645,7 @@ class BMSService {
   async saveBMSData(bmsData) {
     try {
       // Helper function to safely extract text from XML objects
-      const safeText = (value) => {
+      const safeText = value => {
         if (typeof value === 'string') return value;
         if (typeof value === 'number') return value.toString();
         if (value && typeof value === 'object') {
@@ -612,15 +659,22 @@ class BMSService {
 
       // Create clean customer data
       const customerData = {
-        firstName: safeText(bmsData.adminInfo?.policyHolder?.firstName) || 'Unknown',
-        lastName: safeText(bmsData.adminInfo?.policyHolder?.lastName) || 'Customer',
+        firstName:
+          safeText(bmsData.adminInfo?.policyHolder?.firstName) || 'Unknown',
+        lastName:
+          safeText(bmsData.adminInfo?.policyHolder?.lastName) || 'Customer',
         email: safeText(bmsData.adminInfo?.policyHolder?.email) || 'N/A',
         phone: safeText(bmsData.adminInfo?.policyHolder?.phone) || 'N/A',
-        address: safeText(bmsData.adminInfo?.policyHolder?.address?.address1) || 'N/A',
+        address:
+          safeText(bmsData.adminInfo?.policyHolder?.address?.address1) || 'N/A',
         city: safeText(bmsData.adminInfo?.policyHolder?.address?.city) || 'N/A',
-        state: safeText(bmsData.adminInfo?.policyHolder?.address?.stateProvince) || 'N/A',
-        postalCode: safeText(bmsData.adminInfo?.policyHolder?.address?.postalCode) || 'N/A',
-        customerType: 'policy_holder'
+        state:
+          safeText(bmsData.adminInfo?.policyHolder?.address?.stateProvince) ||
+          'N/A',
+        postalCode:
+          safeText(bmsData.adminInfo?.policyHolder?.address?.postalCode) ||
+          'N/A',
+        customerType: 'policy_holder',
       };
 
       // Create clean vehicle data
@@ -630,61 +684,75 @@ class BMSService {
         model: safeText(bmsData.vehicleInfo?.model) || 'Unknown',
         vin: safeText(bmsData.vehicleInfo?.vin) || 'N/A',
         mileage: parseInt(safeText(bmsData.vehicleInfo?.mileage)) || 0,
-        color: safeText(bmsData.vehicleInfo?.color) || 'N/A'
+        color: safeText(bmsData.vehicleInfo?.color) || 'N/A',
       };
 
       // Create clean document info
       const documentInfo = {
         documentNumber: safeText(bmsData.documentInfo?.documentId) || 'Unknown',
-        documentType: safeText(bmsData.documentInfo?.documentType) || 'Estimate',
+        documentType:
+          safeText(bmsData.documentInfo?.documentType) || 'Estimate',
         createdDate: new Date().toISOString().split('T')[0],
-        status: 'Pending'
+        status: 'Pending',
       };
 
       // Create clean claim info
       const claimInfo = {
-        claimNumber: safeText(bmsData.claimInfo?.claimNumber) || 'CLM-' + Date.now(),
-        insuranceCompany: safeText(bmsData.adminInfo?.insuranceCompany?.companyName) || 'Unknown',
+        claimNumber:
+          safeText(bmsData.claimInfo?.claimNumber) || 'CLM-' + Date.now(),
+        insuranceCompany:
+          safeText(bmsData.adminInfo?.insuranceCompany?.companyName) ||
+          'Unknown',
         deductible: parseFloat(safeText(bmsData.claimInfo?.deductible)) || 0,
-        totalLoss: false
+        totalLoss: false,
       };
 
       // Create clean damage data
       const damageData = {
         totalParts: parseInt(safeText(bmsData.totals?.partsTotal)) || 0,
         totalLabor: parseFloat(safeText(bmsData.totals?.laborTotal)) || 0,
-        totalMaterials: parseFloat(safeText(bmsData.totals?.materialsTotal)) || 0,
+        totalMaterials:
+          parseFloat(safeText(bmsData.totals?.materialsTotal)) || 0,
         totalAmount: parseFloat(safeText(bmsData.totals?.grossTotal)) || 0,
-        damageLines: Array.isArray(bmsData.damageLines) ? bmsData.damageLines.map(line => ({
-          part: safeText(line.partInfo?.description) || 'Unknown Part',
-          operation: safeText(line.laborInfo?.operation) || 'Repair',
-          labor: parseFloat(safeText(line.laborInfo?.hours)) || 0,
-          parts: parseFloat(safeText(line.partInfo?.price)) || 0
-        })) : []
+        damageLines: Array.isArray(bmsData.damageLines)
+          ? bmsData.damageLines.map(line => ({
+              part: safeText(line.partInfo?.description) || 'Unknown Part',
+              operation: safeText(line.laborInfo?.operation) || 'Repair',
+              labor: parseFloat(safeText(line.laborInfo?.hours)) || 0,
+              parts: parseFloat(safeText(line.partInfo?.price)) || 0,
+            }))
+          : [],
       };
 
       // Create customer record
       const customer = await this.createOrUpdateCustomer(customerData);
-      
+
       // Create vehicle record
-      const vehicle = await this.createOrUpdateVehicle(vehicleData, customer.id);
-      
+      const vehicle = await this.createOrUpdateVehicle(
+        vehicleData,
+        customer.id
+      );
+
       // Create job/estimate record
-      const job = await this.createJob({
-        documentInfo,
-        claimInfo,
-        customer,
-        vehicle,
-        damage: damageData
-      }, customer.id, vehicle.id);
-      
+      const job = await this.createJob(
+        {
+          documentInfo,
+          claimInfo,
+          customer,
+          vehicle,
+          damage: damageData,
+        },
+        customer.id,
+        vehicle.id
+      );
+
       return {
         customer,
         vehicle,
         job,
         documentInfo,
         claimInfo,
-        damage: damageData
+        damage: damageData,
       };
     } catch (error) {
       console.error('Error saving BMS data:', error);
@@ -700,7 +768,7 @@ class BMSService {
 
     // Check if customer exists
     const existingCustomer = await this.findCustomerByPhone(customerData.phone);
-    
+
     if (existingCustomer) {
       // Update existing customer
       return await this.updateCustomer(existingCustomer.id, customerData);
@@ -737,7 +805,7 @@ class BMSService {
       drivable: vehicleData.drivable,
       priorDamage: vehicleData.priorDamage,
       priorDamageNotes: vehicleData.priorDamageNotes,
-      valuation: vehicleData.valuation
+      valuation: vehicleData.valuation,
     };
 
     // Check if vehicle exists by VIN
@@ -775,7 +843,7 @@ class BMSService {
       netTotal: jobData.damage.totalAmount,
       status: 'estimate_received',
       source: 'bms_upload',
-      bmsData: jobData // Store clean BMS data for reference
+      bmsData: jobData, // Store clean BMS data for reference
     };
 
     return await this.createJobRecord(cleanJobData);
@@ -798,7 +866,7 @@ class BMSService {
           quantity: line.partInfo.quantity || 1,
           supplier: line.partInfo.nonOEM?.supplierRef,
           partType: line.partInfo.partType,
-          sourceCode: line.partInfo.sourceCode
+          sourceCode: line.partInfo.sourceCode,
         });
       }
 
@@ -810,7 +878,7 @@ class BMSService {
           operation: line.laborInfo.laborOperation,
           hours: line.laborInfo.laborHours,
           description: line.lineDesc,
-          paintStages: line.laborInfo.paintStagesNum
+          paintStages: line.laborInfo.paintStagesNum,
         });
       }
 
@@ -821,14 +889,14 @@ class BMSService {
           materialType: line.materialType,
           description: line.lineDesc,
           price: line.otherChargesInfo.price,
-          chargeType: line.otherChargesInfo.type
+          chargeType: line.otherChargesInfo.type,
         });
       }
     }
   }
 
   // Database operation methods
-  
+
   /**
    * Get database models - handles both Electron and web environments
    */
@@ -840,7 +908,7 @@ class BMSService {
         // Main process has direct access to database models
         return {
           query: window.electronAPI.database.query,
-          transaction: window.electronAPI.database.transaction
+          transaction: window.electronAPI.database.transaction,
         };
       } else if (typeof window === 'undefined') {
         // Server-side - use API calls instead of direct imports to avoid webpack issues
@@ -853,19 +921,19 @@ class BMSService {
               const response = await fetch('/api/database/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sql, params })
+                body: JSON.stringify({ sql, params }),
               });
               return response.json();
             },
-            transaction: async (callback) => {
+            transaction: async callback => {
               // Implement API call for transactions
               const response = await fetch('/api/database/transaction', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ operations: callback })
+                body: JSON.stringify({ operations: callback }),
               });
               return response.json();
-            }
+            },
           };
         } catch (error) {
           console.warn('Unable to initialize database API connection:', error);
@@ -875,7 +943,7 @@ class BMSService {
         // Browser environment - use API endpoints
         return {
           apiMode: true,
-          baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3002/api'
+          baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
         };
       }
     } catch (error) {
@@ -890,7 +958,7 @@ class BMSService {
   async getDefaultShop() {
     try {
       const models = await this.getModels();
-      
+
       // Handle different environments
       if (models.apiMode || models.query) {
         // Browser/Electron environment - return mock shop data
@@ -906,16 +974,16 @@ class BMSService {
           postalCode: 'M5V 3A8',
           country: 'Canada',
           setupCompleted: true,
-          isActive: true
+          isActive: true,
         };
       } else {
         // Server environment - direct database access
         const { Shop } = models;
-        
+
         // Try to find existing shop
         let shop = await Shop.findOne({
           where: { isActive: true },
-          order: [['createdAt', 'ASC']]
+          order: [['createdAt', 'ASC']],
         });
 
         if (!shop) {
@@ -931,7 +999,7 @@ class BMSService {
             postalCode: 'M5V 3A8',
             country: 'Canada',
             setupCompleted: true,
-            isActive: true
+            isActive: true,
           });
         }
 
@@ -949,9 +1017,9 @@ class BMSService {
   async findCustomerByPhone(phone) {
     try {
       if (!phone || phone === 'N/A') return null;
-      
+
       const models = await this.getModels();
-      
+
       // Handle different environments
       if (models.apiMode) {
         // Browser environment - would use fetch to API endpoints
@@ -965,12 +1033,12 @@ class BMSService {
         // Server environment - direct database access
         const { Customer } = models;
         const shop = await this.getDefaultShop();
-        
+
         const customer = await Customer.findOne({
           where: {
             shopId: shop.id,
-            phone: phone
-          }
+            phone: phone,
+          },
         });
 
         return customer;
@@ -987,7 +1055,7 @@ class BMSService {
   async createCustomer(customerData) {
     try {
       const models = await this.getModels();
-      
+
       // Handle different environments
       if (models.apiMode || models.query) {
         // Browser/Electron environment - return mock data for now
@@ -1004,7 +1072,7 @@ class BMSService {
           zipCode: customerData.postalCode,
           customerType: customerData.customerType || 'individual',
           customerStatus: 'active',
-          createdAt: new Date()
+          createdAt: new Date(),
         };
       } else {
         // Server environment - direct database access
@@ -1028,7 +1096,7 @@ class BMSService {
           customerType: customerData.customerType || 'individual',
           customerStatus: 'active',
           preferredContact: 'phone',
-          firstVisitDate: new Date()
+          firstVisitDate: new Date(),
         });
 
         return customer;
@@ -1060,7 +1128,7 @@ class BMSService {
         city: customerData.city || customer.city,
         state: customerData.state || customer.state,
         zipCode: customerData.postalCode || customer.zipCode,
-        lastVisitDate: new Date()
+        lastVisitDate: new Date(),
       });
 
       return customer;
@@ -1083,8 +1151,8 @@ class BMSService {
       const vehicle = await Vehicle.findOne({
         where: {
           shopId: shop.id,
-          vin: vin
-        }
+          vin: vin,
+        },
       });
 
       return vehicle;
@@ -1100,7 +1168,7 @@ class BMSService {
   async createVehicle(vehicleData) {
     try {
       const models = await this.getModels();
-      
+
       // Handle different environments
       if (models.apiMode || models.query) {
         // Browser/Electron environment - return mock data for now
@@ -1119,7 +1187,7 @@ class BMSService {
           mileage: vehicleData.mileage || 0,
           mileageUnit: 'miles',
           vehicleStatus: 'active',
-          createdAt: new Date()
+          createdAt: new Date(),
         };
       } else {
         // Server environment - direct database access
@@ -1140,7 +1208,7 @@ class BMSService {
           color: vehicleData.color || null,
           mileage: vehicleData.mileage || 0,
           mileageUnit: 'miles',
-          vehicleStatus: 'active'
+          vehicleStatus: 'active',
         });
 
         return vehicle;
@@ -1169,7 +1237,7 @@ class BMSService {
         model: vehicleData.model || vehicle.model,
         trim: vehicleData.trim || vehicle.trim,
         color: vehicleData.color || vehicle.color,
-        mileage: vehicleData.mileage || vehicle.mileage
+        mileage: vehicleData.mileage || vehicle.mileage,
       });
 
       return vehicle;
@@ -1185,7 +1253,7 @@ class BMSService {
   async createJobRecord(jobData) {
     try {
       const models = await this.getModels();
-      
+
       // Handle different environments
       if (models.apiMode || models.query) {
         // Browser/Electron environment - return mock data for now
@@ -1210,7 +1278,7 @@ class BMSService {
           estimateStatus: 'draft',
           isInsurance: true,
           checkInDate: new Date(),
-          createdAt: new Date()
+          createdAt: new Date(),
         };
       } else {
         // Server environment - direct database access
@@ -1224,32 +1292,35 @@ class BMSService {
           // Generate job number
           const jobNumber = Job.generateJobNumber();
 
-          const job = await Job.create({
-            shopId: shop.id,
-            jobNumber,
-            customerId: jobData.customerId,
-            vehicleId: jobData.vehicleId,
-            status: 'estimate',
-            priority: 'normal',
-            jobType: 'collision',
-            claimNumber: jobData.claimNumber || null,
-            deductible: jobData.deductible || 0,
-            totalAmount: jobData.grossTotal || 0,
-            laborAmount: jobData.totalLabor || 0,
-            partsAmount: jobData.totalParts || 0,
-            materialsAmount: jobData.totalMaterials || 0,
-            damageDescription: jobData.damageDescription || 'BMS Import',
-            repairDescription: jobData.lossDescription || 'BMS Import',
-            notes: JSON.stringify(jobData.bmsData || {}),
-            estimateStatus: 'draft',
-            isInsurance: true,
-            checkInDate: new Date(),
-            // Set nullable foreign key fields to null
-            insuranceId: null,
-            claimId: null,
-            assignedTo: null,
-            bayId: null
-          }, { transaction });
+          const job = await Job.create(
+            {
+              shopId: shop.id,
+              jobNumber,
+              customerId: jobData.customerId,
+              vehicleId: jobData.vehicleId,
+              status: 'estimate',
+              priority: 'normal',
+              jobType: 'collision',
+              claimNumber: jobData.claimNumber || null,
+              deductible: jobData.deductible || 0,
+              totalAmount: jobData.grossTotal || 0,
+              laborAmount: jobData.totalLabor || 0,
+              partsAmount: jobData.totalParts || 0,
+              materialsAmount: jobData.totalMaterials || 0,
+              damageDescription: jobData.damageDescription || 'BMS Import',
+              repairDescription: jobData.lossDescription || 'BMS Import',
+              notes: JSON.stringify(jobData.bmsData || {}),
+              estimateStatus: 'draft',
+              isInsurance: true,
+              checkInDate: new Date(),
+              // Set nullable foreign key fields to null
+              insuranceId: null,
+              claimId: null,
+              assignedTo: null,
+              bayId: null,
+            },
+            { transaction }
+          );
 
           await transaction.commit();
           return job;
@@ -1290,8 +1361,8 @@ class BMSService {
           lineNum: partData.lineNum,
           quantity: partData.quantity,
           supplier: partData.supplier,
-          sourceCode: partData.sourceCode
-        })
+          sourceCode: partData.sourceCode,
+        }),
       });
 
       return part;
@@ -1318,7 +1389,7 @@ class BMSService {
         hours: laborData.hours,
         description: laborData.description,
         paintStages: laborData.paintStages,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       return laborRecord;
@@ -1344,7 +1415,7 @@ class BMSService {
         description: materialData.description,
         price: materialData.price,
         chargeType: materialData.chargeType,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       return materialRecord;
@@ -1367,8 +1438,8 @@ class BMSService {
         total: files.length,
         success: 0,
         failed: 0,
-        warnings: 0
-      }
+        warnings: 0,
+      },
     };
 
     for (const file of files) {
@@ -1377,20 +1448,20 @@ class BMSService {
         if (result.success) {
           results.successful.push({
             filename: file.name,
-            result
+            result,
           });
           results.summary.success++;
         } else {
           results.failed.push({
             filename: file.name,
-            error: result.error
+            error: result.error,
           });
           results.summary.failed++;
         }
       } catch (error) {
         results.failed.push({
           filename: file.name,
-          error: error.message
+          error: error.message,
         });
         results.summary.failed++;
       }
@@ -1410,7 +1481,7 @@ class BMSService {
       errors: [],
       warnings: [],
       criticalFields: {},
-      dataQuality: {}
+      dataQuality: {},
     };
 
     // Critical field validation
@@ -1418,7 +1489,7 @@ class BMSService {
       'documentInfo.claimNumber',
       'vehicleInfo.description.vin',
       'adminInfo.policyHolder',
-      'totals.summaryTotals'
+      'totals.summaryTotals',
     ];
 
     for (const fieldPath of criticalFields) {
@@ -1448,7 +1519,7 @@ class BMSService {
    */
   async processFile(file, options = {}) {
     const fileType = this.detectFileType(file);
-    
+
     try {
       switch (fileType) {
         case 'xml':
@@ -1465,7 +1536,7 @@ class BMSService {
         fileType,
         filename: file.name,
         validationErrors: this.validationErrors,
-        processingWarnings: this.processingWarnings
+        processingWarnings: this.processingWarnings,
       };
     }
   }
@@ -1479,31 +1550,30 @@ class BMSService {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
-      
+
       // Extract text from PDF
       const pdfText = this.extractTextFromPDF(uint8Array);
-      
+
       // Extract BMS data from PDF text
       const bmsData = this.extractBMSFromPDFText(pdfText);
-      
+
       // Validate extracted data
       const validation = this.validateBMSData(bmsData);
-      
+
       if (!validation.isValid && validation.errors.length > 2) {
         throw new Error('PDF extraction failed - insufficient data quality');
       }
-      
+
       // Save to database
       const savedData = await this.saveBMSData(bmsData);
-      
+
       return {
         success: true,
         data: savedData,
         source: 'pdf',
         validation,
-        message: 'PDF BMS file processed successfully'
+        message: 'PDF BMS file processed successfully',
       };
-      
     } catch (error) {
       console.error('Error processing PDF BMS file:', error);
       throw error;
@@ -1521,56 +1591,218 @@ class BMSFieldMapper {
     this.fieldCandidates = {
       // Job/Estimate fields
       jobs: {
-        ro: ["Repair Order", "RO", "RO #", "RO Number", "RepairOrder", "RONumber", "Estimate #", "Estimate No", "Work Order", "WO", "R.O.", "R.O. #", "RO#"],
-        claim: ["Claim Number", "ClaimNumber", "Claim #", "Claim No", "ClaimNum", "ClaimNo", "RefClaimNum", "Claim", "Reference Claim Number", "Ref Claim #", "Claim#", "ICBC Claim", "ICBC Claim #", "ICBC Claim Number"],
-        policy: ["Policy Number", "PolicyNumber", "Policy #", "Policy No", "PolicyNum", "PolicyNo", "Policy", "Policy#"],
-        insurer: ["Insurer", "Insurer Name", "Insurance", "Insurance Company", "InsuranceCompanyName", "CarrierName", "Carrier", "Insurance Carrier"],
-        estimateNo: ["WorkfileID", "DocumentID", "Estimate No", "EstimateNo", "Estimate #", "EstimateNum", "Estimate Number"],
-        estimateDate: ["CreateDateTime", "Create Date", "Estimate Commit", "Estimate Date", "EstimateDate", "CreateDate", "Commit Date"],
-        loss: ["LossDateTime", "LossDate", "Loss Date", "Date of Loss", "Loss Dt", "LossDt", "Loss Date/Time"],
-        severity: ["Severity", "Grand Total", "Total", "Estimate Total", "Net Total"],
-        labour: ["Labour Total", "Labor Total", "LabourTotal", "LaborTotal"],
-        parts: ["PartsSellTotal", "Parts Total", "Part Total", "Parts", "PartsTotal", "PartAmt", "Part Amount"],
-        materials: ["Materials", "Paint & Shop Materials", "Materials Total"],
-        sublet: ["Sublet Total", "SubletTotal", "Other Charges", "Additional Costs", "Sublet"],
-        deductible: ["Deductible", "Deductible Amount", "DeductibleAmt", "Deductible Amt", "Deductible $", "Policy Deductible"]
+        ro: [
+          'Repair Order',
+          'RO',
+          'RO #',
+          'RO Number',
+          'RepairOrder',
+          'RONumber',
+          'Estimate #',
+          'Estimate No',
+          'Work Order',
+          'WO',
+          'R.O.',
+          'R.O. #',
+          'RO#',
+        ],
+        claim: [
+          'Claim Number',
+          'ClaimNumber',
+          'Claim #',
+          'Claim No',
+          'ClaimNum',
+          'ClaimNo',
+          'RefClaimNum',
+          'Claim',
+          'Reference Claim Number',
+          'Ref Claim #',
+          'Claim#',
+          'ICBC Claim',
+          'ICBC Claim #',
+          'ICBC Claim Number',
+        ],
+        policy: [
+          'Policy Number',
+          'PolicyNumber',
+          'Policy #',
+          'Policy No',
+          'PolicyNum',
+          'PolicyNo',
+          'Policy',
+          'Policy#',
+        ],
+        insurer: [
+          'Insurer',
+          'Insurer Name',
+          'Insurance',
+          'Insurance Company',
+          'InsuranceCompanyName',
+          'CarrierName',
+          'Carrier',
+          'Insurance Carrier',
+        ],
+        estimateNo: [
+          'WorkfileID',
+          'DocumentID',
+          'Estimate No',
+          'EstimateNo',
+          'Estimate #',
+          'EstimateNum',
+          'Estimate Number',
+        ],
+        estimateDate: [
+          'CreateDateTime',
+          'Create Date',
+          'Estimate Commit',
+          'Estimate Date',
+          'EstimateDate',
+          'CreateDate',
+          'Commit Date',
+        ],
+        loss: [
+          'LossDateTime',
+          'LossDate',
+          'Loss Date',
+          'Date of Loss',
+          'Loss Dt',
+          'LossDt',
+          'Loss Date/Time',
+        ],
+        severity: [
+          'Severity',
+          'Grand Total',
+          'Total',
+          'Estimate Total',
+          'Net Total',
+        ],
+        labour: ['Labour Total', 'Labor Total', 'LabourTotal', 'LaborTotal'],
+        parts: [
+          'PartsSellTotal',
+          'Parts Total',
+          'Part Total',
+          'Parts',
+          'PartsTotal',
+          'PartAmt',
+          'Part Amount',
+        ],
+        materials: ['Materials', 'Paint & Shop Materials', 'Materials Total'],
+        sublet: [
+          'Sublet Total',
+          'SubletTotal',
+          'Other Charges',
+          'Additional Costs',
+          'Sublet',
+        ],
+        deductible: [
+          'Deductible',
+          'Deductible Amount',
+          'DeductibleAmt',
+          'Deductible Amt',
+          'Deductible $',
+          'Policy Deductible',
+        ],
       },
-      
+
       // Vehicle fields
       vehicles: {
-        vin: ["VIN", "VIN Number", "VINNumber", "VINNum", "Vehicle VIN #", "Vehicle VIN", "VIN #"],
-        year: ["Year", "Model Year", "ModelYear", "Vehicle Year"],
-        make: ["Make", "MakeDesc", "VehMake", "VehicleMake", "MakeName"],
-        model: ["Model", "ModelName", "VehModel", "VehicleModel", "ModelDesc"],
-        submodel: ["Submodel", "Sub-model", "Sub Model", "Trim", "SubModel", "SubModelDesc"],
-        bodyStyle: ["Body Style", "BodyStyle"],
-        color: ["Color", "Colour", "Exterior Color", "ExteriorColour", "Paint Color"],
-        plate: ["Plate", "License Plate", "Licence Plate", "License Plate #", "Licence Plate #"],
-        odometer: ["Odometer", "Odo", "OdomReading", "OdometerReading"],
-        drivable: ["Drivable?", "Drivable", "DrivableInd", "VehicleDrivableInd"]
+        vin: [
+          'VIN',
+          'VIN Number',
+          'VINNumber',
+          'VINNum',
+          'Vehicle VIN #',
+          'Vehicle VIN',
+          'VIN #',
+        ],
+        year: ['Year', 'Model Year', 'ModelYear', 'Vehicle Year'],
+        make: ['Make', 'MakeDesc', 'VehMake', 'VehicleMake', 'MakeName'],
+        model: ['Model', 'ModelName', 'VehModel', 'VehicleModel', 'ModelDesc'],
+        submodel: [
+          'Submodel',
+          'Sub-model',
+          'Sub Model',
+          'Trim',
+          'SubModel',
+          'SubModelDesc',
+        ],
+        bodyStyle: ['Body Style', 'BodyStyle'],
+        color: [
+          'Color',
+          'Colour',
+          'Exterior Color',
+          'ExteriorColour',
+          'Paint Color',
+        ],
+        plate: [
+          'Plate',
+          'License Plate',
+          'Licence Plate',
+          'License Plate #',
+          'Licence Plate #',
+        ],
+        odometer: ['Odometer', 'Odo', 'OdomReading', 'OdometerReading'],
+        drivable: [
+          'Drivable?',
+          'Drivable',
+          'DrivableInd',
+          'VehicleDrivableInd',
+        ],
       },
-      
+
       // Customer fields
       customers: {
-        first: ["First Name", "FirstName", "GivenName", "Insured First", "Owner First"],
-        last: ["Last Name", "LastName", "FamilyName", "Surname", "Insured Last", "Owner Last"],
-        phone: ["Phone", "Phone #", "PhoneNum", "PrimaryPhone", "HomePhone", "DayPhone", "Mobile", "Cell"],
-        email: ["Email", "EMail", "EMailAddr", "EmailAddress"],
-        address: ["Address", "Addr1", "Address1", "Street", "Street1", "Line1"],
-        city: ["City", "Town"],
-        province: ["Province", "State", "StateProv", "StateProvince", "Prov"],
-        postalCode: ["Postal Code", "PostalCode", "Zip", "ZipCode", "PC"]
+        first: [
+          'First Name',
+          'FirstName',
+          'GivenName',
+          'Insured First',
+          'Owner First',
+        ],
+        last: [
+          'Last Name',
+          'LastName',
+          'FamilyName',
+          'Surname',
+          'Insured Last',
+          'Owner Last',
+        ],
+        phone: [
+          'Phone',
+          'Phone #',
+          'PhoneNum',
+          'PrimaryPhone',
+          'HomePhone',
+          'DayPhone',
+          'Mobile',
+          'Cell',
+        ],
+        email: ['Email', 'EMail', 'EMailAddr', 'EmailAddress'],
+        address: ['Address', 'Addr1', 'Address1', 'Street', 'Street1', 'Line1'],
+        city: ['City', 'Town'],
+        province: ['Province', 'State', 'StateProv', 'StateProvince', 'Prov'],
+        postalCode: ['Postal Code', 'PostalCode', 'Zip', 'ZipCode', 'PC'],
       },
-      
+
       // Damage line fields
       damageLines: {
-        lineNum: ["Line #", "Line Number", "LineNum"],
-        description: ["Description", "Line Desc", "LineDesc", "Part Description"],
-        partNum: ["Part #", "Part Number", "PartNum", "Part"],
-        partPrice: ["Part Price", "PartPrice", "Price", "Estimate Price"],
-        laborHours: ["Labor Hours", "Labour Hours", "Hours", "LaborHours"],
-        laborOperation: ["Labor Operation", "Labour Operation", "LaborOperation", "Operation"]
-      }
+        lineNum: ['Line #', 'Line Number', 'LineNum'],
+        description: [
+          'Description',
+          'Line Desc',
+          'LineDesc',
+          'Part Description',
+        ],
+        partNum: ['Part #', 'Part Number', 'PartNum', 'Part'],
+        partPrice: ['Part Price', 'PartPrice', 'Price', 'Estimate Price'],
+        laborHours: ['Labor Hours', 'Labour Hours', 'Hours', 'LaborHours'],
+        laborOperation: [
+          'Labor Operation',
+          'Labour Operation',
+          'LaborOperation',
+          'Operation',
+        ],
+      },
     };
   }
 
@@ -1582,14 +1814,14 @@ class BMSFieldMapper {
    */
   findBestMatch(candidates, sourceData) {
     if (!sourceData || !candidates) return null;
-    
+
     // Try exact matches first
     for (const candidate of candidates) {
       if (sourceData.hasOwnProperty(candidate)) {
         return candidate;
       }
     }
-    
+
     // Try case-insensitive matches
     const sourceKeys = Object.keys(sourceData).map(k => k.toLowerCase());
     for (const candidate of candidates) {
@@ -1597,22 +1829,28 @@ class BMSFieldMapper {
       const matchedKey = sourceKeys.find(k => k === lowerCandidate);
       if (matchedKey) {
         // Find original key
-        return Object.keys(sourceData).find(k => k.toLowerCase() === matchedKey);
+        return Object.keys(sourceData).find(
+          k => k.toLowerCase() === matchedKey
+        );
       }
     }
-    
+
     // Try partial matches
     for (const candidate of candidates) {
       const lowerCandidate = candidate.toLowerCase().replace(/[^a-z0-9]/g, '');
       const matchedKey = sourceKeys.find(k => {
         const cleanKey = k.replace(/[^a-z0-9]/g, '');
-        return cleanKey.includes(lowerCandidate) || lowerCandidate.includes(cleanKey);
+        return (
+          cleanKey.includes(lowerCandidate) || lowerCandidate.includes(cleanKey)
+        );
       });
       if (matchedKey) {
-        return Object.keys(sourceData).find(k => k.toLowerCase() === matchedKey);
+        return Object.keys(sourceData).find(
+          k => k.toLowerCase() === matchedKey
+        );
       }
     }
-    
+
     return null;
   }
 
@@ -1625,12 +1863,12 @@ class BMSFieldMapper {
   mapFields(section, sourceData) {
     const candidates = this.fieldCandidates[section];
     if (!candidates) return {};
-    
+
     const mapped = {};
     for (const [key, candidateList] of Object.entries(candidates)) {
       mapped[key] = this.findBestMatch(candidateList, sourceData);
     }
-    
+
     return mapped;
   }
 }
@@ -1646,21 +1884,21 @@ class PDFTextExtractor {
    */
   static extractText(pdfBytes) {
     try {
-      const raw = new TextDecoder("latin1").decode(pdfBytes);
+      const raw = new TextDecoder('latin1').decode(pdfBytes);
       const chunks = [];
       const regex = /\(([^()]*)\)\s*T[Jj]/g;
       let match;
-      
+
       while ((match = regex.exec(raw))) {
-        chunks.push(match[1].replace(/\\\)/g, ")").replace(/\\\(/g, "("));
+        chunks.push(match[1].replace(/\\\)/g, ')').replace(/\\\(/g, '('));
       }
-      
-      const text = (chunks.length ? chunks.join("") : raw)
-        .replace(/\r/g, "\n")
-        .replace(/\u0000/g, "")
-        .replace(/[ \t]{2,}/g, " ")
-        .replace(/\n{2,}/g, "\n");
-        
+
+      const text = (chunks.length ? chunks.join('') : raw)
+        .replace(/\r/g, '\n')
+        .replace(/\u0000/g, '')
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/\n{2,}/g, '\n');
+
       return text;
     } catch (error) {
       console.error('PDF text extraction failed:', error);
@@ -1675,8 +1913,8 @@ class PDFTextExtractor {
    * @returns {string} Extracted value
    */
   static extractField(text, pattern) {
-    const match = pattern.exec(text || "");
-    return match ? (match[1] || match[0]).trim() : "";
+    const match = pattern.exec(text || '');
+    return match ? (match[1] || match[0]).trim() : '';
   }
 
   /**
@@ -1686,7 +1924,7 @@ class PDFTextExtractor {
    */
   static extractAmount(text) {
     if (!text) return 0;
-    const cleaned = String(text).replace(/[^0-9.]/g, "");
+    const cleaned = String(text).replace(/[^0-9.]/g, '');
     return parseFloat(cleaned) || 0;
   }
 }
@@ -1730,7 +1968,7 @@ class BMSDataValidator {
       hasVin: !!vin,
       hasYear: !!year,
       hasMake: !!vehicleInfo.description?.makeDesc,
-      hasModel: !!vehicleInfo.description?.modelName
+      hasModel: !!vehicleInfo.description?.modelName,
     };
   }
 
@@ -1770,7 +2008,7 @@ class BMSDataValidator {
     validation.dataQuality.financials = {
       hasGrandTotal: grandTotal > 0,
       grandTotal,
-      totalCategories: summaryTotals.length
+      totalCategories: summaryTotals.length,
     };
   }
 
@@ -1805,7 +2043,7 @@ class BMSDataValidator {
       hasName: !!(policyHolder.firstName || policyHolder.lastName),
       hasPhone: !!policyHolder.phone,
       hasEmail: !!policyHolder.email,
-      hasAddress: !!policyHolder.address
+      hasAddress: !!policyHolder.address,
     };
   }
 
@@ -1842,7 +2080,7 @@ class BMSDataValidator {
       totalLines: damageLines.length,
       partsCount,
       laborCount,
-      estimatedTotal: totalAmount
+      estimatedTotal: totalAmount,
     };
   }
 }
@@ -1850,33 +2088,34 @@ class BMSDataValidator {
 // Add these methods to the main BMSService class
 BMSService.prototype.validateVehicleInfo = BMSDataValidator.validateVehicleInfo;
 BMSService.prototype.validateFinancials = BMSDataValidator.validateFinancials;
-BMSService.prototype.validateCustomerInfo = BMSDataValidator.validateCustomerInfo;
+BMSService.prototype.validateCustomerInfo =
+  BMSDataValidator.validateCustomerInfo;
 BMSService.prototype.validateDamageLines = BMSDataValidator.validateDamageLines;
 
-BMSService.prototype.detectFileType = function(file) {
+BMSService.prototype.detectFileType = function (file) {
   const filename = file.name.toLowerCase();
   if (filename.endsWith('.pdf')) return 'pdf';
   if (filename.endsWith('.xml')) return 'xml';
-  
+
   // Check MIME type
   const mimeType = file.type.toLowerCase();
   if (mimeType.includes('pdf')) return 'pdf';
   if (mimeType.includes('xml')) return 'xml';
-  
+
   return 'unknown';
 };
 
-BMSService.prototype.processXMLFile = async function(file, options = {}) {
+BMSService.prototype.processXMLFile = async function (file, options = {}) {
   try {
     // Read file content
     const content = await this.readFileAsText(file);
-    
+
     // Parse BMS data with validation
     const bmsData = this.parseBMSFile(content, options);
-    
+
     // Save to database
     const savedData = await this.saveBMSData(bmsData);
-    
+
     return {
       success: true,
       data: savedData,
@@ -1884,7 +2123,7 @@ BMSService.prototype.processXMLFile = async function(file, options = {}) {
       validation: bmsData.validation,
       message: 'XML BMS file processed successfully',
       validationErrors: this.validationErrors,
-      processingWarnings: this.processingWarnings
+      processingWarnings: this.processingWarnings,
     };
   } catch (error) {
     console.error('Error processing XML BMS file:', error);
@@ -1893,64 +2132,88 @@ BMSService.prototype.processXMLFile = async function(file, options = {}) {
       error: error.message,
       message: 'Failed to process XML BMS file',
       validationErrors: this.validationErrors,
-      processingWarnings: this.processingWarnings
+      processingWarnings: this.processingWarnings,
     };
   }
 };
 
-BMSService.prototype.extractTextFromPDF = function(uint8Array) {
+BMSService.prototype.extractTextFromPDF = function (uint8Array) {
   return PDFTextExtractor.extractText(uint8Array);
 };
 
-BMSService.prototype.extractBMSFromPDFText = function(pdfText) {
+BMSService.prototype.extractBMSFromPDFText = function (pdfText) {
   // Extract key information from PDF text using patterns
-  const extractField = (pattern) => PDFTextExtractor.extractField(pdfText, pattern);
-  
+  const extractField = pattern =>
+    PDFTextExtractor.extractField(pdfText, pattern);
+
   return {
     documentInfo: {
-      claimNumber: extractField(/\b(?:Claim(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i),
-      documentId: extractField(/\b(?:RO|Repair\s*Order|Workfile\s*ID)\s*[:#]?\s*([A-Za-z0-9\-]+)/i),
-      documentType: 'PDF_ESTIMATE'
+      claimNumber: extractField(
+        /\b(?:Claim(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i
+      ),
+      documentId: extractField(
+        /\b(?:RO|Repair\s*Order|Workfile\s*ID)\s*[:#]?\s*([A-Za-z0-9\-]+)/i
+      ),
+      documentType: 'PDF_ESTIMATE',
     },
     adminInfo: {
       policyHolder: {
-        firstName: extractField(/\b(?:Insured|Owner|Customer)[:\s]+([A-Z][a-z]+)\s+[A-Z]/i),
-        lastName: extractField(/\b(?:Insured|Owner|Customer)[:\s]+[A-Z][a-z]+\s+([A-Z][a-z]+)/i),
-        phone: extractField(/\b(?:Phone|Tel)[:\s]*(\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})/i),
-        email: extractField(/\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i)
+        firstName: extractField(
+          /\b(?:Insured|Owner|Customer)[:\s]+([A-Z][a-z]+)\s+[A-Z]/i
+        ),
+        lastName: extractField(
+          /\b(?:Insured|Owner|Customer)[:\s]+[A-Z][a-z]+\s+([A-Z][a-z]+)/i
+        ),
+        phone: extractField(
+          /\b(?:Phone|Tel)[:\s]*(\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})/i
+        ),
+        email: extractField(
+          /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i
+        ),
       },
       insuranceCompany: {
-        companyName: extractField(/\b(?:Insurance|Insurer)[:\s]+([A-Za-z\s]+?)(?:\n|$)/i)
-      }
+        companyName: extractField(
+          /\b(?:Insurance|Insurer)[:\s]+([A-Za-z\s]+?)(?:\n|$)/i
+        ),
+      },
     },
     vehicleInfo: {
       description: {
         vin: extractField(/\b(?:VIN)[:\s]*([A-HJ-NPR-Z0-9]{17})/i),
-        modelYear: parseInt(extractField(/\b(?:Year)[:\s]*([12][0-9]{3})/i)) || null,
+        modelYear:
+          parseInt(extractField(/\b(?:Year)[:\s]*([12][0-9]{3})/i)) || null,
         makeDesc: extractField(/\b(?:Make)[:\s]*([A-Za-z]+)/i),
-        modelName: extractField(/\b(?:Model)[:\s]*([A-Za-z0-9\s]+?)(?:\n|$)/i)
+        modelName: extractField(/\b(?:Model)[:\s]*([A-Za-z0-9\s]+?)(?:\n|$)/i),
       },
       license: {
-        plateNumber: extractField(/\b(?:License|Plate)[:\s]*([A-Za-z0-9\-]+)/i)
-      }
+        plateNumber: extractField(/\b(?:License|Plate)[:\s]*([A-Za-z0-9\-]+)/i),
+      },
     },
     claimInfo: {
-      claimNumber: extractField(/\b(?:Claim(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i),
-      policyNumber: extractField(/\b(?:Policy(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i)
+      claimNumber: extractField(
+        /\b(?:Claim(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i
+      ),
+      policyNumber: extractField(
+        /\b(?:Policy(?:\s*(?:No\.?|#|Number))?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i
+      ),
     },
     totals: {
       summaryTotals: [
         {
           totalType: 'GRAND_TOTAL',
-          totalAmt: PDFTextExtractor.extractAmount(extractField(/\b(?:Total|Grand\s*Total)[:\s]*\$?([0-9,]+\.?[0-9]*)/i))
-        }
-      ]
+          totalAmt: PDFTextExtractor.extractAmount(
+            extractField(
+              /\b(?:Total|Grand\s*Total)[:\s]*\$?([0-9,]+\.?[0-9]*)/i
+            )
+          ),
+        },
+      ],
     },
-    damageLines: [] // PDF parsing for detailed line items would require more sophisticated parsing
+    damageLines: [], // PDF parsing for detailed line items would require more sophisticated parsing
   };
 };
 
-BMSService.prototype.getNestedProperty = function(obj, path) {
+BMSService.prototype.getNestedProperty = function (obj, path) {
   return path.split('.').reduce((current, key) => {
     return current && current[key] !== undefined ? current[key] : null;
   }, obj);

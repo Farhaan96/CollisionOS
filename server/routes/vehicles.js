@@ -5,7 +5,11 @@ const rateLimit = require('express-rate-limit');
 
 const { Vehicle, Customer, Shop } = require('../database/models');
 const VINDecoder = require('../services/vinDecoder');
-const { ValidationError, NotFoundError, ApiError } = require('../utils/errorHandler');
+const {
+  ValidationError,
+  NotFoundError,
+  ApiError,
+} = require('../utils/errorHandler');
 
 // Rate limiting for VIN decoding API calls
 const vinDecodeLimit = rateLimit({
@@ -13,7 +17,7 @@ const vinDecodeLimit = rateLimit({
   max: 100, // limit each IP to 100 VIN decodes per windowMs
   message: {
     error: 'Too many VIN decode requests, please try again later',
-    retryAfter: Math.ceil(15 * 60) // seconds
+    retryAfter: Math.ceil(15 * 60), // seconds
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -114,7 +118,8 @@ const vinDecoder = new VINDecoder();
  *       500:
  *         description: Server error or API unavailable
  */
-router.post('/decode-vin', 
+router.post(
+  '/decode-vin',
   vinDecodeLimit,
   [
     body('vin')
@@ -127,7 +132,7 @@ router.post('/decode-vin',
     body('useApiOnly')
       .optional()
       .isBoolean()
-      .withMessage('useApiOnly must be boolean')
+      .withMessage('useApiOnly must be boolean'),
   ],
   async (req, res) => {
     try {
@@ -137,7 +142,7 @@ router.post('/decode-vin',
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -147,7 +152,6 @@ router.post('/decode-vin',
       const result = await vinDecoder.decode(vin, useApiOnly);
 
       res.json(result);
-
     } catch (error) {
       console.error('VIN decode error:', error);
 
@@ -155,7 +159,7 @@ router.post('/decode-vin',
         return res.status(400).json({
           success: false,
           error: 'Invalid VIN',
-          message: error.message
+          message: error.message,
         });
       }
 
@@ -163,14 +167,14 @@ router.post('/decode-vin',
         return res.status(503).json({
           success: false,
           error: 'Service unavailable',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
         error: 'VIN decoding failed',
-        message: 'An unexpected error occurred while decoding the VIN'
+        message: 'An unexpected error occurred while decoding the VIN',
       });
     }
   }
@@ -222,20 +226,15 @@ router.post('/decode-vin',
  *                       type: boolean
  *                       example: true
  *                     characters:
- *                       type: boolean  
+ *                       type: boolean
  *                       example: true
  *                     check_digit:
  *                       type: boolean
  *                       example: true
  */
-router.post('/validate-vin',
-  [
-    body('vin')
-      .isString()
-      .trim()
-      .notEmpty()
-      .withMessage('VIN is required')
-  ],
+router.post(
+  '/validate-vin',
+  [body('vin').isString().trim().notEmpty().withMessage('VIN is required')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -243,12 +242,12 @@ router.post('/validate-vin',
         return res.status(400).json({
           valid: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const { vin } = req.body;
-      
+
       // Perform validation checks
       const result = {
         valid: false,
@@ -257,9 +256,9 @@ router.post('/validate-vin',
         checks: {
           length: false,
           characters: false,
-          check_digit: false
+          check_digit: false,
         },
-        errors: []
+        errors: [],
       };
 
       try {
@@ -271,14 +270,21 @@ router.post('/validate-vin',
         if (normalizedVIN.length === 17) {
           result.checks.length = true;
         } else {
-          result.errors.push(`Invalid length: expected 17 characters, got ${normalizedVIN.length}`);
+          result.errors.push(
+            `Invalid length: expected 17 characters, got ${normalizedVIN.length}`
+          );
         }
 
         // Check characters (no I, O, Q allowed)
-        if (!/[IOQ]/i.test(normalizedVIN) && /^[A-HJ-NPR-Z0-9]{17}$/i.test(normalizedVIN)) {
+        if (
+          !/[IOQ]/i.test(normalizedVIN) &&
+          /^[A-HJ-NPR-Z0-9]{17}$/i.test(normalizedVIN)
+        ) {
           result.checks.characters = true;
         } else {
-          result.errors.push('Invalid characters detected (I, O, Q not allowed)');
+          result.errors.push(
+            'Invalid characters detected (I, O, Q not allowed)'
+          );
         }
 
         // Check digit validation
@@ -290,20 +296,21 @@ router.post('/validate-vin',
           }
         }
 
-        result.valid = result.checks.length && result.checks.characters && result.checks.check_digit;
-
+        result.valid =
+          result.checks.length &&
+          result.checks.characters &&
+          result.checks.check_digit;
       } catch (error) {
         result.errors.push(error.message);
       }
 
       res.json(result);
-
     } catch (error) {
       console.error('VIN validation error:', error);
       res.status(500).json({
         valid: false,
         error: 'Validation failed',
-        message: 'An unexpected error occurred during VIN validation'
+        message: 'An unexpected error occurred during VIN validation',
       });
     }
   }
@@ -362,7 +369,8 @@ router.post('/validate-vin',
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/',
+router.get(
+  '/',
   [
     query('limit')
       .optional()
@@ -388,7 +396,7 @@ router.get('/',
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -399,31 +407,34 @@ router.get('/',
         make,
         model,
         limit = 20,
-        offset = 0
+        offset = 0,
       } = req.query;
 
       // Build where clause
       const where = {
         shopId: req.user.shopId,
-        isActive: true
+        isActive: true,
       };
 
       if (customerId) where.customerId = customerId;
       if (vin) where.vin = vin.toUpperCase();
       if (year) where.year = year;
       if (make) where.make = { [require('sequelize').Op.iLike]: `%${make}%` };
-      if (model) where.model = { [require('sequelize').Op.iLike]: `%${model}%` };
+      if (model)
+        where.model = { [require('sequelize').Op.iLike]: `%${model}%` };
 
       const { count, rows: vehicles } = await Vehicle.findAndCountAll({
         where,
-        include: [{
-          model: Customer,
-          as: 'customer',
-          attributes: ['id', 'firstName', 'lastName', 'email', 'phone']
-        }],
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+        ],
         order: [['createdAt', 'DESC']],
         limit: parseInt(limit),
-        offset: parseInt(offset)
+        offset: parseInt(offset),
       });
 
       res.json({
@@ -433,15 +444,14 @@ router.get('/',
           total: count,
           limit: parseInt(limit),
           offset: parseInt(offset),
-          pages: Math.ceil(count / limit)
-        }
+          pages: Math.ceil(count / limit),
+        },
       });
-
     } catch (error) {
       console.error('Get vehicles error:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch vehicles'
+        error: 'Failed to fetch vehicles',
       });
     }
   }
@@ -469,12 +479,9 @@ router.get('/',
  *       404:
  *         description: Vehicle not found
  */
-router.get('/:id',
-  [
-    param('id')
-      .isUUID()
-      .withMessage('Vehicle ID must be a valid UUID')
-  ],
+router.get(
+  '/:id',
+  [param('id').isUUID().withMessage('Vehicle ID must be a valid UUID')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -482,39 +489,40 @@ router.get('/:id',
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const vehicle = await Vehicle.findOne({
         where: {
           id: req.params.id,
-          shopId: req.user.shopId
+          shopId: req.user.shopId,
         },
-        include: [{
-          model: Customer,
-          as: 'customer',
-          attributes: ['id', 'firstName', 'lastName', 'email', 'phone']
-        }]
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+        ],
       });
 
       if (!vehicle) {
         return res.status(404).json({
           success: false,
-          error: 'Vehicle not found'
+          error: 'Vehicle not found',
         });
       }
 
       res.json({
         success: true,
-        data: vehicle
+        data: vehicle,
       });
-
     } catch (error) {
       console.error('Get vehicle error:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch vehicle'
+        error: 'Failed to fetch vehicle',
       });
     }
   }
@@ -576,11 +584,10 @@ router.get('/:id',
  *       400:
  *         description: Validation error
  */
-router.post('/',
+router.post(
+  '/',
   [
-    body('customerId')
-      .isUUID()
-      .withMessage('Customer ID must be a valid UUID'),
+    body('customerId').isUUID().withMessage('Customer ID must be a valid UUID'),
     body('vin')
       .isString()
       .trim()
@@ -614,7 +621,7 @@ router.post('/',
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -628,33 +635,33 @@ router.post('/',
         trim,
         color,
         licensePlate,
-        mileage
+        mileage,
       } = req.body;
 
       // Verify customer exists and belongs to shop
       const customer = await Customer.findOne({
         where: {
           id: customerId,
-          shopId: req.user.shopId
-        }
+          shopId: req.user.shopId,
+        },
       });
 
       if (!customer) {
         return res.status(404).json({
           success: false,
-          error: 'Customer not found'
+          error: 'Customer not found',
         });
       }
 
       // Check if VIN already exists
       const existingVehicle = await Vehicle.findOne({
-        where: { vin: vin.toUpperCase() }
+        where: { vin: vin.toUpperCase() },
       });
 
       if (existingVehicle) {
         return res.status(409).json({
           success: false,
-          error: 'Vehicle with this VIN already exists'
+          error: 'Vehicle with this VIN already exists',
         });
       }
 
@@ -669,7 +676,7 @@ router.post('/',
         color,
         licensePlate,
         mileage,
-        isActive: true
+        isActive: true,
       };
 
       // Auto-decode VIN if requested
@@ -692,12 +699,15 @@ router.post('/',
               features: {
                 ...vehicleData.features,
                 decoded_data: decodedVehicle,
-                decoded_at: new Date().toISOString()
-              }
+                decoded_at: new Date().toISOString(),
+              },
             };
           }
         } catch (decodeError) {
-          console.warn('VIN decode failed during vehicle creation:', decodeError.message);
+          console.warn(
+            'VIN decode failed during vehicle creation:',
+            decodeError.message
+          );
           // Continue with manual data if decode fails
         }
       }
@@ -706,7 +716,8 @@ router.post('/',
       if (!vehicleData.year || !vehicleData.make || !vehicleData.model) {
         return res.status(400).json({
           success: false,
-          error: 'Year, make, and model are required (either provided or decoded from VIN)'
+          error:
+            'Year, make, and model are required (either provided or decoded from VIN)',
         });
       }
 
@@ -715,14 +726,13 @@ router.post('/',
       res.status(201).json({
         success: true,
         data: vehicle,
-        message: 'Vehicle created successfully'
+        message: 'Vehicle created successfully',
       });
-
     } catch (error) {
       console.error('Create vehicle error:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to create vehicle'
+        error: 'Failed to create vehicle',
       });
     }
   }
@@ -777,20 +787,20 @@ router.post('/',
  *                       error:
  *                         type: string
  */
-router.post('/batch-decode',
+router.post(
+  '/batch-decode',
   vinDecodeLimit,
   [
     body('vins')
       .isArray({ min: 1, max: 10 })
       .withMessage('VINs array must contain 1-10 VINs')
-      .custom((vins) => {
+      .custom(vins => {
         if (!Array.isArray(vins)) return false;
-        return vins.every(vin => 
-          typeof vin === 'string' && 
-          vin.replace(/\s/g, '').length === 17
+        return vins.every(
+          vin => typeof vin === 'string' && vin.replace(/\s/g, '').length === 17
         );
       })
-      .withMessage('All VINs must be 17-character strings')
+      .withMessage('All VINs must be 17-character strings'),
   ],
   async (req, res) => {
     try {
@@ -799,7 +809,7 @@ router.post('/batch-decode',
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -807,26 +817,26 @@ router.post('/batch-decode',
       const results = [];
 
       // Process VINs concurrently with Promise.allSettled
-      const promises = vins.map(async (vin) => {
+      const promises = vins.map(async vin => {
         try {
           const result = await vinDecoder.decode(vin);
           return {
             vin,
             success: true,
             vehicle: result.vehicle,
-            source: result.source
+            source: result.source,
           };
         } catch (error) {
           return {
             vin,
             success: false,
-            error: error.message
+            error: error.message,
           };
         }
       });
 
       const settled = await Promise.allSettled(promises);
-      
+
       settled.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           results.push(result.value);
@@ -834,28 +844,27 @@ router.post('/batch-decode',
           results.push({
             vin: vins[index],
             success: false,
-            error: result.reason?.message || 'Unknown error'
+            error: result.reason?.message || 'Unknown error',
           });
         }
       });
 
       const successCount = results.filter(r => r.success).length;
-      
+
       res.json({
         success: true,
         results,
         summary: {
           total: vins.length,
           successful: successCount,
-          failed: vins.length - successCount
-        }
+          failed: vins.length - successCount,
+        },
       });
-
     } catch (error) {
       console.error('Batch VIN decode error:', error);
       res.status(500).json({
         success: false,
-        error: 'Batch VIN decoding failed'
+        error: 'Batch VIN decoding failed',
       });
     }
   }

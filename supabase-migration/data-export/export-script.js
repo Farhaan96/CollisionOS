@@ -5,13 +5,22 @@
 
 const fs = require('fs');
 const path = require('path');
-const { sequelize, Shop, User, Customer, Vehicle, Part, Vendor, Job } = require('../../server/database/models');
+const {
+  sequelize,
+  Shop,
+  User,
+  Customer,
+  Vehicle,
+  Part,
+  Vendor,
+  Job,
+} = require('../../server/database/models');
 
 class DataExporter {
   constructor() {
     this.exportDir = path.join(__dirname, 'exported-data');
     this.logFile = path.join(this.exportDir, 'export-log.txt');
-    
+
     // Ensure export directory exists
     if (!fs.existsSync(this.exportDir)) {
       fs.mkdirSync(this.exportDir, { recursive: true });
@@ -28,32 +37,39 @@ class DataExporter {
   async exportTable(model, tableName, transformFn = null) {
     try {
       this.log(`Starting export for ${tableName}...`);
-      
+
       const records = await model.findAll({
         raw: true,
-        nest: false
+        nest: false,
       });
-      
+
       this.log(`Found ${records.length} records in ${tableName}`);
-      
+
       // Apply transformation if provided
-      const transformedRecords = transformFn ? records.map(transformFn) : records;
-      
+      const transformedRecords = transformFn
+        ? records.map(transformFn)
+        : records;
+
       // Write to JSON file
       const jsonFile = path.join(this.exportDir, `${tableName}.json`);
       fs.writeFileSync(jsonFile, JSON.stringify(transformedRecords, null, 2));
-      
+
       // Generate SQL insert statements
       const sqlFile = path.join(this.exportDir, `${tableName}.sql`);
-      const sqlStatements = this.generateInsertStatements(tableName, transformedRecords);
+      const sqlStatements = this.generateInsertStatements(
+        tableName,
+        transformedRecords
+      );
       fs.writeFileSync(sqlFile, sqlStatements);
-      
-      this.log(`Exported ${transformedRecords.length} records to ${tableName}.json and ${tableName}.sql`);
-      
+
+      this.log(
+        `Exported ${transformedRecords.length} records to ${tableName}.json and ${tableName}.sql`
+      );
+
       return {
         table: tableName,
         count: transformedRecords.length,
-        records: transformedRecords
+        records: transformedRecords,
       };
     } catch (error) {
       this.log(`Error exporting ${tableName}: ${error.message}`);
@@ -63,24 +79,24 @@ class DataExporter {
 
   generateInsertStatements(tableName, records) {
     if (records.length === 0) return `-- No data to insert for ${tableName}\n`;
-    
+
     let sql = `-- Insert statements for ${tableName}\n\n`;
-    
+
     // Get column names from first record
     const columns = Object.keys(records[0]);
     const columnList = columns.join(', ');
-    
+
     // Generate insert statements in batches of 100
     const batchSize = 100;
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
-      
+
       sql += `INSERT INTO ${tableName} (${columnList}) VALUES\n`;
-      
+
       const valueRows = batch.map(record => {
         const values = columns.map(col => {
           const value = record[col];
-          
+
           if (value === null || value === undefined) {
             return 'NULL';
           } else if (typeof value === 'string') {
@@ -97,13 +113,13 @@ class DataExporter {
             return value;
           }
         });
-        
+
         return `  (${values.join(', ')})`;
       });
-      
+
       sql += valueRows.join(',\n') + ';\n\n';
     }
-    
+
     return sql;
   }
 
@@ -140,7 +156,7 @@ class DataExporter {
       onboarding_step: record.onboardingStep,
       notes: record.notes,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -194,7 +210,7 @@ class DataExporter {
       created_by: record.createdBy,
       updated_by: record.updatedBy,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -232,7 +248,7 @@ class DataExporter {
       last_visit_date: record.lastVisitDate,
       is_active: record.isActive,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -271,7 +287,7 @@ class DataExporter {
       notes: record.notes,
       is_active: record.isActive,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -316,7 +332,7 @@ class DataExporter {
       last_received_date: record.lastReceivedDate,
       last_sold_date: record.lastSoldDate,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -355,7 +371,7 @@ class DataExporter {
       preferences: record.preferences,
       is_active: record.isActive,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -461,7 +477,7 @@ class DataExporter {
       created_by: record.createdBy,
       updated_by: record.updatedBy,
       created_at: record.createdAt,
-      updated_at: record.updatedAt
+      updated_at: record.updatedAt,
     };
   }
 
@@ -469,47 +485,79 @@ class DataExporter {
     try {
       this.log('Starting complete data export...');
       this.log(`Export directory: ${this.exportDir}`);
-      
+
       // Test database connection
       await sequelize.authenticate();
       this.log('Database connection successful');
-      
+
       const results = {};
-      
+
       // Export each table with its transform function
-      results.shops = await this.exportTable(Shop, 'shops', this.transformShop.bind(this));
-      results.users = await this.exportTable(User, 'users', this.transformUser.bind(this));
-      results.customers = await this.exportTable(Customer, 'customers', this.transformCustomer.bind(this));
-      results.vehicles = await this.exportTable(Vehicle, 'vehicles', this.transformVehicle.bind(this));
-      results.parts = await this.exportTable(Part, 'parts', this.transformPart.bind(this));
-      results.vendors = await this.exportTable(Vendor, 'vendors', this.transformVendor.bind(this));
-      results.jobs = await this.exportTable(Job, 'jobs', this.transformJob.bind(this));
-      
+      results.shops = await this.exportTable(
+        Shop,
+        'shops',
+        this.transformShop.bind(this)
+      );
+      results.users = await this.exportTable(
+        User,
+        'users',
+        this.transformUser.bind(this)
+      );
+      results.customers = await this.exportTable(
+        Customer,
+        'customers',
+        this.transformCustomer.bind(this)
+      );
+      results.vehicles = await this.exportTable(
+        Vehicle,
+        'vehicles',
+        this.transformVehicle.bind(this)
+      );
+      results.parts = await this.exportTable(
+        Part,
+        'parts',
+        this.transformPart.bind(this)
+      );
+      results.vendors = await this.exportTable(
+        Vendor,
+        'vendors',
+        this.transformVendor.bind(this)
+      );
+      results.jobs = await this.exportTable(
+        Job,
+        'jobs',
+        this.transformJob.bind(this)
+      );
+
       // Generate summary
       const summary = {
         exportDate: new Date().toISOString(),
         totalTables: Object.keys(results).length,
-        totalRecords: Object.values(results).reduce((sum, table) => sum + table.count, 0),
+        totalRecords: Object.values(results).reduce(
+          (sum, table) => sum + table.count,
+          0
+        ),
         tableDetails: Object.entries(results).map(([name, data]) => ({
           table: name,
-          records: data.count
-        }))
+          records: data.count,
+        })),
       };
-      
+
       // Write summary file
       fs.writeFileSync(
         path.join(this.exportDir, 'export-summary.json'),
         JSON.stringify(summary, null, 2)
       );
-      
+
       // Generate complete SQL file
       this.generateCompleteSQL(results);
-      
+
       this.log('Export completed successfully!');
-      this.log(`Summary: Exported ${summary.totalRecords} records from ${summary.totalTables} tables`);
-      
+      this.log(
+        `Summary: Exported ${summary.totalRecords} records from ${summary.totalTables} tables`
+      );
+
       return summary;
-      
     } catch (error) {
       this.log(`Export failed: ${error.message}`);
       throw error;
@@ -520,7 +568,7 @@ class DataExporter {
 
   generateCompleteSQL(results) {
     const sqlFile = path.join(this.exportDir, 'complete-import.sql');
-    
+
     let sql = `-- CollisionOS Data Import Script for Supabase
 -- Generated on ${new Date().toISOString()}
 -- 
@@ -542,15 +590,26 @@ ALTER TABLE jobs DISABLE ROW LEVEL SECURITY;
 `;
 
     // Add each table's SQL in dependency order
-    const tableOrder = ['shops', 'users', 'customers', 'vehicles', 'vendors', 'parts', 'jobs'];
-    
+    const tableOrder = [
+      'shops',
+      'users',
+      'customers',
+      'vehicles',
+      'vendors',
+      'parts',
+      'jobs',
+    ];
+
     for (const tableName of tableOrder) {
       if (results[tableName] && results[tableName].count > 0) {
         sql += `\n-- ===============================================\n`;
         sql += `-- ${tableName.toUpperCase()} DATA\n`;
         sql += `-- ===============================================\n\n`;
-        
-        const tableSQL = fs.readFileSync(path.join(this.exportDir, `${tableName}.sql`), 'utf8');
+
+        const tableSQL = fs.readFileSync(
+          path.join(this.exportDir, `${tableName}.sql`),
+          'utf8'
+        );
         sql += tableSQL + '\n';
       }
     }
@@ -573,7 +632,7 @@ SELECT setval(pg_get_serial_sequence('shops', 'id'), COALESCE(MAX(id), 1)) FROM 
 -- Update statistics
 ANALYZE;
 `;
-    
+
     fs.writeFileSync(sqlFile, sql);
     this.log(`Complete SQL import script written to: ${sqlFile}`);
   }
@@ -582,8 +641,9 @@ ANALYZE;
 // Run the export if this file is executed directly
 if (require.main === module) {
   const exporter = new DataExporter();
-  
-  exporter.exportAllData()
+
+  exporter
+    .exportAllData()
     .then(summary => {
       console.log('\n✅ Export completed successfully!');
       console.log('📊 Summary:', summary);

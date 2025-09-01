@@ -95,13 +95,13 @@ global.URL = {
 afterEach(() => {
   // Clear all mocks after each test
   jest.clearAllMocks();
-  
+
   // Clear localStorage mock
   localStorageMock.clear.mockClear();
   localStorageMock.getItem.mockClear();
   localStorageMock.setItem.mockClear();
   localStorageMock.removeItem.mockClear();
-  
+
   // Clear sessionStorage mock
   sessionStorageMock.clear.mockClear();
   sessionStorageMock.getItem.mockClear();

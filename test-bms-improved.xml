@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<estimate>
+  <customer>
+    <firstName>John</firstName>
+    <lastName>Smith</lastName>
+    <email>john.smith@test.com</email>
+    <phone>555-1234</phone>
+    <address>123 Main Street</address>
+    <city>Test City</city>
+    <state>CA</state>
+    <zip>90210</zip>
+  </customer>
+  <vehicle>
+    <vin>1G1BC5SM5H7123456</vin>
+    <year>2017</year>
+    <make>Chevrolet</make>
+    <model>Malibu</model>
+    <color>Silver</color>
+    <license>ABC123</license>
+    <mileage>45000</mileage>
+  </vehicle>
+  <claim>
+    <claimNumber>CLM-2024-001</claimNumber>
+    <insurer>State Farm</insurer>
+    <dateOfLoss>2024-01-15</dateOfLoss>
+  </claim>
+  <damage>
+    <totalAmount>2450.50</totalAmount>
+    <parts>
+      <part>
+        <description>Front Bumper Cover</description>
+        <partNumber>84044368</partNumber>
+        <quantity>1</quantity>
+        <price>425.00</price>
+        <operation>Replace</operation>
+      </part>
+      <part>
+        <description>Hood</description>
+        <partNumber>84123456</partNumber>
+        <quantity>1</quantity>
+        <price>650.00</price>
+        <operation>Repair</operation>
+      </part>
+    </parts>
+    <labor>
+      <item>
+        <description>Remove & Install Front Bumper</description>
+        <hours>2.5</hours>
+        <rate>50.00</rate>
+        <total>125.00</total>
+      </item>
+      <item>
+        <description>Hood Repair</description>
+        <hours>3.0</hours>
+        <rate>50.00</rate>
+        <total>150.00</total>
+      </item>
+    </labor>
+  </damage>
+</estimate>

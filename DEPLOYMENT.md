@@ -6,7 +6,7 @@ This guide provides comprehensive instructions for deploying CollisionOS in prod
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Docker & Docker Compose
 - Git
 - SSL certificates (for production)
@@ -18,7 +18,7 @@ This guide provides comprehensive instructions for deploying CollisionOS in prod
 git clone <repository-url>
 cd CollisionOS
 
-# Install dependencies  
+# Install dependencies
 npm ci --legacy-peer-deps
 
 # Setup environment
@@ -51,7 +51,7 @@ curl http://localhost:3002/api/health
 ### Application Stack
 
 - **Frontend**: React 18 + Material-UI + Electron
-- **Backend**: Node.js + Express + SQLite/Supabase  
+- **Backend**: Node.js + Express + SQLite/Supabase
 - **Database**: SQLite (primary) + Supabase (optional)
 - **Container**: Docker + Alpine Linux
 - **CI/CD**: GitHub Actions
@@ -59,7 +59,7 @@ curl http://localhost:3002/api/health
 ### Port Configuration
 
 - **Development**: 3000 (React), 3001 (Backend)
-- **Staging**: 3002  
+- **Staging**: 3002
 - **Production**: 3001
 
 ## 🐳 Docker Deployment
@@ -70,7 +70,7 @@ curl http://localhost:3002/api/health
 # Build production image
 docker build -t collisionos:latest .
 
-# Build staging image  
+# Build staging image
 docker build -t collisionos:staging .
 ```
 
@@ -103,7 +103,7 @@ services:
   collisionos:
     build: .
     ports:
-      - "3001:3001"
+      - '3001:3001'
     volumes:
       - collisionos-data:/app/data
       - ./logs:/app/logs
@@ -112,7 +112,7 @@ services:
       - PORT=3001
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "server/healthcheck.js"]
+      test: ['CMD', 'node', 'server/healthcheck.js']
       interval: 30s
       timeout: 3s
       retries: 3
@@ -213,7 +213,7 @@ The CI/CD pipeline includes:
 git checkout v1.2.3
 ./deploy/production-deploy.sh
 
-# Rollback to previous version  
+# Rollback to previous version
 git checkout v1.2.2
 ./deploy/production-deploy.sh
 ```
@@ -235,7 +235,7 @@ npm run electron-pack -- --publish=never
 Built applications are available in `dist/` directory:
 
 - **Windows**: `.exe` installer
-- **macOS**: `.dmg` disk image  
+- **macOS**: `.dmg` disk image
 - **Linux**: `.AppImage` portable
 
 ## 📊 Monitoring & Health Checks
@@ -345,7 +345,7 @@ docker stats collisionos-prod
 
 - Use HTTPS only in production
 - Implement rate limiting
-- Configure CORS properly  
+- Configure CORS properly
 - Regular security updates
 - Monitor for vulnerabilities
 

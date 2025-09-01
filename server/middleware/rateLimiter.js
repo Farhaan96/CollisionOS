@@ -1,1 +1,3 @@
-module.exports = function rateLimiter(req, res, next) { next(); };
+module.exports = function rateLimiter(req, res, next) {
+  next();
+};

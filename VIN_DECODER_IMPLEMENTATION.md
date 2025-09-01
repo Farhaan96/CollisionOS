@@ -7,6 +7,7 @@ The CollisionOS VIN Decoder is a comprehensive system for validating and decodin
 ## 🚀 Features
 
 ### Core Functionality
+
 - **Real-time VIN Validation** - Instant format checking with check digit verification
 - **NHTSA API Integration** - Official NHTSA database access for comprehensive vehicle data
 - **Local Fallback Decoding** - Basic VIN parsing when API is unavailable
@@ -15,6 +16,7 @@ The CollisionOS VIN Decoder is a comprehensive system for validating and decodin
 - **Rate Limiting** - Protection against API abuse (100 requests per 15 minutes)
 
 ### Advanced Features
+
 - **Auto-Population** - Seamless integration with vehicle forms
 - **Multiple Data Sources** - NHTSA API primary, local decoder fallback
 - **Comprehensive Error Handling** - User-friendly error messages
@@ -26,9 +28,11 @@ The CollisionOS VIN Decoder is a comprehensive system for validating and decodin
 ### VIN Decoding Endpoints
 
 #### POST /api/vehicles/decode-vin
+
 Decode a single VIN using NHTSA API with local fallback.
 
 **Request:**
+
 ```json
 {
   "vin": "1HGCM82633A004352",
@@ -37,6 +41,7 @@ Decode a single VIN using NHTSA API with local fallback.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -64,9 +69,11 @@ Decode a single VIN using NHTSA API with local fallback.
 ```
 
 #### POST /api/vehicles/validate-vin
+
 Validate VIN format without decoding.
 
 **Request:**
+
 ```json
 {
   "vin": "1HGCM82633A004352"
@@ -74,6 +81,7 @@ Validate VIN format without decoding.
 ```
 
 **Response:**
+
 ```json
 {
   "valid": true,
@@ -89,20 +97,19 @@ Validate VIN format without decoding.
 ```
 
 #### POST /api/vehicles/batch-decode
+
 Decode multiple VINs (max 10) in a single request.
 
 **Request:**
+
 ```json
 {
-  "vins": [
-    "1HGCM82633A004352",
-    "1G1ZT51816F100000",
-    "JM1BK32F981123456"
-  ]
+  "vins": ["1HGCM82633A004352", "1G1ZT51816F100000", "JM1BK32F981123456"]
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -110,11 +117,13 @@ Decode multiple VINs (max 10) in a single request.
     {
       "vin": "1HGCM82633A004352",
       "success": true,
-      "vehicle": { /* vehicle data */ },
+      "vehicle": {
+        /* vehicle data */
+      },
       "source": "nhtsa_api"
     },
     {
-      "vin": "1G1ZT51816F100000", 
+      "vin": "1G1ZT51816F100000",
       "success": false,
       "error": "VIN check digit validation failed"
     }
@@ -130,9 +139,11 @@ Decode multiple VINs (max 10) in a single request.
 ### Vehicle Management Endpoints
 
 #### GET /api/vehicles
+
 List vehicles with optional filtering.
 
 **Query Parameters:**
+
 - `customerId` - Filter by customer ID
 - `vin` - Filter by VIN
 - `year` - Filter by year
@@ -142,9 +153,11 @@ List vehicles with optional filtering.
 - `offset` - Results offset (default: 0)
 
 #### POST /api/vehicles
+
 Create new vehicle with optional VIN decoding.
 
 **Request:**
+
 ```json
 {
   "customerId": "uuid",
@@ -164,6 +177,7 @@ Create new vehicle with optional VIN decoding.
 ### Backend Components
 
 #### VINDecoder Service (`server/services/vinDecoder.js`)
+
 ```javascript
 class VINDecoder {
   async decode(vin, useApiOnly = false) {
@@ -173,19 +187,19 @@ class VINDecoder {
     // 4. Fallback to local decoding
     // 5. Cache results
   }
-  
+
   validateAndNormalizeVIN(vin) {
     // Format validation and normalization
   }
-  
+
   validateCheckDigit(vin) {
     // ISO 3779 check digit validation
   }
-  
+
   decodeWithNHTSA(vin) {
     // NHTSA API integration
   }
-  
+
   decodeLocally(vin) {
     // Local VIN parsing fallback
   }
@@ -193,6 +207,7 @@ class VINDecoder {
 ```
 
 #### Vehicle Routes (`server/routes/vehicles.js`)
+
 - VIN validation and decoding endpoints
 - Vehicle CRUD operations
 - Rate limiting and authentication
@@ -201,12 +216,13 @@ class VINDecoder {
 ### Frontend Components
 
 #### VINDecoder Component (`src/components/Common/VINDecoder.jsx`)
+
 ```jsx
-const VINDecoder = ({ 
-  onVehicleDecoded, 
+const VINDecoder = ({
+  onVehicleDecoded,
   onValidationChange,
   compact = false,
-  showAdvanced = false 
+  showAdvanced = false,
 }) => {
   // Real-time VIN validation
   // VIN decoding interface
@@ -216,20 +232,21 @@ const VINDecoder = ({
 ```
 
 #### VIN Service (`src/services/vinService.js`)
+
 ```javascript
 class VINService {
   async validateVIN(vin) {
     // Frontend VIN validation
   }
-  
+
   async decodeVIN(vin, useApiOnly = false) {
     // VIN decoding API calls
   }
-  
+
   async batchDecodeVINs(vins) {
     // Batch decoding
   }
-  
+
   validateVINFormat(vin) {
     // Client-side validation
   }
@@ -248,15 +265,16 @@ The system implements the ISO 3779 standard check digit algorithm:
    - Check digit at position 9
 
 2. **Check Digit Calculation**
+
    ```javascript
    const weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
    const values = { A:1, B:2, C:3, ..., 0:0, 1:1, ... };
-   
+
    let sum = 0;
    for (let i = 0; i < 17; i++) {
      sum += values[vin[i]] * weights[i];
    }
-   
+
    const checkDigit = sum % 11;
    const expected = checkDigit === 10 ? 'X' : checkDigit.toString();
    ```
@@ -266,8 +284,9 @@ The system implements the ISO 3779 standard check digit algorithm:
 **Endpoint:** `https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{VIN}?format=json`
 
 **Data Mapping:**
+
 - Model Year → year
-- Make → make  
+- Make → make
 - Model → model
 - Trim → trim
 - Engine Number of Cylinders + Displacement → engine
@@ -358,8 +377,8 @@ import VINDecoder from '../components/Common/VINDecoder';
 
 function VehicleForm() {
   const [vehicleData, setVehicleData] = useState({});
-  
-  const handleVehicleDecoded = (decodedData) => {
+
+  const handleVehicleDecoded = decodedData => {
     setVehicleData(prevData => ({
       ...prevData,
       year: decodedData.year,
@@ -371,10 +390,7 @@ function VehicleForm() {
 
   return (
     <div>
-      <VINDecoder 
-        onVehicleDecoded={handleVehicleDecoded}
-        compact={true}
-      />
+      <VINDecoder onVehicleDecoded={handleVehicleDecoded} compact={true} />
       {/* Vehicle form fields auto-populated */}
     </div>
   );
@@ -386,24 +402,24 @@ function VehicleForm() {
 ```javascript
 import { vinService } from '../services/vinService';
 
-const vins = [
-  '1HGCM82633A004352',
-  '1G1ZT51816F100000',
-  'JM1BK32F981123456'
-];
+const vins = ['1HGCM82633A004352', '1G1ZT51816F100000', 'JM1BK32F981123456'];
 
 const results = await vinService.batchDecodeVINs(vins);
-console.log(`Decoded ${results.summary.successful} of ${results.summary.total} VINs`);
+console.log(
+  `Decoded ${results.summary.successful} of ${results.summary.total} VINs`
+);
 ```
 
 ## 🛡️ Security & Rate Limiting
 
 ### Rate Limiting Configuration
+
 - **Window:** 15 minutes
 - **Limit:** 100 VIN decodes per IP
 - **Response:** 429 Too Many Requests with retry-after header
 
 ### Security Features
+
 - JWT authentication required for all endpoints
 - Input validation and sanitization
 - SQL injection protection
@@ -413,6 +429,7 @@ console.log(`Decoded ${results.summary.successful} of ${results.summary.total} V
 ## 📊 Performance Considerations
 
 ### Optimization Features
+
 - **Caching:** 30-day VIN cache reduces API calls
 - **Batch Processing:** Concurrent VIN processing
 - **Rate Limiting:** Prevents API abuse and ensures service availability
@@ -420,6 +437,7 @@ console.log(`Decoded ${results.summary.successful} of ${results.summary.total} V
 - **Database Indexing:** VIN field indexed for fast lookups
 
 ### Monitoring
+
 - API response times tracked
 - Cache hit/miss ratios logged
 - Rate limiting violations monitored
@@ -428,6 +446,7 @@ console.log(`Decoded ${results.summary.successful} of ${results.summary.total} V
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 1. **Enhanced Local Database**
    - Comprehensive WMI (World Manufacturer Identifier) database
    - Model-specific decoding rules
@@ -451,12 +470,14 @@ console.log(`Decoded ${results.summary.successful} of ${results.summary.total} V
 ## 📝 Maintenance
 
 ### Regular Tasks
+
 - Monitor NHTSA API availability
 - Review and update WMI mappings
 - Cache performance optimization
 - Security updates for dependencies
 
 ### Troubleshooting
+
 - Check NHTSA API status for decode failures
 - Verify JWT token validity for authentication errors
 - Monitor rate limiting for 429 errors

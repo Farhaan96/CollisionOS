@@ -9,7 +9,7 @@ export default defineConfig({
     '**/tests/integration/**',
     '**/tests/performance/**',
     '**/tests/**/*.test.js',
-    '**/tests/**/test*.js'
+    '**/tests/**/test*.js',
   ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

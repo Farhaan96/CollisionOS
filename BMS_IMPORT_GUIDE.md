@@ -36,16 +36,19 @@ Navigate to the BMS Import page in your CollisionOS application. This page provi
 You can upload BMS files in several ways:
 
 #### Drag and Drop
+
 - Simply drag one or more BMS XML files from your file explorer
 - Drop them onto the upload area
 - The system will automatically process the files
 
 #### Click to Browse
+
 - Click on the upload area to open a file browser
 - Select one or more BMS XML files
 - Click "Open" to start processing
 
 #### Multiple File Upload
+
 - You can upload multiple BMS files at once
 - The system will process them sequentially
 - Progress is shown for each file
@@ -70,6 +73,7 @@ After processing, you can:
 ## What Gets Imported
 
 ### Customer Information
+
 - First and last name
 - Email address
 - Phone number
@@ -77,6 +81,7 @@ After processing, you can:
 - Customer type (policy holder)
 
 ### Vehicle Information
+
 - VIN (Vehicle Identification Number)
 - License plate and state/province
 - Year, make, model, and sub-model
@@ -88,6 +93,7 @@ After processing, you can:
 - Vehicle valuation
 
 ### Job/Estimate Information
+
 - Claim number
 - Policy number
 - Insurance company
@@ -101,6 +107,7 @@ After processing, you can:
 - Gross and net totals
 
 ### Parts Information
+
 - Part numbers (OEM and aftermarket)
 - Part descriptions
 - Prices (OEM and selected)
@@ -109,6 +116,7 @@ After processing, you can:
 - Part types and source codes
 
 ### Labor Information
+
 - Labor types (body, paint, mechanical, etc.)
 - Labor operations
 - Hours (calculated and database)
@@ -116,6 +124,7 @@ After processing, you can:
 - Labor rates
 
 ### Materials Information
+
 - Material types
 - Paint materials
 - Shop materials
@@ -125,16 +134,19 @@ After processing, you can:
 ## System Requirements
 
 ### Software Requirements
+
 - CollisionOS application running
 - Modern web browser with JavaScript enabled
 - File upload support
 
 ### File Requirements
+
 - Valid BMS XML format
 - File size under 10MB (configurable)
 - Proper XML encoding (UTF-8)
 
 ### Network Requirements
+
 - Stable internet connection for file upload
 - Sufficient bandwidth for large files
 
@@ -143,22 +155,27 @@ After processing, you can:
 ### Common Errors and Solutions
 
 #### Invalid XML Format
+
 **Error**: "Failed to parse BMS file"
 **Solution**: Ensure the file is a valid BMS XML document from Mitchell Estimating
 
 #### Missing Required Fields
+
 **Error**: "Policy holder information is required"
 **Solution**: BMS files must contain customer/policy holder information
 
 #### File Size Too Large
+
 **Error**: "File size exceeds limit"
 **Solution**: Check file size and compress if necessary
 
 #### Network Issues
+
 **Error**: "Upload failed"
 **Solution**: Check internet connection and try again
 
 ### Error Recovery
+
 - Failed uploads can be retried
 - Partial imports are handled gracefully
 - Error logs are maintained for troubleshooting
@@ -166,18 +183,21 @@ After processing, you can:
 ## Best Practices
 
 ### File Preparation
+
 1. **Validate Files**: Ensure BMS files are complete and valid
 2. **Check Format**: Verify files are in the correct BMS XML format
 3. **Review Content**: Check that all required information is present
 4. **Backup Files**: Keep original BMS files as backup
 
 ### Upload Process
+
 1. **Batch Uploads**: Upload multiple files in batches for efficiency
 2. **Monitor Progress**: Watch the progress indicators during processing
 3. **Review Results**: Check processed files for accuracy
 4. **Verify Data**: Confirm imported data in the main application
 
 ### Data Management
+
 1. **Regular Imports**: Import BMS files regularly to keep data current
 2. **Data Validation**: Review imported data for accuracy
 3. **Duplicate Handling**: Check for duplicate customers/vehicles
@@ -186,6 +206,7 @@ After processing, you can:
 ## Integration with CollisionOS
 
 ### Automatic Data Creation
+
 When a BMS file is imported, the system automatically:
 
 1. **Creates Customer Records**: New customers are added to the customer database
@@ -196,11 +217,13 @@ When a BMS file is imported, the system automatically:
 6. **Calculates Totals**: All pricing and totals are calculated
 
 ### Data Updates
+
 - Existing customers are updated with new information
 - Existing vehicles are updated if VIN matches
 - Job information is preserved and can be modified
 
 ### System Integration
+
 - Imported data appears in all relevant CollisionOS modules
 - Customers appear in the customer management system
 - Vehicles appear in the vehicle management system
@@ -210,18 +233,21 @@ When a BMS file is imported, the system automatically:
 ## Troubleshooting
 
 ### File Upload Issues
+
 1. **Check File Format**: Ensure files are valid BMS XML
 2. **Check File Size**: Verify files are under size limit
 3. **Check Network**: Ensure stable internet connection
 4. **Clear Browser Cache**: Try clearing browser cache and cookies
 
 ### Processing Issues
+
 1. **Check File Content**: Verify BMS file contains required data
 2. **Check System Status**: Ensure database and storage are available
 3. **Review Error Messages**: Check specific error details
 4. **Contact Support**: If issues persist, contact technical support
 
 ### Data Issues
+
 1. **Verify Import**: Check that data was imported correctly
 2. **Review Duplicates**: Look for duplicate records
 3. **Check Relationships**: Verify customer-vehicle-job relationships
@@ -230,17 +256,21 @@ When a BMS file is imported, the system automatically:
 ## Support and Contact
 
 ### Technical Support
+
 For technical issues with BMS import functionality:
+
 - Email: support@collisionos.com
 - Phone: (555) 123-4567
 - Hours: Monday-Friday 8AM-6PM EST
 
 ### Documentation
+
 - User Guide: Available in the application help section
 - API Documentation: Available for developers
 - Video Tutorials: Available on the support website
 
 ### Training
+
 - Online training sessions available
 - Custom training for your team
 - Certification programs for advanced users
@@ -248,6 +278,7 @@ For technical issues with BMS import functionality:
 ## Future Enhancements
 
 ### Planned Features
+
 - **Batch Processing**: Enhanced batch upload capabilities
 - **Auto-Import**: Scheduled automatic imports
 - **Advanced Validation**: Enhanced data validation rules
@@ -255,6 +286,7 @@ For technical issues with BMS import functionality:
 - **Mobile Support**: Mobile app import functionality
 
 ### Customization Options
+
 - **Custom Fields**: Support for custom BMS fields
 - **Business Rules**: Configurable business logic
 - **Workflow Integration**: Integration with custom workflows
@@ -263,12 +295,14 @@ For technical issues with BMS import functionality:
 ## Security and Privacy
 
 ### Data Security
+
 - All uploaded files are processed securely
 - File contents are encrypted during transmission
 - Access to imported data is controlled by user permissions
 - Audit logs track all import activities
 
 ### Privacy Protection
+
 - Customer information is protected according to privacy laws
 - Data retention policies are enforced
 - Export controls prevent unauthorized data access

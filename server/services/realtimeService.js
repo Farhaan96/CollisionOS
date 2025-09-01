@@ -8,8 +8,10 @@ class RealtimeService {
     this.subscriptions = new Map();
     this.socketIoServer = null;
     this.useSupabase = isSupabaseEnabled;
-    
-    console.log(`🔄 Real-time service initialized with ${this.useSupabase ? 'Supabase' : 'Socket.io'} backend`);
+
+    console.log(
+      `🔄 Real-time service initialized with ${this.useSupabase ? 'Supabase' : 'Socket.io'} backend`
+    );
   }
 
   /**
@@ -57,7 +59,7 @@ class RealtimeService {
       event = '*', // INSERT, UPDATE, DELETE, or *
       filter,
       callback,
-      schema = 'public'
+      schema = 'public',
     } = options;
 
     let channelName = `${table}_changes`;
@@ -65,28 +67,28 @@ class RealtimeService {
       channelName += `_${Object.keys(filter).join('_')}`;
     }
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event,
-          schema,
-          table,
-          filter: filter ? `${Object.keys(filter)[0]}=eq.${Object.values(filter)[0]}` : undefined
-        },
-        (payload) => {
-          console.log(`📡 Supabase real-time event:`, payload);
-          if (callback) {
-            callback(payload);
-          }
-          // Also emit to Socket.io for backwards compatibility
-          this.emitToSocketIo(`${table}_update`, payload);
+    const channel = supabase.channel(channelName).on(
+      'postgres_changes',
+      {
+        event,
+        schema,
+        table,
+        filter: filter
+          ? `${Object.keys(filter)[0]}=eq.${Object.values(filter)[0]}`
+          : undefined,
+      },
+      payload => {
+        console.log(`📡 Supabase real-time event:`, payload);
+        if (callback) {
+          callback(payload);
         }
-      );
+        // Also emit to Socket.io for backwards compatibility
+        this.emitToSocketIo(`${table}_update`, payload);
+      }
+    );
 
     // Subscribe to the channel
-    const subscriptionResponse = await channel.subscribe((status) => {
+    const subscriptionResponse = await channel.subscribe(status => {
       console.log(`📡 Supabase subscription ${subscriptionId} status:`, status);
     });
 
@@ -96,7 +98,7 @@ class RealtimeService {
       table,
       channel,
       options,
-      status: subscriptionResponse
+      status: subscriptionResponse,
     };
 
     this.subscriptions.set(subscriptionId, subscription);
@@ -115,12 +117,12 @@ class RealtimeService {
       id: subscriptionId,
       type: 'socket.io',
       table,
-      options
+      options,
     };
 
     this.subscriptions.set(subscriptionId, subscription);
     console.log(`📡 Socket.io subscription created: ${subscriptionId}`);
-    
+
     return subscription;
   }
 
@@ -192,7 +194,7 @@ class RealtimeService {
     const payload = {
       type: eventType,
       data: jobData,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     this.emit(event, payload, jobData.shopId || jobData.shop_id);
@@ -204,11 +206,15 @@ class RealtimeService {
    * @param {string} shopId - Shop ID
    */
   broadcastProductionUpdate(data, shopId) {
-    this.emit('production_update', {
-      type: 'status_change',
-      data,
-      timestamp: new Date().toISOString()
-    }, shopId);
+    this.emit(
+      'production_update',
+      {
+        type: 'status_change',
+        data,
+        timestamp: new Date().toISOString(),
+      },
+      shopId
+    );
   }
 
   /**
@@ -217,11 +223,15 @@ class RealtimeService {
    * @param {string} eventType - Event type
    */
   broadcastPartsUpdate(partData, eventType = 'updated') {
-    this.emit('parts_update', {
-      type: eventType,
-      data: partData,
-      timestamp: new Date().toISOString()
-    }, partData.shopId || partData.shop_id);
+    this.emit(
+      'parts_update',
+      {
+        type: eventType,
+        data: partData,
+        timestamp: new Date().toISOString(),
+      },
+      partData.shopId || partData.shop_id
+    );
   }
 
   /**
@@ -230,11 +240,15 @@ class RealtimeService {
    * @param {string} eventType - Event type
    */
   broadcastQualityUpdate(qualityData, eventType = 'updated') {
-    this.emit('quality_update', {
-      type: eventType,
-      data: qualityData,
-      timestamp: new Date().toISOString()
-    }, qualityData.shopId || qualityData.shop_id);
+    this.emit(
+      'quality_update',
+      {
+        type: eventType,
+        data: qualityData,
+        timestamp: new Date().toISOString(),
+      },
+      qualityData.shopId || qualityData.shop_id
+    );
   }
 
   /**
@@ -243,10 +257,14 @@ class RealtimeService {
    * @param {string} shopId - Shop ID
    */
   broadcastNotification(notification, shopId) {
-    this.emit('notification', {
-      ...notification,
-      timestamp: new Date().toISOString()
-    }, shopId);
+    this.emit(
+      'notification',
+      {
+        ...notification,
+        timestamp: new Date().toISOString(),
+      },
+      shopId
+    );
   }
 
   /**
@@ -255,11 +273,15 @@ class RealtimeService {
    * @param {string} eventType - Event type
    */
   broadcastCustomerUpdate(customerData, eventType = 'updated') {
-    this.emit('customer_update', {
-      type: eventType,
-      data: customerData,
-      timestamp: new Date().toISOString()
-    }, customerData.shopId || customerData.shop_id);
+    this.emit(
+      'customer_update',
+      {
+        type: eventType,
+        data: customerData,
+        timestamp: new Date().toISOString(),
+      },
+      customerData.shopId || customerData.shop_id
+    );
   }
 
   /**
@@ -268,11 +290,15 @@ class RealtimeService {
    * @param {string} eventType - Event type
    */
   broadcastFinancialUpdate(financialData, eventType = 'updated') {
-    this.emit('financial_update', {
-      type: eventType,
-      data: financialData,
-      timestamp: new Date().toISOString()
-    }, financialData.shopId || financialData.shop_id);
+    this.emit(
+      'financial_update',
+      {
+        type: eventType,
+        data: financialData,
+        timestamp: new Date().toISOString(),
+      },
+      financialData.shopId || financialData.shop_id
+    );
   }
 
   /**
@@ -284,7 +310,7 @@ class RealtimeService {
       id: sub.id,
       type: sub.type,
       table: sub.table,
-      status: sub.status || 'active'
+      status: sub.status || 'active',
     }));
   }
 
@@ -294,7 +320,7 @@ class RealtimeService {
    */
   async cleanup() {
     console.log('🧹 Cleaning up real-time subscriptions...');
-    
+
     for (const [subscriptionId] of this.subscriptions) {
       await this.unsubscribe(subscriptionId);
     }
@@ -318,7 +344,7 @@ class RealtimeService {
     return {
       backend: this.useSupabase ? 'supabase' : 'socket.io',
       activeSubscriptions: this.subscriptions.size,
-      subscriptions: this.getActiveSubscriptions()
+      subscriptions: this.getActiveSubscriptions(),
     };
   }
 }
@@ -328,5 +354,5 @@ const realtimeService = new RealtimeService();
 
 module.exports = {
   RealtimeService,
-  realtimeService
+  realtimeService,
 };

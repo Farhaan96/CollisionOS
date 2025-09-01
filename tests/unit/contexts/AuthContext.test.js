@@ -6,31 +6,25 @@ import { createMockUser } from '../../../src/utils/testUtils';
 
 // Test component to consume AuthContext
 const TestComponent = () => {
-  const { 
-    user, 
-    isAuthenticated, 
-    isLoading, 
-    login, 
-    logout, 
-    setIsLoading 
-  } = useAuth();
+  const { user, isAuthenticated, isLoading, login, logout, setIsLoading } =
+    useAuth();
 
   return (
     <div>
-      <div data-testid="user">{user ? JSON.stringify(user) : 'null'}</div>
-      <div data-testid="isAuthenticated">{String(isAuthenticated)}</div>
-      <div data-testid="isLoading">{String(isLoading)}</div>
-      <button 
-        data-testid="login-button" 
+      <div data-testid='user'>{user ? JSON.stringify(user) : 'null'}</div>
+      <div data-testid='isAuthenticated'>{String(isAuthenticated)}</div>
+      <div data-testid='isLoading'>{String(isLoading)}</div>
+      <button
+        data-testid='login-button'
         onClick={() => login(createMockUser(), 'test-token')}
       >
         Login
       </button>
-      <button data-testid="logout-button" onClick={logout}>
+      <button data-testid='logout-button' onClick={logout}>
         Logout
       </button>
-      <button 
-        data-testid="set-loading-button" 
+      <button
+        data-testid='set-loading-button'
         onClick={() => setIsLoading(true)}
       >
         Set Loading
@@ -39,18 +33,14 @@ const TestComponent = () => {
   );
 };
 
-const renderAuthProvider = (children) => {
-  return render(
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  );
+const renderAuthProvider = children => {
+  return render(<AuthProvider>{children}</AuthProvider>);
 };
 
 describe('AuthContext', () => {
   let originalConsoleError;
   let originalConsoleLog;
-  
+
   beforeEach(() => {
     originalConsoleError = console.error;
     originalConsoleLog = console.log;
@@ -76,8 +66,10 @@ describe('AuthContext', () => {
 
     test('throws error when useAuth is called outside AuthProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       const TestComponentWithoutProvider = () => {
         useAuth();
         return <div>Test</div>;
@@ -86,7 +78,7 @@ describe('AuthContext', () => {
       expect(() => render(<TestComponentWithoutProvider />)).toThrow(
         'useAuth must be used within an AuthProvider'
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -100,24 +92,29 @@ describe('AuthContext', () => {
       await user.click(screen.getByTestId('login-button'));
 
       await waitFor(() => {
-        expect(screen.getByTestId('user')).toHaveTextContent(JSON.stringify(mockUser));
+        expect(screen.getByTestId('user')).toHaveTextContent(
+          JSON.stringify(mockUser)
+        );
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
       });
 
       expect(localStorage.getItem('token')).toBe('test-token');
-      expect(console.log).toHaveBeenCalledWith('AuthContext - Login successful:', mockUser);
+      expect(console.log).toHaveBeenCalledWith(
+        'AuthContext - Login successful:',
+        mockUser
+      );
     });
 
     test('logs in user with default values when userData is null', async () => {
       const TestComponentWithNullUser = () => {
         const { login, user, isAuthenticated } = useAuth();
-        
+
         return (
           <div>
-            <div data-testid="user">{user ? JSON.stringify(user) : 'null'}</div>
-            <div data-testid="isAuthenticated">{String(isAuthenticated)}</div>
-            <button 
-              data-testid="login-null-button" 
+            <div data-testid='user'>{user ? JSON.stringify(user) : 'null'}</div>
+            <div data-testid='isAuthenticated'>{String(isAuthenticated)}</div>
+            <button
+              data-testid='login-null-button'
               onClick={() => login(null, 'test-token')}
             >
               Login with null user
@@ -132,9 +129,11 @@ describe('AuthContext', () => {
       await user.click(screen.getByTestId('login-null-button'));
 
       const expectedUser = { firstName: 'Admin', role: 'owner' };
-      
+
       await waitFor(() => {
-        expect(screen.getByTestId('user')).toHaveTextContent(JSON.stringify(expectedUser));
+        expect(screen.getByTestId('user')).toHaveTextContent(
+          JSON.stringify(expectedUser)
+        );
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
       });
     });
@@ -142,13 +141,13 @@ describe('AuthContext', () => {
     test('uses default token when token is null', async () => {
       const TestComponentWithNullToken = () => {
         const { login, user, isAuthenticated } = useAuth();
-        
+
         return (
           <div>
-            <div data-testid="user">{user ? JSON.stringify(user) : 'null'}</div>
-            <div data-testid="isAuthenticated">{String(isAuthenticated)}</div>
-            <button 
-              data-testid="login-null-token-button" 
+            <div data-testid='user'>{user ? JSON.stringify(user) : 'null'}</div>
+            <div data-testid='isAuthenticated'>{String(isAuthenticated)}</div>
+            <button
+              data-testid='login-null-token-button'
               onClick={() => login(createMockUser(), null)}
             >
               Login with null token
@@ -170,22 +169,22 @@ describe('AuthContext', () => {
     test('handles login errors gracefully', async () => {
       const TestComponentWithError = () => {
         const { login, user, isAuthenticated } = useAuth();
-        
+
         // Mock localStorage to throw an error
         const mockSetItem = jest.fn(() => {
           throw new Error('LocalStorage error');
         });
         Object.defineProperty(window, 'localStorage', {
           value: { setItem: mockSetItem },
-          writable: true
+          writable: true,
         });
 
         return (
           <div>
-            <div data-testid="user">{user ? JSON.stringify(user) : 'null'}</div>
-            <div data-testid="isAuthenticated">{String(isAuthenticated)}</div>
-            <button 
-              data-testid="login-error-button" 
+            <div data-testid='user'>{user ? JSON.stringify(user) : 'null'}</div>
+            <div data-testid='isAuthenticated'>{String(isAuthenticated)}</div>
+            <button
+              data-testid='login-error-button'
               onClick={() => login(createMockUser(), 'test-token')}
             >
               Login with error
@@ -202,7 +201,10 @@ describe('AuthContext', () => {
       // Should not change the state when error occurs
       expect(screen.getByTestId('user')).toHaveTextContent('null');
       expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('false');
-      expect(console.error).toHaveBeenCalledWith('AuthContext - Login error:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'AuthContext - Login error:',
+        expect.any(Error)
+      );
     });
   });
 
@@ -221,29 +223,33 @@ describe('AuthContext', () => {
       await user.click(screen.getByTestId('logout-button'));
       await waitFor(() => {
         expect(screen.getByTestId('user')).toHaveTextContent('null');
-        expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('false');
+        expect(screen.getByTestId('isAuthenticated')).toHaveTextContent(
+          'false'
+        );
       });
 
       expect(localStorage.getItem('token')).toBeNull();
-      expect(console.log).toHaveBeenCalledWith('AuthContext - Logout successful');
+      expect(console.log).toHaveBeenCalledWith(
+        'AuthContext - Logout successful'
+      );
     });
 
     test('handles logout errors gracefully', async () => {
       const TestComponentWithLogoutError = () => {
         const { login, logout, user, isAuthenticated } = useAuth();
-        
+
         return (
           <div>
-            <div data-testid="user">{user ? JSON.stringify(user) : 'null'}</div>
-            <div data-testid="isAuthenticated">{String(isAuthenticated)}</div>
-            <button 
-              data-testid="login-button" 
+            <div data-testid='user'>{user ? JSON.stringify(user) : 'null'}</div>
+            <div data-testid='isAuthenticated'>{String(isAuthenticated)}</div>
+            <button
+              data-testid='login-button'
               onClick={() => login(createMockUser(), 'test-token')}
             >
               Login
             </button>
-            <button 
-              data-testid="logout-error-button" 
+            <button
+              data-testid='logout-error-button'
               onClick={() => {
                 // Mock localStorage to throw an error
                 const mockRemoveItem = jest.fn(() => {
@@ -251,7 +257,7 @@ describe('AuthContext', () => {
                 });
                 Object.defineProperty(window, 'localStorage', {
                   value: { removeItem: mockRemoveItem },
-                  writable: true
+                  writable: true,
                 });
                 logout();
               }}
@@ -274,7 +280,10 @@ describe('AuthContext', () => {
       // Then logout with error
       await user.click(screen.getByTestId('logout-error-button'));
 
-      expect(console.error).toHaveBeenCalledWith('AuthContext - Logout error:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'AuthContext - Logout error:',
+        expect.any(Error)
+      );
     });
   });
 
@@ -323,7 +332,9 @@ describe('AuthContext', () => {
       // Then logout
       await user.click(screen.getByTestId('logout-button'));
       await waitFor(() => {
-        expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('false');
+        expect(screen.getByTestId('isAuthenticated')).toHaveTextContent(
+          'false'
+        );
       });
     });
   });
@@ -332,15 +343,27 @@ describe('AuthContext', () => {
     test('provides all expected context values', () => {
       const TestContextValues = () => {
         const context = useAuth();
-        
+
         return (
           <div>
-            <div data-testid="has-user">{typeof context.user !== 'undefined' ? 'yes' : 'no'}</div>
-            <div data-testid="has-isAuthenticated">{typeof context.isAuthenticated !== 'undefined' ? 'yes' : 'no'}</div>
-            <div data-testid="has-isLoading">{typeof context.isLoading !== 'undefined' ? 'yes' : 'no'}</div>
-            <div data-testid="has-login">{typeof context.login === 'function' ? 'yes' : 'no'}</div>
-            <div data-testid="has-logout">{typeof context.logout === 'function' ? 'yes' : 'no'}</div>
-            <div data-testid="has-setIsLoading">{typeof context.setIsLoading === 'function' ? 'yes' : 'no'}</div>
+            <div data-testid='has-user'>
+              {typeof context.user !== 'undefined' ? 'yes' : 'no'}
+            </div>
+            <div data-testid='has-isAuthenticated'>
+              {typeof context.isAuthenticated !== 'undefined' ? 'yes' : 'no'}
+            </div>
+            <div data-testid='has-isLoading'>
+              {typeof context.isLoading !== 'undefined' ? 'yes' : 'no'}
+            </div>
+            <div data-testid='has-login'>
+              {typeof context.login === 'function' ? 'yes' : 'no'}
+            </div>
+            <div data-testid='has-logout'>
+              {typeof context.logout === 'function' ? 'yes' : 'no'}
+            </div>
+            <div data-testid='has-setIsLoading'>
+              {typeof context.setIsLoading === 'function' ? 'yes' : 'no'}
+            </div>
           </div>
         );
       };
@@ -348,7 +371,9 @@ describe('AuthContext', () => {
       renderAuthProvider(<TestContextValues />);
 
       expect(screen.getByTestId('has-user')).toHaveTextContent('yes');
-      expect(screen.getByTestId('has-isAuthenticated')).toHaveTextContent('yes');
+      expect(screen.getByTestId('has-isAuthenticated')).toHaveTextContent(
+        'yes'
+      );
       expect(screen.getByTestId('has-isLoading')).toHaveTextContent('yes');
       expect(screen.getByTestId('has-login')).toHaveTextContent('yes');
       expect(screen.getByTestId('has-logout')).toHaveTextContent('yes');

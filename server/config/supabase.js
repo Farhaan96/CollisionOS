@@ -5,7 +5,7 @@ require('dotenv').config();
 const requiredEnvVars = {
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 };
 
 // Check if Supabase is enabled
@@ -14,13 +14,20 @@ const isSupabaseEnabled = process.env.ENABLE_SUPABASE === 'true';
 // Validate required environment variables when Supabase is enabled
 if (isSupabaseEnabled) {
   const missingVars = Object.entries(requiredEnvVars)
-    .filter(([key, value]) => !value || value === `your_supabase_${key.toLowerCase().replace('supabase_', '')}_here`)
+    .filter(
+      ([key, value]) =>
+        !value ||
+        value ===
+          `your_supabase_${key.toLowerCase().replace('supabase_', '')}_here`
+    )
     .map(([key]) => key);
 
   if (missingVars.length > 0) {
     console.error('❌ Missing required Supabase environment variables:');
     missingVars.forEach(varName => console.error(`   - ${varName}`));
-    console.error('\nPlease update your .env file with your Supabase credentials.');
+    console.error(
+      '\nPlease update your .env file with your Supabase credentials.'
+    );
     process.exit(1);
   }
 }
@@ -39,13 +46,13 @@ if (isSupabaseEnabled) {
         auth: {
           autoRefreshToken: true,
           persistSession: false, // We handle sessions server-side
-          detectSessionInUrl: false
+          detectSessionInUrl: false,
         },
         realtime: {
           params: {
-            eventsPerSecond: 10 // Rate limiting for real-time events
-          }
-        }
+            eventsPerSecond: 10, // Rate limiting for real-time events
+          },
+        },
       }
     );
 
@@ -56,8 +63,8 @@ if (isSupabaseEnabled) {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
     );
 
@@ -132,5 +139,5 @@ module.exports = {
   isSupabaseAvailable,
   isSupabaseEnabled,
   testSupabaseConnection,
-  closeSupabaseConnections
+  closeSupabaseConnections,
 };

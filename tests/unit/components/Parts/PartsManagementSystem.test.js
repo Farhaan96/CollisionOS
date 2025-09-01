@@ -18,9 +18,7 @@ jest.mock('framer-motion', () => ({
 
 // Test wrapper with theme
 const TestWrapper = ({ children }) => (
-  <ThemeProvider theme={modernTheme}>
-    {children}
-  </ThemeProvider>
+  <ThemeProvider theme={modernTheme}>{children}</ThemeProvider>
 );
 
 describe('PartsManagementSystem', () => {
@@ -33,10 +31,10 @@ describe('PartsManagementSystem', () => {
       category: 'body',
       quantity: 1,
       status: 'ordered',
-      estimatedCost: 450.00,
-      actualCost: 425.00,
-      supplier: 'oem_direct'
-    }
+      estimatedCost: 450.0,
+      actualCost: 425.0,
+      supplier: 'oem_direct',
+    },
   ];
 
   const mockInventoryData = [
@@ -48,8 +46,8 @@ describe('PartsManagementSystem', () => {
       currentStock: 15,
       minimumStock: 5,
       maximumStock: 30,
-      unitCost: 45.00
-    }
+      unitCost: 45.0,
+    },
   ];
 
   beforeEach(() => {
@@ -77,12 +75,14 @@ describe('PartsManagementSystem', () => {
   it('loads parts data on mount', async () => {
     render(
       <TestWrapper>
-        <PartsManagementSystem jobId="JOB-001" />
+        <PartsManagementSystem jobId='JOB-001' />
       </TestWrapper>
     );
 
     await waitFor(() => {
-      expect(partsService.getAllParts).toHaveBeenCalledWith({ jobId: 'JOB-001' });
+      expect(partsService.getAllParts).toHaveBeenCalledWith({
+        jobId: 'JOB-001',
+      });
       expect(partsService.getInventoryStatus).toHaveBeenCalled();
       expect(partsService.getPurchaseOrders).toHaveBeenCalled();
     });
@@ -160,7 +160,7 @@ describe('PartsManagementSystem', () => {
 
   it('calls onPartsUpdate callback when parts change', async () => {
     const mockCallback = jest.fn();
-    
+
     render(
       <TestWrapper>
         <PartsManagementSystem onPartsUpdate={mockCallback} />
@@ -178,8 +178,12 @@ describe('PartsManagementSystem', () => {
 
   it('handles service errors gracefully', async () => {
     partsService.getAllParts.mockRejectedValue(new Error('Service error'));
-    partsService.getInventoryStatus.mockRejectedValue(new Error('Service error'));
-    partsService.getPurchaseOrders.mockRejectedValue(new Error('Service error'));
+    partsService.getInventoryStatus.mockRejectedValue(
+      new Error('Service error')
+    );
+    partsService.getPurchaseOrders.mockRejectedValue(
+      new Error('Service error')
+    );
 
     render(
       <TestWrapper>
@@ -244,7 +248,7 @@ describe('Accessibility', () => {
 
     const firstTab = screen.getByText('Parts Board');
     firstTab.focus();
-    
+
     // Tab should be focusable
     expect(document.activeElement).toBe(firstTab);
   });
@@ -267,16 +271,16 @@ describe('Accessibility', () => {
 describe('Performance', () => {
   it('renders within performance budget', () => {
     const startTime = performance.now();
-    
+
     render(
       <TestWrapper>
         <PartsManagementSystem />
       </TestWrapper>
     );
-    
+
     const endTime = performance.now();
     const renderTime = endTime - startTime;
-    
+
     // Should render in under 100ms
     expect(renderTime).toBeLessThan(100);
   });
@@ -287,13 +291,13 @@ describe('Performance', () => {
       partNumber: `PART-${index}`,
       description: `Part ${index}`,
       category: 'body',
-      status: 'ordered'
+      status: 'ordered',
     }));
 
     partsService.getAllParts.mockResolvedValue(largeMockData);
 
     const startTime = performance.now();
-    
+
     render(
       <TestWrapper>
         <PartsManagementSystem />
@@ -306,7 +310,7 @@ describe('Performance', () => {
 
     const endTime = performance.now();
     const renderTime = endTime - startTime;
-    
+
     // Should handle large datasets reasonably well
     expect(renderTime).toBeLessThan(1000);
   });
@@ -320,7 +324,7 @@ describe('Mobile Responsiveness', () => {
       configurable: true,
       value: 375,
     });
-    
+
     Object.defineProperty(window, 'innerHeight', {
       writable: true,
       configurable: true,
@@ -349,7 +353,7 @@ describe('Mobile Responsiveness', () => {
     // All core functionality should work on mobile
     const searchButton = screen.getByText('Search Parts');
     fireEvent.click(searchButton);
-    
+
     expect(screen.getByText('Search Parts')).toBeInTheDocument();
   });
 });

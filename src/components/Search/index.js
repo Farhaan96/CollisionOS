@@ -9,5 +9,5 @@ export { default as SearchResults } from './SearchResults';
 // Re-export for convenience
 export default {
   GlobalSearchBar: require('./GlobalSearchBar').default,
-  SearchResults: require('./SearchResults').default
+  SearchResults: require('./SearchResults').default,
 };

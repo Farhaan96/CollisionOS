@@ -13,7 +13,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 function log(message, color = 'reset') {
@@ -42,27 +42,30 @@ function logInfo(message) {
 
 // Check if application is running
 async function checkAppRunning() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const http = require('http');
-    const req = http.request({
-      hostname: 'localhost',
-      port: 3000,
-      path: '/',
-      method: 'GET',
-      timeout: 5000
-    }, (res) => {
-      resolve(res.statusCode === 200);
-    });
-    
+    const req = http.request(
+      {
+        hostname: 'localhost',
+        port: 3000,
+        path: '/',
+        method: 'GET',
+        timeout: 5000,
+      },
+      res => {
+        resolve(res.statusCode === 200);
+      }
+    );
+
     req.on('error', () => {
       resolve(false);
     });
-    
+
     req.on('timeout', () => {
       req.destroy();
       resolve(false);
     });
-    
+
     req.end();
   });
 }
@@ -73,32 +76,35 @@ function checkSupabaseConfig() {
   if (!fs.existsSync(envPath)) {
     return false;
   }
-  
+
   const envContent = fs.readFileSync(envPath, 'utf8');
-  return envContent.includes('SUPABASE_URL') && envContent.includes('SUPABASE_ANON_KEY');
+  return (
+    envContent.includes('SUPABASE_URL') &&
+    envContent.includes('SUPABASE_ANON_KEY')
+  );
 }
 
 // Run Playwright tests
 function runPlaywrightTests(testPattern = '') {
   return new Promise((resolve, reject) => {
     const args = ['test'];
-    
+
     if (testPattern) {
       args.push(testPattern);
     }
-    
+
     // Add additional options
     args.push('--reporter=html,line');
     args.push('--timeout=30000');
-    
+
     logInfo(`Running Playwright tests with pattern: ${testPattern || 'all'}`);
-    
+
     const playwright = spawn('npx', ['playwright', ...args], {
       stdio: 'inherit',
-      shell: true
+      shell: true,
     });
-    
-    playwright.on('close', (code) => {
+
+    playwright.on('close', code => {
       if (code === 0) {
         logSuccess('All tests passed!');
         resolve();
@@ -107,8 +113,8 @@ function runPlaywrightTests(testPattern = '') {
         reject(new Error(`Tests failed with exit code ${code}`));
       }
     });
-    
-    playwright.on('error', (error) => {
+
+    playwright.on('error', error => {
       logError(`Failed to run tests: ${error.message}`);
       reject(error);
     });
@@ -117,24 +123,32 @@ function runPlaywrightTests(testPattern = '') {
 
 // Main execution function
 async function main() {
-  log(`${colors.bright}${colors.magenta}🚗 CollisionOS E2E Test Runner${colors.reset}\n`);
-  
+  log(
+    `${colors.bright}${colors.magenta}🚗 CollisionOS E2E Test Runner${colors.reset}\n`
+  );
+
   // Check if we're in the right directory
   if (!fs.existsSync('package.json')) {
-    logError('package.json not found. Please run this script from the project root.');
+    logError(
+      'package.json not found. Please run this script from the project root.'
+    );
     process.exit(1);
   }
-  
+
   // Check Supabase configuration
   logStep('Checking Supabase Configuration');
   if (!checkSupabaseConfig()) {
     logWarning('Supabase configuration not found in .env file');
-    logInfo('Make sure you have SUPABASE_URL and SUPABASE_ANON_KEY in your .env file');
-    logInfo('You can copy from env.example and update with your Supabase project details');
+    logInfo(
+      'Make sure you have SUPABASE_URL and SUPABASE_ANON_KEY in your .env file'
+    );
+    logInfo(
+      'You can copy from env.example and update with your Supabase project details'
+    );
   } else {
     logSuccess('Supabase configuration found');
   }
-  
+
   // Check if application is running
   logStep('Checking Application Status');
   const appRunning = await checkAppRunning();
@@ -142,18 +156,18 @@ async function main() {
     logWarning('Application is not running on http://localhost:3000');
     logInfo('Please start the application with: npm start');
     logInfo('Or run: npm run dev');
-    
+
     const readline = require('readline');
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
-    
-    const answer = await new Promise((resolve) => {
+
+    const answer = await new Promise(resolve => {
       rl.question('\nDo you want to continue anyway? (y/N): ', resolve);
     });
     rl.close();
-    
+
     if (answer.toLowerCase() !== 'y' && answer.toLowerCase() !== 'yes') {
       logInfo('Exiting...');
       process.exit(0);
@@ -161,11 +175,11 @@ async function main() {
   } else {
     logSuccess('Application is running on http://localhost:3000');
   }
-  
+
   // Parse command line arguments
   const args = process.argv.slice(2);
   let testPattern = '';
-  
+
   if (args.length > 0) {
     const command = args[0];
     switch (command) {
@@ -216,11 +230,13 @@ async function main() {
         break;
       default:
         logWarning(`Unknown command: ${command}`);
-        logInfo('Run "node tests/run-e2e-tests.js help" for available commands');
+        logInfo(
+          'Run "node tests/run-e2e-tests.js help" for available commands'
+        );
         process.exit(1);
     }
   }
-  
+
   // Check if test files exist
   logStep('Checking Test Files');
   const testDir = path.join(process.cwd(), 'tests', 'e2e');
@@ -229,26 +245,29 @@ async function main() {
     logInfo('Please create the tests/e2e/ directory and add your test files');
     process.exit(1);
   }
-  
-  const testFiles = fs.readdirSync(testDir).filter(file => file.endsWith('.spec.js'));
+
+  const testFiles = fs
+    .readdirSync(testDir)
+    .filter(file => file.endsWith('.spec.js'));
   if (testFiles.length === 0) {
     logError('No test files found in tests/e2e/');
     logInfo('Please add .spec.js files to the tests/e2e/ directory');
     process.exit(1);
   }
-  
+
   logSuccess(`Found ${testFiles.length} test file(s): ${testFiles.join(', ')}`);
-  
+
   // Run tests
   logStep('Running E2E Tests');
   try {
     await runPlaywrightTests(testPattern);
-    
+
     logStep('Test Results');
     logSuccess('All tests completed successfully!');
     logInfo('Check the playwright-report/ directory for detailed results');
-    logInfo('Open playwright-report/index.html in your browser to view the report');
-    
+    logInfo(
+      'Open playwright-report/index.html in your browser to view the report'
+    );
   } catch (error) {
     logError('Test execution failed');
     logInfo('Check the error messages above for details');
@@ -271,7 +290,7 @@ process.on('SIGTERM', () => {
 
 // Run the main function
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     logError(`Unexpected error: ${error.message}`);
     process.exit(1);
   });
@@ -280,5 +299,5 @@ if (require.main === module) {
 module.exports = {
   checkAppRunning,
   checkSupabaseConfig,
-  runPlaywrightTests
+  runPlaywrightTests,
 };

@@ -19,17 +19,17 @@ const TEST_CONFIG = {
       'src/services/bmsService.js',
       'src/components/Common/BMSFileUpload.js',
       'src/pages/BMSImport/**/*.js',
-      'src/components/Dashboard/BMSDashboard.js'
-    ]
+      'src/components/Dashboard/BMSDashboard.js',
+    ],
   },
   performance: {
     enabled: true,
     thresholds: {
       parseTime: 1000,
       uploadTime: 5000,
-      memoryUsage: 100 * 1024 * 1024
-    }
-  }
+      memoryUsage: 100 * 1024 * 1024,
+    },
+  },
 };
 
 // Test suites to run
@@ -38,26 +38,28 @@ const TEST_SUITES = [
     name: 'Unit Tests',
     command: 'npm run test:unit',
     pattern: 'tests/unit/**/*.test.js',
-    weight: 0.4
+    weight: 0.4,
   },
   {
     name: 'Integration Tests',
-    command: 'jest tests/integration/bms/bms-integration.test.js --detectOpenHandles --forceExit',
+    command:
+      'jest tests/integration/bms/bms-integration.test.js --detectOpenHandles --forceExit',
     pattern: 'tests/integration/bms/**/*.test.js',
-    weight: 0.3
+    weight: 0.3,
   },
   {
     name: 'Performance Tests',
-    command: 'jest tests/performance/bms-performance.test.js --detectOpenHandles --forceExit --runInBand',
+    command:
+      'jest tests/performance/bms-performance.test.js --detectOpenHandles --forceExit --runInBand',
     pattern: 'tests/performance/**/*.test.js',
-    weight: 0.1
+    weight: 0.1,
   },
   {
     name: 'E2E Tests',
     command: 'npx playwright test tests/e2e/bms/bms-comprehensive.spec.js',
     pattern: 'tests/e2e/bms/**/*.spec.js',
-    weight: 0.2
-  }
+    weight: 0.2,
+  },
 ];
 
 class BMSTestRunner {
@@ -72,7 +74,7 @@ class BMSTestRunner {
         failedTests: 0,
         skippedTests: 0,
         coverage: 0,
-        score: 0
+        score: 0,
       },
       suites: {},
       errors: [],
@@ -80,106 +82,116 @@ class BMSTestRunner {
       performance: {
         parseTime: [],
         uploadTime: [],
-        memoryUsage: []
-      }
+        memoryUsage: [],
+      },
     };
-    
-    this.reportPath = path.join(__dirname, '..', 'coverage', 'bms-comprehensive-report.json');
-    this.htmlReportPath = path.join(__dirname, '..', 'coverage', 'bms-comprehensive-report.html');
+
+    this.reportPath = path.join(
+      __dirname,
+      '..',
+      'coverage',
+      'bms-comprehensive-report.json'
+    );
+    this.htmlReportPath = path.join(
+      __dirname,
+      '..',
+      'coverage',
+      'bms-comprehensive-report.html'
+    );
   }
 
   async runAllTests() {
     console.log('🚀 Starting Comprehensive BMS Testing Suite...\n');
-    
+
     // Prepare environment
     await this.prepareEnvironment();
-    
+
     // Run test suites
     for (const suite of TEST_SUITES) {
       console.log(`\n📋 Running ${suite.name}...`);
       await this.runTestSuite(suite);
     }
-    
+
     // Generate reports
     await this.generateReports();
-    
+
     // Display summary
     this.displaySummary();
-    
+
     return this.results.overall.score >= 80;
   }
 
   async prepareEnvironment() {
     console.log('🔧 Preparing test environment...');
-    
+
     // Ensure coverage directory exists
     const coverageDir = path.join(__dirname, '..', 'coverage');
     if (!fs.existsSync(coverageDir)) {
       fs.mkdirSync(coverageDir, { recursive: true });
     }
-    
+
     // Check if sample BMS files exist
     const bmsDir = path.join(__dirname, '..', 'data', 'Example BMS');
     if (!fs.existsSync(bmsDir)) {
       console.log('⚠️  BMS sample directory not found, creating mock files...');
       await this.createMockBMSFiles();
     }
-    
+
     // Verify dependencies
     await this.verifyDependencies();
-    
+
     console.log('✅ Environment prepared successfully');
   }
 
   async createMockBMSFiles() {
     const bmsDir = path.join(__dirname, '..', 'data', 'Example BMS');
     fs.mkdirSync(bmsDir, { recursive: true });
-    
+
     const mockFiles = [
       {
         name: 'minor_collision_estimate.xml',
         type: 'minor',
         damageLines: 5,
-        total: 1500
+        total: 1500,
       },
       {
         name: 'major_collision_estimate.xml',
         type: 'major',
         damageLines: 25,
-        total: 8500
+        total: 8500,
       },
       {
         name: 'luxury_vehicle_estimate.xml',
         type: 'luxury',
         damageLines: 15,
-        total: 12000
+        total: 12000,
       },
       {
         name: 'paint_only_estimate.xml',
         type: 'paint',
         damageLines: 8,
-        total: 2500
+        total: 2500,
       },
       {
         name: 'glass_replacement_estimate.xml',
         type: 'glass',
         damageLines: 3,
-        total: 800
-      }
+        total: 800,
+      },
     ];
-    
+
     for (const mockFile of mockFiles) {
       const filePath = path.join(bmsDir, mockFile.name);
       const content = this.generateMockBMSContent(mockFile);
       fs.writeFileSync(filePath, content, 'utf8');
     }
-    
+
     console.log(`✅ Created ${mockFiles.length} mock BMS files`);
   }
 
   generateMockBMSContent(config) {
     const { type, damageLines, total } = config;
-    
+
     return `<?xml version="1.0" encoding="UTF-8"?>
 <VehicleDamageEstimateAddRq>
   <RqUID>TEST-${type.toUpperCase()}-${Date.now()}</RqUID>
@@ -302,7 +314,9 @@ class BMSTestRunner {
     </Valuation>
   </VehicleInfo>
   
-  ${Array.from({ length: damageLines }, (_, i) => `
+  ${Array.from(
+    { length: damageLines },
+    (_, i) => `
   <DamageLineInfo>
     <LineNum>${i + 1}</LineNum>
     <UniqueSequenceNum>${i + 100}</UniqueSequenceNum>
@@ -327,7 +341,8 @@ class BMSTestRunner {
       <LaborInclInd>0</LaborInclInd>
       <TaxableInd>1</TaxableInd>
     </LaborInfo>
-  </DamageLineInfo>`).join('')}
+  </DamageLineInfo>`
+  ).join('')}
   
   <RepairTotalsInfo>
     <LaborTotalsInfo>
@@ -367,9 +382,9 @@ class BMSTestRunner {
       '@testing-library/user-event',
       'jest',
       '@playwright/test',
-      'fast-xml-parser'
+      'fast-xml-parser',
     ];
-    
+
     for (const pkg of requiredPackages) {
       try {
         require.resolve(pkg);
@@ -381,11 +396,11 @@ class BMSTestRunner {
 
   async runTestSuite(suite) {
     const startTime = Date.now();
-    
+
     try {
       const result = await this.executeCommand(suite.command);
       const endTime = Date.now();
-      
+
       this.results.suites[suite.name] = {
         command: suite.command,
         pattern: suite.pattern,
@@ -394,27 +409,30 @@ class BMSTestRunner {
         success: result.exitCode === 0,
         output: result.output,
         errors: result.errors,
-        stats: this.parseTestOutput(result.output, suite.name)
+        stats: this.parseTestOutput(result.output, suite.name),
       };
-      
+
       // Update overall results
       const suiteResult = this.results.suites[suite.name];
       this.results.overall.totalTests += suiteResult.stats.total;
       this.results.overall.passedTests += suiteResult.stats.passed;
       this.results.overall.failedTests += suiteResult.stats.failed;
       this.results.overall.skippedTests += suiteResult.stats.skipped;
-      
+
       if (suiteResult.success) {
-        console.log(`✅ ${suite.name} passed (${suiteResult.stats.passed}/${suiteResult.stats.total})`);
+        console.log(
+          `✅ ${suite.name} passed (${suiteResult.stats.passed}/${suiteResult.stats.total})`
+        );
       } else {
-        console.log(`❌ ${suite.name} failed (${suiteResult.stats.passed}/${suiteResult.stats.total})`);
+        console.log(
+          `❌ ${suite.name} failed (${suiteResult.stats.passed}/${suiteResult.stats.total})`
+        );
         this.results.errors.push(`${suite.name}: ${result.errors}`);
       }
-      
     } catch (error) {
       console.log(`💥 ${suite.name} crashed: ${error.message}`);
       this.results.errors.push(`${suite.name} crashed: ${error.message}`);
-      
+
       this.results.suites[suite.name] = {
         command: suite.command,
         pattern: suite.pattern,
@@ -423,57 +441,57 @@ class BMSTestRunner {
         success: false,
         output: '',
         errors: [error.message],
-        stats: { total: 0, passed: 0, failed: 1, skipped: 0 }
+        stats: { total: 0, passed: 0, failed: 1, skipped: 0 },
       };
-      
+
       this.results.overall.failedTests += 1;
     }
   }
 
   async executeCommand(command) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       let output = '';
       let errors = '';
-      
-      const child = spawn(command, { 
-        shell: true, 
+
+      const child = spawn(command, {
+        shell: true,
         cwd: path.join(__dirname, '..'),
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
-      
-      child.stdout.on('data', (data) => {
+
+      child.stdout.on('data', data => {
         output += data.toString();
         process.stdout.write(data);
       });
-      
-      child.stderr.on('data', (data) => {
+
+      child.stderr.on('data', data => {
         errors += data.toString();
         process.stderr.write(data);
       });
-      
-      child.on('close', (code) => {
+
+      child.on('close', code => {
         resolve({
           exitCode: code,
           output,
-          errors
+          errors,
         });
       });
-      
-      child.on('error', (error) => {
+
+      child.on('error', error => {
         resolve({
           exitCode: 1,
           output,
-          errors: error.message
+          errors: error.message,
         });
       });
-      
+
       // Timeout after 5 minutes
       setTimeout(() => {
         child.kill('SIGTERM');
         resolve({
           exitCode: 1,
           output,
-          errors: 'Test timed out after 5 minutes'
+          errors: 'Test timed out after 5 minutes',
         });
       }, TEST_CONFIG.timeout);
     });
@@ -481,50 +499,54 @@ class BMSTestRunner {
 
   parseTestOutput(output, suiteName) {
     const stats = { total: 0, passed: 0, failed: 0, skipped: 0 };
-    
+
     // Parse Jest output
     if (output.includes('Tests:')) {
-      const testMatch = output.match(/Tests:\s+(\d+)\s+failed,\s+(\d+)\s+passed,\s+(\d+)\s+total/);
+      const testMatch = output.match(
+        /Tests:\s+(\d+)\s+failed,\s+(\d+)\s+passed,\s+(\d+)\s+total/
+      );
       if (testMatch) {
         stats.failed = parseInt(testMatch[1]);
         stats.passed = parseInt(testMatch[2]);
         stats.total = parseInt(testMatch[3]);
       } else {
-        const passedMatch = output.match(/Tests:\s+(\d+)\s+passed,\s+(\d+)\s+total/);
+        const passedMatch = output.match(
+          /Tests:\s+(\d+)\s+passed,\s+(\d+)\s+total/
+        );
         if (passedMatch) {
           stats.passed = parseInt(passedMatch[1]);
           stats.total = parseInt(passedMatch[2]);
         }
       }
     }
-    
+
     // Parse Playwright output
     if (output.includes('passing') || output.includes('failing')) {
       const passingMatch = output.match(/(\d+)\s+passing/);
       const failingMatch = output.match(/(\d+)\s+failing/);
-      
+
       if (passingMatch) stats.passed = parseInt(passingMatch[1]);
       if (failingMatch) stats.failed = parseInt(failingMatch[1]);
       stats.total = stats.passed + stats.failed;
     }
-    
+
     // Extract performance metrics if available
     if (suiteName === 'Performance Tests') {
       const parseTimeMatch = output.match(/parse time:\s+([\d.]+)ms/g);
       if (parseTimeMatch) {
-        this.results.performance.parseTime = parseTimeMatch.map(m => 
+        this.results.performance.parseTime = parseTimeMatch.map(m =>
           parseFloat(m.match(/[\d.]+/)[0])
         );
       }
     }
-    
+
     return stats;
   }
 
   calculateScore() {
     let totalWeightedScore = 0;
     let totalWeight = 0;
-    
+
     for (const [name, suite] of Object.entries(this.results.suites)) {
       const suiteConfig = TEST_SUITES.find(s => s.name === name);
       if (suiteConfig && suite.stats.total > 0) {
@@ -533,24 +555,25 @@ class BMSTestRunner {
         totalWeight += suiteConfig.weight;
       }
     }
-    
+
     return totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 0;
   }
 
   async generateReports() {
     console.log('\n📊 Generating reports...');
-    
+
     this.results.overall.endTime = new Date();
-    this.results.overall.duration = this.results.overall.endTime - this.results.overall.startTime;
+    this.results.overall.duration =
+      this.results.overall.endTime - this.results.overall.startTime;
     this.results.overall.score = this.calculateScore();
-    
+
     // JSON Report
     fs.writeFileSync(this.reportPath, JSON.stringify(this.results, null, 2));
-    
+
     // HTML Report
     const htmlReport = this.generateHTMLReport();
     fs.writeFileSync(this.htmlReportPath, htmlReport);
-    
+
     console.log(`✅ Reports generated:`);
     console.log(`   JSON: ${this.reportPath}`);
     console.log(`   HTML: ${this.htmlReportPath}`);
@@ -558,7 +581,7 @@ class BMSTestRunner {
 
   generateHTMLReport() {
     const { overall, suites, errors, warnings } = this.results;
-    
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -616,7 +639,9 @@ class BMSTestRunner {
         
         <div class="suite-results">
             <h2>📋 Test Suite Results</h2>
-            ${Object.entries(suites).map(([name, suite]) => `
+            ${Object.entries(suites)
+              .map(
+                ([name, suite]) => `
             <div class="suite">
                 <div class="suite-header ${suite.success ? 'success' : 'failure'}">
                     ${suite.success ? '✅' : '❌'} ${name}
@@ -631,22 +656,32 @@ class BMSTestRunner {
                     ${suite.errors.length > 0 ? `<div class="errors"><strong>Errors:</strong><br>${suite.errors.join('<br>')}</div>` : ''}
                 </div>
             </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
         
-        ${errors.length > 0 ? `
+        ${
+          errors.length > 0
+            ? `
         <div class="errors">
             <h3>❌ Errors</h3>
             ${errors.map(error => `<p>${error}</p>`).join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
         
-        ${warnings.length > 0 ? `
+        ${
+          warnings.length > 0
+            ? `
         <div class="warnings">
             <h3>⚠️ Warnings</h3>
             ${warnings.map(warning => `<p>${warning}</p>`).join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
     </div>
 </body>
 </html>`;
@@ -654,25 +689,31 @@ class BMSTestRunner {
 
   displaySummary() {
     const { overall } = this.results;
-    
+
     console.log('\n' + '='.repeat(80));
     console.log('📊 BMS COMPREHENSIVE TEST SUMMARY');
     console.log('='.repeat(80));
     console.log(`🎯 Overall Score: ${overall.score}%`);
-    console.log(`📈 Tests: ${overall.passedTests}/${overall.totalTests} passed`);
-    console.log(`⏱️  Duration: ${(overall.duration / 1000 / 60).toFixed(1)} minutes`);
+    console.log(
+      `📈 Tests: ${overall.passedTests}/${overall.totalTests} passed`
+    );
+    console.log(
+      `⏱️  Duration: ${(overall.duration / 1000 / 60).toFixed(1)} minutes`
+    );
     console.log(`📝 Report: ${this.htmlReportPath}`);
-    
+
     if (overall.score >= 90) {
       console.log('🏆 EXCELLENT - BMS functionality is production ready!');
     } else if (overall.score >= 80) {
-      console.log('👍 GOOD - BMS functionality is mostly ready with minor issues');
+      console.log(
+        '👍 GOOD - BMS functionality is mostly ready with minor issues'
+      );
     } else if (overall.score >= 70) {
       console.log('⚠️  FAIR - BMS functionality needs improvement');
     } else {
       console.log('❌ POOR - BMS functionality requires significant fixes');
     }
-    
+
     console.log('='.repeat(80));
   }
 }
@@ -680,13 +721,16 @@ class BMSTestRunner {
 // Run if called directly
 if (require.main === module) {
   const runner = new BMSTestRunner();
-  
-  runner.runAllTests().then((success) => {
-    process.exit(success ? 0 : 1);
-  }).catch((error) => {
-    console.error('💥 Test runner crashed:', error);
-    process.exit(1);
-  });
+
+  runner
+    .runAllTests()
+    .then(success => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch(error => {
+      console.error('💥 Test runner crashed:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = BMSTestRunner;

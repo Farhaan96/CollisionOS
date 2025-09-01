@@ -10,7 +10,9 @@ const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file.'
+  );
 }
 
 // Create Supabase client
@@ -20,21 +22,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    debug: process.env.NODE_ENV === 'development'
+    debug: process.env.NODE_ENV === 'development',
   },
   realtime: {
     params: {
-      eventsPerSecond: 10
-    }
+      eventsPerSecond: 10,
+    },
   },
   db: {
-    schema: 'public'
+    schema: 'public',
   },
   global: {
     headers: {
-      'X-Client-Info': 'collision-os@1.0.0'
-    }
-  }
+      'X-Client-Info': 'collision-os@1.0.0',
+    },
+  },
 });
 
 // Database table references
@@ -51,7 +53,7 @@ export const tables = {
   jobUpdates: 'job_updates',
   estimates: 'estimates',
   notifications: 'notifications',
-  auditLog: 'audit_log'
+  auditLog: 'audit_log',
 };
 
 // RPC function references
@@ -60,7 +62,7 @@ export const rpcFunctions = {
   globalSearch: 'global_search',
   hasPermission: 'has_permission',
   getUserShop: 'get_user_shop',
-  updateUserPermissions: 'update_user_permissions'
+  updateUserPermissions: 'update_user_permissions',
 };
 
 /**
@@ -68,7 +70,7 @@ export const rpcFunctions = {
  */
 export const handleSupabaseError = (error, context = '') => {
   console.error(`Supabase Error ${context}:`, error);
-  
+
   // Custom error handling based on error type
   if (error?.code === '42501') {
     throw new Error('Insufficient permissions for this operation');
@@ -88,34 +90,34 @@ export const handleSupabaseError = (error, context = '') => {
  */
 export const getCurrentUserShop = async () => {
   const { data, error } = await supabase.rpc(rpcFunctions.getUserShop);
-  
+
   if (error) {
     handleSupabaseError(error, 'getting user shop');
   }
-  
+
   return data;
 };
 
 /**
  * Helper function to check user permissions
  */
-export const checkUserPermission = async (permission) => {
+export const checkUserPermission = async permission => {
   const { data: user } = await supabase.auth.getUser();
-  
+
   if (!user?.user?.id) {
     return false;
   }
-  
+
   const { data, error } = await supabase.rpc(rpcFunctions.hasPermission, {
     user_uuid: user.user.id,
-    permission_name: permission
+    permission_name: permission,
   });
-  
+
   if (error) {
     console.warn('Permission check failed:', error);
     return false;
   }
-  
+
   return data;
 };
 
@@ -125,41 +127,44 @@ export const checkUserPermission = async (permission) => {
 export const shopService = {
   async getShop() {
     const shopId = await getCurrentUserShop();
-    
+
     const { data, error } = await supabase
       .from(tables.shops)
       .select('*')
       .eq('id', shopId)
       .single();
-    
+
     if (error) handleSupabaseError(error, 'fetching shop');
     return data;
   },
 
   async updateShop(updates) {
     const shopId = await getCurrentUserShop();
-    
+
     const { data, error } = await supabase
       .from(tables.shops)
       .update(updates)
       .eq('id', shopId)
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'updating shop');
     return data;
   },
 
   async getDashboardStats() {
     const shopId = await getCurrentUserShop();
-    
-    const { data, error } = await supabase.rpc(rpcFunctions.getShopDashboardStats, {
-      shop_uuid: shopId
-    });
-    
+
+    const { data, error } = await supabase.rpc(
+      rpcFunctions.getShopDashboardStats,
+      {
+        shop_uuid: shopId,
+      }
+    );
+
     if (error) handleSupabaseError(error, 'fetching dashboard stats');
     return data;
-  }
+  },
 };
 
 /**
@@ -168,19 +173,19 @@ export const shopService = {
 export const userService = {
   async getCurrentUser() {
     const { data: authUser } = await supabase.auth.getUser();
-    
+
     if (!authUser?.user) return null;
-    
+
     const { data, error } = await supabase
       .from(tables.users)
       .select('*')
       .eq('user_id', authUser.user.id)
       .single();
-    
+
     if (error && error.code !== 'PGRST116') {
       handleSupabaseError(error, 'fetching current user');
     }
-    
+
     return data;
   },
 
@@ -190,7 +195,7 @@ export const userService = {
       .select('*')
       .eq('is_active', true)
       .order('first_name', { ascending: true });
-    
+
     if (error) handleSupabaseError(error, 'fetching shop users');
     return data;
   },
@@ -202,7 +207,7 @@ export const userService = {
       .eq('user_id', userId)
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'updating user');
     return data;
   },
@@ -213,10 +218,10 @@ export const userService = {
       .insert([userData])
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'creating user');
     return data;
-  }
+  },
 };
 
 /**
@@ -226,25 +231,29 @@ export const customerService = {
   async getCustomers(filters = {}) {
     let query = supabase
       .from(tables.customers)
-      .select(`
+      .select(
+        `
         *,
         vehicles:vehicles(*)
-      `)
+      `
+      )
       .eq('is_active', true);
-    
+
     // Apply filters
     if (filters.search) {
-      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`);
+      query = query.or(
+        `first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`
+      );
     }
-    
+
     if (filters.status) {
       query = query.eq('customer_status', filters.status);
     }
-    
+
     query = query.order('last_name', { ascending: true });
-    
+
     const { data, error } = await query;
-    
+
     if (error) handleSupabaseError(error, 'fetching customers');
     return data;
   },
@@ -252,27 +261,29 @@ export const customerService = {
   async getCustomer(customerId) {
     const { data, error } = await supabase
       .from(tables.customers)
-      .select(`
+      .select(
+        `
         *,
         vehicles:vehicles(*),
         jobs:jobs(*)
-      `)
+      `
+      )
       .eq('id', customerId)
       .single();
-    
+
     if (error) handleSupabaseError(error, 'fetching customer');
     return data;
   },
 
   async createCustomer(customerData) {
     const shopId = await getCurrentUserShop();
-    
+
     const { data, error } = await supabase
       .from(tables.customers)
       .insert([{ ...customerData, shop_id: shopId }])
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'creating customer');
     return data;
   },
@@ -284,7 +295,7 @@ export const customerService = {
       .eq('id', customerId)
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'updating customer');
     return data;
   },
@@ -294,9 +305,9 @@ export const customerService = {
       .from(tables.customers)
       .delete()
       .eq('id', customerId);
-    
+
     if (error) handleSupabaseError(error, 'deleting customer');
-  }
+  },
 };
 
 /**
@@ -306,35 +317,39 @@ export const jobService = {
   async getJobs(filters = {}) {
     let query = supabase
       .from(tables.jobs)
-      .select(`
+      .select(
+        `
         *,
         customer:customers(*),
         vehicle:vehicles(*),
         assignee:users(*)
-      `)
+      `
+      )
       .eq('is_archived', false);
-    
+
     // Apply filters
     if (filters.status) {
       query = query.eq('status', filters.status);
     }
-    
+
     if (filters.assignee) {
       query = query.eq('assigned_to', filters.assignee);
     }
-    
+
     if (filters.priority) {
       query = query.eq('priority', filters.priority);
     }
-    
+
     if (filters.search) {
-      query = query.or(`job_number.ilike.%${filters.search}%,damage_description.ilike.%${filters.search}%`);
+      query = query.or(
+        `job_number.ilike.%${filters.search}%,damage_description.ilike.%${filters.search}%`
+      );
     }
-    
+
     query = query.order('created_at', { ascending: false });
-    
+
     const { data, error } = await query;
-    
+
     if (error) handleSupabaseError(error, 'fetching jobs');
     return data;
   },
@@ -342,7 +357,8 @@ export const jobService = {
   async getJob(jobId) {
     const { data, error } = await supabase
       .from(tables.jobs)
-      .select(`
+      .select(
+        `
         *,
         customer:customers(*),
         vehicle:vehicles(*),
@@ -351,10 +367,11 @@ export const jobService = {
         job_labor:job_labor(*),
         estimates:estimates(*),
         updates:job_updates(*)
-      `)
+      `
+      )
       .eq('id', jobId)
       .single();
-    
+
     if (error) handleSupabaseError(error, 'fetching job');
     return data;
   },
@@ -362,46 +379,45 @@ export const jobService = {
   async createJob(jobData) {
     const shopId = await getCurrentUserShop();
     const { data: user } = await supabase.auth.getUser();
-    
+
     const { data, error } = await supabase
       .from(tables.jobs)
-      .insert([{ 
-        ...jobData, 
-        shop_id: shopId,
-        created_by: user?.user?.id
-      }])
+      .insert([
+        {
+          ...jobData,
+          shop_id: shopId,
+          created_by: user?.user?.id,
+        },
+      ])
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'creating job');
     return data;
   },
 
   async updateJob(jobId, updates) {
     const { data: user } = await supabase.auth.getUser();
-    
+
     const { data, error } = await supabase
       .from(tables.jobs)
-      .update({ 
+      .update({
         ...updates,
-        updated_by: user?.user?.id
+        updated_by: user?.user?.id,
       })
       .eq('id', jobId)
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'updating job');
     return data;
   },
 
   async deleteJob(jobId) {
-    const { error } = await supabase
-      .from(tables.jobs)
-      .delete()
-      .eq('id', jobId);
-    
+    const { error } = await supabase.from(tables.jobs).delete().eq('id', jobId);
+
     if (error) handleSupabaseError(error, 'deleting job');
-  }
+  },
 };
 
 /**
@@ -411,42 +427,46 @@ export const partService = {
   async getParts(filters = {}) {
     let query = supabase
       .from(tables.parts)
-      .select(`
+      .select(
+        `
         *,
         vendor:vendors(name)
-      `)
+      `
+      )
       .eq('is_active', true);
-    
+
     // Apply filters
     if (filters.category) {
       query = query.eq('category', filters.category);
     }
-    
+
     if (filters.lowStock) {
       query = query.lt('current_stock', supabase.rpc('minimum_stock'));
     }
-    
+
     if (filters.search) {
-      query = query.or(`part_number.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      query = query.or(
+        `part_number.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
+      );
     }
-    
+
     query = query.order('part_number', { ascending: true });
-    
+
     const { data, error } = await query;
-    
+
     if (error) handleSupabaseError(error, 'fetching parts');
     return data;
   },
 
   async createPart(partData) {
     const shopId = await getCurrentUserShop();
-    
+
     const { data, error } = await supabase
       .from(tables.parts)
       .insert([{ ...partData, shop_id: shopId }])
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'creating part');
     return data;
   },
@@ -458,28 +478,31 @@ export const partService = {
       .eq('id', partId)
       .select()
       .single();
-    
+
     if (error) handleSupabaseError(error, 'updating part');
     return data;
-  }
+  },
 };
 
 /**
  * Search functionality
  */
 export const searchService = {
-  async globalSearch(searchTerm, entityTypes = ['jobs', 'customers', 'vehicles', 'parts']) {
+  async globalSearch(
+    searchTerm,
+    entityTypes = ['jobs', 'customers', 'vehicles', 'parts']
+  ) {
     const shopId = await getCurrentUserShop();
-    
+
     const { data, error } = await supabase.rpc(rpcFunctions.globalSearch, {
       shop_uuid: shopId,
       search_term: searchTerm,
-      entity_types: entityTypes
+      entity_types: entityTypes,
     });
-    
+
     if (error) handleSupabaseError(error, 'performing global search');
     return data;
-  }
+  },
 };
 
 /**
@@ -495,7 +518,7 @@ export const realtimeService = {
           event: '*',
           schema: 'public',
           table: 'jobs',
-          filter: `shop_id=eq.${shopId}`
+          filter: `shop_id=eq.${shopId}`,
         },
         callback
       )
@@ -511,7 +534,7 @@ export const realtimeService = {
           event: 'INSERT',
           schema: 'public',
           table: 'job_updates',
-          filter: `job_id=eq.${jobId}`
+          filter: `job_id=eq.${jobId}`,
         },
         callback
       )
@@ -527,7 +550,7 @@ export const realtimeService = {
           event: '*',
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${userId}`
+          filter: `user_id=eq.${userId}`,
         },
         callback
       )
@@ -536,7 +559,7 @@ export const realtimeService = {
 
   unsubscribe(channel) {
     return supabase.removeChannel(channel);
-  }
+  },
 };
 
 /**
@@ -546,38 +569,38 @@ export const authService = {
   async signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
-    
+
     if (error) handleSupabaseError(error, 'signing in');
     return data;
   },
 
   async signOut() {
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) handleSupabaseError(error, 'signing out');
   },
 
   async resetPassword(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}/reset-password`,
     });
-    
+
     if (error) handleSupabaseError(error, 'resetting password');
   },
 
   async updatePassword(newPassword) {
     const { error } = await supabase.auth.updateUser({
-      password: newPassword
+      password: newPassword,
     });
-    
+
     if (error) handleSupabaseError(error, 'updating password');
   },
 
   onAuthStateChange(callback) {
     return supabase.auth.onAuthStateChange(callback);
-  }
+  },
 };
 
 export default supabase;

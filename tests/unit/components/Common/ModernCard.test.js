@@ -9,7 +9,7 @@ describe('ModernCard Component', () => {
     test('renders with children content', () => {
       renderWithProviders(
         <ModernCard>
-          <div data-testid="test-content">Test Content</div>
+          <div data-testid='test-content'>Test Content</div>
         </ModernCard>
       );
 
@@ -27,7 +27,7 @@ describe('ModernCard Component', () => {
 
     test('applies default styling classes', () => {
       renderWithProviders(
-        <ModernCard data-testid="card">
+        <ModernCard data-testid='card'>
           <div>Content</div>
         </ModernCard>
       );
@@ -40,7 +40,7 @@ describe('ModernCard Component', () => {
   describe('Props and Customization', () => {
     test('accepts and applies custom className', () => {
       renderWithProviders(
-        <ModernCard className="custom-card" data-testid="card">
+        <ModernCard className='custom-card' data-testid='card'>
           <div>Content</div>
         </ModernCard>
       );
@@ -51,9 +51,9 @@ describe('ModernCard Component', () => {
 
     test('accepts and applies custom styles', () => {
       const customStyle = { backgroundColor: 'red', padding: '20px' };
-      
+
       renderWithProviders(
-        <ModernCard style={customStyle} data-testid="card">
+        <ModernCard style={customStyle} data-testid='card'>
           <div>Content</div>
         </ModernCard>
       );
@@ -65,7 +65,11 @@ describe('ModernCard Component', () => {
 
     test('forwards additional props to the card element', () => {
       renderWithProviders(
-        <ModernCard data-testid="card" id="test-card" aria-label="Modern card component">
+        <ModernCard
+          data-testid='card'
+          id='test-card'
+          aria-label='Modern card component'
+        >
           <div>Content</div>
         </ModernCard>
       );
@@ -77,7 +81,7 @@ describe('ModernCard Component', () => {
 
     test('handles elevation prop if supported', () => {
       renderWithProviders(
-        <ModernCard elevation={8} data-testid="card">
+        <ModernCard elevation={8} data-testid='card'>
           <div>Content</div>
         </ModernCard>
       );
@@ -93,7 +97,7 @@ describe('ModernCard Component', () => {
       const user = userEvent.setup();
 
       renderWithProviders(
-        <ModernCard onClick={handleClick} data-testid="clickable-card">
+        <ModernCard onClick={handleClick} data-testid='clickable-card'>
           <div>Clickable Content</div>
         </ModernCard>
       );
@@ -110,8 +114,8 @@ describe('ModernCard Component', () => {
       const user = userEvent.setup();
 
       renderWithProviders(
-        <ModernCard onClick={handleCardClick} data-testid="card">
-          <button onClick={handleButtonClick} data-testid="button">
+        <ModernCard onClick={handleCardClick} data-testid='card'>
+          <button onClick={handleButtonClick} data-testid='button'>
             Click Me
           </button>
         </ModernCard>
@@ -126,7 +130,7 @@ describe('ModernCard Component', () => {
 
     test('applies proper cursor style when clickable', () => {
       renderWithProviders(
-        <ModernCard onClick={() => {}} data-testid="clickable-card">
+        <ModernCard onClick={() => {}} data-testid='clickable-card'>
           <div>Content</div>
         </ModernCard>
       );
@@ -141,9 +145,9 @@ describe('ModernCard Component', () => {
     test('renders multiple children correctly', () => {
       renderWithProviders(
         <ModernCard>
-          <h2 data-testid="title">Card Title</h2>
-          <p data-testid="description">Card description</p>
-          <button data-testid="action">Action</button>
+          <h2 data-testid='title'>Card Title</h2>
+          <p data-testid='description'>Card description</p>
+          <button data-testid='action'>Action</button>
         </ModernCard>
       );
 
@@ -160,7 +164,7 @@ describe('ModernCard Component', () => {
               <h3>Header</h3>
             </header>
             <main>
-              <section data-testid="section">
+              <section data-testid='section'>
                 <p>Complex content</p>
               </section>
             </main>
@@ -177,12 +181,12 @@ describe('ModernCard Component', () => {
   describe('Accessibility', () => {
     test('maintains accessibility when used as clickable element', () => {
       renderWithProviders(
-        <ModernCard 
-          onClick={() => {}} 
-          role="button"
+        <ModernCard
+          onClick={() => {}}
+          role='button'
           tabIndex={0}
-          aria-label="Clickable modern card"
-          data-testid="accessible-card"
+          aria-label='Clickable modern card'
+          data-testid='accessible-card'
         >
           <div>Accessible Content</div>
         </ModernCard>
@@ -199,15 +203,15 @@ describe('ModernCard Component', () => {
       const user = userEvent.setup();
 
       renderWithProviders(
-        <ModernCard 
+        <ModernCard
           onClick={handleClick}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               handleClick();
             }
           }}
           tabIndex={0}
-          data-testid="keyboard-card"
+          data-testid='keyboard-card'
         >
           <div>Keyboard accessible content</div>
         </ModernCard>
@@ -215,7 +219,7 @@ describe('ModernCard Component', () => {
 
       const card = screen.getByTestId('keyboard-card');
       card.focus();
-      
+
       await user.keyboard('{Enter}');
       expect(handleClick).toHaveBeenCalledTimes(1);
 
@@ -227,11 +231,11 @@ describe('ModernCard Component', () => {
   describe('Error Handling', () => {
     test('handles undefined props gracefully', () => {
       renderWithProviders(
-        <ModernCard 
+        <ModernCard
           className={undefined}
           style={undefined}
           onClick={undefined}
-          data-testid="card"
+          data-testid='card'
         >
           <div>Content</div>
         </ModernCard>
@@ -244,7 +248,7 @@ describe('ModernCard Component', () => {
 
     test('handles null children gracefully', () => {
       renderWithProviders(<ModernCard>{null}</ModernCard>);
-      
+
       // Should render without errors
       const card = screen.getByRole('generic');
       expect(card).toBeInTheDocument();
@@ -253,10 +257,10 @@ describe('ModernCard Component', () => {
     test('handles mixed valid and invalid children', () => {
       renderWithProviders(
         <ModernCard>
-          <div data-testid="valid">Valid content</div>
+          <div data-testid='valid'>Valid content</div>
           {null}
           {undefined}
-          <span data-testid="another-valid">Another valid content</span>
+          <span data-testid='another-valid'>Another valid content</span>
         </ModernCard>
       );
 
@@ -268,7 +272,7 @@ describe('ModernCard Component', () => {
   describe('Theme Integration', () => {
     test('integrates with Material-UI theme', () => {
       renderWithProviders(
-        <ModernCard data-testid="themed-card">
+        <ModernCard data-testid='themed-card'>
           <div>Themed content</div>
         </ModernCard>
       );
@@ -281,12 +285,12 @@ describe('ModernCard Component', () => {
     test('respects theme dark mode', () => {
       const darkTheme = {
         palette: {
-          mode: 'dark'
-        }
+          mode: 'dark',
+        },
       };
 
       renderWithProviders(
-        <ModernCard data-testid="dark-card">
+        <ModernCard data-testid='dark-card'>
           <div>Dark themed content</div>
         </ModernCard>,
         { theme: darkTheme }

@@ -23,7 +23,7 @@ import {
   TextField,
   Collapse,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   DirectionsCar,
@@ -50,13 +50,13 @@ import {
   Visibility,
   Star,
   TrendingUp,
-  CalendarToday
+  CalendarToday,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * SearchResults - Advanced results display with contextual actions
- * 
+ *
  * Features:
  * - Unified result cards showing RO + Claim + Customer + Vehicle
  * - Quick actions: View RO, Call Customer, Update Status
@@ -81,7 +81,7 @@ const SearchResults = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [viewMode, setViewMode] = useState(defaultView);
   const [sortBy, setSortBy] = useState('relevance');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -90,7 +90,7 @@ const SearchResults = ({
     priority: 'all',
     insurance: 'all',
     daysInShop: 'all',
-    dateRange: 'all'
+    dateRange: 'all',
   });
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -123,7 +123,7 @@ const SearchResults = ({
     // Apply sorting
     filtered.sort((a, b) => {
       let aVal, bVal;
-      
+
       switch (sortBy) {
         case 'priority':
           const priorityOrder = { high: 3, normal: 2, low: 1 };
@@ -166,13 +166,17 @@ const SearchResults = ({
   // Get unique filter options
   const filterOptions = useMemo(() => {
     const statuses = [...new Set(results.map(r => r.status))].filter(Boolean);
-    const priorities = [...new Set(results.map(r => r.priority))].filter(Boolean);
-    const insurances = [...new Set(results.map(r => r.insurance))].filter(Boolean);
-    
+    const priorities = [...new Set(results.map(r => r.priority))].filter(
+      Boolean
+    );
+    const insurances = [...new Set(results.map(r => r.insurance))].filter(
+      Boolean
+    );
+
     return {
       statuses,
       priorities,
-      insurances
+      insurances,
     };
   }, [results]);
 
@@ -186,14 +190,14 @@ const SearchResults = ({
   };
 
   // Handle sort change
-  const handleSortChange = (newSortBy) => {
+  const handleSortChange = newSortBy => {
     if (newSortBy === sortBy) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(newSortBy);
       setSortOrder('desc');
     }
-    
+
     if (onSortChange) {
       onSortChange({ sortBy: newSortBy, sortOrder });
     }
@@ -211,7 +215,7 @@ const SearchResults = ({
     setSelectedItem(null);
   };
 
-  const handleItemClick = (item) => {
+  const handleItemClick = item => {
     if (onItemSelect) {
       onItemSelect(item);
     } else {
@@ -243,25 +247,36 @@ const SearchResults = ({
   };
 
   // Get status color
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
-      case 'estimate': return 'warning';
-      case 'in_progress': return 'primary';
-      case 'quality_check': return 'info';
-      case 'ready_for_pickup': return 'success';
-      case 'completed': return 'success';
-      case 'on_hold': return 'error';
-      default: return 'default';
+      case 'estimate':
+        return 'warning';
+      case 'in_progress':
+        return 'primary';
+      case 'quality_check':
+        return 'info';
+      case 'ready_for_pickup':
+        return 'success';
+      case 'completed':
+        return 'success';
+      case 'on_hold':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   // Get priority color
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = priority => {
     switch (priority) {
-      case 'high': return theme.palette.error.main;
-      case 'normal': return theme.palette.primary.main;
-      case 'low': return theme.palette.text.secondary;
-      default: return theme.palette.text.secondary;
+      case 'high':
+        return theme.palette.error.main;
+      case 'normal':
+        return theme.palette.primary.main;
+      case 'low':
+        return theme.palette.text.secondary;
+      default:
+        return theme.palette.text.secondary;
     }
   };
 
@@ -269,19 +284,24 @@ const SearchResults = ({
   const renderSkeleton = () => (
     <Grid container spacing={2}>
       {[...Array(6)].map((_, index) => (
-        <Grid item xs={12} sm={6} lg={4} key={index}>
+        <Grid xs={12} sm={6} lg={4} key={index}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
+                <Skeleton
+                  variant='circular'
+                  width={40}
+                  height={40}
+                  sx={{ mr: 2 }}
+                />
                 <Box sx={{ flex: 1 }}>
-                  <Skeleton variant="text" width="60%" />
-                  <Skeleton variant="text" width="40%" />
+                  <Skeleton variant='text' width='60%' />
+                  <Skeleton variant='text' width='40%' />
                 </Box>
               </Box>
-              <Skeleton variant="text" />
-              <Skeleton variant="text" />
-              <Skeleton variant="text" width="80%" />
+              <Skeleton variant='text' />
+              <Skeleton variant='text' />
+              <Skeleton variant='text' width='80%' />
             </CardContent>
           </Card>
         </Grid>
@@ -291,11 +311,18 @@ const SearchResults = ({
 
   // Render result card
   const renderResultCard = (item, index) => {
-    const isRO = item.searchType === 'repair_order' || item.type === 'repair_order';
-    const isCustomer = item.searchType === 'customer' || item.type === 'customer';
+    const isRO =
+      item.searchType === 'repair_order' || item.type === 'repair_order';
+    const isCustomer =
+      item.searchType === 'customer' || item.type === 'customer';
 
     return (
-      <Grid item xs={12} sm={viewMode === 'grid' ? 6 : 12} lg={viewMode === 'grid' ? 4 : 12} key={item.id}>
+      <Grid
+        xs={12}
+        sm={viewMode === 'grid' ? 6 : 12}
+        lg={viewMode === 'grid' ? 4 : 12}
+        key={item.id}
+      >
         <Card
           sx={{
             cursor: 'pointer',
@@ -303,7 +330,7 @@ const SearchResults = ({
             '&:hover': {
               transform: 'translateY(-2px)',
               boxShadow: theme.shadows[4],
-            }
+            },
           }}
           onClick={() => handleItemClick(item)}
         >
@@ -312,46 +339,64 @@ const SearchResults = ({
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
               <Avatar
                 sx={{
-                  backgroundColor: isRO ? theme.palette.primary.main : theme.palette.secondary.main,
+                  backgroundColor: isRO
+                    ? theme.palette.primary.main
+                    : theme.palette.secondary.main,
                   mr: 2,
                   width: 48,
-                  height: 48
+                  height: 48,
                 }}
               >
                 {isRO ? <DirectionsCar /> : <Person />}
               </Avatar>
-              
+
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant='h6'
+                    component='div'
+                    sx={{ fontWeight: 600 }}
+                  >
                     {isRO ? item.id : item.name}
                   </Typography>
-                  
+
                   {isRO && (
                     <>
                       <Chip
                         label={item.status?.replace('_', ' ') || 'Unknown'}
-                        size="small"
+                        size='small'
                         color={getStatusColor(item.status)}
                         sx={{ fontSize: '0.75rem' }}
                       />
                       {item.priority === 'high' && (
                         <Warning
-                          sx={{ color: getPriorityColor(item.priority), fontSize: 20 }}
+                          sx={{
+                            color: getPriorityColor(item.priority),
+                            fontSize: 20,
+                          }}
                         />
                       )}
                     </>
                   )}
                 </Box>
-                
-                <Typography variant="body2" color="text.secondary" noWrap>
-                  {isRO ? `${item.customerName} • ${item.vehicleInfo}` : item.email}
+
+                <Typography variant='body2' color='text.secondary' noWrap>
+                  {isRO
+                    ? `${item.customerName} • ${item.vehicleInfo}`
+                    : item.email}
                 </Typography>
               </Box>
-              
+
               <IconButton
-                size="small"
-                onClick={(e) => handleMenuClick(e, item)}
+                size='small'
+                onClick={e => handleMenuClick(e, item)}
                 sx={{ ml: 1 }}
               >
                 <MoreVert />
@@ -362,72 +407,118 @@ const SearchResults = ({
             <Box sx={{ pl: 7 }}>
               {isRO && (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Receipt fontSize="small" color="action" />
-                      <Typography variant="body2">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <Receipt fontSize='small' color='action' />
+                      <Typography variant='body2'>
                         {item.claimNumber}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Business fontSize="small" color="action" />
-                      <Typography variant="body2">
-                        {item.insurance}
-                      </Typography>
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <Business fontSize='small' color='action' />
+                      <Typography variant='body2'>{item.insurance}</Typography>
                     </Box>
                   </Box>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <AttachMoney fontSize="small" color="action" />
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <AttachMoney fontSize='small' color='action' />
+                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
                         ${item.estimatedAmount?.toLocaleString() || 'TBD'}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <AccessTime fontSize="small" color="action" />
-                      <Typography variant="body2">
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <AccessTime fontSize='small' color='action' />
+                      <Typography variant='body2'>
                         {item.daysInShop || 0} days
                       </Typography>
                     </Box>
                   </Box>
-                  
+
                   {item.vin && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                      <DirectionsCar fontSize="small" color="action" />
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        mb: 1,
+                      }}
+                    >
+                      <DirectionsCar fontSize='small' color='action' />
+                      <Typography
+                        variant='body2'
+                        sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
+                      >
                         {item.vin}
                       </Typography>
                     </Box>
                   )}
                 </>
               )}
-              
+
               {isCustomer && (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Phone fontSize="small" color="action" />
-                      <Typography variant="body2">
-                        {item.phone}
-                      </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <Phone fontSize='small' color='action' />
+                      <Typography variant='body2'>{item.phone}</Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Star fontSize="small" color="primary" />
-                      <Typography variant="body2">
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <Star fontSize='small' color='primary' />
+                      <Typography variant='body2'>
                         {item.satisfaction}/5
                       </Typography>
                     </Box>
                   </Box>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                    <LocationOn fontSize="small" color="action" />
-                    <Typography variant="body2" noWrap>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      mb: 1,
+                    }}
+                  >
+                    <LocationOn fontSize='small' color='action' />
+                    <Typography variant='body2' noWrap>
                       {item.address}
                     </Typography>
                   </Box>
-                  
-                  <Typography variant="body2" color="text.secondary">
+
+                  <Typography variant='body2' color='text.secondary'>
                     {item.totalROs} repair orders
                   </Typography>
                 </>
@@ -439,21 +530,21 @@ const SearchResults = ({
           <CardActions sx={{ px: 2, py: 1, justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
-                size="small"
+                size='small'
                 startIcon={<Visibility />}
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   handleQuickAction('view', item);
                 }}
               >
                 View
               </Button>
-              
+
               {isRO && (
                 <Button
-                  size="small"
+                  size='small'
                   startIcon={<Call />}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handleQuickAction('call', item);
                   }}
@@ -462,8 +553,8 @@ const SearchResults = ({
                 </Button>
               )}
             </Box>
-            
-            <Typography variant="caption" color="text.secondary">
+
+            <Typography variant='caption' color='text.secondary'>
               {isRO && item.plate && `Plate: ${item.plate}`}
             </Typography>
           </CardActions>
@@ -476,18 +567,30 @@ const SearchResults = ({
     <Box className={className} {...props}>
       {/* Header with Filters and Sort */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6">
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
+          <Typography variant='h6'>
             Search Results
             {searchQuery && ` for "${searchQuery}"`}
-            <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+            <Typography
+              component='span'
+              variant='body2'
+              color='text.secondary'
+              sx={{ ml: 1 }}
+            >
               ({processedResults.length} found)
             </Typography>
           </Typography>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* View Mode Toggle */}
-            <Tooltip title="List View">
+            <Tooltip title='List View'>
               <IconButton
                 onClick={() => setViewMode('list')}
                 color={viewMode === 'list' ? 'primary' : 'default'}
@@ -495,7 +598,7 @@ const SearchResults = ({
                 <ViewList />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Grid View">
+            <Tooltip title='Grid View'>
               <IconButton
                 onClick={() => setViewMode('grid')}
                 color={viewMode === 'grid' ? 'primary' : 'default'}
@@ -503,14 +606,14 @@ const SearchResults = ({
                 <ViewModule />
               </IconButton>
             </Tooltip>
-            
+
             {/* Filters Toggle */}
             {showFilters && (
               <Button
                 startIcon={<FilterList />}
                 onClick={() => setShowFiltersPanel(!showFiltersPanel)}
                 variant={showFiltersPanel ? 'contained' : 'outlined'}
-                size="small"
+                size='small'
               >
                 Filters
               </Button>
@@ -520,15 +623,24 @@ const SearchResults = ({
 
         {/* Filters Panel */}
         <Collapse in={showFiltersPanel}>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              flexWrap: 'wrap',
+              pt: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={filters.status}
-                label="Status"
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                label='Status'
+                onChange={e => handleFilterChange('status', e.target.value)}
               >
-                <MenuItem value="all">All Statuses</MenuItem>
+                <MenuItem value='all'>All Statuses</MenuItem>
                 {filterOptions.statuses.map(status => (
                   <MenuItem key={status} value={status}>
                     {status.replace('_', ' ')}
@@ -537,14 +649,14 @@ const SearchResults = ({
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel>Priority</InputLabel>
               <Select
                 value={filters.priority}
-                label="Priority"
-                onChange={(e) => handleFilterChange('priority', e.target.value)}
+                label='Priority'
+                onChange={e => handleFilterChange('priority', e.target.value)}
               >
-                <MenuItem value="all">All Priorities</MenuItem>
+                <MenuItem value='all'>All Priorities</MenuItem>
                 {filterOptions.priorities.map(priority => (
                   <MenuItem key={priority} value={priority}>
                     {priority}
@@ -553,14 +665,14 @@ const SearchResults = ({
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel>Insurance</InputLabel>
               <Select
                 value={filters.insurance}
-                label="Insurance"
-                onChange={(e) => handleFilterChange('insurance', e.target.value)}
+                label='Insurance'
+                onChange={e => handleFilterChange('insurance', e.target.value)}
               >
-                <MenuItem value="all">All Insurers</MenuItem>
+                <MenuItem value='all'>All Insurers</MenuItem>
                 {filterOptions.insurances.map(insurance => (
                   <MenuItem key={insurance} value={insurance}>
                     {insurance}
@@ -569,19 +681,19 @@ const SearchResults = ({
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={sortBy}
-                label="Sort By"
-                onChange={(e) => handleSortChange(e.target.value)}
+                label='Sort By'
+                onChange={e => handleSortChange(e.target.value)}
               >
-                <MenuItem value="relevance">Relevance</MenuItem>
-                <MenuItem value="priority">Priority</MenuItem>
-                <MenuItem value="amount">Amount</MenuItem>
-                <MenuItem value="daysInShop">Days in Shop</MenuItem>
-                <MenuItem value="customerName">Customer</MenuItem>
-                <MenuItem value="status">Status</MenuItem>
+                <MenuItem value='relevance'>Relevance</MenuItem>
+                <MenuItem value='priority'>Priority</MenuItem>
+                <MenuItem value='amount'>Amount</MenuItem>
+                <MenuItem value='daysInShop'>Days in Shop</MenuItem>
+                <MenuItem value='customerName'>Customer</MenuItem>
+                <MenuItem value='status'>Status</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -589,7 +701,9 @@ const SearchResults = ({
       </Paper>
 
       {/* Results */}
-      {isLoading ? renderSkeleton() : (
+      {isLoading ? (
+        renderSkeleton()
+      ) : (
         <Grid container spacing={2}>
           {processedResults.map((item, index) => renderResultCard(item, index))}
         </Grid>
@@ -598,21 +712,23 @@ const SearchResults = ({
       {/* Empty State */}
       {!isLoading && processedResults.length === 0 && results.length > 0 && (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Typography variant='h6' color='text.secondary' gutterBottom>
             No results match your filters
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant='body2' color='text.secondary'>
             Try adjusting your filters to see more results
           </Typography>
           <Button
             sx={{ mt: 2 }}
-            onClick={() => setFilters({
-              status: 'all',
-              priority: 'all',
-              insurance: 'all',
-              daysInShop: 'all',
-              dateRange: 'all'
-            })}
+            onClick={() =>
+              setFilters({
+                status: 'all',
+                priority: 'all',
+                insurance: 'all',
+                daysInShop: 'all',
+                dateRange: 'all',
+              })
+            }
           >
             Clear Filters
           </Button>
@@ -626,25 +742,27 @@ const SearchResults = ({
         onClose={handleMenuClose}
       >
         <MenuItem onClick={() => handleQuickAction('view', selectedItem)}>
-          <Visibility sx={{ mr: 1 }} fontSize="small" />
+          <Visibility sx={{ mr: 1 }} fontSize='small' />
           View Details
         </MenuItem>
         <MenuItem onClick={() => handleQuickAction('edit', selectedItem)}>
-          <Edit sx={{ mr: 1 }} fontSize="small" />
+          <Edit sx={{ mr: 1 }} fontSize='small' />
           Edit
         </MenuItem>
         <Divider />
         <MenuItem onClick={() => handleQuickAction('call', selectedItem)}>
-          <Call sx={{ mr: 1 }} fontSize="small" />
+          <Call sx={{ mr: 1 }} fontSize='small' />
           Call Customer
         </MenuItem>
         <MenuItem onClick={() => handleQuickAction('email', selectedItem)}>
-          <Email sx={{ mr: 1 }} fontSize="small" />
+          <Email sx={{ mr: 1 }} fontSize='small' />
           Email Customer
         </MenuItem>
         {selectedItem?.status === 'estimate' && (
-          <MenuItem onClick={() => handleQuickAction('update-status', selectedItem)}>
-            <TrendingUp sx={{ mr: 1 }} fontSize="small" />
+          <MenuItem
+            onClick={() => handleQuickAction('update-status', selectedItem)}
+          >
+            <TrendingUp sx={{ mr: 1 }} fontSize='small' />
             Update Status
           </MenuItem>
         )}

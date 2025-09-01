@@ -7,16 +7,16 @@ import bmsService from '../../src/services/bmsService';
 
 // Performance thresholds (in milliseconds)
 const PERFORMANCE_THRESHOLDS = {
-  SINGLE_FILE_PARSE: 1000,     // 1 second for single file parsing
-  LARGE_FILE_PARSE: 5000,      // 5 seconds for large file parsing
-  CONCURRENT_UPLOADS: 10000,   // 10 seconds for 10 concurrent uploads
-  DATABASE_SAVE: 2000,         // 2 seconds for database save operation
-  MEMORY_USAGE: 100 * 1024 * 1024  // 100MB memory usage limit
+  SINGLE_FILE_PARSE: 1000, // 1 second for single file parsing
+  LARGE_FILE_PARSE: 5000, // 5 seconds for large file parsing
+  CONCURRENT_UPLOADS: 10000, // 10 seconds for 10 concurrent uploads
+  DATABASE_SAVE: 2000, // 2 seconds for database save operation
+  MEMORY_USAGE: 100 * 1024 * 1024, // 100MB memory usage limit
 };
 
 describe('BMS Performance Tests', () => {
   // Helper function to measure execution time
-  const measureTime = async (fn) => {
+  const measureTime = async fn => {
     const start = process.hrtime.bigint();
     const result = await fn();
     const end = process.hrtime.bigint();
@@ -87,10 +87,16 @@ describe('BMS Performance Tests', () => {
   </VehicleInfo>`;
 
     let damageLines = '';
-    const lineCount = size === 'small' ? 5 : 
-                     size === 'medium' ? 50 : 
-                     size === 'large' ? 500 : 
-                     size === 'xlarge' ? 2000 : 5;
+    const lineCount =
+      size === 'small'
+        ? 5
+        : size === 'medium'
+          ? 50
+          : size === 'large'
+            ? 500
+            : size === 'xlarge'
+              ? 2000
+              : 5;
 
     for (let i = 1; i <= lineCount; i++) {
       damageLines += `
@@ -157,13 +163,18 @@ describe('BMS Performance Tests', () => {
     </SummaryTotalsInfo>
   </RepairTotalsInfo>`;
 
-    return baseContent + damageLines + totalsContent + '\n</VehicleDamageEstimateAddRq>';
+    return (
+      baseContent +
+      damageLines +
+      totalsContent +
+      '\n</VehicleDamageEstimateAddRq>'
+    );
   };
 
   describe('Parse Performance', () => {
     it('should parse small BMS files within performance threshold', async () => {
       const smallContent = generateBMSContent('small');
-      
+
       const { result, duration } = await measureTime(async () => {
         return bmsService.parseBMSFile(smallContent);
       });
@@ -172,27 +183,29 @@ describe('BMS Performance Tests', () => {
       expect(result.documentInfo).toBeDefined();
       expect(result.damageLines).toHaveLength(5);
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.SINGLE_FILE_PARSE);
-      
+
       console.log(`✅ Small file parse time: ${duration.toFixed(2)}ms`);
     });
 
     it('should parse medium BMS files within reasonable time', async () => {
       const mediumContent = generateBMSContent('medium');
-      
+
       const { result, duration } = await measureTime(async () => {
         return bmsService.parseBMSFile(mediumContent);
       });
 
       expect(result).toBeDefined();
       expect(result.damageLines).toHaveLength(50);
-      expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.SINGLE_FILE_PARSE * 2);
-      
+      expect(duration).toBeLessThan(
+        PERFORMANCE_THRESHOLDS.SINGLE_FILE_PARSE * 2
+      );
+
       console.log(`✅ Medium file parse time: ${duration.toFixed(2)}ms`);
     });
 
     it('should parse large BMS files within performance threshold', async () => {
       const largeContent = generateBMSContent('large');
-      
+
       const { result, duration } = await measureTime(async () => {
         return bmsService.parseBMSFile(largeContent);
       });
@@ -200,21 +213,23 @@ describe('BMS Performance Tests', () => {
       expect(result).toBeDefined();
       expect(result.damageLines).toHaveLength(500);
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.LARGE_FILE_PARSE);
-      
+
       console.log(`✅ Large file parse time: ${duration.toFixed(2)}ms`);
     });
 
     it('should handle extra-large BMS files without timing out', async () => {
       const xlargeContent = generateBMSContent('xlarge');
-      
+
       const { result, duration } = await measureTime(async () => {
         return bmsService.parseBMSFile(xlargeContent);
       });
 
       expect(result).toBeDefined();
       expect(result.damageLines).toHaveLength(2000);
-      expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.LARGE_FILE_PARSE * 2);
-      
+      expect(duration).toBeLessThan(
+        PERFORMANCE_THRESHOLDS.LARGE_FILE_PARSE * 2
+      );
+
       console.log(`✅ Extra-large file parse time: ${duration.toFixed(2)}ms`);
     });
   });
@@ -222,7 +237,7 @@ describe('BMS Performance Tests', () => {
   describe('Memory Usage Tests', () => {
     it('should not consume excessive memory during parsing', async () => {
       const initialMemory = measureMemory();
-      
+
       // Parse multiple large files sequentially
       for (let i = 0; i < 5; i++) {
         const content = generateBMSContent('large');
@@ -230,44 +245,52 @@ describe('BMS Performance Tests', () => {
       }
 
       const finalMemory = measureMemory();
-      
+
       if (initialMemory && finalMemory) {
         const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-        console.log(`Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
-        
+        console.log(
+          `Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`
+        );
+
         // Memory increase should be reasonable
-        expect(memoryIncrease).toBeLessThan(PERFORMANCE_THRESHOLDS.MEMORY_USAGE);
+        expect(memoryIncrease).toBeLessThan(
+          PERFORMANCE_THRESHOLDS.MEMORY_USAGE
+        );
       }
     });
 
     it('should garbage collect properly after parsing', async () => {
       const initialMemory = measureMemory();
-      
+
       // Create a large number of temporary parsing operations
       const promises = [];
       for (let i = 0; i < 10; i++) {
         const content = generateBMSContent('medium');
         promises.push(bmsService.parseBMSFile(content));
       }
-      
+
       await Promise.all(promises);
-      
+
       // Force garbage collection if available
       if (global.gc) {
         global.gc();
       }
-      
+
       // Wait a bit for cleanup
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const finalMemory = measureMemory();
-      
+
       if (initialMemory && finalMemory) {
         const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-        console.log(`Memory increase after GC: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
-        
+        console.log(
+          `Memory increase after GC: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`
+        );
+
         // Should not have significant memory leaks
-        expect(memoryIncrease).toBeLessThan(PERFORMANCE_THRESHOLDS.MEMORY_USAGE / 2);
+        expect(memoryIncrease).toBeLessThan(
+          PERFORMANCE_THRESHOLDS.MEMORY_USAGE / 2
+        );
       }
     });
   });
@@ -277,13 +300,13 @@ describe('BMS Performance Tests', () => {
       // Create multiple mock files
       const fileCount = 10;
       const mockFiles = [];
-      
+
       for (let i = 0; i < fileCount; i++) {
         mockFiles.push({
           name: `concurrent_test_${i}.xml`,
           content: generateBMSContent('small'),
           size: 1000 + i * 100,
-          type: 'text/xml'
+          type: 'text/xml',
         });
       }
 
@@ -294,7 +317,7 @@ describe('BMS Performance Tests', () => {
           this.onerror = null;
           this.result = null;
         }
-        
+
         readAsText(file) {
           setTimeout(() => {
             const mockFile = mockFiles.find(f => f.name === file.name);
@@ -310,17 +333,19 @@ describe('BMS Performance Tests', () => {
         const uploadPromises = mockFiles.map(mockFile => {
           return bmsService.uploadBMSFile(mockFile);
         });
-        
+
         return Promise.all(uploadPromises);
       });
 
       expect(result).toHaveLength(fileCount);
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.CONCURRENT_UPLOADS);
-      
+
       const successCount = result.filter(r => r.success).length;
       expect(successCount).toBeGreaterThanOrEqual(fileCount * 0.8); // 80% success rate
-      
-      console.log(`✅ Concurrent processing: ${successCount}/${fileCount} files in ${duration.toFixed(2)}ms`);
+
+      console.log(
+        `✅ Concurrent processing: ${successCount}/${fileCount} files in ${duration.toFixed(2)}ms`
+      );
     });
 
     it('should maintain performance under load', async () => {
@@ -335,7 +360,7 @@ describe('BMS Performance Tests', () => {
             name: `load_test_batch${batch}_file${i}.xml`,
             content: generateBMSContent('medium'),
             size: 5000,
-            type: 'text/xml'
+            type: 'text/xml',
           });
         }
 
@@ -345,7 +370,7 @@ describe('BMS Performance Tests', () => {
             this.onerror = null;
             this.result = null;
           }
-          
+
           readAsText(file) {
             setTimeout(() => {
               const mockFile = batchFiles.find(f => f.name === file.name);
@@ -357,12 +382,20 @@ describe('BMS Performance Tests', () => {
           }
         };
 
-        const { result: batchResult, duration } = await measureTime(async () => {
-          const promises = batchFiles.map(file => bmsService.uploadBMSFile(file));
-          return Promise.all(promises);
-        });
+        const { result: batchResult, duration } = await measureTime(
+          async () => {
+            const promises = batchFiles.map(file =>
+              bmsService.uploadBMSFile(file)
+            );
+            return Promise.all(promises);
+          }
+        );
 
-        results.push({ batch, duration, successCount: batchResult.filter(r => r.success).length });
+        results.push({
+          batch,
+          duration,
+          successCount: batchResult.filter(r => r.success).length,
+        });
         console.log(`Batch ${batch}: ${duration.toFixed(2)}ms`);
       }
 
@@ -370,11 +403,13 @@ describe('BMS Performance Tests', () => {
       const durations = results.map(r => r.duration);
       const avgDuration = durations.reduce((a, b) => a + b) / durations.length;
       const maxDuration = Math.max(...durations);
-      
+
       // Max duration shouldn't be more than 2x average (indicating performance degradation)
       expect(maxDuration).toBeLessThan(avgDuration * 2);
-      
-      console.log(`✅ Load test completed - Average: ${avgDuration.toFixed(2)}ms, Max: ${maxDuration.toFixed(2)}ms`);
+
+      console.log(
+        `✅ Load test completed - Average: ${avgDuration.toFixed(2)}ms, Max: ${maxDuration.toFixed(2)}ms`
+      );
     });
   });
 
@@ -394,7 +429,7 @@ describe('BMS Performance Tests', () => {
     it('should handle multiple database saves efficiently', async () => {
       const testCount = 5;
       const testData = [];
-      
+
       for (let i = 0; i < testCount; i++) {
         const content = generateBMSContent('small');
         testData.push(bmsService.parseBMSFile(content));
@@ -405,15 +440,19 @@ describe('BMS Performance Tests', () => {
         return Promise.all(savePromises);
       });
 
-      expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.DATABASE_SAVE * testCount);
-      console.log(`✅ Multiple database saves: ${testCount} records in ${duration.toFixed(2)}ms`);
+      expect(duration).toBeLessThan(
+        PERFORMANCE_THRESHOLDS.DATABASE_SAVE * testCount
+      );
+      console.log(
+        `✅ Multiple database saves: ${testCount} records in ${duration.toFixed(2)}ms`
+      );
     });
   });
 
   describe('Error Handling Performance', () => {
     it('should fail fast on invalid XML', async () => {
       const invalidXML = '<invalid>xml<unclosed>';
-      
+
       const { duration } = await measureTime(async () => {
         try {
           return bmsService.parseBMSFile(invalidXML);
@@ -427,8 +466,11 @@ describe('BMS Performance Tests', () => {
     });
 
     it('should handle parsing errors efficiently', async () => {
-      const corruptedXML = generateBMSContent('large').replace(/<\/VehicleInfo>/g, '');
-      
+      const corruptedXML = generateBMSContent('large').replace(
+        /<\/VehicleInfo>/g,
+        ''
+      );
+
       const { duration } = await measureTime(async () => {
         try {
           return bmsService.parseBMSFile(corruptedXML);
@@ -451,7 +493,11 @@ describe('BMS Performance Tests', () => {
         const content = generateBMSContent('custom');
         const customContent = content.replace(
           /<DamageLineInfo>[\s\S]*?<\/DamageLineInfo>/g,
-          Array(size).fill('<DamageLineInfo><LineNum>1</LineNum><LineDesc>Test</LineDesc></DamageLineInfo>').join('')
+          Array(size)
+            .fill(
+              '<DamageLineInfo><LineNum>1</LineNum><LineDesc>Test</LineDesc></DamageLineInfo>'
+            )
+            .join('')
         );
 
         const { duration } = await measureTime(async () => {
@@ -465,15 +511,17 @@ describe('BMS Performance Tests', () => {
       // Check that performance scales reasonably (not exponentially)
       const ratios = [];
       for (let i = 1; i < results.length; i++) {
-        const ratio = results[i].duration / results[i-1].duration;
-        const sizeRatio = results[i].size / results[i-1].size;
+        const ratio = results[i].duration / results[i - 1].duration;
+        const sizeRatio = results[i].size / results[i - 1].size;
         ratios.push(ratio / sizeRatio);
       }
 
       const avgRatio = ratios.reduce((a, b) => a + b) / ratios.length;
       expect(avgRatio).toBeLessThan(2); // Performance should scale roughly linearly
-      
-      console.log(`✅ Scalability test completed - Average scaling ratio: ${avgRatio.toFixed(2)}`);
+
+      console.log(
+        `✅ Scalability test completed - Average scaling ratio: ${avgRatio.toFixed(2)}`
+      );
     });
   });
 

@@ -12,27 +12,28 @@ const aiRateLimit = rateLimit({
   max: 30, // Limit each user to 30 AI queries per minute
   message: {
     error: 'Too many AI queries',
-    message: 'You have exceeded the AI query limit. Please wait before making more requests.',
-    retryAfter: 60
+    message:
+      'You have exceeded the AI query limit. Please wait before making more requests.',
+    retryAfter: 60,
   },
   standardHeaders: true,
   legacyHeaders: false,
   // Use default IP-based rate limiting with proper IPv6 support
-  skip: (req) => {
+  skip: req => {
     // Skip rate limiting for health checks
     return req.path.includes('/health');
-  }
+  },
 });
 
 // Validate user-shop relationship at request level
 async function validateUserShopAccess(req, res, next) {
   try {
     const { shopId, userId } = req.user || {};
-    
+
     if (!userId || !shopId) {
       return res.status(401).json({
         error: 'Authentication required',
-        message: 'Valid user authentication is required for AI queries.'
+        message: 'Valid user authentication is required for AI queries.',
       });
     }
 
@@ -41,13 +42,17 @@ async function validateUserShopAccess(req, res, next) {
       console.log('🔧 Bypassing user-shop validation for development user');
       const devShopId = process.env.DEV_SHOP_ID;
       if (!devShopId) {
-        console.error('❌ DEV_SHOP_ID environment variable is required for development AI queries');
-        return res.status(500).json({ error: 'Development configuration missing' });
+        console.error(
+          '❌ DEV_SHOP_ID environment variable is required for development AI queries'
+        );
+        return res
+          .status(500)
+          .json({ error: 'Development configuration missing' });
       }
       req.secureUser = {
         userId: userId,
         shopId: devShopId,
-        role: req.user.role || 'owner'
+        role: req.user.role || 'owner',
       };
       return next();
     }
@@ -63,18 +68,26 @@ async function validateUserShopAccess(req, res, next) {
       .single();
 
     if (error || !user) {
-      console.error(`🚨 Security violation: User ${userId} attempted access to shop ${shopId}`);
-      
+      console.error(
+        `🚨 Security violation: User ${userId} attempted access to shop ${shopId}`
+      );
+
       // Log security violation
-      await logSecurityViolation(userId, shopId, 'ai_query', 'unauthorized_shop_access', {
-        endpoint: req.originalUrl,
-        userAgent: req.get('User-Agent'),
-        ip: req.ip
-      });
+      await logSecurityViolation(
+        userId,
+        shopId,
+        'ai_query',
+        'unauthorized_shop_access',
+        {
+          endpoint: req.originalUrl,
+          userAgent: req.get('User-Agent'),
+          ip: req.ip,
+        }
+      );
 
       return res.status(403).json({
         error: 'Access denied',
-        message: 'You do not have permission to access this shop\'s data.'
+        message: "You do not have permission to access this shop's data.",
       });
     }
 
@@ -82,7 +95,7 @@ async function validateUserShopAccess(req, res, next) {
     req.secureUser = {
       userId: user.id || userId,
       shopId: user.shop_id,
-      role: user.role
+      role: user.role,
     };
 
     next();
@@ -90,7 +103,7 @@ async function validateUserShopAccess(req, res, next) {
     console.error('❌ User-shop validation error:', error);
     res.status(500).json({
       error: 'Security validation failed',
-      message: 'Unable to validate your access permissions.'
+      message: 'Unable to validate your access permissions.',
     });
   }
 }
@@ -103,7 +116,7 @@ function validateQueryInput(req, res, next) {
   if (!query || typeof query !== 'string') {
     return res.status(400).json({
       error: 'Invalid query',
-      message: 'Query must be a non-empty string.'
+      message: 'Query must be a non-empty string.',
     });
   }
 
@@ -111,7 +124,7 @@ function validateQueryInput(req, res, next) {
   if (query.length > 1000) {
     return res.status(400).json({
       error: 'Query too long',
-      message: 'Query must be less than 1000 characters.'
+      message: 'Query must be less than 1000 characters.',
     });
   }
 
@@ -128,14 +141,18 @@ function validateQueryInput(req, res, next) {
     /union\s+select/i,
     /;\s*(drop|delete|truncate)/i,
     /<script/i,
-    /javascript:/i
+    /javascript:/i,
   ];
 
-  const hasSuspiciousContent = suspiciousPatterns.some(pattern => pattern.test(query));
-  
+  const hasSuspiciousContent = suspiciousPatterns.some(pattern =>
+    pattern.test(query)
+  );
+
   if (hasSuspiciousContent) {
-    console.error(`🚨 Suspicious AI query detected from user ${req.user?.userId}: "${query}"`);
-    
+    console.error(
+      `🚨 Suspicious AI query detected from user ${req.user?.userId}: "${query}"`
+    );
+
     // Log security violation
     logSecurityViolation(
       req.user?.userId,
@@ -147,7 +164,7 @@ function validateQueryInput(req, res, next) {
 
     return res.status(400).json({
       error: 'Invalid query content',
-      message: 'Query contains potentially unsafe content.'
+      message: 'Query contains potentially unsafe content.',
     });
   }
 
@@ -157,7 +174,7 @@ function validateQueryInput(req, res, next) {
     ...context,
     timestamp: new Date().toISOString(),
     userAgent: req.get('User-Agent'),
-    ip: req.ip
+    ip: req.ip,
   };
 
   next();
@@ -168,9 +185,9 @@ function auditAIQuery(req, res, next) {
   const originalSend = res.send;
   const startTime = Date.now();
 
-  res.send = function(data) {
+  res.send = function (data) {
     const duration = Date.now() - startTime;
-    
+
     // Log successful AI query
     logAIQuery({
       userId: req.secureUser?.userId,
@@ -181,7 +198,7 @@ function auditAIQuery(req, res, next) {
       statusCode: res.statusCode,
       timestamp: new Date(),
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get('User-Agent'),
     });
 
     originalSend.call(this, data);
@@ -191,24 +208,27 @@ function auditAIQuery(req, res, next) {
 }
 
 // Security violation logging
-async function logSecurityViolation(userId, shopId, actionType, violationType, details = {}) {
+async function logSecurityViolation(
+  userId,
+  shopId,
+  actionType,
+  violationType,
+  details = {}
+) {
   try {
     const supabaseAdmin = getSupabaseClient(true);
-    
-    await supabaseAdmin
-      .from('security_audit_log')
-      .insert({
-        user_id: userId,
-        attempted_shop_id: shopId,
-        table_name: 'ai_query',
-        action_type: `${actionType}_${violationType}`,
-        details: {
-          violation_type: violationType,
-          ...details,
-          timestamp: new Date().toISOString()
-        }
-      });
 
+    await supabaseAdmin.from('security_audit_log').insert({
+      user_id: userId,
+      attempted_shop_id: shopId,
+      table_name: 'ai_query',
+      action_type: `${actionType}_${violationType}`,
+      details: {
+        violation_type: violationType,
+        ...details,
+        timestamp: new Date().toISOString(),
+      },
+    });
   } catch (error) {
     console.error('❌ Failed to log security violation:', error);
   }
@@ -218,21 +238,18 @@ async function logSecurityViolation(userId, shopId, actionType, violationType, d
 async function logAIQuery(queryData) {
   try {
     const supabaseAdmin = getSupabaseClient(true);
-    
-    await supabaseAdmin
-      .from('ai_query_audit')
-      .insert({
-        user_id: queryData.userId,
-        shop_id: queryData.shopId,
-        query: queryData.query,
-        duration_ms: queryData.duration,
-        success: queryData.success,
-        status_code: queryData.statusCode,
-        ip_address: queryData.ip,
-        user_agent: queryData.userAgent,
-        created_at: queryData.timestamp
-      });
 
+    await supabaseAdmin.from('ai_query_audit').insert({
+      user_id: queryData.userId,
+      shop_id: queryData.shopId,
+      query: queryData.query,
+      duration_ms: queryData.duration,
+      success: queryData.success,
+      status_code: queryData.statusCode,
+      ip_address: queryData.ip,
+      user_agent: queryData.userAgent,
+      created_at: queryData.timestamp,
+    });
   } catch (error) {
     console.error('❌ Failed to log AI query:', error);
   }
@@ -272,5 +289,5 @@ module.exports = {
   auditAIQuery,
   logSecurityViolation,
   logAIQuery,
-  createAuditTable
+  createAuditTable,
 };

@@ -24,21 +24,21 @@ function createWindow() {
       // Additional security measures
       sandbox: false, // Required for preload script
       webviewTag: false,
-      plugins: false
+      plugins: false,
     },
     icon: path.join(__dirname, '../public/favicon.ico'),
     show: false,
     titleBarStyle: 'default',
-    autoHideMenuBar: false
+    autoHideMenuBar: false,
   });
 
   // Load the app
-  const startUrl = isDev 
-    ? 'http://localhost:3000' 
+  const startUrl = isDev
+    ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
-  
+
   console.log('Loading URL:', startUrl);
-  
+
   // Load the URL with better error handling to prevent red crash page
   const loadWithRetry = async (retryCount = 0) => {
     try {
@@ -47,15 +47,17 @@ function createWindow() {
       console.log(`Loading attempt ${retryCount + 1} failed:`, err.message);
       if (retryCount < 5) {
         // Wait progressively longer between retries
-        const delay = Math.min(1000 + (retryCount * 500), 5000);
+        const delay = Math.min(1000 + retryCount * 500, 5000);
         setTimeout(() => loadWithRetry(retryCount + 1), delay);
       } else {
         // Only show fallback page after multiple failures
-        mainWindow.loadURL('data:text/html,<h1 style="color:#333;font-family:system-ui">Loading CollisionOS...</h1><p style="color:#666;font-family:system-ui">Starting development server...</p>');
+        mainWindow.loadURL(
+          'data:text/html,<h1 style="color:#333;font-family:system-ui">Loading CollisionOS...</h1><p style="color:#666;font-family:system-ui">Starting development server...</p>'
+        );
       }
     }
   };
-  
+
   loadWithRetry();
 
   // Show window when ready to prevent visual flash
@@ -63,7 +65,7 @@ function createWindow() {
     console.log('Window ready to show');
     mainWindow.show();
     mainWindow.focus(); // Ensure window is focused
-    
+
     // Open DevTools in development
     if (isDev) {
       mainWindow.webContents.openDevTools();
@@ -71,13 +73,17 @@ function createWindow() {
   });
 
   // Handle page load errors more gracefully
-  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
-    console.log('Page load issue:', errorCode, errorDescription);
-    // Don't show error page immediately - let the retry logic handle it
-    if (errorCode !== -3) { // -3 is aborted, which is normal during retries
-      console.log('Non-critical load error, retrying...');
+  mainWindow.webContents.on(
+    'did-fail-load',
+    (event, errorCode, errorDescription, validatedURL) => {
+      console.log('Page load issue:', errorCode, errorDescription);
+      // Don't show error page immediately - let the retry logic handle it
+      if (errorCode !== -3) {
+        // -3 is aborted, which is normal during retries
+        console.log('Non-critical load error, retrying...');
+      }
     }
-  });
+  );
 
   // Handle navigation and ensure clicks work
   mainWindow.webContents.on('dom-ready', () => {
@@ -178,7 +184,7 @@ ipcMain.handle('select-file', async (event, options) => {
 
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory']
+    properties: ['openDirectory'],
   });
   return result;
 });
@@ -203,7 +209,7 @@ ipcMain.handle('get-system-info', async () => {
     platform: process.platform,
     arch: process.arch,
     version: process.version,
-    electronVersion: process.versions.electron
+    electronVersion: process.versions.electron,
   };
 });
 
@@ -219,7 +225,7 @@ ipcMain.handle('database-query', async (event, sql, params) => {
     const { sequelize } = require('../server/database/models');
     const result = await sequelize.query(sql, {
       replacements: params || {},
-      type: sequelize.QueryTypes.SELECT
+      type: sequelize.QueryTypes.SELECT,
     });
     return result;
   } catch (error) {
@@ -231,13 +237,13 @@ ipcMain.handle('database-query', async (event, sql, params) => {
 ipcMain.handle('database-transaction', async (event, operations) => {
   try {
     const { sequelize } = require('../server/database/models');
-    const result = await sequelize.transaction(async (transaction) => {
+    const result = await sequelize.transaction(async transaction => {
       const results = [];
       for (const operation of operations) {
         const opResult = await sequelize.query(operation.sql, {
           replacements: operation.params || {},
           type: sequelize.QueryTypes.SELECT,
-          transaction
+          transaction,
         });
         results.push(opResult);
       }
@@ -260,46 +266,46 @@ const template = [
         accelerator: 'CmdOrCtrl+N',
         click: () => {
           mainWindow.webContents.send('menu-new-job');
-        }
+        },
       },
       {
         label: 'New Customer',
         accelerator: 'CmdOrCtrl+Shift+N',
         click: () => {
           mainWindow.webContents.send('menu-new-customer');
-        }
+        },
       },
       { type: 'separator' },
       {
         label: 'Import Estimates',
         click: () => {
           mainWindow.webContents.send('menu-import-estimates');
-        }
+        },
       },
       {
         label: 'Import Customers',
         click: () => {
           mainWindow.webContents.send('menu-import-customers');
-        }
+        },
       },
       {
         label: 'Import Parts',
         click: () => {
           mainWindow.webContents.send('menu-import-parts');
-        }
+        },
       },
       { type: 'separator' },
       {
         label: 'Export Reports',
         click: () => {
           mainWindow.webContents.send('menu-export-reports');
-        }
+        },
       },
       {
         label: 'Export Backup',
         click: () => {
           mainWindow.webContents.send('menu-export-backup');
-        }
+        },
       },
       { type: 'separator' },
       {
@@ -307,9 +313,9 @@ const template = [
         accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
         click: () => {
           app.quit();
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   {
     label: 'View',
@@ -319,52 +325,53 @@ const template = [
         accelerator: 'CmdOrCtrl+1',
         click: () => {
           mainWindow.webContents.send('menu-production-board');
-        }
+        },
       },
       {
         label: 'Financial Dashboard',
         accelerator: 'CmdOrCtrl+2',
         click: () => {
           mainWindow.webContents.send('menu-financial-dashboard');
-        }
+        },
       },
       {
         label: 'Customer Management',
         accelerator: 'CmdOrCtrl+3',
         click: () => {
           mainWindow.webContents.send('menu-customer-management');
-        }
+        },
       },
       {
         label: 'Parts Management',
         accelerator: 'CmdOrCtrl+4',
         click: () => {
           mainWindow.webContents.send('menu-parts-management');
-        }
+        },
       },
       {
         label: 'Quality Control',
         accelerator: 'CmdOrCtrl+5',
         click: () => {
           mainWindow.webContents.send('menu-quality-control');
-        }
+        },
       },
       { type: 'separator' },
       {
         label: 'Toggle Developer Tools',
-        accelerator: process.platform === 'darwin' ? 'Cmd+Alt+I' : 'Ctrl+Shift+I',
+        accelerator:
+          process.platform === 'darwin' ? 'Cmd+Alt+I' : 'Ctrl+Shift+I',
         click: () => {
           mainWindow.webContents.toggleDevTools();
-        }
+        },
       },
       {
         label: 'Reload',
         accelerator: 'CmdOrCtrl+R',
         click: () => {
           mainWindow.reload();
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   {
     label: 'Tools',
@@ -373,22 +380,22 @@ const template = [
         label: 'Scanner',
         click: () => {
           mainWindow.webContents.send('menu-scanner');
-        }
+        },
       },
       {
         label: 'Camera',
         click: () => {
           mainWindow.webContents.send('menu-camera');
-        }
+        },
       },
       {
         label: 'Print',
         accelerator: 'CmdOrCtrl+P',
         click: () => {
           mainWindow.webContents.send('menu-print');
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   {
     label: 'Help',
@@ -397,17 +404,17 @@ const template = [
         label: 'About CollisionOS',
         click: () => {
           mainWindow.webContents.send('menu-about');
-        }
+        },
       },
       {
         label: 'Preferences',
         accelerator: process.platform === 'darwin' ? 'Cmd+,' : 'Ctrl+,',
         click: () => {
           mainWindow.webContents.send('menu-preferences');
-        }
-      }
-    ]
-  }
+        },
+      },
+    ],
+  },
 ];
 
 const menu = Menu.buildFromTemplate(template);

@@ -19,7 +19,7 @@ class BMSService {
   async processBMSFile(content, context = {}) {
     try {
       console.log('Processing BMS file...', context.fileName);
-      
+
       const startTime = Date.now();
       const parsedData = await this.bmsParser.parseBMS(content);
       const processingTime = Date.now() - startTime;
@@ -34,7 +34,7 @@ class BMSService {
         endTime: new Date(),
         processingTime,
         userId: context.userId,
-        data: parsedData
+        data: parsedData,
       };
 
       this.importHistory.set(importRecord.id, importRecord);
@@ -51,10 +51,9 @@ class BMSService {
         metadata: {
           ...parsedData.metadata,
           processingTime,
-          importId: importRecord.id
-        }
+          importId: importRecord.id,
+        },
       };
-
     } catch (error) {
       console.error('BMS processing error:', error);
       throw new Error(`BMS file processing failed: ${error.message}`);
@@ -67,7 +66,7 @@ class BMSService {
   async processEMSFile(content, context = {}) {
     try {
       console.log('Processing EMS file...', context.fileName);
-      
+
       const startTime = Date.now();
       const parsedData = await this.emsParser.parseEMS(content);
       const processingTime = Date.now() - startTime;
@@ -82,7 +81,7 @@ class BMSService {
         endTime: new Date(),
         processingTime,
         userId: context.userId,
-        data: parsedData
+        data: parsedData,
       };
 
       this.importHistory.set(importRecord.id, importRecord);
@@ -99,10 +98,9 @@ class BMSService {
         metadata: {
           ...parsedData.metadata,
           processingTime,
-          importId: importRecord.id
-        }
+          importId: importRecord.id,
+        },
       };
-
     } catch (error) {
       console.error('EMS processing error:', error);
       throw new Error(`EMS file processing failed: ${error.message}`);
@@ -116,16 +114,22 @@ class BMSService {
     if (!customerData) return null;
 
     return {
-      firstName: customerData.firstName || customerData.name?.split(' ')[0] || '',
-      lastName: customerData.lastName || customerData.name?.split(' ').slice(1).join(' ') || '',
-      name: customerData.name || `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
+      firstName:
+        customerData.firstName || customerData.name?.split(' ')[0] || '',
+      lastName:
+        customerData.lastName ||
+        customerData.name?.split(' ').slice(1).join(' ') ||
+        '',
+      name:
+        customerData.name ||
+        `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
       phone: customerData.phone || '',
       email: customerData.email || '',
       address: customerData.address || '',
       city: customerData.city || '',
       state: customerData.state || '',
       zip: customerData.zip || '',
-      insurance: customerData.insurance || ''
+      insurance: customerData.insurance || '',
     };
   }
 
@@ -144,7 +148,7 @@ class BMSService {
       mileage: vehicleData.mileage || null,
       color: vehicleData.color || '',
       engine: vehicleData.engine || '',
-      transmission: vehicleData.transmission || ''
+      transmission: vehicleData.transmission || '',
     };
   }
 
@@ -153,9 +157,10 @@ class BMSService {
    */
   createJobFromEstimate(parsedData) {
     const jobId = uuidv4();
-    const jobNumber = parsedData.estimate?.estimateNumber || 
-                     parsedData.estimate?.roNumber || 
-                     `JOB-${Date.now()}`;
+    const jobNumber =
+      parsedData.estimate?.estimateNumber ||
+      parsedData.estimate?.roNumber ||
+      `JOB-${Date.now()}`;
 
     return {
       id: jobId,
@@ -167,7 +172,7 @@ class BMSService {
       totalAmount: this.calculateTotalAmount(parsedData),
       partsCount: parsedData.parts?.length || 0,
       laborCount: parsedData.labor?.length || 0,
-      lineItemsCount: parsedData.lineItems?.length || 0
+      lineItemsCount: parsedData.lineItems?.length || 0,
     };
   }
 
@@ -176,7 +181,7 @@ class BMSService {
    */
   normalizeDamageData(parsedData) {
     const damageLines = [];
-    
+
     // Add parts as damage lines
     if (parsedData.parts) {
       parsedData.parts.forEach((part, index) => {
@@ -189,7 +194,7 @@ class BMSService {
           quantity: part.quantity || 1,
           unitPrice: part.price || 0,
           extendedPrice: (part.price || 0) * (part.quantity || 1),
-          category: 'Parts'
+          category: 'Parts',
         });
       });
     }
@@ -199,14 +204,16 @@ class BMSService {
       parsedData.labor.forEach((labor, index) => {
         damageLines.push({
           id: uuidv4(),
-          lineNumber: labor.lineNumber || (parsedData.parts?.length || 0) + index + 1,
+          lineNumber:
+            labor.lineNumber || (parsedData.parts?.length || 0) + index + 1,
           type: 'labor',
           description: labor.description || labor.operation || '',
           operation: labor.operation || '',
           hours: labor.hours || 0,
           rate: labor.rate || 0,
-          extendedPrice: labor.extended || ((labor.hours || 0) * (labor.rate || 0)),
-          category: 'Labor'
+          extendedPrice:
+            labor.extended || (labor.hours || 0) * (labor.rate || 0),
+          category: 'Labor',
         });
       });
     }
@@ -217,7 +224,9 @@ class BMSService {
       totalAmount: this.calculateTotalAmount(parsedData),
       partsTotal: this.calculatePartsTotal(parsedData),
       laborTotal: this.calculateLaborTotal(parsedData),
-      taxTotal: parsedData.financial?.tax || 0
+      taxTotal:
+        (parsedData.financial?.laborTax || 0) +
+        (parsedData.financial?.partsTax || 0),
     };
   }
 
@@ -231,7 +240,9 @@ class BMSService {
 
     const partsTotal = this.calculatePartsTotal(parsedData);
     const laborTotal = this.calculateLaborTotal(parsedData);
-    const taxTotal = parsedData.financial?.tax || 0;
+    const laborTax = parsedData.financial?.laborTax || 0;
+    const partsTax = parsedData.financial?.partsTax || 0;
+    const taxTotal = laborTax + partsTax;
 
     return partsTotal + laborTotal + taxTotal;
   }
@@ -240,8 +251,8 @@ class BMSService {
    * Calculate parts total
    */
   calculatePartsTotal(parsedData) {
-    if (parsedData.financial?.parts) {
-      return parsedData.financial.parts;
+    if (parsedData.financial?.partsTotal) {
+      return parsedData.financial.partsTotal;
     }
 
     let total = 0;
@@ -258,14 +269,14 @@ class BMSService {
    * Calculate labor total
    */
   calculateLaborTotal(parsedData) {
-    if (parsedData.financial?.labor) {
-      return parsedData.financial.labor;
+    if (parsedData.financial?.laborTotal) {
+      return parsedData.financial.laborTotal;
     }
 
     let total = 0;
     if (parsedData.labor) {
       parsedData.labor.forEach(labor => {
-        total += labor.extended || ((labor.hours || 0) * (labor.rate || 0));
+        total += labor.extended || (labor.hours || 0) * (labor.rate || 0);
       });
     }
 
@@ -280,7 +291,7 @@ class BMSService {
       isValid: true,
       errors: [],
       warnings: [],
-      score: 100
+      score: 100,
     };
 
     // Check customer data
@@ -309,7 +320,8 @@ class BMSService {
     }
 
     // Check parts and labor
-    const hasPartsOrLabor = (parsedData.parts?.length > 0) || (parsedData.labor?.length > 0);
+    const hasPartsOrLabor =
+      parsedData.parts?.length > 0 || parsedData.labor?.length > 0;
     if (!hasPartsOrLabor) {
       validation.warnings.push('No parts or labor items found');
       validation.score -= 15;
@@ -322,12 +334,12 @@ class BMSService {
    * Get import history with pagination
    */
   async getImportHistory(options = {}) {
-    const { 
-      page = 1, 
-      limit = 20, 
-      status = null, 
-      userId = null, 
-      requestingUserId 
+    const {
+      page = 1,
+      limit = 20,
+      status = null,
+      userId = null,
+      requestingUserId,
     } = options;
 
     let imports = Array.from(this.importHistory.values());
@@ -360,8 +372,8 @@ class BMSService {
         totalItems: total,
         itemsPerPage: limit,
         hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
+        hasPrev: page > 1,
+      },
     };
   }
 
@@ -394,26 +406,34 @@ class BMSService {
     }
 
     // Filter imports within period
-    const periodImports = imports.filter(imp => 
-      new Date(imp.startTime) >= startDate
+    const periodImports = imports.filter(
+      imp => new Date(imp.startTime) >= startDate
     );
 
     // Calculate statistics
     const stats = {
       totalImports: periodImports.length,
-      successfulImports: periodImports.filter(imp => imp.status === 'completed').length,
-      failedImports: periodImports.filter(imp => imp.status === 'failed').length,
+      successfulImports: periodImports.filter(imp => imp.status === 'completed')
+        .length,
+      failedImports: periodImports.filter(imp => imp.status === 'failed')
+        .length,
       avgProcessingTime: 0,
       totalProcessingTime: 0,
       fileTypes: {},
-      dailyBreakdown: []
+      dailyBreakdown: [],
     };
 
     // Calculate processing time averages
-    const completedImports = periodImports.filter(imp => imp.status === 'completed');
+    const completedImports = periodImports.filter(
+      imp => imp.status === 'completed'
+    );
     if (completedImports.length > 0) {
-      stats.totalProcessingTime = completedImports.reduce((sum, imp) => sum + imp.processingTime, 0);
-      stats.avgProcessingTime = stats.totalProcessingTime / completedImports.length;
+      stats.totalProcessingTime = completedImports.reduce(
+        (sum, imp) => sum + imp.processingTime,
+        0
+      );
+      stats.avgProcessingTime =
+        stats.totalProcessingTime / completedImports.length;
     }
 
     // Count file types
@@ -454,6 +474,195 @@ class BMSService {
     }
 
     return deletedCount;
+  }
+
+  /**
+   * Process BMS file and automatically create/update customers and jobs
+   */
+  async processBMSWithAutoCreation(content, context = {}) {
+    try {
+      // First, process the BMS file normally
+      const bmsResult = await this.processBMSFile(content, context);
+
+      if (!bmsResult.customer || !bmsResult.vehicle) {
+        throw new Error(
+          'BMS file must contain valid customer and vehicle information'
+        );
+      }
+
+      // Import required services
+      const {
+        customerService,
+      } = require('../database/services/customerService');
+      const { jobService } = require('../database/services/jobService');
+      const { vehicleService } = require('../database/services/vehicleService');
+
+      let customer = null;
+      let vehicle = null;
+      let job = null;
+
+      try {
+        // Extract shop context from context or use default
+        const shopId =
+          context.shopId ||
+          context.userId?.split('-shop')[0] ||
+          process.env.DEV_SHOP_ID ||
+          'dev-shop-123';
+
+        // Check if customer exists (by email, phone, or name)
+        customer = await this.findOrCreateCustomer(
+          bmsResult.customer,
+          customerService,
+          shopId
+        );
+
+        // Check if vehicle exists (by VIN) - pass shop context
+        const vehicleWithShop = { ...bmsResult.vehicle, shopId: shopId };
+        vehicle = await this.findOrCreateVehicle(
+          vehicleWithShop,
+          customer.id,
+          vehicleService
+        );
+
+        // Create job/repair order - pass shop context
+        const jobWithShop = { ...bmsResult, shopId: shopId };
+        job = await this.createJobFromBMS(
+          jobWithShop,
+          customer.id,
+          vehicle.id,
+          jobService
+        );
+
+        console.log('BMS auto-creation successful:', {
+          customerId: customer.id,
+          vehicleId: vehicle.id,
+          jobId: job.id,
+        });
+
+        return {
+          ...bmsResult,
+          createdCustomer: customer,
+          createdVehicle: vehicle,
+          createdJob: job,
+          autoCreationSuccess: true,
+        };
+      } catch (dbError) {
+        console.error(
+          'Database operations failed during BMS processing:',
+          dbError
+        );
+
+        // Return original BMS result with error info
+        return {
+          ...bmsResult,
+          autoCreationSuccess: false,
+          autoCreationError: dbError.message,
+          requiresManualIntervention: true,
+        };
+      }
+    } catch (error) {
+      console.error('BMS processing with auto-creation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find existing customer or create new one
+   */
+  async findOrCreateCustomer(customerData, customerService, shopId = null) {
+    try {
+      // Try to find existing customer by email first
+      if (customerData.email) {
+        const existingCustomers = await customerService.findCustomers({
+          email: customerData.email,
+        });
+        if (existingCustomers.length > 0) {
+          console.log(
+            'Found existing customer by email:',
+            existingCustomers[0].id
+          );
+          return existingCustomers[0];
+        }
+      }
+
+      // Try to find by phone
+      if (customerData.phone) {
+        const existingCustomers = await customerService.findCustomers({
+          phone: customerData.phone,
+        });
+        if (existingCustomers.length > 0) {
+          console.log(
+            'Found existing customer by phone:',
+            existingCustomers[0].id
+          );
+          return existingCustomers[0];
+        }
+      }
+
+      // Try to find by name (exact match)
+      if (customerData.firstName && customerData.lastName) {
+        const existingCustomers = await customerService.findCustomers({
+          firstName: customerData.firstName,
+          lastName: customerData.lastName,
+        });
+        if (existingCustomers.length > 0) {
+          console.log(
+            'Found existing customer by name:',
+            existingCustomers[0].id
+          );
+          return existingCustomers[0];
+        }
+      }
+
+      // Create new customer with shop context
+      console.log(
+        'Creating new customer:',
+        customerData.firstName,
+        customerData.lastName,
+        'for shop:',
+        shopId
+      );
+
+      // Filter out fields that don't exist in the database schema
+      const { zip, insurance, ...customerDataForDB } = customerData;
+
+      const customerWithShop = {
+        ...customerDataForDB,
+        shopId: shopId || process.env.DEV_SHOP_ID || 'dev-shop-123',
+      };
+      return await customerService.createCustomer(customerWithShop);
+    } catch (error) {
+      console.error('Error in findOrCreateCustomer:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find existing vehicle or create new one
+   */
+  async findOrCreateVehicle(vehicleData, customerId, vehicleService) {
+    try {
+      return await vehicleService.findOrCreateVehicle(vehicleData, customerId);
+    } catch (error) {
+      console.error('Error in findOrCreateVehicle:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create job from BMS data
+   */
+  async createJobFromBMS(bmsResult, customerId, vehicleId, jobService) {
+    try {
+      return await jobService.createJobFromBMS(
+        bmsResult,
+        customerId,
+        vehicleId
+      );
+    } catch (error) {
+      console.error('Error in createJobFromBMS:', error);
+      throw error;
+    }
   }
 }
 

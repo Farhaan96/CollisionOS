@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
@@ -29,7 +35,7 @@ import {
   GetApp as ExportIcon,
   CloudUpload as ImportIcon,
   Refresh as RefreshIcon,
-  AutoAwesome as AutoAwesomeIcon
+  AutoAwesome as AutoAwesomeIcon,
 } from '@mui/icons-material';
 
 // Command Provider Context
@@ -47,7 +53,7 @@ const defaultCommands = [
     shortcut: 'Cmd+1',
     keywords: ['home', 'main', 'overview'],
     action: 'navigate',
-    args: { path: '/dashboard' }
+    args: { path: '/dashboard' },
   },
   {
     id: 'nav-customers',
@@ -58,7 +64,7 @@ const defaultCommands = [
     shortcut: 'Cmd+2',
     keywords: ['clients', 'contacts'],
     action: 'navigate',
-    args: { path: '/customers' }
+    args: { path: '/customers' },
   },
   {
     id: 'nav-production',
@@ -69,7 +75,7 @@ const defaultCommands = [
     shortcut: 'Cmd+3',
     keywords: ['jobs', 'work', 'board', 'kanban'],
     action: 'navigate',
-    args: { path: '/production' }
+    args: { path: '/production' },
   },
   {
     id: 'nav-parts',
@@ -80,7 +86,7 @@ const defaultCommands = [
     shortcut: 'Cmd+4',
     keywords: ['inventory', 'stock', 'supplies'],
     action: 'navigate',
-    args: { path: '/parts' }
+    args: { path: '/parts' },
   },
   {
     id: 'nav-estimates',
@@ -91,7 +97,7 @@ const defaultCommands = [
     shortcut: 'Cmd+5',
     keywords: ['quotes', 'pricing'],
     action: 'navigate',
-    args: { path: '/estimates' }
+    args: { path: '/estimates' },
   },
   {
     id: 'nav-reports',
@@ -102,7 +108,7 @@ const defaultCommands = [
     shortcut: 'Cmd+6',
     keywords: ['analytics', 'stats', 'metrics'],
     action: 'navigate',
-    args: { path: '/reports' }
+    args: { path: '/reports' },
   },
   {
     id: 'nav-settings',
@@ -113,7 +119,7 @@ const defaultCommands = [
     shortcut: 'Cmd+7',
     keywords: ['preferences', 'config'],
     action: 'navigate',
-    args: { path: '/settings' }
+    args: { path: '/settings' },
   },
 
   // Quick Actions
@@ -126,7 +132,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+C',
     keywords: ['create', 'add', 'client'],
     action: 'dialog',
-    args: { dialog: 'customer-form' }
+    args: { dialog: 'customer-form' },
   },
   {
     id: 'action-new-job',
@@ -137,7 +143,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+J',
     keywords: ['create', 'add', 'work order'],
     action: 'dialog',
-    args: { dialog: 'job-form' }
+    args: { dialog: 'job-form' },
   },
   {
     id: 'action-new-estimate',
@@ -148,7 +154,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+E',
     keywords: ['create', 'add', 'quote'],
     action: 'dialog',
-    args: { dialog: 'estimate-form' }
+    args: { dialog: 'estimate-form' },
   },
   {
     id: 'action-save',
@@ -159,7 +165,7 @@ const defaultCommands = [
     shortcut: 'Cmd+S',
     keywords: ['save', 'store', 'update'],
     action: 'save',
-    args: {}
+    args: {},
   },
 
   // Search Commands
@@ -172,7 +178,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+F',
     keywords: ['find', 'lookup', 'clients'],
     action: 'search',
-    args: { type: 'customers' }
+    args: { type: 'customers' },
   },
   {
     id: 'search-jobs',
@@ -182,7 +188,7 @@ const defaultCommands = [
     icon: SearchIcon,
     keywords: ['find', 'lookup', 'work orders'],
     action: 'search',
-    args: { type: 'jobs' }
+    args: { type: 'jobs' },
   },
   {
     id: 'search-parts',
@@ -192,7 +198,7 @@ const defaultCommands = [
     icon: SearchIcon,
     keywords: ['find', 'lookup', 'inventory'],
     action: 'search',
-    args: { type: 'parts' }
+    args: { type: 'parts' },
   },
 
   // File Operations
@@ -205,7 +211,7 @@ const defaultCommands = [
     shortcut: 'Cmd+O',
     keywords: ['upload', 'load', 'csv', 'excel'],
     action: 'import',
-    args: {}
+    args: {},
   },
   {
     id: 'file-export',
@@ -216,7 +222,7 @@ const defaultCommands = [
     shortcut: 'Cmd+E',
     keywords: ['download', 'save', 'csv', 'excel', 'pdf'],
     action: 'export',
-    args: {}
+    args: {},
   },
   {
     id: 'file-print',
@@ -227,7 +233,7 @@ const defaultCommands = [
     shortcut: 'Cmd+P',
     keywords: ['print', 'paper'],
     action: 'print',
-    args: {}
+    args: {},
   },
 
   // View Commands
@@ -240,7 +246,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+F11',
     keywords: ['full', 'screen', 'maximize'],
     action: 'fullscreen',
-    args: {}
+    args: {},
   },
   {
     id: 'view-theme',
@@ -251,7 +257,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+T',
     keywords: ['dark', 'light', 'theme'],
     action: 'theme',
-    args: {}
+    args: {},
   },
 
   // System Commands
@@ -264,7 +270,7 @@ const defaultCommands = [
     shortcut: 'F5',
     keywords: ['reload', 'sync', 'update'],
     action: 'refresh',
-    args: {}
+    args: {},
   },
   {
     id: 'system-logout',
@@ -275,7 +281,7 @@ const defaultCommands = [
     shortcut: 'Cmd+Shift+Q',
     keywords: ['sign out', 'exit'],
     action: 'logout',
-    args: {}
+    args: {},
   },
   {
     id: 'system-profile',
@@ -285,7 +291,7 @@ const defaultCommands = [
     icon: ProfileIcon,
     keywords: ['account', 'user', 'settings'],
     action: 'dialog',
-    args: { dialog: 'profile' }
+    args: { dialog: 'profile' },
   },
   {
     id: 'system-help',
@@ -296,27 +302,45 @@ const defaultCommands = [
     shortcut: '?',
     keywords: ['support', 'docs', 'documentation'],
     action: 'help',
-    args: {}
-  }
+    args: {},
+  },
 ];
 
 // Permission-based command filtering
-const getPermissionsForRole = (role) => {
+const getPermissionsForRole = role => {
   const permissions = {
     admin: ['*'],
     manager: [
-      'nav-*', 'action-*', 'search-*', 'file-*', 
-      'view-*', 'system-refresh', 'system-profile', 'system-help'
+      'nav-*',
+      'action-*',
+      'search-*',
+      'file-*',
+      'view-*',
+      'system-refresh',
+      'system-profile',
+      'system-help',
     ],
     user: [
-      'nav-dashboard', 'nav-customers', 'nav-production', 'nav-estimates',
-      'search-*', 'action-new-customer', 'action-new-job', 'action-save',
-      'view-*', 'system-profile', 'system-help'
+      'nav-dashboard',
+      'nav-customers',
+      'nav-production',
+      'nav-estimates',
+      'search-*',
+      'action-new-customer',
+      'action-new-job',
+      'action-save',
+      'view-*',
+      'system-profile',
+      'system-help',
     ],
     viewer: [
-      'nav-dashboard', 'nav-reports', 'search-*', 
-      'view-*', 'system-profile', 'system-help'
-    ]
+      'nav-dashboard',
+      'nav-reports',
+      'search-*',
+      'view-*',
+      'system-profile',
+      'system-help',
+    ],
   };
   return permissions[role] || permissions.viewer;
 };
@@ -344,19 +368,22 @@ export const CommandProvider = ({ children }) => {
 
   // Save recent commands to localStorage
   useEffect(() => {
-    localStorage.setItem('collisionos-recent-commands', JSON.stringify(recentCommands));
+    localStorage.setItem(
+      'collisionos-recent-commands',
+      JSON.stringify(recentCommands)
+    );
   }, [recentCommands]);
 
   // Filter commands based on user permissions
   const getFilteredCommands = useCallback(() => {
     if (!user) return [];
-    
+
     const userPermissions = getPermissionsForRole(user.role);
-    
+
     if (userPermissions.includes('*')) {
       return commands;
     }
-    
+
     return commands.filter(command => {
       return userPermissions.some(permission => {
         if (permission.endsWith('*')) {
@@ -368,18 +395,20 @@ export const CommandProvider = ({ children }) => {
   }, [commands, user]);
 
   // Register new command
-  const registerCommand = useCallback((command) => {
+  const registerCommand = useCallback(command => {
     setCommands(prev => {
       const existing = prev.find(cmd => cmd.id === command.id);
       if (existing) {
-        return prev.map(cmd => cmd.id === command.id ? { ...cmd, ...command } : cmd);
+        return prev.map(cmd =>
+          cmd.id === command.id ? { ...cmd, ...command } : cmd
+        );
       }
       return [...prev, command];
     });
   }, []);
 
   // Unregister command
-  const unregisterCommand = useCallback((commandId) => {
+  const unregisterCommand = useCallback(commandId => {
     setCommands(prev => prev.filter(cmd => cmd.id !== commandId));
   }, []);
 
@@ -389,7 +418,7 @@ export const CommandProvider = ({ children }) => {
   }, []);
 
   // Add command to recent list
-  const addToRecent = useCallback((commandId) => {
+  const addToRecent = useCallback(commandId => {
     setRecentCommands(prev => {
       const filtered = prev.filter(id => id !== commandId);
       return [commandId, ...filtered].slice(0, 10); // Keep last 10
@@ -397,113 +426,122 @@ export const CommandProvider = ({ children }) => {
   }, []);
 
   // Execute command
-  const executeCommand = useCallback(async (commandId, args = {}) => {
-    // Check for alias
-    const actualCommandId = commandAliases[commandId] || commandId;
-    const command = commands.find(cmd => cmd.id === actualCommandId);
-    
-    if (!command) {
-      showNotification('Command not found', 'error');
-      return;
-    }
+  const executeCommand = useCallback(
+    async (commandId, args = {}) => {
+      // Check for alias
+      const actualCommandId = commandAliases[commandId] || commandId;
+      const command = commands.find(cmd => cmd.id === actualCommandId);
 
-    try {
-      switch (command.action) {
-        case 'navigate':
-          if (args.path) {
-            navigate(args.path);
-            showNotification(`Navigated to ${command.title}`, 'success');
-          }
-          break;
-
-        case 'dialog':
-          if (args.dialog) {
-            // Dispatch custom event for dialog opening
-            window.dispatchEvent(new CustomEvent('openDialog', {
-              detail: { dialog: args.dialog, data: args.data }
-            }));
-            showNotification(`Opening ${command.title}`, 'info');
-          }
-          break;
-
-        case 'search':
-          if (args.type) {
-            // Dispatch search event
-            window.dispatchEvent(new CustomEvent('performSearch', {
-              detail: { type: args.type, query: args.query }
-            }));
-            showNotification(`Searching ${command.title}`, 'info');
-          }
-          break;
-
-        case 'save':
-          // Dispatch save event
-          window.dispatchEvent(new CustomEvent('performSave'));
-          showNotification('Saved successfully', 'success');
-          break;
-
-        case 'import':
-          // Dispatch import event
-          window.dispatchEvent(new CustomEvent('performImport'));
-          showNotification('Import dialog opened', 'info');
-          break;
-
-        case 'export':
-          // Dispatch export event
-          window.dispatchEvent(new CustomEvent('performExport', {
-            detail: { format: args.format }
-          }));
-          showNotification('Export started', 'info');
-          break;
-
-        case 'print':
-          window.print();
-          showNotification('Print dialog opened', 'info');
-          break;
-
-        case 'fullscreen':
-          if (document.fullscreenElement) {
-            document.exitFullscreen();
-            showNotification('Exited fullscreen', 'info');
-          } else {
-            document.documentElement.requestFullscreen();
-            showNotification('Entered fullscreen', 'info');
-          }
-          break;
-
-        case 'theme':
-          // Dispatch theme toggle event
-          window.dispatchEvent(new CustomEvent('toggleTheme'));
-          showNotification('Theme toggled', 'info');
-          break;
-
-        case 'refresh':
-          window.location.reload();
-          break;
-
-        case 'logout':
-          await logout();
-          showNotification('Logged out successfully', 'success');
-          break;
-
-        case 'help':
-          window.open('/help', '_blank');
-          showNotification('Help opened in new tab', 'info');
-          break;
-
-        default:
-          // Custom command handler
-          if (command.handler) {
-            await command.handler(args);
-          } else {
-            showNotification('Command executed', 'success');
-          }
+      if (!command) {
+        showNotification('Command not found', 'error');
+        return;
       }
-    } catch (error) {
-      console.error('Command execution error:', error);
-      showNotification(`Failed to execute ${command.title}`, 'error');
-    }
-  }, [commands, commandAliases, navigate, showNotification, logout]);
+
+      try {
+        switch (command.action) {
+          case 'navigate':
+            if (args.path) {
+              navigate(args.path);
+              showNotification(`Navigated to ${command.title}`, 'success');
+            }
+            break;
+
+          case 'dialog':
+            if (args.dialog) {
+              // Dispatch custom event for dialog opening
+              window.dispatchEvent(
+                new CustomEvent('openDialog', {
+                  detail: { dialog: args.dialog, data: args.data },
+                })
+              );
+              showNotification(`Opening ${command.title}`, 'info');
+            }
+            break;
+
+          case 'search':
+            if (args.type) {
+              // Dispatch search event
+              window.dispatchEvent(
+                new CustomEvent('performSearch', {
+                  detail: { type: args.type, query: args.query },
+                })
+              );
+              showNotification(`Searching ${command.title}`, 'info');
+            }
+            break;
+
+          case 'save':
+            // Dispatch save event
+            window.dispatchEvent(new CustomEvent('performSave'));
+            showNotification('Saved successfully', 'success');
+            break;
+
+          case 'import':
+            // Dispatch import event
+            window.dispatchEvent(new CustomEvent('performImport'));
+            showNotification('Import dialog opened', 'info');
+            break;
+
+          case 'export':
+            // Dispatch export event
+            window.dispatchEvent(
+              new CustomEvent('performExport', {
+                detail: { format: args.format },
+              })
+            );
+            showNotification('Export started', 'info');
+            break;
+
+          case 'print':
+            window.print();
+            showNotification('Print dialog opened', 'info');
+            break;
+
+          case 'fullscreen':
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+              showNotification('Exited fullscreen', 'info');
+            } else {
+              document.documentElement.requestFullscreen();
+              showNotification('Entered fullscreen', 'info');
+            }
+            break;
+
+          case 'theme':
+            // Dispatch theme toggle event
+            window.dispatchEvent(new CustomEvent('toggleTheme'));
+            showNotification('Theme toggled', 'info');
+            break;
+
+          case 'refresh':
+            window.location.reload();
+            break;
+
+          case 'logout':
+            await logout();
+            showNotification('Logged out successfully', 'success');
+            break;
+
+          case 'help':
+            window.open('/help', '_blank');
+            showNotification('Help opened in new tab', 'info');
+            break;
+
+          default:
+            // Custom command handler
+            if (command.handler) {
+              await command.handler(args);
+            } else {
+              showNotification('Command executed', 'success');
+            }
+        }
+      } catch (error) {
+        console.error('Command execution error:', error);
+        showNotification(`Failed to execute ${command.title}`, 'error');
+      }
+    },
+    [commands, commandAliases, navigate, showNotification, logout]
+  );
 
   // Context value
   const value = {
@@ -513,13 +551,11 @@ export const CommandProvider = ({ children }) => {
     unregisterCommand,
     addCommandAlias,
     executeCommand,
-    addToRecent
+    addToRecent,
   };
 
   return (
-    <CommandContext.Provider value={value}>
-      {children}
-    </CommandContext.Provider>
+    <CommandContext.Provider value={value}>{children}</CommandContext.Provider>
   );
 };
 
