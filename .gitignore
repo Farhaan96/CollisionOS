@@ -61,3 +61,10 @@ config/secrets.json
 # Backup files
 *.bak
 *.backup
+
+# Temporary helper scripts (not essential to project)
+add-claude.ps1
+fix-git-simple.bat
+fix-git-tracking.ps1
+git-status.bat
+tatus --short
