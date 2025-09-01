@@ -13,7 +13,7 @@ class APIError extends Error {
     this.code = code;
     this.details = details;
     this.isOperational = true;
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -65,13 +65,15 @@ class RateLimitError extends APIError {
  */
 const logError = (error, req = null) => {
   const timestamp = new Date().toISOString();
-  const requestInfo = req ? {
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    userId: req.user?.id || 'anonymous'
-  } : {};
+  const requestInfo = req
+    ? {
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        userId: req.user?.id || 'anonymous',
+      }
+    : {};
 
   const errorInfo = {
     timestamp,
@@ -80,7 +82,7 @@ const logError = (error, req = null) => {
     statusCode: error.statusCode,
     code: error.code,
     stack: error.stack,
-    ...requestInfo
+    ...requestInfo,
   };
 
   // Different log levels based on error severity
@@ -103,7 +105,7 @@ const formatErrorResponse = (error, includeStack = false) => {
   const response = {
     error: error.message || 'An error occurred',
     code: error.code || 'INTERNAL_ERROR',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   // Include additional details for validation errors
@@ -122,15 +124,18 @@ const formatErrorResponse = (error, includeStack = false) => {
 /**
  * Handle Sequelize database errors
  */
-const handleSequelizeError = (error) => {
+const handleSequelizeError = error => {
   switch (error.name) {
     case 'SequelizeValidationError':
       const validationDetails = error.errors.map(err => ({
         field: err.path,
         message: err.message,
-        value: err.value
+        value: err.value,
       }));
-      return new ValidationError('Database validation failed', validationDetails);
+      return new ValidationError(
+        'Database validation failed',
+        validationDetails
+      );
 
     case 'SequelizeUniqueConstraintError':
       const field = error.errors[0]?.path || 'field';
@@ -142,10 +147,18 @@ const handleSequelizeError = (error) => {
     case 'SequelizeConnectionError':
     case 'SequelizeHostNotFoundError':
     case 'SequelizeHostNotReachableError':
-      return new APIError('Database connection failed', 503, 'DATABASE_CONNECTION_ERROR');
+      return new APIError(
+        'Database connection failed',
+        503,
+        'DATABASE_CONNECTION_ERROR'
+      );
 
     case 'SequelizeTimeoutError':
-      return new APIError('Database operation timed out', 408, 'DATABASE_TIMEOUT');
+      return new APIError(
+        'Database operation timed out',
+        408,
+        'DATABASE_TIMEOUT'
+      );
 
     default:
       return new APIError('Database error', 500, 'DATABASE_ERROR');
@@ -155,17 +168,17 @@ const handleSequelizeError = (error) => {
 /**
  * Handle JWT errors
  */
-const handleJWTError = (error) => {
+const handleJWTError = error => {
   switch (error.name) {
     case 'TokenExpiredError':
       return new AuthenticationError('Token has expired');
-    
+
     case 'JsonWebTokenError':
       return new AuthenticationError('Invalid token');
-    
+
     case 'NotBeforeError':
       return new AuthenticationError('Token not active yet');
-    
+
     default:
       return new AuthenticationError('Token verification failed');
   }
@@ -180,12 +193,17 @@ const errorHandler = (err, req, res, next) => {
   // Handle different error types
   if (err.name?.startsWith('Sequelize')) {
     error = handleSequelizeError(err);
-  } else if (err.name?.includes('JsonWebToken') || err.name?.includes('Token')) {
+  } else if (
+    err.name?.includes('JsonWebToken') ||
+    err.name?.includes('Token')
+  ) {
     error = handleJWTError(err);
   } else if (!err.isOperational) {
     // Convert non-operational errors to APIError
     error = new APIError(
-      process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+      process.env.NODE_ENV === 'development'
+        ? err.message
+        : 'Internal server error',
       500,
       'INTERNAL_ERROR'
     );
@@ -197,7 +215,7 @@ const errorHandler = (err, req, res, next) => {
   // Send error response
   const statusCode = error.statusCode || 500;
   const includeStack = process.env.NODE_ENV === 'development';
-  
+
   res.status(statusCode).json(formatErrorResponse(error, includeStack));
 };
 
@@ -207,7 +225,7 @@ const errorHandler = (err, req, res, next) => {
 const notFoundHandler = (req, res) => {
   const error = new NotFoundError(`Route ${req.originalUrl} not found`);
   logError(error, req);
-  
+
   res.status(404).json(formatErrorResponse(error));
 };
 
@@ -215,7 +233,7 @@ const notFoundHandler = (req, res) => {
  * Async error wrapper
  * Wraps async route handlers to catch errors automatically
  */
-const asyncHandler = (fn) => {
+const asyncHandler = fn => {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
@@ -229,7 +247,7 @@ const successResponse = (res, data, message = 'Success', statusCode = 200) => {
     success: true,
     message,
     data,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -242,7 +260,7 @@ const paginatedResponse = (res, data, pagination, message = 'Success') => {
     message,
     data,
     pagination,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -251,35 +269,38 @@ const paginatedResponse = (res, data, pagination, message = 'Success') => {
  */
 const errors = {
   // Authentication errors
-  invalidCredentials: () => new AuthenticationError('Invalid username or password'),
+  invalidCredentials: () =>
+    new AuthenticationError('Invalid username or password'),
   tokenExpired: () => new AuthenticationError('Access token has expired'),
   accountDisabled: () => new AuthenticationError('Account has been disabled'),
-  rateLimitExceeded: (message) => new RateLimitError(message || 'Rate limit exceeded'),
-  
+  rateLimitExceeded: message =>
+    new RateLimitError(message || 'Rate limit exceeded'),
+
   // Authorization errors
-  insufficientPermissions: (required) => 
+  insufficientPermissions: required =>
     new AuthorizationError(`Insufficient permissions. Required: ${required}`),
   shopAccessDenied: () => new AuthorizationError('Access denied for this shop'),
-  
+
   // Validation errors
-  missingField: (field) => new ValidationError(`${field} is required`),
-  invalidField: (field, reason) => new ValidationError(`Invalid ${field}: ${reason}`),
-  
+  missingField: field => new ValidationError(`${field} is required`),
+  invalidField: (field, reason) =>
+    new ValidationError(`Invalid ${field}: ${reason}`),
+
   // Not found errors
   userNotFound: () => new NotFoundError('User not found'),
   customerNotFound: () => new NotFoundError('Customer not found'),
   jobNotFound: () => new NotFoundError('Job not found'),
   vehicleNotFound: () => new NotFoundError('Vehicle not found'),
-  
+
   // Conflict errors
   duplicateEmail: () => new ConflictError('Email address already exists'),
   duplicateUsername: () => new ConflictError('Username already exists'),
-  
+
   // Business logic errors
-  jobStatusTransition: (from, to) => 
+  jobStatusTransition: (from, to) =>
     new ValidationError(`Cannot transition job from ${from} to ${to}`),
-  insufficientInventory: (item) => 
-    new ConflictError(`Insufficient inventory for ${item}`)
+  insufficientInventory: item =>
+    new ConflictError(`Insufficient inventory for ${item}`),
 };
 
 module.exports = {
@@ -291,20 +312,20 @@ module.exports = {
   NotFoundError,
   ConflictError,
   RateLimitError,
-  
+
   // Middleware
   errorHandler,
   notFoundHandler,
   asyncHandler,
-  
+
   // Response formatters
   successResponse,
   paginatedResponse,
-  
+
   // Utilities
   logError,
   formatErrorResponse,
-  
+
   // Error factory
-  errors
+  errors,
 };

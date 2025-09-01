@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   LinearProgress,
   Alert,
   Chip,
@@ -17,13 +16,10 @@ import {
   Divider,
   useTheme,
   Paper,
-  CircularProgress,
   Stack,
   alpha,
   Tooltip,
   Badge,
-  Fade,
-  Zoom
 } from '@mui/material';
 import {
   CloudUpload,
@@ -33,24 +29,24 @@ import {
   ExpandMore,
   ExpandLess,
   Delete,
-  Visibility,
   Download,
   Refresh,
-  FileUpload,
   Speed,
   DataObject,
   InsertDriveFile,
   Timeline,
-  TrendingUp,
   CheckCircleOutline,
   ErrorOutline,
   InfoOutlined,
-  CloudDone
+  CloudDone,
 } from '@mui/icons-material';
-import { motion, AnimatePresence, useSpring } from 'framer-motion';
-import bmsService from '../../services/bmsService';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'] }) => {
+const BMSFileUpload = ({
+  onUploadComplete,
+  onError,
+  allowedTypes = ['BMS', 'EMS'],
+}) => {
   const theme = useTheme();
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -65,36 +61,43 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
     totalFiles: 0,
     successCount: 0,
     errorCount: 0,
-    totalTime: 0
+    totalTime: 0,
   });
   const [validationResults, setValidationResults] = useState([]);
   const [dataPreviewMode, setDataPreviewMode] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
 
-  const handleDragOver = useCallback((e) => {
+  const handleDragOver = useCallback(e => {
     e.preventDefault();
     setIsDragOver(true);
   }, []);
 
-  const handleDragLeave = useCallback((e) => {
+  const handleDragLeave = useCallback(e => {
     e.preventDefault();
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback(e => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     const validFiles = files.filter(file => {
       const fileName = file.name.toLowerCase();
       const isBMS = file.type === 'text/xml' || fileName.endsWith('.xml');
-      const isEMS = file.type === 'text/plain' || fileName.endsWith('.txt') || fileName.endsWith('.ems');
-      const isPDF = file.type === 'application/pdf' || fileName.endsWith('.pdf');
-      
-      return (allowedTypes.includes('BMS') && (isBMS || isPDF)) || (allowedTypes.includes('EMS') && isEMS);
+      const isEMS =
+        file.type === 'text/plain' ||
+        fileName.endsWith('.txt') ||
+        fileName.endsWith('.ems');
+      const isPDF =
+        file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
+      return (
+        (allowedTypes.includes('BMS') && (isBMS || isPDF)) ||
+        (allowedTypes.includes('EMS') && isEMS)
+      );
     });
-    
+
     if (validFiles.length > 0) {
       handleFileUpload(validFiles);
     } else {
@@ -103,14 +106,14 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
     }
   }, []);
 
-  const handleFileSelect = useCallback((e) => {
+  const handleFileSelect = useCallback(e => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
       handleFileUpload(files);
     }
   }, []);
 
-  const handleFileUpload = async (files) => {
+  const handleFileUpload = async files => {
     const startTime = Date.now();
     setError(null);
     setUploading(true);
@@ -137,42 +140,45 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
   const handleSingleFileUpload = async (file, startTime) => {
     try {
       setProcessingFile(file.name);
-      
+
       // Determine file type and API endpoint
       const fileName = file.name.toLowerCase();
       const isBMS = fileName.endsWith('.xml');
       const isEMS = fileName.endsWith('.txt') || fileName.endsWith('.ems');
-      
-      let endpoint = '/api/import/bms';
+
+      let endpoint = '/import/bms';
       let fileType = 'BMS';
-      
+
       if (isEMS) {
-        endpoint = '/api/import/ems';
+        endpoint = '/import/ems';
         fileType = 'EMS';
       }
-      
+
       const formData = new FormData();
       formData.append('file', file);
-      
+
       setUploadProgress(25);
       setProcessingFile(`Processing ${fileType} file: ${file.name}`);
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3002'}${endpoint}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}${endpoint}`,
+        {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
-      
+      );
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || result.message || 'Upload failed');
       }
-      
+
       setCurrentImportId(result.importId);
-      
+
       // Poll for completion if we have an import ID
       if (result.importId) {
         await pollImportStatus(result.importId);
@@ -180,7 +186,6 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
         // Handle immediate response
         handleUploadComplete(result, file, fileType, startTime);
       }
-      
     } catch (error) {
       console.error('Single file upload error:', error);
       throw error;
@@ -190,30 +195,35 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
   const handleBatchFileUpload = async (files, startTime) => {
     try {
       setProcessingFile(`Processing ${files.length} files...`);
-      
+
       const formData = new FormData();
       files.forEach(file => {
         formData.append('files', file);
       });
-      
+
       setUploadProgress(25);
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3002'}/api/import/batch`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/import/batch`,
+        {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
-      
+      );
+
       const result = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(result.error || result.message || 'Batch upload failed');
+        throw new Error(
+          result.error || result.message || 'Batch upload failed'
+        );
       }
-      
+
       setCurrentImportId(result.batchId);
-      
+
       // Poll for batch completion
       if (result.batchId) {
         await pollImportStatus(result.batchId, true);
@@ -221,7 +231,6 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
         // Handle immediate response
         handleBatchUploadComplete(result, files, startTime);
       }
-      
     } catch (error) {
       console.error('Batch file upload error:', error);
       throw error;
@@ -231,30 +240,30 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
   const pollImportStatus = async (importId, isBatch = false) => {
     const maxAttempts = 60; // 5 minutes with 5-second intervals
     let attempts = 0;
-    
+
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:3002'}/api/import/status/${importId}`,
+          `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/import/status/${importId}`,
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            }
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
           }
         );
-        
+
         const statusResult = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(statusResult.error || 'Failed to get import status');
         }
-        
+
         const status = statusResult.data;
-        
+
         // Update progress and processing message
         setUploadProgress(status.progress || 0);
         setProcessingFile(status.message || 'Processing...');
-        
+
         if (status.status === 'completed') {
           if (isBatch) {
             handleBatchStatusComplete(status);
@@ -263,48 +272,49 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
           }
           return true; // Stop polling
         } else if (status.status === 'failed') {
-          throw new Error(status.error?.message || status.message || 'Import failed');
+          throw new Error(
+            status.error?.message || status.message || 'Import failed'
+          );
         }
-        
+
         return false; // Continue polling
-        
       } catch (error) {
         console.error('Error checking import status:', error);
         throw error;
       }
     };
-    
+
     const poll = async () => {
       attempts++;
       const completed = await checkStatus();
-      
+
       if (!completed && attempts < maxAttempts) {
         setTimeout(poll, 5000); // Poll every 5 seconds
       } else if (!completed) {
         throw new Error('Import timed out');
       }
     };
-    
+
     // Start polling
     await poll();
   };
 
-  const handleSingleStatusComplete = (status) => {
+  const handleSingleStatusComplete = status => {
     const fileResult = {
       id: status.id,
       file: { name: status.fileName },
       result: {
         success: true,
         data: status.result,
-        message: status.message
+        message: status.message,
       },
       timestamp: new Date(status.completedAt),
       status: 'success',
-      fileType: status.result?.vehicle ? 'BMS/EMS' : 'Unknown'
+      fileType: status.result?.vehicle ? 'BMS/EMS' : 'Unknown',
     };
 
     setUploadedFiles(prev => [...prev, fileResult]);
-    
+
     // Notify parent component
     if (onUploadComplete) {
       onUploadComplete(status.result, { name: status.fileName });
@@ -315,33 +325,33 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       ...prev,
       totalFiles: 1,
       successCount: 1,
-      totalTime: (new Date() - new Date(status.startTime)) / 1000
+      totalTime: (new Date() - new Date(status.startTime)) / 1000,
     }));
 
     setUploading(false);
     setUploadProgress(100);
     setProcessingFile(null);
     setSuccessAnimation(true);
-    
+
     setTimeout(() => setSuccessAnimation(false), 3000);
   };
 
-  const handleBatchStatusComplete = (batchStatus) => {
+  const handleBatchStatusComplete = batchStatus => {
     const results = batchStatus.files.map(fileStatus => ({
       id: `${batchStatus.id}-${fileStatus.fileName}`,
       file: { name: fileStatus.fileName },
       result: {
         success: fileStatus.status === 'success',
         data: fileStatus.status === 'success' ? fileStatus : null,
-        message: fileStatus.error || 'Processed successfully'
+        message: fileStatus.error || 'Processed successfully',
       },
       timestamp: new Date(batchStatus.completedAt),
       status: fileStatus.status,
-      fileType: fileStatus.fileType || 'Unknown'
+      fileType: fileStatus.fileType || 'Unknown',
     }));
 
     setUploadedFiles(prev => [...prev, ...results]);
-    
+
     // Notify parent component for successful imports
     results.forEach(result => {
       if (result.result.success && onUploadComplete) {
@@ -357,14 +367,16 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       totalFiles: batchStatus.totalFiles,
       successCount: batchStatus.successfulImports,
       errorCount: batchStatus.failedImports,
-      totalTime: (new Date(batchStatus.completedAt) - new Date(batchStatus.startTime)) / 1000
+      totalTime:
+        (new Date(batchStatus.completedAt) - new Date(batchStatus.startTime)) /
+        1000,
     }));
 
     setUploading(false);
     setUploadProgress(100);
     setProcessingFile(null);
     setSuccessAnimation(true);
-    
+
     setTimeout(() => setSuccessAnimation(false), 3000);
   };
 
@@ -375,15 +387,15 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       result: {
         success: true,
         data: result.data,
-        message: result.message
+        message: result.message,
       },
       timestamp: new Date(),
       status: 'success',
-      fileType
+      fileType,
     };
 
     setUploadedFiles(prev => [...prev, fileResult]);
-    
+
     if (onUploadComplete) {
       onUploadComplete(result.data, file);
     }
@@ -393,14 +405,14 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       ...prev,
       totalFiles: 1,
       successCount: 1,
-      totalTime: (endTime - startTime) / 1000
+      totalTime: (endTime - startTime) / 1000,
     }));
 
     setUploading(false);
     setUploadProgress(100);
     setProcessingFile(null);
     setSuccessAnimation(true);
-    
+
     setTimeout(() => setSuccessAnimation(false), 3000);
   };
 
@@ -411,15 +423,15 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       result: {
         success: fileResult.status === 'success',
         data: fileResult.status === 'success' ? fileResult : null,
-        message: fileResult.error || 'Processed successfully'
+        message: fileResult.error || 'Processed successfully',
       },
       timestamp: new Date(),
       status: fileResult.status,
-      fileType: fileResult.fileType || 'Unknown'
+      fileType: fileResult.fileType || 'Unknown',
     }));
 
     setUploadedFiles(prev => [...prev, ...results]);
-    
+
     results.forEach(result => {
       if (result.result.success && onUploadComplete) {
         onUploadComplete(result.result.data, result.file);
@@ -434,26 +446,26 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
       totalFiles: result.summary.totalFiles,
       successCount: result.summary.successful,
       errorCount: result.summary.failed,
-      totalTime: (endTime - startTime) / 1000
+      totalTime: (endTime - startTime) / 1000,
     }));
 
     setUploading(false);
     setUploadProgress(100);
     setProcessingFile(null);
     setSuccessAnimation(true);
-    
+
     setTimeout(() => setSuccessAnimation(false), 3000);
   };
 
-  const handleRemoveFile = (fileId) => {
+  const handleRemoveFile = fileId => {
     setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
   };
 
-  const handleViewFile = (file) => {
+  const handleViewFile = file => {
     setExpandedFile(expandedFile === file.id ? null : file.id);
   };
 
-  const handleDownloadBMSData = (file) => {
+  const handleDownloadBMSData = file => {
     const dataStr = JSON.stringify(file.result.data, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -464,18 +476,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
     URL.revokeObjectURL(url);
   };
 
-  const getFileIcon = (status) => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle color="success" />;
-      case 'error':
-        return <Error color="error" />;
-      default:
-        return <Description color="primary" />;
-    }
-  };
-
-  const formatFileSize = (bytes) => {
+  const formatFileSize = bytes => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -483,7 +484,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = timestamp => {
     return new Date(timestamp).toLocaleString();
   };
 
@@ -500,12 +501,12 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
           whileHover={{ scale: 1.02, y: -4 }}
           whileTap={{ scale: 0.98 }}
           sx={{
-            background: isDragOver 
+            background: isDragOver
               ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)}, ${alpha(theme.palette.secondary.main, 0.15)})`
               : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)}, ${alpha(theme.palette.background.paper, 0.6)})`,
             backdropFilter: 'blur(20px)',
-            border: isDragOver 
-              ? `2px dashed ${theme.palette.primary.main}` 
+            border: isDragOver
+              ? `2px dashed ${theme.palette.primary.main}`
               : `2px dashed ${alpha(theme.palette.text.secondary, 0.2)}`,
             borderRadius: '24px',
             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -523,18 +524,22 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
               background: isDragOver
                 ? `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                 : 'transparent',
-              transition: 'all 0.3s ease'
-            }
+              transition: 'all 0.3s ease',
+            },
           }}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-input').click()}
         >
-          <CardContent sx={{ textAlign: 'center', py: 6, position: 'relative' }}>
+          <CardContent
+            sx={{ textAlign: 'center', py: 6, position: 'relative' }}
+          >
             <motion.div
-              animate={isDragOver ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              animate={
+                isDragOver ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }
+              }
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               <Box
                 sx={{
@@ -546,81 +551,106 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                   justifyContent: 'center',
                   mx: 'auto',
                   mb: 3,
-                  background: isDragOver 
+                  background: isDragOver
                     ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                     : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-                  boxShadow: isDragOver 
+                  boxShadow: isDragOver
                     ? `0 20px 40px ${alpha(theme.palette.primary.main, 0.3)}`
                     : `0 10px 30px ${alpha(theme.palette.primary.main, 0.1)}`,
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
                 }}
               >
-                <CloudUpload 
-                  sx={{ 
+                <CloudUpload
+                  sx={{
                     fontSize: 48,
-                    color: isDragOver ? 'white' : theme.palette.primary.main
-                  }} 
+                    color: isDragOver ? 'white' : theme.palette.primary.main,
+                  }}
                 />
               </Box>
             </motion.div>
 
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 1 }}>
-              {isDragOver ? 'Drop Files Here' : `Upload ${allowedTypes.join('/')} Files`}
-            </Typography>
-            
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
-              {isDragOver 
-                ? `Release to start processing your ${allowedTypes.join('/')} files`
-                : `Drag and drop ${allowedTypes.join('/')} files here, or click to browse`
-              }
+            <Typography
+              variant='h5'
+              gutterBottom
+              sx={{ fontWeight: 700, mb: 1 }}
+            >
+              {isDragOver
+                ? 'Drop Files Here'
+                : `Upload ${allowedTypes.join('/')} Files`}
             </Typography>
 
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
-              <Chip 
+            <Typography
+              variant='body1'
+              color='text.secondary'
+              sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}
+            >
+              {isDragOver
+                ? `Release to start processing your ${allowedTypes.join('/')} files`
+                : `Drag and drop ${allowedTypes.join('/')} files here, or click to browse`}
+            </Typography>
+
+            <Stack
+              direction='row'
+              spacing={2}
+              justifyContent='center'
+              sx={{ mb: 2 }}
+            >
+              <Chip
                 icon={<InsertDriveFile />}
-                label="XML Format" 
-                variant="outlined"
-                size="small"
-                sx={{ 
+                label='XML Format'
+                variant='outlined'
+                size='small'
+                sx={{
                   borderColor: alpha(theme.palette.primary.main, 0.3),
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.main,
                 }}
               />
-              <Chip 
+              <Chip
                 icon={<Speed />}
-                label="Fast Processing" 
-                variant="outlined"
-                size="small"
-                sx={{ 
+                label='Fast Processing'
+                variant='outlined'
+                size='small'
+                sx={{
                   borderColor: alpha(theme.palette.success.main, 0.3),
-                  color: theme.palette.success.main
+                  color: theme.palette.success.main,
                 }}
               />
-              <Chip 
+              <Chip
                 icon={<DataObject />}
-                label="Auto Parse" 
-                variant="outlined"
-                size="small"
-                sx={{ 
+                label='Auto Parse'
+                variant='outlined'
+                size='small'
+                sx={{
                   borderColor: alpha(theme.palette.info.main, 0.3),
-                  color: theme.palette.info.main
+                  color: theme.palette.info.main,
                 }}
               />
             </Stack>
 
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', opacity: 0.8 }}>
-              Supports {allowedTypes.includes('BMS') ? 'BMS XML' : ''}{allowedTypes.includes('BMS') && allowedTypes.includes('EMS') ? ' and ' : ''}{allowedTypes.includes('EMS') ? 'EMS pipe-delimited' : ''} files • Multiple files supported
+            <Typography
+              variant='caption'
+              color='text.secondary'
+              sx={{ display: 'block', opacity: 0.8 }}
+            >
+              Supports {allowedTypes.includes('BMS') ? 'BMS XML' : ''}
+              {allowedTypes.includes('BMS') && allowedTypes.includes('EMS')
+                ? ' and '
+                : ''}
+              {allowedTypes.includes('EMS') ? 'EMS pipe-delimited' : ''} files •
+              Multiple files supported
             </Typography>
-            
+
             <input
-              id="file-input"
-              type="file"
+              id='file-input'
+              type='file'
               multiple
-              accept={allowedTypes.includes('BMS') && allowedTypes.includes('EMS') 
-                ? ".xml,.txt,.ems,text/xml,text/plain" 
-                : allowedTypes.includes('BMS') 
-                  ? ".xml,text/xml" 
-                  : ".txt,.ems,text/plain"}
+              accept={
+                allowedTypes.includes('BMS') && allowedTypes.includes('EMS')
+                  ? '.xml,.txt,.ems,text/xml,text/plain'
+                  : allowedTypes.includes('BMS')
+                    ? '.xml,text/xml'
+                    : '.txt,.ems,text/plain'
+              }
               onChange={handleFileSelect}
               style={{ display: 'none' }}
               aria-label={`Upload ${allowedTypes.join('/')} files`}
@@ -636,18 +666,18 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
             initial={{ opacity: 0, scale: 0.9, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -20 }}
-            transition={{ type: "spring", duration: 0.5 }}
+            transition={{ type: 'spring', duration: 0.5 }}
           >
-            <Paper 
-              sx={{ 
-                p: 4, 
+            <Paper
+              sx={{
+                p: 4,
                 mb: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.paper, 0.8)})`,
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
               }}
             >
               {/* Background Animation */}
@@ -662,12 +692,19 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                   animation: 'shimmer 2s infinite',
                   '@keyframes shimmer': {
                     '0%': { transform: 'translateX(-100%)' },
-                    '100%': { transform: 'translateX(100%)' }
-                  }
+                    '100%': { transform: 'translateX(100%)' },
+                  },
                 }}
               />
 
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, position: 'relative' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
+                  position: 'relative',
+                }}
+              >
                 <Box
                   sx={{
                     width: 56,
@@ -678,31 +715,42 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                     justifyContent: 'center',
                     background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                     mr: 3,
-                    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
+                    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
                   }}
                 >
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
                   >
                     <Refresh sx={{ color: 'white', fontSize: 28 }} />
                   </motion.div>
                 </Box>
-                
+
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+                  <Typography
+                    variant='h6'
+                    gutterBottom
+                    sx={{ fontWeight: 700 }}
+                  >
                     Processing {allowedTypes.join('/')} Files
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant='body2' color='text.secondary'>
                     {processingFile || 'Analyzing file structure...'}
                   </Typography>
                 </Box>
 
                 <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: theme.palette.primary.main }}>
+                  <Typography
+                    variant='h4'
+                    sx={{ fontWeight: 800, color: theme.palette.primary.main }}
+                  >
                     {Math.round(uploadProgress)}%
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Complete
                   </Typography>
                 </Box>
@@ -710,11 +758,11 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
 
               {/* Enhanced Progress Bar */}
               <Box sx={{ position: 'relative', mb: 2 }}>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={uploadProgress} 
-                  sx={{ 
-                    height: 12, 
+                <LinearProgress
+                  variant='determinate'
+                  value={uploadProgress}
+                  sx={{
+                    height: 12,
                     borderRadius: 6,
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     '& .MuiLinearProgress-bar': {
@@ -730,36 +778,45 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                         right: 0,
                         height: '100%',
                         background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)`,
-                        animation: 'progress-shimmer 1.5s infinite'
-                      }
-                    }
+                        animation: 'progress-shimmer 1.5s infinite',
+                      },
+                    },
                   }}
                 />
               </Box>
 
               {/* Processing Stats */}
-              <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+              <Stack direction='row' spacing={3} sx={{ mt: 3 }}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" sx={{ color: theme.palette.success.main, fontWeight: 700 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{ color: theme.palette.success.main, fontWeight: 700 }}
+                  >
                     {uploadStats.successCount}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Successful
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 700 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{ color: theme.palette.error.main, fontWeight: 700 }}
+                  >
                     {uploadStats.errorCount}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Errors
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 700 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{ color: theme.palette.info.main, fontWeight: 700 }}
+                  >
                     {uploadStats.totalTime.toFixed(1)}s
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Elapsed
                   </Typography>
                 </Box>
@@ -776,7 +833,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
-            transition={{ type: "spring", duration: 0.6 }}
+            transition={{ type: 'spring', duration: 0.6 }}
           >
             <Paper
               sx={{
@@ -785,19 +842,32 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                 textAlign: 'center',
                 background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)}, ${alpha(theme.palette.success.main, 0.05)})`,
                 border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                borderRadius: '16px'
+                borderRadius: '16px',
               }}
             >
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.6 }}
               >
-                <CloudDone sx={{ fontSize: 48, color: theme.palette.success.main, mb: 2 }} />
+                <CloudDone
+                  sx={{
+                    fontSize: 48,
+                    color: theme.palette.success.main,
+                    mb: 2,
+                  }}
+                />
               </motion.div>
-              <Typography variant="h6" sx={{ color: theme.palette.success.main, fontWeight: 700, mb: 1 }}>
+              <Typography
+                variant='h6'
+                sx={{
+                  color: theme.palette.success.main,
+                  fontWeight: 700,
+                  mb: 1,
+                }}
+              >
                 Upload Complete!
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 All files have been processed successfully
               </Typography>
             </Paper>
@@ -812,28 +882,28 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ type: "spring", duration: 0.4 }}
+            transition={{ type: 'spring', duration: 0.4 }}
           >
-            <Alert 
-              severity="error"
+            <Alert
+              severity='error'
               icon={<ErrorOutline />}
-              sx={{ 
+              sx={{
                 mb: 3,
                 borderRadius: '16px',
                 border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)}, ${alpha(theme.palette.error.main, 0.05)})`,
                 backdropFilter: 'blur(20px)',
                 '& .MuiAlert-icon': {
-                  fontSize: '24px'
+                  fontSize: '24px',
                 },
                 '& .MuiAlert-message': {
                   fontSize: '14px',
-                  fontWeight: 500
-                }
+                  fontWeight: 500,
+                },
               }}
               onClose={() => setError(null)}
             >
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, mb: 0.5 }}>
                 Processing Error
               </Typography>
               {error}
@@ -856,13 +926,24 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                overflow: 'hidden'
+                overflow: 'hidden',
               }}
             >
               <CardContent sx={{ p: 0 }}>
                 {/* Header */}
-                <Box sx={{ p: 3, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    p: 3,
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Box
                         sx={{
@@ -872,29 +953,32 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                           background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
                         }}
                       >
                         <Description sx={{ color: 'white', fontSize: 24 }} />
                       </Box>
                       <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                        <Typography
+                          variant='h6'
+                          sx={{ fontWeight: 700, mb: 0.5 }}
+                        >
                           Processed Files
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant='body2' color='text.secondary'>
                           {uploadedFiles.length} files uploaded and analyzed
                         </Typography>
                       </Box>
                     </Box>
-                    
-                    <Badge 
-                      badgeContent={uploadedFiles.length} 
-                      color="primary"
+
+                    <Badge
+                      badgeContent={uploadedFiles.length}
+                      color='primary'
                       sx={{
                         '& .MuiBadge-badge': {
                           background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                          fontWeight: 700
-                        }
+                          fontWeight: 700,
+                        },
                       }}
                     >
                       <Box
@@ -905,10 +989,15 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                           background: alpha(theme.palette.primary.main, 0.1),
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
                         }}
                       >
-                        <Timeline sx={{ color: theme.palette.primary.main, fontSize: 20 }} />
+                        <Timeline
+                          sx={{
+                            color: theme.palette.primary.main,
+                            fontSize: 20,
+                          }}
+                        />
                       </Box>
                     </Badge>
                   </Box>
@@ -928,16 +1017,18 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                             px: 3,
                             py: 2,
                             borderLeft: `4px solid ${file.status === 'success' ? theme.palette.success.main : theme.palette.error.main}`,
-                            backgroundColor: file.status === 'success' 
-                              ? alpha(theme.palette.success.main, 0.05) 
-                              : alpha(theme.palette.error.main, 0.05),
+                            backgroundColor:
+                              file.status === 'success'
+                                ? alpha(theme.palette.success.main, 0.05)
+                                : alpha(theme.palette.error.main, 0.05),
                             transition: 'all 0.2s ease',
                             '&:hover': {
-                              backgroundColor: file.status === 'success' 
-                                ? alpha(theme.palette.success.main, 0.1) 
-                                : alpha(theme.palette.error.main, 0.1),
-                              transform: 'translateX(4px)'
-                            }
+                              backgroundColor:
+                                file.status === 'success'
+                                  ? alpha(theme.palette.success.main, 0.1)
+                                  : alpha(theme.palette.error.main, 0.1),
+                              transform: 'translateX(4px)',
+                            },
                           }}
                         >
                           <ListItemIcon>
@@ -946,114 +1037,201 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                                 width: 40,
                                 height: 40,
                                 borderRadius: '10px',
-                                background: file.status === 'success'
-                                  ? `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.light})`
-                                  : `linear-gradient(135deg, ${theme.palette.error.main}, ${theme.palette.error.light})`,
+                                background:
+                                  file.status === 'success'
+                                    ? `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.light})`
+                                    : `linear-gradient(135deg, ${theme.palette.error.main}, ${theme.palette.error.light})`,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: `0 4px 12px ${alpha(file.status === 'success' ? theme.palette.success.main : theme.palette.error.main, 0.3)}`
+                                boxShadow: `0 4px 12px ${alpha(file.status === 'success' ? theme.palette.success.main : theme.palette.error.main, 0.3)}`,
                               }}
                             >
                               {file.status === 'success' ? (
-                                <CheckCircleOutline sx={{ color: 'white', fontSize: 20 }} />
+                                <CheckCircleOutline
+                                  sx={{ color: 'white', fontSize: 20 }}
+                                />
                               ) : (
-                                <ErrorOutline sx={{ color: 'white', fontSize: 20 }} />
+                                <ErrorOutline
+                                  sx={{ color: 'white', fontSize: 20 }}
+                                />
                               )}
                             </Box>
                           </ListItemIcon>
-                          
+
                           <ListItemText
                             primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1.5,
+                                  mb: 1,
+                                }}
+                              >
+                                <Typography
+                                  variant='subtitle1'
+                                  sx={{ fontWeight: 600 }}
+                                >
                                   {file.file.name}
                                 </Typography>
-                                <Chip 
-                                  label={file.status} 
-                                  size="small"
-                                  color={file.status === 'success' ? 'success' : 'error'}
-                                  variant="filled"
-                                  sx={{ 
+                                <Chip
+                                  label={file.status}
+                                  size='small'
+                                  color={
+                                    file.status === 'success'
+                                      ? 'success'
+                                      : 'error'
+                                  }
+                                  variant='filled'
+                                  sx={{
                                     fontWeight: 600,
                                     textTransform: 'uppercase',
-                                    fontSize: '11px'
+                                    fontSize: '11px',
                                   }}
                                 />
                               </Box>
                             }
                             secondary={
                               <Stack spacing={0.5}>
-                                <Typography variant="caption" color="text.secondary">
-                                  <InfoOutlined sx={{ fontSize: 12, mr: 0.5, verticalAlign: 'middle' }} />
-                                  {formatFileSize(file.file.size)} • {formatTimestamp(file.timestamp)}
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
+                                  <InfoOutlined
+                                    sx={{
+                                      fontSize: 12,
+                                      mr: 0.5,
+                                      verticalAlign: 'middle',
+                                    }}
+                                  />
+                                  {formatFileSize(file.file.size)} •{' '}
+                                  {formatTimestamp(file.timestamp)}
                                 </Typography>
                                 {file.result.success && (
-                                  <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 500 }}>
-                                    <CheckCircleOutline sx={{ fontSize: 12, mr: 0.5, verticalAlign: 'middle' }} />
-                                    Customer: {file.result.data.customer?.name || 'N/A'} • 
-                                    Vehicle: {file.result.data.vehicle?.year || 'N/A'} {file.result.data.vehicle?.make || 'N/A'} {file.result.data.vehicle?.model || 'N/A'} •
-                                    Claim: {file.result.data.claimInfo?.claimNumber || 'N/A'}
+                                  <Typography
+                                    variant='caption'
+                                    sx={{
+                                      color: theme.palette.success.main,
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    <CheckCircleOutline
+                                      sx={{
+                                        fontSize: 12,
+                                        mr: 0.5,
+                                        verticalAlign: 'middle',
+                                      }}
+                                    />
+                                    Customer:{' '}
+                                    {file.result.data.customer?.name || 'N/A'} •
+                                    Vehicle:{' '}
+                                    {file.result.data.vehicle?.year || 'N/A'}{' '}
+                                    {file.result.data.vehicle?.make || 'N/A'}{' '}
+                                    {file.result.data.vehicle?.model || 'N/A'} •
+                                    Claim:{' '}
+                                    {file.result.data.claimInfo?.claimNumber ||
+                                      'N/A'}
                                   </Typography>
                                 )}
                                 {!file.result.success && (
-                                  <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 500 }}>
-                                    <ErrorOutline sx={{ fontSize: 12, mr: 0.5, verticalAlign: 'middle' }} />
+                                  <Typography
+                                    variant='caption'
+                                    sx={{
+                                      color: theme.palette.error.main,
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    <ErrorOutline
+                                      sx={{
+                                        fontSize: 12,
+                                        mr: 0.5,
+                                        verticalAlign: 'middle',
+                                      }}
+                                    />
                                     {file.result.error || file.result.message}
                                   </Typography>
                                 )}
                               </Stack>
                             }
                           />
-                          
-                          <Stack direction="row" spacing={1}>
-                            <Tooltip title={expandedFile === file.id ? 'Collapse details' : 'Expand details'}>
+
+                          <Stack direction='row' spacing={1}>
+                            <Tooltip
+                              title={
+                                expandedFile === file.id
+                                  ? 'Collapse details'
+                                  : 'Expand details'
+                              }
+                            >
                               <IconButton
-                                size="small"
+                                size='small'
                                 onClick={() => handleViewFile(file)}
                                 sx={{
-                                  backgroundColor: alpha(theme.palette.info.main, 0.1),
+                                  backgroundColor: alpha(
+                                    theme.palette.info.main,
+                                    0.1
+                                  ),
                                   color: theme.palette.info.main,
                                   '&:hover': {
-                                    backgroundColor: alpha(theme.palette.info.main, 0.2),
-                                    transform: 'scale(1.1)'
-                                  }
+                                    backgroundColor: alpha(
+                                      theme.palette.info.main,
+                                      0.2
+                                    ),
+                                    transform: 'scale(1.1)',
+                                  },
                                 }}
                               >
-                                {expandedFile === file.id ? <ExpandLess /> : <ExpandMore />}
+                                {expandedFile === file.id ? (
+                                  <ExpandLess />
+                                ) : (
+                                  <ExpandMore />
+                                )}
                               </IconButton>
                             </Tooltip>
-                            
+
                             {file.result.success && (
-                              <Tooltip title="Download parsed data">
+                              <Tooltip title='Download parsed data'>
                                 <IconButton
-                                  size="small"
+                                  size='small'
                                   onClick={() => handleDownloadBMSData(file)}
                                   sx={{
-                                    backgroundColor: alpha(theme.palette.success.main, 0.1),
+                                    backgroundColor: alpha(
+                                      theme.palette.success.main,
+                                      0.1
+                                    ),
                                     color: theme.palette.success.main,
                                     '&:hover': {
-                                      backgroundColor: alpha(theme.palette.success.main, 0.2),
-                                      transform: 'scale(1.1)'
-                                    }
+                                      backgroundColor: alpha(
+                                        theme.palette.success.main,
+                                        0.2
+                                      ),
+                                      transform: 'scale(1.1)',
+                                    },
                                   }}
                                 >
                                   <Download />
                                 </IconButton>
                               </Tooltip>
                             )}
-                            
-                            <Tooltip title="Remove file">
+
+                            <Tooltip title='Remove file'>
                               <IconButton
-                                size="small"
+                                size='small'
                                 onClick={() => handleRemoveFile(file.id)}
                                 sx={{
-                                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                                  backgroundColor: alpha(
+                                    theme.palette.error.main,
+                                    0.1
+                                  ),
                                   color: theme.palette.error.main,
                                   '&:hover': {
-                                    backgroundColor: alpha(theme.palette.error.main, 0.2),
-                                    transform: 'scale(1.1)'
-                                  }
+                                    backgroundColor: alpha(
+                                      theme.palette.error.main,
+                                      0.2
+                                    ),
+                                    transform: 'scale(1.1)',
+                                  },
                                 }}
                               >
                                 <Delete />
@@ -1061,7 +1239,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                             </Tooltip>
                           </Stack>
                         </ListItem>
-                        
+
                         {/* Enhanced Expanded File Details */}
                         <Collapse in={expandedFile === file.id}>
                           <motion.div
@@ -1069,79 +1247,224 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
                           >
-                            <Paper 
-                              sx={{ 
+                            <Paper
+                              sx={{
                                 mx: 3,
                                 mb: 2,
                                 p: 3,
                                 borderRadius: '16px',
                                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.8)}, ${alpha(theme.palette.background.default, 0.6)})`,
                                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                                backdropFilter: 'blur(10px)'
+                                backdropFilter: 'blur(10px)',
                               }}
                             >
-                              <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-                                <DataObject sx={{ mr: 1, verticalAlign: 'middle' }} />
+                              <Typography
+                                variant='h6'
+                                gutterBottom
+                                sx={{ fontWeight: 700, mb: 2 }}
+                              >
+                                <DataObject
+                                  sx={{ mr: 1, verticalAlign: 'middle' }}
+                                />
                                 Parsed Data Preview
                               </Typography>
-                              
+
                               {file.result.success ? (
                                 <Stack spacing={2}>
-                                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2 }}>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.info.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.info.main, fontWeight: 700, mb: 1 }}>
+                                  <Box
+                                    sx={{
+                                      display: 'grid',
+                                      gridTemplateColumns:
+                                        'repeat(auto-fit, minmax(250px, 1fr))',
+                                      gap: 2,
+                                    }}
+                                  >
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.info.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.info.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         Document Info
                                       </Typography>
-                                      <Typography variant="body2">
-                                        {file.result.data.documentInfo?.documentNumber || 'N/A'}
+                                      <Typography variant='body2'>
+                                        {file.result.data.documentInfo
+                                          ?.documentNumber || 'N/A'}
                                       </Typography>
                                     </Paper>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.warning.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.warning.main, fontWeight: 700, mb: 1 }}>
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.warning.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.warning.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         Claim Number
                                       </Typography>
-                                      <Typography variant="body2">
-                                        {file.result.data.claimInfo?.claimNumber || 'N/A'}
+                                      <Typography variant='body2'>
+                                        {file.result.data.claimInfo
+                                          ?.claimNumber || 'N/A'}
                                       </Typography>
                                     </Paper>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.success.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.success.main, fontWeight: 700, mb: 1 }}>
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.success.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.success.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         Vehicle
                                       </Typography>
-                                      <Typography variant="body2">
-                                        {file.result.data.vehicle?.year || 'N/A'} {file.result.data.vehicle?.make || 'N/A'} {file.result.data.vehicle?.model || 'N/A'}
+                                      <Typography variant='body2'>
+                                        {file.result.data.vehicle?.year ||
+                                          'N/A'}{' '}
+                                        {file.result.data.vehicle?.make ||
+                                          'N/A'}{' '}
+                                        {file.result.data.vehicle?.model ||
+                                          'N/A'}
                                       </Typography>
                                     </Paper>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.secondary.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 1 }}>
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.secondary.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.secondary.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         VIN
                                       </Typography>
-                                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                                      <Typography
+                                        variant='body2'
+                                        sx={{ fontFamily: 'monospace' }}
+                                      >
                                         {file.result.data.vehicle?.vin || 'N/A'}
                                       </Typography>
                                     </Paper>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.primary.main, fontWeight: 700, mb: 1 }}>
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.primary.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.primary.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         Total Lines
                                       </Typography>
-                                      <Typography variant="body2">
-                                        {file.result.data.damage?.damageLines?.length || 0}
+                                      <Typography variant='body2'>
+                                        {file.result.data.damage?.damageLines
+                                          ?.length || 0}
                                       </Typography>
                                     </Paper>
-                                    <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.success.main, 0.05) }}>
-                                      <Typography variant="subtitle2" sx={{ color: theme.palette.success.main, fontWeight: 700, mb: 1 }}>
+                                    <Paper
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: '12px',
+                                        backgroundColor: alpha(
+                                          theme.palette.success.main,
+                                          0.05
+                                        ),
+                                      }}
+                                    >
+                                      <Typography
+                                        variant='subtitle2'
+                                        sx={{
+                                          color: theme.palette.success.main,
+                                          fontWeight: 700,
+                                          mb: 1,
+                                        }}
+                                      >
                                         Gross Total
                                       </Typography>
-                                      <Typography variant="h6" sx={{ color: theme.palette.success.main, fontWeight: 700 }}>
-                                        ${file.result.data.damage?.totalAmount || 'N/A'}
+                                      <Typography
+                                        variant='h6'
+                                        sx={{
+                                          color: theme.palette.success.main,
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        $
+                                        {file.result.data.damage?.totalAmount ||
+                                          'N/A'}
                                       </Typography>
                                     </Paper>
                                   </Box>
                                 </Stack>
                               ) : (
-                                <Paper sx={{ p: 2, borderRadius: '12px', backgroundColor: alpha(theme.palette.error.main, 0.05) }}>
-                                  <Typography variant="body2" sx={{ color: theme.palette.error.main, fontWeight: 500 }}>
-                                    <ErrorOutline sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                <Paper
+                                  sx={{
+                                    p: 2,
+                                    borderRadius: '12px',
+                                    backgroundColor: alpha(
+                                      theme.palette.error.main,
+                                      0.05
+                                    ),
+                                  }}
+                                >
+                                  <Typography
+                                    variant='body2'
+                                    sx={{
+                                      color: theme.palette.error.main,
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    <ErrorOutline
+                                      sx={{ mr: 1, verticalAlign: 'middle' }}
+                                    />
                                     {file.result.error || file.result.message}
                                   </Typography>
                                 </Paper>
@@ -1150,7 +1473,7 @@ const BMSFileUpload = ({ onUploadComplete, onError, allowedTypes = ['BMS', 'EMS'
                           </motion.div>
                         </Collapse>
                       </motion.div>
-                      
+
                       {index < uploadedFiles.length - 1 && (
                         <Divider sx={{ mx: 3, opacity: 0.3 }} />
                       )}

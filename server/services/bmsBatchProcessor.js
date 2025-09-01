@@ -17,7 +17,7 @@ class BMSBatchProcessor {
       totalFiles: 0,
       successfulFiles: 0,
       failedFiles: 0,
-      avgProcessingTime: 0
+      avgProcessingTime: 0,
     };
   }
 
@@ -36,7 +36,7 @@ class BMSBatchProcessor {
         filePath: file.path,
         status: 'pending',
         index,
-        originalFile: file.originalFile
+        originalFile: file.originalFile,
       })),
       options: {
         pauseOnError: options.pauseOnError || false,
@@ -44,7 +44,7 @@ class BMSBatchProcessor {
         validateFirst: options.validateFirst || true,
         userId: options.userId,
         userAgent: options.userAgent,
-        concurrency: options.concurrency || 3
+        concurrency: options.concurrency || 3,
       },
       results: [],
       statistics: {
@@ -55,11 +55,11 @@ class BMSBatchProcessor {
         skippedFiles: 0,
         startTime: null,
         endTime: null,
-        processingTime: 0
+        processingTime: 0,
       },
       errors: [],
       createdAt: new Date(),
-      createdBy: options.userId
+      createdBy: options.userId,
     };
 
     this.activeBatches.set(batchId, batch);
@@ -90,11 +90,12 @@ class BMSBatchProcessor {
     try {
       // Process files with concurrency control
       await this.processFilesInBatch(batch);
-      
+
       // Complete batch
       batch.status = 'completed';
       batch.statistics.endTime = new Date();
-      batch.statistics.processingTime = batch.statistics.endTime - batch.statistics.startTime;
+      batch.statistics.processingTime =
+        batch.statistics.endTime - batch.statistics.startTime;
 
       // Move to history
       this.batchHistory.set(batchId, batch);
@@ -105,14 +106,13 @@ class BMSBatchProcessor {
 
       console.log(`Batch ${batchId} completed successfully`);
       return batch;
-
     } catch (error) {
       batch.status = 'failed';
       batch.statistics.endTime = new Date();
       batch.errors.push({
         type: 'BATCH_PROCESSING_ERROR',
         message: error.message,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       // Move to history
@@ -130,11 +130,11 @@ class BMSBatchProcessor {
   async processFilesInBatch(batch) {
     const { concurrency } = batch.options;
     const files = batch.files.filter(file => file.status === 'pending');
-    
+
     // Process files in chunks
     for (let i = 0; i < files.length; i += concurrency) {
       const chunk = files.slice(i, i + concurrency);
-      
+
       // Process chunk concurrently
       const promises = chunk.map(file => this.processFileInBatch(file, batch));
       await Promise.allSettled(promises);
@@ -167,9 +167,11 @@ class BMSBatchProcessor {
       if (batch.options.validateFirst) {
         const validation = await bmsValidator.validateBMSFile(content);
         file.validation = validation;
-        
+
         if (!validation.isValid) {
-          throw new Error(`Validation failed: ${validation.errors[0]?.message || 'Unknown validation error'}`);
+          throw new Error(
+            `Validation failed: ${validation.errors[0]?.message || 'Unknown validation error'}`
+          );
         }
       }
 
@@ -183,7 +185,7 @@ class BMSBatchProcessor {
         result = await bmsService.processBMSFile(content, {
           uploadId: file.id,
           fileName: file.fileName,
-          userId: batch.options.userId
+          userId: batch.options.userId,
         });
       } else {
         // EMS text format
@@ -191,7 +193,7 @@ class BMSBatchProcessor {
         result = await bmsService.processEMSFile(content, {
           uploadId: file.id,
           fileName: file.fileName,
-          userId: batch.options.userId
+          userId: batch.options.userId,
         });
       }
 
@@ -207,11 +209,10 @@ class BMSBatchProcessor {
         fileId: file.id,
         fileName: file.fileName,
         status: 'success',
-        result
+        result,
       });
 
       console.log(`Successfully processed ${file.fileName}`);
-
     } catch (error) {
       console.error(`Error processing ${file.fileName}:`, error);
 
@@ -220,7 +221,7 @@ class BMSBatchProcessor {
       file.error = {
         type: error.constructor.name,
         message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       };
 
       batch.statistics.processedFiles++;
@@ -229,7 +230,7 @@ class BMSBatchProcessor {
         fileId: file.id,
         fileName: file.fileName,
         status: 'error',
-        error: file.error
+        error: file.error,
       });
 
       // Report error
@@ -238,15 +239,17 @@ class BMSBatchProcessor {
         fileId: file.id,
         fileName: file.fileName,
         userId: batch.options.userId,
-        operation: 'batch_file_processing'
+        operation: 'batch_file_processing',
       });
-
     } finally {
       // Cleanup temp file
       try {
         await fs.unlink(file.filePath);
       } catch (cleanupError) {
-        console.warn(`Failed to cleanup temp file ${file.filePath}:`, cleanupError);
+        console.warn(
+          `Failed to cleanup temp file ${file.filePath}:`,
+          cleanupError
+        );
       }
     }
   }
@@ -274,9 +277,13 @@ class BMSBatchProcessor {
    * Format batch status for API response
    */
   formatBatchStatus(batch) {
-    const progress = batch.statistics.totalFiles > 0 
-      ? Math.round((batch.statistics.processedFiles / batch.statistics.totalFiles) * 100)
-      : 0;
+    const progress =
+      batch.statistics.totalFiles > 0
+        ? Math.round(
+            (batch.statistics.processedFiles / batch.statistics.totalFiles) *
+              100
+          )
+        : 0;
 
     return {
       id: batch.id,
@@ -289,12 +296,12 @@ class BMSBatchProcessor {
         status: file.status,
         fileType: file.fileType,
         processingTime: file.processingTime,
-        error: file.error
+        error: file.error,
       })),
       results: batch.results,
       errors: batch.errors,
       createdAt: batch.createdAt,
-      message: this.getBatchStatusMessage(batch)
+      message: this.getBatchStatusMessage(batch),
     };
   }
 
@@ -335,7 +342,7 @@ class BMSBatchProcessor {
 
     batch.status = 'paused';
     console.log(`Paused batch ${batchId}`);
-    
+
     return this.formatBatchStatus(batch);
   }
 
@@ -354,7 +361,7 @@ class BMSBatchProcessor {
 
     batch.status = 'processing';
     console.log(`Resumed batch ${batchId}`);
-    
+
     // Continue processing remaining files
     this.processFilesInBatch(batch).catch(error => {
       console.error(`Error resuming batch ${batchId}:`, error);
@@ -375,13 +382,13 @@ class BMSBatchProcessor {
 
     batch.status = 'cancelled';
     batch.statistics.endTime = new Date();
-    
+
     // Cleanup temp files
-    const pendingFiles = batch.files.filter(file => file.status === 'pending' || file.status === 'processing');
+    const pendingFiles = batch.files.filter(
+      file => file.status === 'pending' || file.status === 'processing'
+    );
     await Promise.allSettled(
-      pendingFiles.map(file => 
-        fs.unlink(file.filePath).catch(() => {})
-      )
+      pendingFiles.map(file => fs.unlink(file.filePath).catch(() => {}))
     );
 
     // Move to history
@@ -399,10 +406,13 @@ class BMSBatchProcessor {
     this.statistics.totalFiles += batch.statistics.totalFiles;
     this.statistics.successfulFiles += batch.statistics.successfulFiles;
     this.statistics.failedFiles += batch.statistics.failedFiles;
-    
+
     // Update average processing time
-    const totalProcessingTime = this.statistics.avgProcessingTime * (this.statistics.totalBatches - 1) + batch.statistics.processingTime;
-    this.statistics.avgProcessingTime = totalProcessingTime / this.statistics.totalBatches;
+    const totalProcessingTime =
+      this.statistics.avgProcessingTime * (this.statistics.totalBatches - 1) +
+      batch.statistics.processingTime;
+    this.statistics.avgProcessingTime =
+      totalProcessingTime / this.statistics.totalBatches;
   }
 
   /**
@@ -413,9 +423,13 @@ class BMSBatchProcessor {
       ...this.statistics,
       activeBatches: this.activeBatches.size,
       completedBatches: this.batchHistory.size,
-      successRate: this.statistics.totalFiles > 0 
-        ? Math.round((this.statistics.successfulFiles / this.statistics.totalFiles) * 100)
-        : 0
+      successRate:
+        this.statistics.totalFiles > 0
+          ? Math.round(
+              (this.statistics.successfulFiles / this.statistics.totalFiles) *
+                100
+            )
+          : 0,
     };
   }
 

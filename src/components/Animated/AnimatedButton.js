@@ -5,15 +5,22 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, CircularProgress, Box, useTheme } from '@mui/material';
 import { Check, Error, ArrowForward } from '@mui/icons-material';
-import { premiumColors, premiumShadows, premiumEffects } from '../../theme/premiumDesignSystem';
-import { 
-  microInteractions, 
-  loadingStates, 
-  statusAnimations, 
+import {
+  premiumColors,
+  premiumShadows,
+  premiumEffects,
+} from '../../theme/premiumDesignSystem';
+import {
+  microInteractions,
+  loadingStates,
+  statusAnimations,
   advancedSpringConfigs,
-  premiumEasings 
+  premiumEasings,
 } from '../../utils/animations/index';
-import { useAnimationState, useAccessibleAnimation } from '../../hooks/useAnimation';
+import {
+  useAnimationState,
+  useAccessibleAnimation,
+} from '../../hooks/useAnimation';
 
 const AnimatedButton = ({
   children,
@@ -34,11 +41,11 @@ const AnimatedButton = ({
   const buttonRef = useRef(null);
   const [ripples, setRipples] = useState([]);
   const [magnetOffset, setMagnetOffset] = useState({ x: 0, y: 0 });
-  
-  const { 
-    state: animationState, 
-    animate, 
-    controls 
+
+  const {
+    state: animationState,
+    animate,
+    controls,
   } = useAnimationState('rest');
 
   // Button variants configuration
@@ -49,7 +56,7 @@ const AnimatedButton = ({
         boxShadow: premiumShadows.md,
         scale: 1,
         filter: 'brightness(1)',
-        y: 0
+        y: 0,
       },
       hover: {
         background: premiumColors.primary.gradient.vivid,
@@ -57,26 +64,26 @@ const AnimatedButton = ({
         scale: 1.02,
         filter: 'brightness(1.05)',
         y: -2,
-        transition: advancedSpringConfigs.premium
+        transition: advancedSpringConfigs.premium,
       },
       tap: {
         scale: 0.98,
         y: 0,
         filter: 'brightness(0.95)',
-        transition: { duration: 0.1 }
+        transition: { duration: 0.1 },
       },
       loading: {
         scale: 0.95,
         filter: 'brightness(0.9)',
-        transition: advancedSpringConfigs.gentle
+        transition: advancedSpringConfigs.gentle,
       },
       success: {
         background: premiumColors.semantic.success.gradient,
         scale: [0.98, 1.05, 1],
         transition: {
           duration: 0.6,
-          ease: premiumEasings.appleBounce
-        }
+          ease: premiumEasings.appleBounce,
+        },
       },
       error: {
         background: premiumColors.semantic.error.gradient,
@@ -84,9 +91,9 @@ const AnimatedButton = ({
         x: [0, -2, 2, -2, 0],
         transition: {
           scale: { duration: 0.3 },
-          x: { duration: 0.4 }
-        }
-      }
+          x: { duration: 0.4 },
+        },
+      },
     },
 
     executive: {
@@ -95,19 +102,19 @@ const AnimatedButton = ({
         boxShadow: premiumShadows.glass.elevated,
         scale: 1,
         borderRadius: 16,
-        backdropFilter: 'blur(20px)'
+        backdropFilter: 'blur(20px)',
       },
       hover: {
         background: `linear-gradient(135deg, ${premiumColors.neutral[800]} 0%, ${premiumColors.neutral[700]} 100%)`,
         boxShadow: premiumShadows.xl,
         scale: 1.02,
         borderRadius: 20,
-        transition: advancedSpringConfigs.executive
+        transition: advancedSpringConfigs.executive,
       },
       tap: {
         scale: 0.98,
-        transition: { duration: 0.1 }
-      }
+        transition: { duration: 0.1 },
+      },
     },
 
     minimal: {
@@ -115,19 +122,19 @@ const AnimatedButton = ({
         background: 'transparent',
         color: premiumColors.primary[600],
         scale: 1,
-        x: 0
+        x: 0,
       },
       hover: {
         background: premiumColors.primary[50],
         color: premiumColors.primary[700],
         scale: 1.02,
         x: 4,
-        transition: advancedSpringConfigs.responsive
+        transition: advancedSpringConfigs.responsive,
       },
       tap: {
         scale: 0.98,
-        x: 0
-      }
+        x: 0,
+      },
     },
 
     glass: {
@@ -136,7 +143,7 @@ const AnimatedButton = ({
         backdropFilter: premiumEffects.backdrop.md,
         border: `1px solid ${premiumColors.glass.white[20]}`,
         boxShadow: premiumShadows.glass.medium,
-        scale: 1
+        scale: 1,
       },
       hover: {
         background: premiumColors.glass.white[15],
@@ -144,12 +151,12 @@ const AnimatedButton = ({
         border: `1px solid ${premiumColors.glass.white[30]}`,
         boxShadow: premiumShadows.glass.elevated,
         scale: 1.02,
-        transition: advancedSpringConfigs.buttery
+        transition: advancedSpringConfigs.buttery,
       },
       tap: {
-        scale: 0.98
-      }
-    }
+        scale: 0.98,
+      },
+    },
   };
 
   // Animation-specific variants
@@ -159,17 +166,17 @@ const AnimatedButton = ({
       ...microInteractions.premiumButton,
       hover: {
         ...microInteractions.premiumButton.hover,
-        boxShadow: glowColor 
-          ? `0 0 30px ${glowColor}` 
-          : premiumShadows.glow.primary
-      }
+        boxShadow: glowColor
+          ? `0 0 30px ${glowColor}`
+          : premiumShadows.glow.primary,
+      },
     },
     magnetic: microInteractions.magnetic,
-    ripple: {}
+    ripple: {},
   };
 
   // Handle click with ripple effect
-  const handleClick = (event) => {
+  const handleClick = event => {
     if (disabled || state === 'loading') return;
 
     if (animation === 'ripple') {
@@ -177,16 +184,16 @@ const AnimatedButton = ({
       const size = Math.max(rect.width, rect.height);
       const x = event.clientX - rect.left - size / 2;
       const y = event.clientY - rect.top - size / 2;
-      
+
       const newRipple = {
         id: Date.now(),
         x,
         y,
-        size
+        size,
       };
-      
+
       setRipples(prev => [...prev, newRipple]);
-      
+
       // Remove ripple after animation
       setTimeout(() => {
         setRipples(prev => prev.filter(r => r.id !== newRipple.id));
@@ -197,16 +204,16 @@ const AnimatedButton = ({
   };
 
   // Handle magnetic effect
-  const handleMouseMove = (event) => {
+  const handleMouseMove = event => {
     if (animation !== 'magnetic' || disabled) return;
 
     const rect = buttonRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     const x = (event.clientX - centerX) / rect.width;
     const y = (event.clientY - centerY) / rect.height;
-    
+
     setMagnetOffset({ x: x * 10, y: y * 10 });
   };
 
@@ -219,18 +226,18 @@ const AnimatedButton = ({
     small: {
       minHeight: 32,
       padding: '8px 16px',
-      fontSize: '0.875rem'
+      fontSize: '0.875rem',
     },
     medium: {
       minHeight: 40,
       padding: '12px 24px',
-      fontSize: '1rem'
+      fontSize: '1rem',
     },
     large: {
       minHeight: 48,
       padding: '16px 32px',
-      fontSize: '1.125rem'
-    }
+      fontSize: '1.125rem',
+    },
   };
 
   const currentSize = sizeConfig[size];
@@ -240,7 +247,7 @@ const AnimatedButton = ({
   // Combine variants
   const combinedVariants = {
     ...currentVariant,
-    ...currentAnimation
+    ...currentAnimation,
   };
 
   // Handle magnetic animation
@@ -248,21 +255,22 @@ const AnimatedButton = ({
     combinedVariants.hover = {
       ...combinedVariants.hover,
       x: magnetOffset.x * 0.5,
-      y: magnetOffset.y * 0.5
+      y: magnetOffset.y * 0.5,
     };
   }
 
   // Accessible variants
-  const { variants: accessibleVariants } = useAccessibleAnimation(combinedVariants);
+  const { variants: accessibleVariants } =
+    useAccessibleAnimation(combinedVariants);
 
   return (
     <motion.div
       ref={buttonRef}
       variants={accessibleVariants}
-      initial="rest"
+      initial='rest'
       animate={state}
-      whileHover="hover"
-      whileTap="tap"
+      whileHover='hover'
+      whileTap='tap'
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
@@ -271,13 +279,13 @@ const AnimatedButton = ({
         overflow: 'hidden',
         borderRadius: variant === 'executive' ? 16 : 12,
         width: fullWidth ? '100%' : 'auto',
-        ...style
+        ...style,
       }}
     >
       <Button
         onClick={handleClick}
         disabled={disabled || state === 'loading'}
-        variant="contained"
+        variant='contained'
         fullWidth={fullWidth}
         sx={{
           minHeight: currentSize.minHeight,
@@ -292,16 +300,16 @@ const AnimatedButton = ({
           boxShadow: 'none',
           '&:hover': {
             background: 'transparent',
-            boxShadow: 'none'
+            boxShadow: 'none',
           },
           '&:active': {
             background: 'transparent',
-            boxShadow: 'none'
+            boxShadow: 'none',
           },
           '&:disabled': {
             background: 'transparent',
-            color: 'rgba(255, 255, 255, 0.5)'
-          }
+            color: 'rgba(255, 255, 255, 0.5)',
+          },
         }}
         {...props}
       >
@@ -311,11 +319,11 @@ const AnimatedButton = ({
             alignItems: 'center',
             gap: 1,
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
           }}
         >
           {/* Loading State */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             {state === 'loading' && (
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
@@ -331,8 +339,8 @@ const AnimatedButton = ({
             {state === 'success' && (
               <motion.div
                 variants={statusAnimations.success}
-                initial="initial"
-                animate="animate"
+                initial='initial'
+                animate='animate'
               >
                 <Check sx={{ fontSize: 16 }} />
               </motion.div>
@@ -342,8 +350,8 @@ const AnimatedButton = ({
             {state === 'error' && (
               <motion.div
                 variants={statusAnimations.error}
-                initial="initial"
-                animate="animate"
+                initial='initial'
+                animate='animate'
               >
                 <Error sx={{ fontSize: 16 }} />
               </motion.div>
@@ -362,7 +370,7 @@ const AnimatedButton = ({
           </AnimatePresence>
 
           {/* Button Text */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             <motion.span
               key={state}
               initial={{ opacity: 0, y: 10 }}
@@ -399,12 +407,12 @@ const AnimatedButton = ({
                 opacity: 0.3,
                 scale: 0,
                 x: ripple.x,
-                y: ripple.y
+                y: ripple.y,
               }}
               animate={{
                 opacity: 0,
                 scale: 1,
-                transition: { duration: 0.6, ease: 'easeOut' }
+                transition: { duration: 0.6, ease: 'easeOut' },
               }}
               exit={{ opacity: 0 }}
               style={{
@@ -416,7 +424,7 @@ const AnimatedButton = ({
                 pointerEvents: 'none',
                 top: 0,
                 left: 0,
-                transformOrigin: 'center'
+                transformOrigin: 'center',
               }}
             />
           ))}
@@ -426,7 +434,7 @@ const AnimatedButton = ({
         {state === 'loading' && (
           <motion.div
             variants={loadingStates.premiumShimmer}
-            animate="animate"
+            animate='animate'
             style={{
               position: 'absolute',
               top: 0,
@@ -440,7 +448,7 @@ const AnimatedButton = ({
                 transparent
               )`,
               backgroundSize: '200% 100%',
-              zIndex: 0
+              zIndex: 0,
             }}
           />
         )}
@@ -450,28 +458,28 @@ const AnimatedButton = ({
 };
 
 // HOC for easy animation presets
-export const PremiumButton = (props) => (
-  <AnimatedButton variant="premium" animation="scale" {...props} />
+export const PremiumButton = props => (
+  <AnimatedButton variant='premium' animation='scale' {...props} />
 );
 
-export const ExecutiveButton = (props) => (
-  <AnimatedButton variant="executive" animation="glow" {...props} />
+export const ExecutiveButton = props => (
+  <AnimatedButton variant='executive' animation='glow' {...props} />
 );
 
-export const MinimalButton = (props) => (
-  <AnimatedButton variant="minimal" animation="minimal" {...props} />
+export const MinimalButton = props => (
+  <AnimatedButton variant='minimal' animation='minimal' {...props} />
 );
 
-export const GlassButton = (props) => (
-  <AnimatedButton variant="glass" animation="scale" {...props} />
+export const GlassButton = props => (
+  <AnimatedButton variant='glass' animation='scale' {...props} />
 );
 
-export const MagneticButton = (props) => (
-  <AnimatedButton animation="magnetic" {...props} />
+export const MagneticButton = props => (
+  <AnimatedButton animation='magnetic' {...props} />
 );
 
-export const RippleButton = (props) => (
-  <AnimatedButton animation="ripple" {...props} />
+export const RippleButton = props => (
+  <AnimatedButton animation='ripple' {...props} />
 );
 
 export default AnimatedButton;

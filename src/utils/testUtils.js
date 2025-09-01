@@ -62,9 +62,7 @@ export function renderWithProviders(
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <ThemeContextProvider>
-            <MockAuthProvider>
-              {children}
-            </MockAuthProvider>
+            <MockAuthProvider>{children}</MockAuthProvider>
           </ThemeContextProvider>
         </ThemeProvider>
       </BrowserRouter>
@@ -82,7 +80,7 @@ export function renderWithRouter(ui, { initialEntries = ['/'] } = {}) {
   function RouterWrapper({ children }) {
     return <BrowserRouter>{children}</BrowserRouter>;
   }
-  
+
   return {
     user: userEvent,
     ...render(ui, { wrapper: RouterWrapper }),
@@ -165,7 +163,7 @@ export const mockApiError = (message = 'An error occurred', status = 500) => ({
 });
 
 // Mock fetch responses
-export const mockFetchSuccess = (data) => 
+export const mockFetchSuccess = data =>
   Promise.resolve({
     ok: true,
     status: 200,
@@ -205,17 +203,21 @@ export const createMockSocket = () => ({
 // Chart.js mock data
 export const createMockChartData = (labels = [], datasets = []) => ({
   labels,
-  datasets: datasets.length ? datasets : [{
-    label: 'Test Dataset',
-    data: [10, 20, 30, 40, 50],
-    backgroundColor: 'rgba(25, 118, 210, 0.3)',
-    borderColor: '#1976d2',
-    borderWidth: 2,
-  }],
+  datasets: datasets.length
+    ? datasets
+    : [
+        {
+          label: 'Test Dataset',
+          data: [10, 20, 30, 40, 50],
+          backgroundColor: 'rgba(25, 118, 210, 0.3)',
+          borderColor: '#1976d2',
+          borderWidth: 2,
+        },
+      ],
 });
 
 // Form testing helpers
-export const fillForm = async (fields) => {
+export const fillForm = async fields => {
   for (const [fieldName, value] of Object.entries(fields)) {
     const field = screen.getByLabelText(new RegExp(fieldName, 'i'));
     await userEvent.clear(field);
@@ -224,19 +226,23 @@ export const fillForm = async (fields) => {
 };
 
 export const submitForm = async (buttonText = 'submit') => {
-  const submitButton = screen.getByRole('button', { name: new RegExp(buttonText, 'i') });
+  const submitButton = screen.getByRole('button', {
+    name: new RegExp(buttonText, 'i'),
+  });
   await userEvent.click(submitButton);
 };
 
 // Async utilities
-export const waitForLoadingToFinish = () => 
+export const waitForLoadingToFinish = () =>
   waitFor(() => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument());
 
-export const waitForErrorMessage = (message) =>
-  waitFor(() => expect(screen.getByText(new RegExp(message, 'i'))).toBeInTheDocument());
+export const waitForErrorMessage = message =>
+  waitFor(() =>
+    expect(screen.getByText(new RegExp(message, 'i'))).toBeInTheDocument()
+  );
 
 // Component testing utilities
-export const expectElementToBeVisible = (element) => {
+export const expectElementToBeVisible = element => {
   expect(element).toBeInTheDocument();
   expect(element).toBeVisible();
 };
@@ -254,17 +260,21 @@ export const mockConsole = () => {
     console.warn = jest.fn();
     console.error = jest.fn();
   });
-  
+
   afterEach(() => {
     Object.assign(console, originalConsole);
   });
-  
+
   return {
-    expectConsoleError: (message) => {
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining(message));
+    expectConsoleError: message => {
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining(message)
+      );
     },
-    expectConsoleWarn: (message) => {
-      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining(message));
+    expectConsoleWarn: message => {
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining(message)
+      );
     },
   };
 };
@@ -272,15 +282,15 @@ export const mockConsole = () => {
 // Local storage testing helpers
 export const mockLocalStorage = () => {
   const store = {};
-  
+
   beforeEach(() => {
     Object.defineProperty(window, 'localStorage', {
       value: {
-        getItem: jest.fn((key) => store[key] || null),
+        getItem: jest.fn(key => store[key] || null),
         setItem: jest.fn((key, value) => {
           store[key] = value.toString();
         }),
-        removeItem: jest.fn((key) => {
+        removeItem: jest.fn(key => {
           delete store[key];
         }),
         clear: jest.fn(() => {
@@ -290,29 +300,32 @@ export const mockLocalStorage = () => {
       writable: true,
     });
   });
-  
+
   afterEach(() => {
     Object.keys(store).forEach(key => delete store[key]);
   });
-  
+
   return store;
 };
 
 // Material-UI specific helpers
-export const getByMuiTestId = (testId) => screen.getByTestId(testId);
-export const queryByMuiTestId = (testId) => screen.queryByTestId(testId);
+export const getByMuiTestId = testId => screen.getByTestId(testId);
+export const queryByMuiTestId = testId => screen.queryByTestId(testId);
 
 // Custom matchers
 expect.extend({
   toHaveValidationError(received, expectedError) {
-    const hasError = received.querySelector('.Mui-error, .error, [data-testid*="error"]');
+    const hasError = received.querySelector(
+      '.Mui-error, .error, [data-testid*="error"]'
+    );
     const errorText = hasError?.textContent;
-    
-    const pass = hasError && (!expectedError || errorText?.includes(expectedError));
-    
+
+    const pass =
+      hasError && (!expectedError || errorText?.includes(expectedError));
+
     return {
-      message: () => 
-        pass 
+      message: () =>
+        pass
           ? `Expected element not to have validation error${expectedError ? ` "${expectedError}"` : ''}`
           : `Expected element to have validation error${expectedError ? ` "${expectedError}"` : ''}`,
       pass,
@@ -325,9 +338,4 @@ export * from '@testing-library/react';
 export { userEvent };
 
 // Re-export commonly used testing utilities
-export { 
-  screen, 
-  fireEvent, 
-  waitFor, 
-  within 
-} from '@testing-library/react';
+export { screen, fireEvent, waitFor, within } from '@testing-library/react';

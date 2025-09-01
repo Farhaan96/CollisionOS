@@ -7,6 +7,7 @@ CollisionOS is a specialized desktop application designed for collision repair s
 ## ✨ Key Features
 
 ### 🎯 Core Collision Repair Workflow
+
 - **BMS Integration**: Automated XML parsing and data ingestion from insurance systems
 - **Claims Management**: 1:1 claim-to-repair-order relationship tracking
 - **Parts Sourcing**: Multi-vendor parts ordering with status workflow (Needed → Ordered → Received → Installed)
@@ -14,6 +15,7 @@ CollisionOS is a specialized desktop application designed for collision repair s
 - **Search-First Interface**: Global search by RO#, Claim#, Plate, or VIN
 
 ### 🔧 Technical Capabilities
+
 - **Multi-platform**: Electron desktop app with web access
 - **Database**: PostgreSQL/Supabase with collision-specific schema
 - **BMS Parsing**: Supabase Edge Functions for XML processing
@@ -21,6 +23,7 @@ CollisionOS is a specialized desktop application designed for collision repair s
 - **Parts Workflow**: Status buckets with multi-select PO creation
 
 ### 📊 Collision Repair Intelligence
+
 - **Vendor KPIs**: Lead time, fill rate, return rate tracking
 - **Parts Analytics**: OEM vs Aftermarket vs Reman analysis
 - **Claim Tracking**: Insurance-specific reporting and compliance
@@ -29,6 +32,7 @@ CollisionOS is a specialized desktop application designed for collision repair s
 ## 🏗️ Architecture
 
 ### Technology Stack
+
 - **Frontend**: Electron + React with Material-UI
 - **Backend**: Supabase with Edge Functions + Node.js Express APIs
 - **Database**: PostgreSQL with collision repair schema
@@ -51,6 +55,7 @@ documents (bms_document_id PK, bms_version, document_type, created_at, provenanc
 ```
 
 ### System Requirements
+
 - **OS**: Windows 10+, macOS 10.14+, Ubuntu 18.04+
 - **RAM**: 8GB minimum, 16GB recommended
 - **Storage**: 10GB available space
@@ -60,6 +65,7 @@ documents (bms_document_id PK, bms_version, document_type, created_at, provenanc
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - Supabase account and project
 - Git
@@ -67,23 +73,27 @@ documents (bms_document_id PK, bms_version, document_type, created_at, provenanc
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-org/collision-os.git
    cd collision-os
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up Supabase configuration**
+
    ```bash
    cp .env.example .env
    # Edit .env with your Supabase URL and keys
    ```
 
 4. **Initialize collision repair database**
+
    ```bash
    npm run db:gen        # Generate and deploy schema
    npm run seed:bms      # Load sample BMS data
@@ -149,6 +159,7 @@ API_PORT=3001
 ## 🎯 Core Workflows
 
 ### 1. BMS Ingestion Pipeline
+
 - Receive BMS XML files via upload or API
 - Parse with fast-xml-parser (removeNSPrefix: true)
 - Upsert data in order: documents → customers → vehicles → claims → repair_orders → part_lines
@@ -156,18 +167,21 @@ API_PORT=3001
 - Return ingestion summary with counts
 
 ### 2. RO Detail & Parts Management
+
 - **Search Interface**: Global search by RO#, Claim#, Plate, VIN last 6
 - **RO Header**: Display claim#, RO#, customer, vehicle as chips
 - **Parts Buckets**: Needed | Ordered | Backordered | Received | Installed | Returned
 - **Multi-select PO Creation**: Choose parts → select vendor → generate PO
 
 ### 3. Purchase Order Workflow
+
 - **PO Numbering**: `${ro_number}-${YYMM}-${vendorCode}-${seq}`
 - **Vendor Code**: 4 chars uppercase from supplier name
 - **Status Updates**: ordered → received (with quantities) → installed
 - **Returns Handling**: Create return records for quantity mismatches
 
 ### 4. Vendor Management
+
 - **Per-vendor PO views**: Open POs by supplier
 - **KPI Tracking**: Lead time, fill rate, return rate
 - **Inline Receiving**: Partial quantity updates per line item
@@ -175,10 +189,11 @@ API_PORT=3001
 ## 🔌 BMS Integration
 
 ### Supported Operations Mapping
+
 ```
 BMS Operation → part_lines fields:
 - Replace → operation: "Replace", brand_type based on part source
-- R&I → operation: "R&I", condition: "Reuse"  
+- R&I → operation: "R&I", condition: "Reuse"
 - Repair → operation: "Repair", condition: "Repair"
 - Sublet → operation: "Sublet", supplier_id if specified
 ```
@@ -196,7 +211,7 @@ POST /api/pos
 Body: {ro_id, supplier_id, line_ids[]}
 Returns: {po_id, po_number}
 
-# Receive parts  
+# Receive parts
 POST /api/pos/:id/receive
 Body: {line_items: [{part_line_id, qty_received}]}
 Returns: {updated_lines, returns_created}
@@ -209,12 +224,14 @@ Returns: {installed_date, status: "installed"}
 ## 📊 Reporting & Analytics
 
 ### Collision Repair Specific Reports
+
 - **Claim Cycle Time**: Days from BMS ingestion to delivery
 - **Parts Profitability**: Markup analysis by brand type (OEM/AM/LKQ)
 - **Vendor Performance**: Lead times and fill rates by supplier
 - **RO Status**: Current pipeline and bottlenecks
 
 ### Search & Filtering
+
 - **Global Search**: RO#, Claim#, Plate, VIN last 6 digits
 - **Parts Status**: Filter by needed/ordered/received/installed
 - **Date Ranges**: Order dates, ETA dates, received dates
@@ -228,7 +245,7 @@ npm run db:gen          # Generate SQL schema and deploy to Supabase
 npm run db:migrate      # Run pending migrations
 npm run db:seed         # Load sample collision repair data
 
-# Development environment  
+# Development environment
 npm run dev:electron    # Start desktop app in development
 npm run dev:functions   # Start Supabase edge functions locally
 npm run dev:api        # Start Express API server
@@ -245,41 +262,49 @@ npm run test:e2e       # Run Playwright collision repair workflow tests
 ## 🚀 Implementation Roadmap
 
 ### Task 1: Foundation (Week 1)
+
 - [x] Monorepo scaffolding with app-desktop, supabase, api packages
 - [x] Supabase project setup and configuration
 - [x] Development script framework
 
-### Task 2: Database Schema (Week 1)  
+### Task 2: Database Schema (Week 1)
+
 - [ ] Collision repair PostgreSQL schema design
 - [ ] Migration scripts and indexes
 - [ ] Enum definitions (part status, brand types)
 
 ### Task 3: BMS Integration (Week 2)
+
 - [ ] Supabase Edge Function for XML parsing
 - [ ] BMS-to-database mapping implementation
 - [ ] Sample BMS file processing
 
 ### Task 4: PO APIs (Week 2)
+
 - [ ] Purchase order creation endpoints
-- [ ] PO numbering system implementation  
+- [ ] PO numbering system implementation
 - [ ] Parts receiving workflow APIs
 
 ### Task 5: RO Interface (Week 3)
+
 - [ ] Search-first navigation design
 - [ ] RO detail page with claim/customer/vehicle chips
 - [ ] Parts status buckets with drag-and-drop
 
 ### Task 6: PO Management (Week 3)
+
 - [ ] Multi-select PO creation workflow
 - [ ] Vendor-specific PO views
 - [ ] Inline parts receiving interface
 
 ### Task 7: Testing & Validation (Week 4)
+
 - [ ] Collision repair workflow testing
 - [ ] BMS ingestion validation
 - [ ] Performance testing with sample data
 
 ### Task 8: Performance Optimization (Week 4)
+
 - [ ] Database indexing verification
 - [ ] Query optimization for large part datasets
 - [ ] UI performance testing

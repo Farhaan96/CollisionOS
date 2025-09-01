@@ -7,27 +7,30 @@ const Decimal = require('decimal.js');
 class EMSParser {
   constructor() {
     this.lineHandlers = {
-      'HD': this.parseHeaderLine.bind(this),
-      'VH': this.parseVehicleLine.bind(this),
-      'CO': this.parseCustomerLine.bind(this),
-      'IN': this.parseInsuranceLine.bind(this),
-      'CL': this.parseClaimLine.bind(this),
-      'LI': this.parseLineItem.bind(this),
-      'PA': this.parsePartsLine.bind(this),
-      'LA': this.parseLaborLine.bind(this),
-      'TO': this.parseTotalsLine.bind(this),
-      'TX': this.parseTaxLine.bind(this),
-      'DE': this.parseDeductibleLine.bind(this),
-      'NO': this.parseNotesLine.bind(this)
+      HD: this.parseHeaderLine.bind(this),
+      VH: this.parseVehicleLine.bind(this),
+      CO: this.parseCustomerLine.bind(this),
+      IN: this.parseInsuranceLine.bind(this),
+      CL: this.parseClaimLine.bind(this),
+      LI: this.parseLineItem.bind(this),
+      PA: this.parsePartsLine.bind(this),
+      LA: this.parseLaborLine.bind(this),
+      TO: this.parseTotalsLine.bind(this),
+      TX: this.parseTaxLine.bind(this),
+      DE: this.parseDeductibleLine.bind(this),
+      NO: this.parseNotesLine.bind(this),
     };
   }
 
   async parseEMS(emsContent) {
     try {
       console.log('Starting EMS parsing...');
-      
-      const lines = emsContent.split('\n').map(line => line.trim()).filter(line => line);
-      
+
+      const lines = emsContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line);
+
       const result = {
         customer: {},
         vehicle: {},
@@ -42,7 +45,7 @@ class EMSParser {
           materials: new Decimal(0),
           tax: new Decimal(0),
           deductible: new Decimal(0),
-          total: new Decimal(0)
+          total: new Decimal(0),
         },
         lineItems: [],
         notes: [],
@@ -50,20 +53,20 @@ class EMSParser {
           parserVersion: '1.0.0',
           parseDate: new Date().toISOString(),
           sourceFormat: 'EMS',
-          totalLines: lines.length
-        }
+          totalLines: lines.length,
+        },
       };
 
       // Process each line
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const fields = this.parseEMSLine(line);
-        
+
         if (fields.length === 0) continue;
-        
+
         const recordType = fields[0].toUpperCase();
         const handler = this.lineHandlers[recordType];
-        
+
         if (handler) {
           await handler(fields, result);
         } else {
@@ -76,7 +79,6 @@ class EMSParser {
 
       console.log('EMS parsing completed successfully');
       return result;
-      
     } catch (error) {
       console.error('Error parsing EMS file:', error);
       throw new Error(`EMS parsing failed: ${error.message}`);
@@ -88,30 +90,30 @@ class EMSParser {
     const fields = [];
     let current = '';
     let escaped = false;
-    
+
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
-      
+
       if (char === '\\' && !escaped) {
         escaped = true;
         continue;
       }
-      
+
       if (char === '|' && !escaped) {
         fields.push(current.trim());
         current = '';
       } else {
         current += char;
       }
-      
+
       escaped = false;
     }
-    
+
     // Add the last field
     if (current) {
       fields.push(current.trim());
     }
-    
+
     return fields;
   }
 
@@ -136,7 +138,8 @@ class EMSParser {
       if (fields.length >= 4) result.vehicle.model = fields[3];
       if (fields.length >= 5) result.vehicle.vin = fields[4];
       if (fields.length >= 6) result.vehicle.license = fields[5];
-      if (fields.length >= 7) result.vehicle.mileage = parseInt(fields[6]) || null;
+      if (fields.length >= 7)
+        result.vehicle.mileage = parseInt(fields[6]) || null;
       if (fields.length >= 8) result.vehicle.color = fields[7];
     }
   }
@@ -149,7 +152,7 @@ class EMSParser {
       result.customer.name = `${firstName} ${lastName}`.trim();
       result.customer.firstName = firstName;
       result.customer.lastName = lastName;
-      
+
       if (fields.length >= 4) result.customer.phone = fields[3];
       if (fields.length >= 5) result.customer.address = fields[4];
       if (fields.length >= 6) result.customer.city = fields[5];
@@ -174,7 +177,8 @@ class EMSParser {
     if (fields.length >= 2) {
       result.claim.claimNumber = fields[1];
       if (fields.length >= 3) result.claim.lossDate = fields[2];
-      if (fields.length >= 4) result.claim.deductible = this.parseDecimal(fields[3]);
+      if (fields.length >= 4)
+        result.claim.deductible = this.parseDecimal(fields[3]);
       if (fields.length >= 5) result.claim.adjusterName = fields[4];
       if (fields.length >= 6) result.claim.adjusterPhone = fields[5];
     }
@@ -190,7 +194,7 @@ class EMSParser {
         price: this.parseDecimal(fields[4] || '0'),
         extended: this.parseDecimal(fields[5] || '0'),
         lineNumber: parseInt(fields[6]) || result.lineItems.length + 1,
-        partNumber: fields[7] || null
+        partNumber: fields[7] || null,
       };
 
       result.lineItems.push(lineItem);
@@ -215,7 +219,7 @@ class EMSParser {
         price: this.parseDecimal(fields[4] || '0'),
         oemPrice: this.parseDecimal(fields[5] || '0'),
         partType: fields[6] || 'NEW',
-        source: fields[7] || 'OEM'
+        source: fields[7] || 'OEM',
       };
 
       result.parts.push(part);
@@ -231,7 +235,7 @@ class EMSParser {
         hours: parseFloat(fields[3]) || 0,
         rate: this.parseDecimal(fields[4] || '0'),
         extended: this.parseDecimal(fields[5] || '0'),
-        laborType: fields[6] || 'BODY'
+        laborType: fields[6] || 'BODY',
       };
 
       result.labor.push(labor);
@@ -242,12 +246,12 @@ class EMSParser {
     // TO|PARTS|PARTS_TOTAL|LABOR|LABOR_TOTAL|TAX|TAX_TOTAL|TOTAL
     if (fields.length >= 2) {
       let index = 1;
-      
+
       // Parse totals in pairs (label, amount)
       while (index < fields.length - 1) {
         const label = fields[index].toLowerCase();
         const amount = this.parseDecimal(fields[index + 1]);
-        
+
         switch (label) {
           case 'parts':
             result.financial.parts = amount;
@@ -265,7 +269,7 @@ class EMSParser {
             result.financial.total = amount;
             break;
         }
-        
+
         index += 2;
       }
     }
@@ -274,7 +278,9 @@ class EMSParser {
   parseTaxLine(fields, result) {
     // TX|TAX_TYPE|TAX_RATE|TAX_AMOUNT
     if (fields.length >= 4) {
-      result.financial.tax = result.financial.tax.add(this.parseDecimal(fields[3]));
+      result.financial.tax = result.financial.tax.add(
+        this.parseDecimal(fields[3])
+      );
     }
   }
 
@@ -309,18 +315,18 @@ class EMSParser {
       if (obj instanceof Decimal) {
         return parseFloat(obj.toString());
       }
-      
+
       if (Array.isArray(obj)) {
         return obj.map(item => this.convertDecimalsToNumbers(item));
       }
-      
+
       const result = {};
       for (const [key, value] of Object.entries(obj)) {
         result[key] = this.convertDecimalsToNumbers(value);
       }
       return result;
     }
-    
+
     return obj;
   }
 }

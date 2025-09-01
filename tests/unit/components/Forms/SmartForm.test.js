@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
@@ -7,35 +13,37 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { createTheme } from '@mui/material/styles';
 import SmartForm from '../../../../src/components/Forms/SmartForm';
-import ValidationEngine, { VALIDATION_TYPES } from '../../../../src/components/Forms/ValidationEngine';
+import ValidationEngine, {
+  VALIDATION_TYPES,
+} from '../../../../src/components/Forms/ValidationEngine';
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>
+    div: ({ children, ...props }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }) => <>{children}</>
+  AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
 // Mock localStorage
 const mockLocalStorage = (() => {
   let store = {};
   return {
-    getItem: (key) => store[key] || null,
+    getItem: key => store[key] || null,
     setItem: (key, value) => {
       store[key] = value.toString();
     },
-    removeItem: (key) => {
+    removeItem: key => {
       delete store[key];
     },
     clear: () => {
       store = {};
-    }
+    },
   };
 })();
 
 Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage
+  value: mockLocalStorage,
 });
 
 const theme = createTheme();
@@ -70,7 +78,7 @@ describe('SmartForm Component', () => {
         type: 'text',
         label: 'First Name',
         required: true,
-        validation: [{ type: VALIDATION_TYPES.REQUIRED }]
+        validation: [{ type: VALIDATION_TYPES.REQUIRED }],
       },
       email: {
         type: 'email',
@@ -78,10 +86,10 @@ describe('SmartForm Component', () => {
         required: true,
         validation: [
           { type: VALIDATION_TYPES.REQUIRED },
-          { type: VALIDATION_TYPES.EMAIL }
-        ]
-      }
-    }
+          { type: VALIDATION_TYPES.EMAIL },
+        ],
+      },
+    },
   };
 
   const multiStepSchema = {
@@ -90,13 +98,13 @@ describe('SmartForm Component', () => {
         type: 'text',
         label: 'First Name',
         required: true,
-        validation: [{ type: VALIDATION_TYPES.REQUIRED }]
+        validation: [{ type: VALIDATION_TYPES.REQUIRED }],
       },
       lastName: {
         type: 'text',
         label: 'Last Name',
         required: true,
-        validation: [{ type: VALIDATION_TYPES.REQUIRED }]
+        validation: [{ type: VALIDATION_TYPES.REQUIRED }],
       },
       email: {
         type: 'email',
@@ -104,27 +112,27 @@ describe('SmartForm Component', () => {
         required: true,
         validation: [
           { type: VALIDATION_TYPES.REQUIRED },
-          { type: VALIDATION_TYPES.EMAIL }
-        ]
+          { type: VALIDATION_TYPES.EMAIL },
+        ],
       },
       phone: {
         type: 'tel',
         label: 'Phone',
-        validation: [{ type: VALIDATION_TYPES.PHONE }]
-      }
+        validation: [{ type: VALIDATION_TYPES.PHONE }],
+      },
     },
     steps: [
       {
         title: 'Personal Information',
         description: 'Enter your basic details',
-        fields: ['firstName', 'lastName']
+        fields: ['firstName', 'lastName'],
       },
       {
         title: 'Contact Information',
         description: 'How can we reach you?',
-        fields: ['email', 'phone']
-      }
-    ]
+        fields: ['email', 'phone'],
+      },
+    ],
   };
 
   describe('Basic Functionality', () => {
@@ -146,7 +154,7 @@ describe('SmartForm Component', () => {
     it('displays form title when provided', () => {
       const schemaWithTitle = {
         ...basicSchema,
-        title: 'Test Form Title'
+        title: 'Test Form Title',
       };
 
       render(
@@ -159,7 +167,9 @@ describe('SmartForm Component', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Smart Form - Test Form Title')).toBeInTheDocument();
+      expect(
+        screen.getByText('Smart Form - Test Form Title')
+      ).toBeInTheDocument();
     });
 
     it('shows progress bar and completion percentage', () => {
@@ -189,8 +199,12 @@ describe('SmartForm Component', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /submit/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /reset/i })
+      ).toBeInTheDocument();
     });
   });
 
@@ -225,7 +239,9 @@ describe('SmartForm Component', () => {
       );
 
       expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /previous/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /previous/i })
+      ).not.toBeInTheDocument();
     });
 
     it('shows previous button on non-first steps', async () => {
@@ -248,7 +264,9 @@ describe('SmartForm Component', () => {
       await user.click(nextButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /previous/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -272,7 +290,9 @@ describe('SmartForm Component', () => {
       await user.click(nextButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /submit/i })
+        ).toBeInTheDocument();
       });
     });
   });
@@ -491,22 +511,20 @@ describe('SmartForm Component', () => {
   describe('Custom Fields', () => {
     it('renders custom field components when provided', () => {
       const CustomField = ({ name, value, onChange }) => (
-        <div data-testid={`custom-field-${name}`}>
-          Custom Field: {name}
-        </div>
+        <div data-testid={`custom-field-${name}`}>Custom Field: {name}</div>
       );
 
       const customFields = {
-        custom: CustomField
+        custom: CustomField,
       };
 
       const schemaWithCustomField = {
         fields: {
           customField: {
             type: 'custom',
-            label: 'Custom Field'
-          }
-        }
+            label: 'Custom Field',
+          },
+        },
       };
 
       render(
@@ -520,7 +538,9 @@ describe('SmartForm Component', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('custom-field-customField')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('custom-field-customField')
+      ).toBeInTheDocument();
     });
   });
 
@@ -562,7 +582,9 @@ describe('SmartForm Component', () => {
   describe('Error Handling', () => {
     it('handles form submission errors gracefully', async () => {
       const user = userEvent.setup();
-      const mockOnSubmitError = jest.fn().mockRejectedValue(new Error('Submission failed'));
+      const mockOnSubmitError = jest
+        .fn()
+        .mockRejectedValue(new Error('Submission failed'));
 
       render(
         <TestWrapper>
@@ -581,7 +603,9 @@ describe('SmartForm Component', () => {
       await waitFor(() => {
         expect(mockOnSubmitError).toHaveBeenCalled();
         // Form should handle the error without crashing
-        expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /submit/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -606,7 +630,7 @@ describe('SmartForm Component', () => {
   describe('Performance', () => {
     it('does not re-render unnecessarily', () => {
       const renderCount = jest.fn();
-      
+
       const TestComponent = () => {
         renderCount();
         return (

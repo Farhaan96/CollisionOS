@@ -1,18 +1,18 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 // Parts API service
 const partsAPI = axios.create({
   baseURL: `${API_BASE_URL}/api/parts`,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
 // Add request interceptor for authentication
-partsAPI.interceptors.request.use((config) => {
+partsAPI.interceptors.request.use(config => {
   const token = localStorage.getItem('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -91,7 +91,7 @@ class PartsService {
     try {
       const response = await partsAPI.put(`/${partId}/stock`, {
         quantity,
-        operation // 'set', 'add', 'subtract'
+        operation, // 'set', 'add', 'subtract'
       });
       return response.data;
     } catch (error) {
@@ -102,7 +102,7 @@ class PartsService {
   async getInventoryHistory(partId, startDate, endDate) {
     try {
       const response = await partsAPI.get(`/${partId}/inventory/history`, {
-        params: { startDate, endDate }
+        params: { startDate, endDate },
       });
       return response.data;
     } catch (error) {
@@ -114,9 +114,9 @@ class PartsService {
   async searchParts(query, filters = {}) {
     try {
       const response = await partsAPI.get('/search', {
-        params: { q: query, ...filters }
+        params: { q: query, ...filters },
       });
-      
+
       // Handle both new API format and legacy format
       if (response.data?.success) {
         return response.data.data.parts || [];
@@ -131,9 +131,9 @@ class PartsService {
   async searchPartsByVehicle(make, model, year, category = null) {
     try {
       const response = await partsAPI.get('/search/vehicle', {
-        params: { make, model, year, category }
+        params: { make, model, year, category },
       });
-      
+
       // Handle both new API format and legacy format
       if (response.data?.success) {
         return response.data.data.parts || [];
@@ -148,9 +148,9 @@ class PartsService {
   async lookupPartByNumber(partNumber, supplier = null) {
     try {
       const response = await partsAPI.get('/lookup', {
-        params: { partNumber, supplier }
+        params: { partNumber, supplier },
       });
-      
+
       // Handle both new API format and legacy format
       if (response.data?.success) {
         return response.data.data;
@@ -167,9 +167,9 @@ class PartsService {
     try {
       const response = await partsAPI.post('/prices/compare', {
         partNumber,
-        suppliers
+        suppliers,
       });
-      
+
       // Handle both new API format and legacy format
       if (response.data?.success) {
         return response.data.data.comparisons || [];
@@ -184,7 +184,7 @@ class PartsService {
   async getBestPrice(partNumber, minQuality = 'aftermarket') {
     try {
       const response = await partsAPI.get('/prices/best', {
-        params: { partNumber, minQuality }
+        params: { partNumber, minQuality },
       });
       return response.data;
     } catch (error) {
@@ -204,7 +204,9 @@ class PartsService {
 
   async getPurchaseOrders(filters = {}) {
     try {
-      const response = await partsAPI.get('/purchase-orders', { params: filters });
+      const response = await partsAPI.get('/purchase-orders', {
+        params: filters,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -232,7 +234,7 @@ class PartsService {
   async receivePurchaseOrder(id, receivedItems) {
     try {
       const response = await partsAPI.post(`/purchase-orders/${id}/receive`, {
-        receivedItems
+        receivedItems,
       });
       return response.data;
     } catch (error) {
@@ -280,7 +282,7 @@ class PartsService {
   async getVendorPricing(vendorId, partNumber) {
     try {
       const response = await partsAPI.get(`/vendors/${vendorId}/pricing`, {
-        params: { partNumber }
+        params: { partNumber },
       });
       return response.data;
     } catch (error) {
@@ -292,7 +294,7 @@ class PartsService {
   async getPartsAnalytics(startDate, endDate) {
     try {
       const response = await partsAPI.get('/analytics', {
-        params: { startDate, endDate }
+        params: { startDate, endDate },
       });
       return response.data;
     } catch (error) {
@@ -303,7 +305,7 @@ class PartsService {
   async getTopSellingParts(limit = 10, period = '30d') {
     try {
       const response = await partsAPI.get('/analytics/top-selling', {
-        params: { limit, period }
+        params: { limit, period },
       });
       return response.data;
     } catch (error) {
@@ -314,7 +316,7 @@ class PartsService {
   async getSlowMovingParts(threshold = 90) {
     try {
       const response = await partsAPI.get('/analytics/slow-moving', {
-        params: { threshold }
+        params: { threshold },
       });
       return response.data;
     } catch (error) {
@@ -345,7 +347,7 @@ class PartsService {
     try {
       const response = await partsAPI.get('/export', {
         params: { format, ...filters },
-        responseType: 'blob'
+        responseType: 'blob',
       });
       return response.data;
     } catch (error) {
@@ -366,9 +368,9 @@ class PartsService {
   async lookupByBarcode(barcode) {
     try {
       const response = await partsAPI.get('/barcode', {
-        params: { barcode }
+        params: { barcode },
       });
-      
+
       // Handle both new API format and legacy format
       if (response.data?.success) {
         return response.data.data;
@@ -410,7 +412,7 @@ class PartsService {
   async getRecentUpdates(since = null) {
     try {
       const response = await partsAPI.get('/updates', {
-        params: { since }
+        params: { since },
       });
       return response.data;
     } catch (error) {
@@ -427,21 +429,21 @@ class PartsService {
         status,
         message: data?.message || 'Server error occurred',
         details: data?.details || null,
-        type: 'server_error'
+        type: 'server_error',
       };
     } else if (error.request) {
       // Request made but no response received
       return {
         status: 0,
         message: 'Network error - please check your connection',
-        type: 'network_error'
+        type: 'network_error',
       };
     } else {
       // Other error
       return {
         status: 0,
         message: error.message || 'Unknown error occurred',
-        type: 'client_error'
+        type: 'client_error',
       };
     }
   }
@@ -449,7 +451,7 @@ class PartsService {
   formatCurrency(amount, currency = 'USD') {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency
+      currency,
     }).format(amount);
   }
 
@@ -457,7 +459,7 @@ class PartsService {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     }).format(new Date(date));
   }
 

@@ -19,11 +19,12 @@ export const premiumColors = {
     gradient: {
       default: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
       vivid: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
-      subtle: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+      subtle:
+        'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
       radial: 'radial-gradient(circle at top left, #6366F1, #8B5CF6, #EC4899)',
-    }
+    },
   },
-  
+
   // Secondary Brand Colors
   secondary: {
     50: '#FAF5FF',
@@ -38,7 +39,7 @@ export const premiumColors = {
     900: '#581C87',
     gradient: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
   },
-  
+
   // Semantic Colors for status and feedback
   semantic: {
     success: {
@@ -64,9 +65,9 @@ export const premiumColors = {
       main: '#3B82F6',
       dark: '#1E40AF',
       gradient: 'linear-gradient(135deg, #3B82F6 0%, #0EA5E9 100%)',
-    }
+    },
   },
-  
+
   // Neutral Colors for backgrounds and text
   neutral: {
     50: '#FAFAFA',
@@ -81,7 +82,7 @@ export const premiumColors = {
     900: '#18181B',
     950: '#09090B',
   },
-  
+
   // Glass morphism specific colors
   glass: {
     white: {
@@ -98,8 +99,8 @@ export const premiumColors = {
       20: 'rgba(0, 0, 0, 0.20)',
       40: 'rgba(0, 0, 0, 0.40)',
       60: 'rgba(0, 0, 0, 0.60)',
-    }
-  }
+    },
+  },
 };
 
 // Premium Typography System
@@ -110,7 +111,7 @@ export const premiumTypography = {
     body: "'Inter', 'SF Pro Text', system-ui, sans-serif",
     mono: "'JetBrains Mono', 'SF Mono', monospace",
   },
-  
+
   // Font Sizes with fluid scaling
   fontSize: {
     xs: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem)',
@@ -125,7 +126,7 @@ export const premiumTypography = {
     '6xl': 'clamp(3.75rem, 3rem + 3vw, 4.5rem)',
     '7xl': 'clamp(4.5rem, 3.5rem + 4vw, 6rem)',
   },
-  
+
   // Font Weights
   fontWeight: {
     thin: 100,
@@ -138,7 +139,7 @@ export const premiumTypography = {
     extrabold: 800,
     black: 900,
   },
-  
+
   // Line Heights
   lineHeight: {
     tight: 1.1,
@@ -147,7 +148,7 @@ export const premiumTypography = {
     relaxed: 1.6,
     loose: 2,
   },
-  
+
   // Letter Spacing
   letterSpacing: {
     tighter: '-0.05em',
@@ -157,7 +158,7 @@ export const premiumTypography = {
     wider: '0.05em',
     widest: '0.1em',
   },
-  
+
   // Text Styles (Pre-composed)
   styles: {
     display: {
@@ -200,8 +201,8 @@ export const premiumTypography = {
       lineHeight: 1.5,
       letterSpacing: '0.1em',
       textTransform: 'uppercase',
-    }
-  }
+    },
+  },
 };
 
 // Premium Spacing System (based on 8px grid)
@@ -252,7 +253,7 @@ export const premiumShadows = {
   lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  
+
   // Glass morphism shadows
   glass: {
     soft: '0 8px 32px rgba(0, 0, 0, 0.08)',
@@ -260,7 +261,7 @@ export const premiumShadows = {
     strong: '0 8px 32px rgba(0, 0, 0, 0.2)',
     elevated: '0 16px 48px rgba(0, 0, 0, 0.15)',
   },
-  
+
   // Colored shadows for branding
   colored: {
     primary: '0 10px 40px -10px rgba(99, 102, 241, 0.35)',
@@ -269,14 +270,14 @@ export const premiumShadows = {
     warning: '0 10px 40px -10px rgba(245, 158, 11, 0.35)',
     error: '0 10px 40px -10px rgba(239, 68, 68, 0.35)',
   },
-  
+
   // Inner shadows
   inner: {
     sm: 'inset 0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     md: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
     lg: 'inset 0 4px 6px -1px rgba(0, 0, 0, 0.1)',
   },
-  
+
   // Premium glow effects
   glow: {
     primary: '0 0 20px rgba(99, 102, 241, 0.5)',
@@ -284,7 +285,7 @@ export const premiumShadows = {
     success: '0 0 20px rgba(34, 197, 94, 0.5)',
     warning: '0 0 20px rgba(245, 158, 11, 0.5)',
     error: '0 0 20px rgba(239, 68, 68, 0.5)',
-  }
+  },
 };
 
 // Premium Border Radius System
@@ -311,7 +312,7 @@ export const premiumAnimations = {
     bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     smooth: 'cubic-bezier(0.25, 0.8, 0.25, 1)',
   },
-  
+
   // Duration presets
   duration: {
     instant: '75ms',
@@ -321,16 +322,17 @@ export const premiumAnimations = {
     slower: '700ms',
     slowest: '1000ms',
   },
-  
+
   // Pre-defined transitions
   transitions: {
     all: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    colors: 'background-color, border-color, color, fill, stroke 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+    colors:
+      'background-color, border-color, color, fill, stroke 150ms cubic-bezier(0.4, 0, 0.2, 1)',
     opacity: 'opacity 150ms cubic-bezier(0.4, 0, 0.2, 1)',
     shadow: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1)',
     transform: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
   },
-  
+
   // Keyframe animations
   keyframes: {
     fadeIn: {
@@ -368,8 +370,8 @@ export const premiumAnimations = {
     glow: {
       '0%, 100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.5)' },
       '50%': { boxShadow: '0 0 30px rgba(99, 102, 241, 0.8)' },
-    }
-  }
+    },
+  },
 };
 
 // Premium Blur and Filter Effects
@@ -383,7 +385,7 @@ export const premiumEffects = {
     '2xl': 'blur(40px)',
     '3xl': 'blur(64px)',
   },
-  
+
   backdrop: {
     none: 'none',
     sm: 'blur(4px) saturate(150%)',
@@ -392,7 +394,7 @@ export const premiumEffects = {
     xl: 'blur(24px) saturate(200%)',
     '2xl': 'blur(40px) saturate(200%)',
   },
-  
+
   brightness: {
     0: 'brightness(0)',
     50: 'brightness(0.5)',
@@ -406,7 +408,7 @@ export const premiumEffects = {
     150: 'brightness(1.5)',
     200: 'brightness(2)',
   },
-  
+
   contrast: {
     0: 'contrast(0)',
     50: 'contrast(0.5)',
@@ -416,14 +418,14 @@ export const premiumEffects = {
     150: 'contrast(1.5)',
     200: 'contrast(2)',
   },
-  
+
   saturate: {
     0: 'saturate(0)',
     50: 'saturate(0.5)',
     100: 'saturate(1)',
     150: 'saturate(1.5)',
     200: 'saturate(2)',
-  }
+  },
 };
 
 // Premium Z-Index System

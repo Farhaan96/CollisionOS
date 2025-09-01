@@ -39,6 +39,7 @@ Located in `tests/unit/`, these tests focus on:
 - Utility functions (`tests/unit/services/`)
 
 #### Example Structure:
+
 ```
 tests/unit/
 ├── components/
@@ -64,6 +65,7 @@ Located in `tests/integration/`, these tests focus on:
 - Service layer integration
 
 #### Example Structure:
+
 ```
 tests/integration/
 └── api/
@@ -85,6 +87,7 @@ Located in project root `tests/`, these use Playwright for:
 ## Running Tests
 
 ### All Tests
+
 ```bash
 npm test                    # Run all Jest tests
 npm run test:watch          # Run tests in watch mode
@@ -92,6 +95,7 @@ npm run test:coverage       # Run tests with coverage report
 ```
 
 ### Specific Test Types
+
 ```bash
 npm run test:unit          # Run only unit tests
 npm run test:integration   # Run only integration tests
@@ -99,6 +103,7 @@ npm run test:playwright    # Run Playwright e2e tests
 ```
 
 ### Playwright Tests
+
 ```bash
 npm run test:playwright    # Run all Playwright tests
 npm run test:ui           # Run with Playwright UI
@@ -107,11 +112,13 @@ npm run test:debug        # Run in debug mode
 ```
 
 ### Coverage
+
 ```bash
 npm run test:coverage     # Generate coverage report
 ```
 
 Coverage reports are generated in the `coverage/` directory with multiple formats:
+
 - HTML report: `coverage/lcov-report/index.html`
 - Console summary
 - LCOV format for CI/CD
@@ -129,7 +136,7 @@ import ExampleComponent from '../../../src/components/ExampleComponent';
 
 describe('ExampleComponent', () => {
   test('renders correctly', () => {
-    renderWithProviders(<ExampleComponent title="Test" />);
+    renderWithProviders(<ExampleComponent title='Test' />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 });
@@ -144,10 +151,8 @@ const app = require('../../../server/app');
 
 describe('Example API', () => {
   test('GET /api/example returns data', async () => {
-    const response = await request(app)
-      .get('/api/example')
-      .expect(200);
-    
+    const response = await request(app).get('/api/example').expect(200);
+
     expect(response.body).toHaveProperty('data');
   });
 });
@@ -181,11 +186,13 @@ The `src/utils/testUtils.js` provides helpful utilities:
 ### Coverage Reports
 
 Generate coverage reports:
+
 ```bash
 npm run test:coverage
 ```
 
 View HTML report:
+
 ```bash
 # Open coverage/lcov-report/index.html in browser
 ```
@@ -266,11 +273,13 @@ Warning: useLayoutEffect does nothing on the server
 ### Debug Mode
 
 Run tests in debug mode:
+
 ```bash
 npm run test -- --detectOpenHandles --forceExit
 ```
 
 For Playwright debugging:
+
 ```bash
 npm run test:debug
 ```
@@ -278,12 +287,14 @@ npm run test:debug
 ### Selective Test Runs
 
 Run specific test files:
+
 ```bash
 npm test -- AuthContext.test.js
 npm test -- --testPathPattern=Dashboard
 ```
 
 Run tests matching a pattern:
+
 ```bash
 npm test -- --testNamePattern="login"
 ```
@@ -291,26 +302,31 @@ npm test -- --testNamePattern="login"
 ## Best Practices
 
 ### 1. Test Structure
+
 - Use descriptive test names
 - Group related tests with `describe` blocks
 - Follow AAA pattern: Arrange, Act, Assert
 
 ### 2. Mocking
+
 - Mock external dependencies
 - Use Jest's built-in mocking features
 - Keep mocks close to tests or in `__mocks__` directories
 
 ### 3. Async Testing
+
 - Always use `await` with async operations
 - Use `waitFor` for DOM updates
 - Avoid arbitrary timeouts
 
 ### 4. Component Testing
+
 - Test behavior, not implementation
 - Focus on user interactions
 - Test edge cases and error states
 
 ### 5. API Testing
+
 - Test all HTTP methods
 - Verify request/response formats
 - Test authentication and authorization
@@ -331,6 +347,7 @@ const mockCustomer = createMockCustomer();
 ### Test Database
 
 For integration tests, use a separate test database:
+
 - `data/collisionos-test.db`
 - Migrate and seed before tests
 - Clean up after test runs
@@ -346,6 +363,7 @@ npm run build:analyze
 ### Test Performance
 
 Monitor test execution times:
+
 ```bash
 npm test -- --verbose --passWithNoTests
 ```

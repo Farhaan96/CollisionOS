@@ -9,13 +9,16 @@ async function verifySchema() {
     return;
   }
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_JWT_SECRET);
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_JWT_SECRET
+  );
 
   // List of tables to check (including all schemas 01-04)
   const tables = [
     // Schema 01 - Core tables
     'shops',
-    'users', 
+    'users',
     'customers',
     'vehicles',
     'vendors',
@@ -34,7 +37,7 @@ async function verifySchema() {
     'monthly_metrics',
     'technician_performance',
     'customer_analytics',
-    'parts_analytics'
+    'parts_analytics',
   ];
 
   console.log('📋 Checking each table...\n');
@@ -42,10 +45,7 @@ async function verifySchema() {
   for (const table of tables) {
     try {
       // Try to query each table (limit 0 to just check if it exists)
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .limit(0);
+      const { data, error } = await supabase.from(table).select('*').limit(0);
 
       if (error) {
         console.log(`❌ ${table}: ${error.message}`);

@@ -1,10 +1,19 @@
-const { sequelize, Shop, User, Customer, Vehicle, Part, Vendor, Job } = require('./models');
+const {
+  sequelize,
+  Shop,
+  User,
+  Customer,
+  Vehicle,
+  Part,
+  Vendor,
+  Job,
+} = require('./models');
 const bcrypt = require('bcrypt');
 
 async function seedDatabase() {
   try {
     console.log('🌱 Starting database seeding...');
-    
+
     // Don't recreate tables, just seed data
     console.log('📋 Using existing database tables...');
 
@@ -31,8 +40,8 @@ async function seedDatabase() {
         isActive: true,
         trialExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
         settings: {
-          laborRate: 65.00,
-          paintAndMaterialsRate: 45.00,
+          laborRate: 65.0,
+          paintAndMaterialsRate: 45.0,
           workingHours: {
             monday: { start: '08:00', end: '17:00', enabled: true },
             tuesday: { start: '08:00', end: '17:00', enabled: true },
@@ -40,17 +49,17 @@ async function seedDatabase() {
             thursday: { start: '08:00', end: '17:00', enabled: true },
             friday: { start: '08:00', end: '17:00', enabled: true },
             saturday: { start: '09:00', end: '15:00', enabled: false },
-            sunday: { start: '09:00', end: '15:00', enabled: false }
+            sunday: { start: '09:00', end: '15:00', enabled: false },
           },
           autoBackup: true,
           backupFrequency: 'daily',
           notifications: {
             email: true,
             sms: false,
-            push: true
-          }
-        }
-      }
+            push: true,
+          },
+        },
+      },
     });
 
     console.log('✅ Shop created:', shop.name);
@@ -70,8 +79,8 @@ async function seedDatabase() {
         phone: '(555) 123-4567',
         employeeId: 'EMP001',
         hireDate: new Date(),
-        hourlyRate: 65.00,
-        department: 'Management'
+        hourlyRate: 65.0,
+        department: 'Management',
       },
       {
         username: 'manager',
@@ -86,8 +95,8 @@ async function seedDatabase() {
         phone: '(555) 123-4568',
         employeeId: 'EMP002',
         hireDate: new Date(),
-        hourlyRate: 55.00,
-        department: 'Management'
+        hourlyRate: 55.0,
+        department: 'Management',
       },
       {
         username: 'estimator',
@@ -102,8 +111,8 @@ async function seedDatabase() {
         phone: '(555) 123-4569',
         employeeId: 'EMP003',
         hireDate: new Date(),
-        hourlyRate: 50.00,
-        department: 'Estimating'
+        hourlyRate: 50.0,
+        department: 'Estimating',
       },
       {
         username: 'technician',
@@ -118,17 +127,19 @@ async function seedDatabase() {
         phone: '(555) 123-4570',
         employeeId: 'EMP004',
         hireDate: new Date(),
-        hourlyRate: 45.00,
-        department: 'Production'
-      }
+        hourlyRate: 45.0,
+        department: 'Production',
+      },
     ];
 
     for (const userData of defaultUsers) {
       const [user] = await User.findOrCreate({
         where: { email: userData.email },
-        defaults: userData
+        defaults: userData,
       });
-      console.log(`✅ User created: ${user.firstName} ${user.lastName} (${user.role})`);
+      console.log(
+        `✅ User created: ${user.firstName} ${user.lastName} (${user.role})`
+      );
     }
 
     // Create sample vendors
@@ -145,10 +156,10 @@ async function seedDatabase() {
         zipCode: 'M5V 2H1',
         vendorType: 'oem',
         paymentTerms: 'net_30',
-        creditLimit: 50000.00,
+        creditLimit: 50000.0,
         averageDeliveryTime: 2,
         fillRate: 95.5,
-        qualityRating: 9.2
+        qualityRating: 9.2,
       },
       {
         vendorNumber: 'VEND-0002',
@@ -162,10 +173,10 @@ async function seedDatabase() {
         zipCode: 'M5V 2H2',
         vendorType: 'aftermarket',
         paymentTerms: 'net_15',
-        creditLimit: 25000.00,
+        creditLimit: 25000.0,
         averageDeliveryTime: 1,
         fillRate: 88.0,
-        qualityRating: 8.5
+        qualityRating: 8.5,
       },
       {
         vendorNumber: 'VEND-0003',
@@ -179,17 +190,17 @@ async function seedDatabase() {
         zipCode: 'M5V 2H3',
         vendorType: 'recycled',
         paymentTerms: 'immediate',
-        creditLimit: 15000.00,
+        creditLimit: 15000.0,
         averageDeliveryTime: 3,
         fillRate: 75.0,
-        qualityRating: 7.8
-      }
+        qualityRating: 7.8,
+      },
     ];
 
     for (const vendorData of vendors) {
       const [vendor] = await Vendor.findOrCreate({
         where: { vendorNumber: vendorData.vendorNumber },
-        defaults: { ...vendorData, shopId: shop.id }
+        defaults: { ...vendorData, shopId: shop.id },
       });
       console.log(`✅ Vendor created: ${vendor.name}`);
     }
@@ -213,7 +224,7 @@ async function seedDatabase() {
         smsOptIn: true,
         emailOptIn: true,
         loyaltyPoints: 150,
-        referralSource: 'Google Search'
+        referralSource: 'Google Search',
       },
       {
         customerNumber: 'CUST-0002',
@@ -230,7 +241,7 @@ async function seedDatabase() {
         preferredContact: 'email',
         emailOptIn: true,
         loyaltyPoints: 75,
-        referralSource: 'Referral'
+        referralSource: 'Referral',
       },
       {
         customerNumber: 'CUST-0003',
@@ -247,19 +258,21 @@ async function seedDatabase() {
         customerStatus: 'vip',
         preferredContact: 'email',
         emailOptIn: true,
-        creditLimit: 10000.00,
+        creditLimit: 10000.0,
         paymentTerms: 'net_30',
         loyaltyPoints: 500,
-        referralSource: 'Direct'
-      }
+        referralSource: 'Direct',
+      },
     ];
 
     for (const customerData of customers) {
       const [customer] = await Customer.findOrCreate({
         where: { customerNumber: customerData.customerNumber },
-        defaults: { ...customerData, shopId: shop.id }
+        defaults: { ...customerData, shopId: shop.id },
       });
-      console.log(`✅ Customer created: ${customer.firstName} ${customer.lastName}`);
+      console.log(
+        `✅ Customer created: ${customer.firstName} ${customer.lastName}`
+      );
 
       // Create vehicles for each customer
       const vehicles = [
@@ -277,7 +290,7 @@ async function seedDatabase() {
           mileageUnit: 'kilometers',
           insuranceCompany: 'State Farm',
           policyNumber: 'SF123456',
-          vehicleStatus: 'active'
+          vehicleStatus: 'active',
         },
         {
           vin: '2T1BURHE0JC123456',
@@ -293,16 +306,22 @@ async function seedDatabase() {
           mileageUnit: 'kilometers',
           insuranceCompany: 'Allstate',
           policyNumber: 'AS789012',
-          vehicleStatus: 'active'
-        }
+          vehicleStatus: 'active',
+        },
       ];
 
       for (const vehicleData of vehicles) {
         const [vehicle] = await Vehicle.findOrCreate({
           where: { vin: vehicleData.vin },
-          defaults: { ...vehicleData, customerId: customer.id, shopId: shop.id }
+          defaults: {
+            ...vehicleData,
+            customerId: customer.id,
+            shopId: shop.id,
+          },
         });
-        console.log(`  ✅ Vehicle created: ${vehicle.year} ${vehicle.make} ${vehicle.model}`);
+        console.log(
+          `  ✅ Vehicle created: ${vehicle.year} ${vehicle.make} ${vehicle.model}`
+        );
       }
     }
 
@@ -323,12 +342,12 @@ async function seedDatabase() {
         reorderPoint: 3,
         reorderQuantity: 10,
         location: 'A1-B2',
-        costPrice: 350.00,
-        sellingPrice: 450.00,
+        costPrice: 350.0,
+        sellingPrice: 450.0,
         markupPercentage: 28.57,
         warrantyPeriod: 24,
         warrantyType: 'manufacturer',
-        isCore: false
+        isCore: false,
       },
       {
         partNumber: 'HON-71110-TBA-A00',
@@ -345,12 +364,12 @@ async function seedDatabase() {
         reorderPoint: 2,
         reorderQuantity: 5,
         location: 'C3-D4',
-        costPrice: 280.00,
-        sellingPrice: 380.00,
+        costPrice: 280.0,
+        sellingPrice: 380.0,
         markupPercentage: 35.71,
         warrantyPeriod: 24,
         warrantyType: 'manufacturer',
-        isCore: false
+        isCore: false,
       },
       {
         partNumber: 'AFT-12345',
@@ -362,19 +381,19 @@ async function seedDatabase() {
         reorderPoint: 5,
         reorderQuantity: 15,
         location: 'E5-F6',
-        costPrice: 120.00,
-        sellingPrice: 180.00,
-        markupPercentage: 50.00,
+        costPrice: 120.0,
+        sellingPrice: 180.0,
+        markupPercentage: 50.0,
         warrantyPeriod: 12,
         warrantyType: 'vendor',
-        isCore: false
-      }
+        isCore: false,
+      },
     ];
 
     for (const partData of parts) {
       const [part] = await Part.findOrCreate({
         where: { partNumber: partData.partNumber },
-        defaults: { ...partData, shopId: shop.id }
+        defaults: { ...partData, shopId: shop.id },
       });
       console.log(`✅ Part created: ${part.description}`);
     }
@@ -382,7 +401,9 @@ async function seedDatabase() {
     // Create sample jobs
     const allCustomers = await Customer.findAll({ where: { shopId: shop.id } });
     const allVehicles = await Vehicle.findAll({ where: { shopId: shop.id } });
-    const technician = await User.findOne({ where: { role: 'technician', shopId: shop.id } });
+    const technician = await User.findOne({
+      where: { role: 'technician', shopId: shop.id },
+    });
 
     const jobs = [
       {
@@ -394,17 +415,17 @@ async function seedDatabase() {
         priority: 'normal',
         jobType: 'collision',
         claimNumber: 'CLAIM123456',
-        deductible: 500.00,
-        totalAmount: 2500.00,
-        laborAmount: 1500.00,
-        partsAmount: 800.00,
-        materialsAmount: 200.00,
+        deductible: 500.0,
+        totalAmount: 2500.0,
+        laborAmount: 1500.0,
+        partsAmount: 800.0,
+        materialsAmount: 200.0,
         estimatedHours: 25.0,
         description: 'Front Bumper Repair',
         damageDescription: 'Front bumper damage from minor collision',
         estimateDate: new Date(),
         dropOffDate: new Date(),
-        targetCompletionDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        targetCompletionDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
       {
         jobNumber: 'JOB-0002',
@@ -415,17 +436,17 @@ async function seedDatabase() {
         priority: 'high',
         jobType: 'collision',
         claimNumber: 'CLAIM789012',
-        deductible: 1000.00,
-        totalAmount: 4500.00,
-        laborAmount: 2800.00,
-        partsAmount: 1200.00,
-        materialsAmount: 500.00,
+        deductible: 1000.0,
+        totalAmount: 4500.0,
+        laborAmount: 2800.0,
+        partsAmount: 1200.0,
+        materialsAmount: 500.0,
         estimatedHours: 40.0,
         description: 'Rear Panel Replacement',
         damageDescription: 'Rear panel damage requiring replacement',
         estimateDate: new Date(),
         dropOffDate: new Date(),
-        targetCompletionDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) // 10 days
+        targetCompletionDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days
       },
       {
         jobNumber: 'JOB-0003',
@@ -434,21 +455,21 @@ async function seedDatabase() {
         status: 'estimate',
         priority: 'normal',
         jobType: 'paint',
-        totalAmount: 1200.00,
-        laborAmount: 800.00,
-        materialsAmount: 400.00,
+        totalAmount: 1200.0,
+        laborAmount: 800.0,
+        materialsAmount: 400.0,
         estimatedHours: 12.0,
         description: 'Door Scratch Repair',
         damageDescription: 'Minor scratch on driver door',
-        estimateDate: new Date()
-      }
+        estimateDate: new Date(),
+      },
     ];
 
     for (const jobData of jobs) {
       if (jobData.customerId && jobData.vehicleId) {
         const [job] = await Job.findOrCreate({
           where: { jobNumber: jobData.jobNumber },
-          defaults: { ...jobData, shopId: shop.id }
+          defaults: { ...jobData, shopId: shop.id },
         });
         console.log(`✅ Job created: ${job.description}`);
       }
@@ -467,7 +488,6 @@ async function seedDatabase() {
     console.log('Manager: manager@demoautobody.com / manager123');
     console.log('Estimator: estimator@demoautobody.com / estimator123');
     console.log('Technician: technician@demoautobody.com / technician123');
-
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     process.exit(1);

@@ -12,12 +12,14 @@
 ## Environment Variables
 
 ### ✅ Safe for Client-Side (Public)
+
 ```env
 REACT_APP_SUPABASE_URL=https://your-project-ref.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 ### 🔒 Server-Side Only (Private)
+
 ```env
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=your_anon_key_here
@@ -26,19 +28,21 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 ## Key Differences
 
-| Key Type | Purpose | Where to Use | Security Level |
-|----------|---------|--------------|----------------|
-| **Anon Key** | Public API access | Client-side code | ✅ Safe to expose |
-| **Service Role Key** | Admin operations | Server-side only | 🔒 Never expose |
+| Key Type             | Purpose           | Where to Use     | Security Level    |
+| -------------------- | ----------------- | ---------------- | ----------------- |
+| **Anon Key**         | Public API access | Client-side code | ✅ Safe to expose |
+| **Service Role Key** | Admin operations  | Server-side only | 🔒 Never expose   |
 
 ## Row Level Security (RLS)
 
 ### How It Works
+
 - RLS policies control what data users can access
 - Users can only see data they're authorized to see
 - Policies are enforced at the database level
 
 ### Example RLS Policy
+
 ```sql
 -- Users can only access their own shop's data
 CREATE POLICY "Users can access their shop data" ON public.customers
@@ -67,12 +71,14 @@ CREATE POLICY "Users can access their shop data" ON public.customers
 ## Common Security Mistakes
 
 ### ❌ Don't Do This
+
 ```javascript
 // NEVER expose service role key to client
 const supabase = createClient(url, serviceRoleKey); // BAD!
 ```
 
 ### ✅ Do This Instead
+
 ```javascript
 // Use anon key for client-side
 const supabase = createClient(url, anonKey); // GOOD!
@@ -81,11 +87,13 @@ const supabase = createClient(url, anonKey); // GOOD!
 ## Testing Security
 
 ### Test User Access
+
 ```bash
 node configure-supabase.js
 ```
 
 ### Test Admin Operations
+
 ```bash
 node admin-setup-supabase.js
 ```

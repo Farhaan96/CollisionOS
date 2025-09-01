@@ -1,326 +1,467 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CollisionOS Photo Upload Demo</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .upload-area { 
-            border: 2px dashed #ccc; 
-            padding: 40px; 
-            text-align: center; 
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        .upload-area.dragover { border-color: #007bff; background-color: #f8f9fa; }
-        .form-group { margin: 15px 0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        textarea { height: 80px; }
-        .btn { 
-            background-color: #007bff; 
-            color: white; 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer;
-            margin: 5px;
-        }
-        .btn:hover { background-color: #0056b3; }
-        .btn:disabled { background-color: #6c757d; cursor: not-allowed; }
-        .status { 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-radius: 4px;
-            display: none;
-        }
-        .status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .status.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .preview { margin: 10px 0; }
-        .preview img { max-width: 200px; max-height: 200px; margin: 5px; border-radius: 4px; }
-        .progress { 
-            width: 100%; 
-            height: 20px; 
-            background-color: #f0f0f0; 
-            border-radius: 10px; 
-            overflow: hidden;
-            display: none;
-        }
-        .progress-bar { 
-            height: 100%; 
-            background-color: #007bff; 
-            width: 0%; 
-            transition: width 0.3s ease;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .upload-area {
+        border: 2px dashed #ccc;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .upload-area.dragover {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      textarea {
+        height: 80px;
+      }
+      .btn {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      .btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        display: none;
+      }
+      .status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .status.info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      .preview {
+        margin: 10px 0;
+      }
+      .preview img {
+        max-width: 200px;
+        max-height: 200px;
+        margin: 5px;
+        border-radius: 4px;
+      }
+      .progress {
+        width: 100%;
+        height: 20px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+        display: none;
+      }
+      .progress-bar {
+        height: 100%;
+        background-color: #007bff;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>CollisionOS Photo Upload System</h1>
-        <p>Comprehensive photo upload and management system for collision repair shops.</p>
+      <h1>CollisionOS Photo Upload System</h1>
+      <p>
+        Comprehensive photo upload and management system for collision repair
+        shops.
+      </p>
 
-        <!-- Login Section -->
-        <div id="loginSection" style="border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px;">
-            <h3>Authentication</h3>
-            <div class="form-group">
-                <label>Username/Email:</label>
-                <input type="text" id="username" value="admin@demoautobody.com">
-            </div>
-            <div class="form-group">
-                <label>Password:</label>
-                <input type="password" id="password" value="admin123">
-            </div>
-            <button class="btn" onclick="login()">Login</button>
-            <div id="authStatus" class="status"></div>
+      <!-- Login Section -->
+      <div
+        id="loginSection"
+        style="
+          border: 1px solid #ddd;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 8px;
+        "
+      >
+        <h3>Authentication</h3>
+        <div class="form-group">
+          <label>Username/Email:</label>
+          <input type="text" id="username" value="admin@demoautobody.com" />
+        </div>
+        <div class="form-group">
+          <label>Password:</label>
+          <input type="password" id="password" value="admin123" />
+        </div>
+        <button class="btn" onclick="login()">Login</button>
+        <div id="authStatus" class="status"></div>
+      </div>
+
+      <!-- Upload Section -->
+      <div
+        id="uploadSection"
+        style="
+          display: none;
+          border: 1px solid #ddd;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 8px;
+        "
+      >
+        <h3>Photo Upload</h3>
+
+        <!-- Categories -->
+        <div class="form-group">
+          <label>Category:</label>
+          <select id="category">
+            <option value="damage_assessment">Damage Assessment</option>
+            <option value="before_damage">Before Repair</option>
+            <option value="during_repair">During Repair</option>
+            <option value="after_repair">After Repair</option>
+            <option value="supplement">Supplement</option>
+            <option value="parts_received">Parts</option>
+            <option value="quality_check">Quality Check</option>
+            <option value="delivery">Delivery</option>
+            <option value="customer_signature">Customer Authorization</option>
+            <option value="insurance_doc">Insurance</option>
+            <option value="other">Other</option>
+          </select>
         </div>
 
-        <!-- Upload Section -->
-        <div id="uploadSection" style="display: none; border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px;">
-            <h3>Photo Upload</h3>
-            
-            <!-- Categories -->
-            <div class="form-group">
-                <label>Category:</label>
-                <select id="category">
-                    <option value="damage_assessment">Damage Assessment</option>
-                    <option value="before_damage">Before Repair</option>
-                    <option value="during_repair">During Repair</option>
-                    <option value="after_repair">After Repair</option>
-                    <option value="supplement">Supplement</option>
-                    <option value="parts_received">Parts</option>
-                    <option value="quality_check">Quality Check</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="customer_signature">Customer Authorization</option>
-                    <option value="insurance_doc">Insurance</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Title:</label>
-                <input type="text" id="title" placeholder="e.g., Front bumper damage">
-            </div>
-
-            <div class="form-group">
-                <label>Description:</label>
-                <textarea id="description" placeholder="Detailed description of the photo..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Vehicle Part:</label>
-                <input type="text" id="vehiclePart" placeholder="e.g., Front Bumper">
-            </div>
-
-            <div class="form-group">
-                <label>Damage Type:</label>
-                <input type="text" id="damageType" placeholder="e.g., Scratch, Dent, Crack">
-            </div>
-
-            <!-- Drag and Drop Area -->
-            <div class="upload-area" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnterHandler(event);" ondragleave="dragLeaveHandler(event);">
-                <p>Drag and drop images here, or <strong>click to select files</strong></p>
-                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="fileSelected(event)">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">Select Files</button>
-            </div>
-
-            <!-- File Preview -->
-            <div id="preview" class="preview"></div>
-
-            <!-- Progress Bar -->
-            <div class="progress" id="progressContainer">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-
-            <!-- Upload Button -->
-            <button class="btn" id="uploadBtn" onclick="uploadFiles()" disabled>Upload Photos</button>
-            
-            <div id="uploadStatus" class="status"></div>
+        <div class="form-group">
+          <label>Title:</label>
+          <input
+            type="text"
+            id="title"
+            placeholder="e.g., Front bumper damage"
+          />
         </div>
 
-        <!-- Results Section -->
-        <div id="resultsSection" style="display: none; border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px;">
-            <h3>Upload Results</h3>
-            <div id="results"></div>
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea
+            id="description"
+            placeholder="Detailed description of the photo..."
+          ></textarea>
         </div>
+
+        <div class="form-group">
+          <label>Vehicle Part:</label>
+          <input
+            type="text"
+            id="vehiclePart"
+            placeholder="e.g., Front Bumper"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Damage Type:</label>
+          <input
+            type="text"
+            id="damageType"
+            placeholder="e.g., Scratch, Dent, Crack"
+          />
+        </div>
+
+        <!-- Drag and Drop Area -->
+        <div
+          class="upload-area"
+          ondrop="dropHandler(event);"
+          ondragover="dragOverHandler(event);"
+          ondragenter="dragEnterHandler(event);"
+          ondragleave="dragLeaveHandler(event);"
+        >
+          <p>
+            Drag and drop images here, or <strong>click to select files</strong>
+          </p>
+          <input
+            type="file"
+            id="fileInput"
+            multiple
+            accept="image/*"
+            style="display: none"
+            onchange="fileSelected(event)"
+          />
+          <button
+            class="btn"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            Select Files
+          </button>
+        </div>
+
+        <!-- File Preview -->
+        <div id="preview" class="preview"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress" id="progressContainer">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Upload Button -->
+        <button class="btn" id="uploadBtn" onclick="uploadFiles()" disabled>
+          Upload Photos
+        </button>
+
+        <div id="uploadStatus" class="status"></div>
+      </div>
+
+      <!-- Results Section -->
+      <div
+        id="resultsSection"
+        style="
+          display: none;
+          border: 1px solid #ddd;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 8px;
+        "
+      >
+        <h3>Upload Results</h3>
+        <div id="results"></div>
+      </div>
     </div>
 
     <script>
-        let authToken = null;
-        let selectedFiles = [];
-        
-        // Authentication
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const authStatus = document.getElementById('authStatus');
-            
-            showStatus(authStatus, 'Authenticating...', 'info');
-            
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    authToken = data.data.accessToken;
-                    showStatus(authStatus, `Welcome ${data.data.user.firstName} ${data.data.user.lastName}!`, 'success');
-                    document.getElementById('uploadSection').style.display = 'block';
-                    await loadCategories();
-                } else {
-                    showStatus(authStatus, 'Login failed: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showStatus(authStatus, 'Login error: ' + error.message, 'error');
-            }
+      let authToken = null;
+      let selectedFiles = [];
+
+      // Authentication
+      async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const authStatus = document.getElementById('authStatus');
+
+        showStatus(authStatus, 'Authenticating...', 'info');
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            authToken = data.data.accessToken;
+            showStatus(
+              authStatus,
+              `Welcome ${data.data.user.firstName} ${data.data.user.lastName}!`,
+              'success'
+            );
+            document.getElementById('uploadSection').style.display = 'block';
+            await loadCategories();
+          } else {
+            showStatus(
+              authStatus,
+              'Login failed: ' + (data.error || 'Unknown error'),
+              'error'
+            );
+          }
+        } catch (error) {
+          showStatus(authStatus, 'Login error: ' + error.message, 'error');
         }
-        
-        // Load categories
-        async function loadCategories() {
-            try {
-                const response = await fetch('/api/attachments/categories', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    const select = document.getElementById('category');
-                    select.innerHTML = '';
-                    data.data.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.value;
-                        option.textContent = `${cat.label} - ${cat.description}`;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Failed to load categories:', error);
-            }
-        }
-        
-        // Drag and drop handlers
-        function dragOverHandler(ev) {
-            ev.preventDefault();
-            ev.currentTarget.classList.add('dragover');
-        }
-        
-        function dragEnterHandler(ev) {
-            ev.preventDefault();
-            ev.currentTarget.classList.add('dragover');
-        }
-        
-        function dragLeaveHandler(ev) {
-            ev.currentTarget.classList.remove('dragover');
-        }
-        
-        function dropHandler(ev) {
-            ev.preventDefault();
-            ev.currentTarget.classList.remove('dragover');
-            
-            const files = Array.from(ev.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-            handleFiles(files);
-        }
-        
-        function fileSelected(ev) {
-            const files = Array.from(ev.target.files);
-            handleFiles(files);
-        }
-        
-        function handleFiles(files) {
-            selectedFiles = files;
-            displayPreview(files);
-            document.getElementById('uploadBtn').disabled = files.length === 0;
-        }
-        
-        function displayPreview(files) {
-            const preview = document.getElementById('preview');
-            preview.innerHTML = '';
-            
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = file.name;
-                    img.title = `${file.name} (${formatFileSize(file.size)})`;
-                    preview.appendChild(img);
-                };
-                reader.readAsDataURL(file);
+      }
+
+      // Load categories
+      async function loadCategories() {
+        try {
+          const response = await fetch('/api/attachments/categories', {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            const select = document.getElementById('category');
+            select.innerHTML = '';
+            data.data.forEach(cat => {
+              const option = document.createElement('option');
+              option.value = cat.value;
+              option.textContent = `${cat.label} - ${cat.description}`;
+              select.appendChild(option);
             });
+          }
+        } catch (error) {
+          console.error('Failed to load categories:', error);
         }
-        
-        // Upload files
-        async function uploadFiles() {
-            if (!selectedFiles.length || !authToken) return;
-            
-            const uploadStatus = document.getElementById('uploadStatus');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const uploadBtn = document.getElementById('uploadBtn');
-            
-            // Disable upload button
-            uploadBtn.disabled = true;
-            
-            // Show progress
-            progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            
-            // Prepare form data
-            const formData = new FormData();
-            selectedFiles.forEach(file => formData.append('files', file));
-            formData.append('category', document.getElementById('category').value);
-            formData.append('title', document.getElementById('title').value);
-            formData.append('description', document.getElementById('description').value);
-            formData.append('vehiclePart', document.getElementById('vehiclePart').value);
-            formData.append('damageType', document.getElementById('damageType').value);
-            
-            showStatus(uploadStatus, `Uploading ${selectedFiles.length} file(s)...`, 'info');
-            
-            try {
-                const response = await fetch('/api/attachments/upload', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                    body: formData
-                });
-                
-                progressBar.style.width = '100%';
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showStatus(uploadStatus, 'Upload successful!', 'success');
-                    displayResults(data.data);
-                    // Clear form
-                    selectedFiles = [];
-                    document.getElementById('preview').innerHTML = '';
-                    document.getElementById('fileInput').value = '';
-                } else {
-                    showStatus(uploadStatus, 'Upload failed: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showStatus(uploadStatus, 'Upload error: ' + error.message, 'error');
-            } finally {
-                uploadBtn.disabled = false;
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                }, 2000);
-            }
+      }
+
+      // Drag and drop handlers
+      function dragOverHandler(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('dragover');
+      }
+
+      function dragEnterHandler(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('dragover');
+      }
+
+      function dragLeaveHandler(ev) {
+        ev.currentTarget.classList.remove('dragover');
+      }
+
+      function dropHandler(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('dragover');
+
+        const files = Array.from(ev.dataTransfer.files).filter(file =>
+          file.type.startsWith('image/')
+        );
+        handleFiles(files);
+      }
+
+      function fileSelected(ev) {
+        const files = Array.from(ev.target.files);
+        handleFiles(files);
+      }
+
+      function handleFiles(files) {
+        selectedFiles = files;
+        displayPreview(files);
+        document.getElementById('uploadBtn').disabled = files.length === 0;
+      }
+
+      function displayPreview(files) {
+        const preview = document.getElementById('preview');
+        preview.innerHTML = '';
+
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            img.title = `${file.name} (${formatFileSize(file.size)})`;
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Upload files
+      async function uploadFiles() {
+        if (!selectedFiles.length || !authToken) return;
+
+        const uploadStatus = document.getElementById('uploadStatus');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        // Disable upload button
+        uploadBtn.disabled = true;
+
+        // Show progress
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+
+        // Prepare form data
+        const formData = new FormData();
+        selectedFiles.forEach(file => formData.append('files', file));
+        formData.append('category', document.getElementById('category').value);
+        formData.append('title', document.getElementById('title').value);
+        formData.append(
+          'description',
+          document.getElementById('description').value
+        );
+        formData.append(
+          'vehiclePart',
+          document.getElementById('vehiclePart').value
+        );
+        formData.append(
+          'damageType',
+          document.getElementById('damageType').value
+        );
+
+        showStatus(
+          uploadStatus,
+          `Uploading ${selectedFiles.length} file(s)...`,
+          'info'
+        );
+
+        try {
+          const response = await fetch('/api/attachments/upload', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${authToken}` },
+            body: formData,
+          });
+
+          progressBar.style.width = '100%';
+
+          const data = await response.json();
+
+          if (data.success) {
+            showStatus(uploadStatus, 'Upload successful!', 'success');
+            displayResults(data.data);
+            // Clear form
+            selectedFiles = [];
+            document.getElementById('preview').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+          } else {
+            showStatus(
+              uploadStatus,
+              'Upload failed: ' + (data.error || 'Unknown error'),
+              'error'
+            );
+          }
+        } catch (error) {
+          showStatus(uploadStatus, 'Upload error: ' + error.message, 'error');
+        } finally {
+          uploadBtn.disabled = false;
+          setTimeout(() => {
+            progressContainer.style.display = 'none';
+          }, 2000);
         }
-        
-        function displayResults(data) {
-            const resultsSection = document.getElementById('resultsSection');
-            const results = document.getElementById('results');
-            
-            resultsSection.style.display = 'block';
-            
-            if (data.type === 'single') {
-                results.innerHTML = `
+      }
+
+      function displayResults(data) {
+        const resultsSection = document.getElementById('resultsSection');
+        const results = document.getElementById('results');
+
+        resultsSection.style.display = 'block';
+
+        if (data.type === 'single') {
+          results.innerHTML = `
                     <h4>Single Upload Result</h4>
                     <p><strong>File:</strong> ${data.file.originalName}</p>
                     <p><strong>Size:</strong> ${formatFileSize(data.file.size)}</p>
@@ -328,41 +469,49 @@
                     <p><strong>Category:</strong> ${data.file.category}</p>
                     <p><strong>ID:</strong> ${data.attachment.id}</p>
                 `;
-            } else if (data.type === 'multiple') {
-                results.innerHTML = `
+        } else if (data.type === 'multiple') {
+          results.innerHTML = `
                     <h4>Bulk Upload Results</h4>
                     <p><strong>Total:</strong> ${data.summary.total}</p>
                     <p><strong>Successful:</strong> ${data.summary.successful}</p>
                     <p><strong>Failed:</strong> ${data.summary.failed}</p>
                     ${data.successful.length > 0 ? '<h5>Successful Uploads:</h5>' : ''}
-                    ${data.successful.map(result => `
+                    ${data.successful
+                      .map(
+                        result => `
                         <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
                             <strong>${result.file.originalName}</strong> - ${formatFileSize(result.file.size)}
                         </div>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                     ${data.failed.length > 0 ? '<h5>Failed Uploads:</h5>' : ''}
-                    ${data.failed.map(failure => `
+                    ${data.failed
+                      .map(
+                        failure => `
                         <div style="margin: 10px 0; padding: 10px; background: #f8d7da; border-radius: 4px;">
                             <strong>${failure.filename}</strong> - ${failure.error}
                         </div>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 `;
-            }
         }
-        
-        function showStatus(element, message, type) {
-            element.textContent = message;
-            element.className = `status ${type}`;
-            element.style.display = 'block';
-        }
-        
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+      }
+
+      function showStatus(element, message, type) {
+        element.textContent = message;
+        element.className = `status ${type}`;
+        element.style.display = 'block';
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
     </script>
-</body>
+  </body>
 </html>

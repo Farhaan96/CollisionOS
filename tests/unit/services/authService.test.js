@@ -19,14 +19,14 @@ describe('AuthService', () => {
         success: true,
         data: {
           user: { id: 1, username: 'testuser', role: 'technician' },
-          token: 'jwt-token'
-        }
+          token: 'jwt-token',
+        },
       };
 
       fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockResponse
+        json: async () => mockResponse,
       });
 
       const result = await authService.login('testuser', 'password123');
@@ -38,8 +38,8 @@ describe('AuthService', () => {
         },
         body: JSON.stringify({
           username: 'testuser',
-          password: 'password123'
-        })
+          password: 'password123',
+        }),
       });
 
       expect(result).toEqual(mockResponse);
@@ -48,17 +48,18 @@ describe('AuthService', () => {
     test('handles login failure with invalid credentials', async () => {
       const mockErrorResponse = {
         success: false,
-        error: 'Invalid credentials'
+        error: 'Invalid credentials',
       };
 
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: async () => mockErrorResponse
+        json: async () => mockErrorResponse,
       });
 
-      await expect(authService.login('invalid', 'invalid'))
-        .rejects.toThrow('Invalid credentials');
+      await expect(authService.login('invalid', 'invalid')).rejects.toThrow(
+        'Invalid credentials'
+      );
 
       expect(fetch).toHaveBeenCalledWith('/api/auth/login', {
         method: 'POST',
@@ -67,24 +68,23 @@ describe('AuthService', () => {
         },
         body: JSON.stringify({
           username: 'invalid',
-          password: 'invalid'
-        })
+          password: 'invalid',
+        }),
       });
     });
 
     test('handles network errors gracefully', async () => {
       fetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(authService.login('user', 'pass'))
-        .rejects.toThrow('Network error');
+      await expect(authService.login('user', 'pass')).rejects.toThrow(
+        'Network error'
+      );
     });
 
     test('handles missing credentials', async () => {
-      await expect(authService.login('', ''))
-        .rejects.toThrow();
+      await expect(authService.login('', '')).rejects.toThrow();
 
-      await expect(authService.login(null, null))
-        .rejects.toThrow();
+      await expect(authService.login(null, null)).rejects.toThrow();
     });
   });
 
@@ -92,13 +92,13 @@ describe('AuthService', () => {
     test('successfully logs out user', async () => {
       const mockResponse = {
         success: true,
-        message: 'Logged out successfully'
+        message: 'Logged out successfully',
       };
 
       fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockResponse
+        json: async () => mockResponse,
       });
 
       // Set up token first
@@ -110,8 +110,8 @@ describe('AuthService', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token'
-        }
+          Authorization: 'Bearer test-token',
+        },
       });
 
       expect(result).toEqual(mockResponse);
@@ -120,7 +120,7 @@ describe('AuthService', () => {
     test('handles logout when no token exists', async () => {
       // No token in localStorage
       const result = await authService.logout();
-      
+
       // Should still attempt logout
       expect(fetch).toHaveBeenCalled();
     });
@@ -129,13 +129,12 @@ describe('AuthService', () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        json: async () => ({ error: 'Server error' })
+        json: async () => ({ error: 'Server error' }),
       });
 
       localStorage.setItem('token', 'test-token');
 
-      await expect(authService.logout())
-        .rejects.toThrow('Server error');
+      await expect(authService.logout()).rejects.toThrow('Server error');
     });
   });
 
@@ -145,18 +144,18 @@ describe('AuthService', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        role: 'technician'
+        role: 'technician',
       };
 
       const mockResponse = {
         success: true,
-        data: { user: mockUser }
+        data: { user: mockUser },
       };
 
       fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockResponse
+        json: async () => mockResponse,
       });
 
       localStorage.setItem('token', 'valid-token');
@@ -165,8 +164,8 @@ describe('AuthService', () => {
 
       expect(fetch).toHaveBeenCalledWith('/api/auth/me', {
         headers: {
-          'Authorization': 'Bearer valid-token'
-        }
+          Authorization: 'Bearer valid-token',
+        },
       });
 
       expect(result).toEqual(mockResponse);
@@ -174,7 +173,7 @@ describe('AuthService', () => {
 
     test('returns null when no token exists', async () => {
       const result = await authService.getCurrentUser();
-      
+
       expect(result).toBeNull();
       expect(fetch).not.toHaveBeenCalled();
     });
@@ -183,13 +182,14 @@ describe('AuthService', () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: async () => ({ error: 'Invalid token' })
+        json: async () => ({ error: 'Invalid token' }),
       });
 
       localStorage.setItem('token', 'invalid-token');
 
-      await expect(authService.getCurrentUser())
-        .rejects.toThrow('Invalid token');
+      await expect(authService.getCurrentUser()).rejects.toThrow(
+        'Invalid token'
+      );
     });
   });
 
@@ -197,13 +197,13 @@ describe('AuthService', () => {
     test('successfully refreshes token', async () => {
       const mockResponse = {
         success: true,
-        data: { token: 'new-jwt-token' }
+        data: { token: 'new-jwt-token' },
       };
 
       fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockResponse
+        json: async () => mockResponse,
       });
 
       localStorage.setItem('token', 'old-token');
@@ -214,8 +214,8 @@ describe('AuthService', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer old-token'
-        }
+          Authorization: 'Bearer old-token',
+        },
       });
 
       expect(result).toEqual(mockResponse);
@@ -225,20 +225,21 @@ describe('AuthService', () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: async () => ({ error: 'Refresh failed' })
+        json: async () => ({ error: 'Refresh failed' }),
       });
 
       localStorage.setItem('token', 'expired-token');
 
-      await expect(authService.refreshToken())
-        .rejects.toThrow('Refresh failed');
+      await expect(authService.refreshToken()).rejects.toThrow(
+        'Refresh failed'
+      );
     });
   });
 
   describe('utility methods', () => {
     test('getToken returns stored token', () => {
       localStorage.setItem('token', 'test-token');
-      
+
       expect(authService.getToken()).toBe('test-token');
     });
 
@@ -248,7 +249,7 @@ describe('AuthService', () => {
 
     test('isAuthenticated returns true when token exists', () => {
       localStorage.setItem('token', 'test-token');
-      
+
       expect(authService.isAuthenticated()).toBe(true);
     });
 
@@ -258,15 +259,15 @@ describe('AuthService', () => {
 
     test('setToken stores token in localStorage', () => {
       authService.setToken('new-token');
-      
+
       expect(localStorage.getItem('token')).toBe('new-token');
     });
 
     test('clearToken removes token from localStorage', () => {
       localStorage.setItem('token', 'test-token');
-      
+
       authService.clearToken();
-      
+
       expect(localStorage.getItem('token')).toBeNull();
     });
   });

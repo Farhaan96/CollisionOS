@@ -1,13 +1,16 @@
 # CollisionOS Phase 2 Backend API Documentation
 
 ## Overview
+
 This document provides comprehensive API documentation for the Phase 2 backend development of CollisionOS - a complete collision repair management system with enterprise-grade features.
 
 ## Base URL
+
 - Development: `http://localhost:3001/api`
 - Versioned: `http://localhost:3001/api/v1`
 
 ## Authentication
+
 All API endpoints require JWT authentication unless otherwise specified.
 
 ```
@@ -15,6 +18,7 @@ Authorization: Bearer <jwt-token>
 ```
 
 ## Rate Limiting
+
 - Standard endpoints: 100 requests per 15 minutes
 - Bulk operations: 10 requests per hour
 - Communication endpoints: 100 requests per 15 minutes
@@ -24,13 +28,16 @@ Authorization: Bearer <jwt-token>
 ## 1. BMS Integration System
 
 ### Supabase Edge Function: BMS Ingestion
+
 **Endpoint:** `/functions/bms_ingest`  
 **Method:** POST
 
 #### Description
+
 Automated XML/JSON parsing and data ingestion from insurance systems with structured upsert pipeline.
 
 #### Request Body
+
 ```json
 {
   "data": "XML string or JSON object",
@@ -41,6 +48,7 @@ Automated XML/JSON parsing and data ingestion from insurance systems with struct
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -59,6 +67,7 @@ Automated XML/JSON parsing and data ingestion from insurance systems with struct
 ```
 
 #### Features
+
 - XML parsing with fast-xml-parser (removeNSPrefix: true)
 - Structured upsert order: documents → customers → vehicles → claims → repair_orders → part_lines
 - Comprehensive validation and error handling
@@ -69,16 +78,20 @@ Automated XML/JSON parsing and data ingestion from insurance systems with struct
 ## 2. Purchase Order Management
 
 ### Base Routes
+
 - `/api/pos` or `/api/purchase-orders`
 - `/api/v1/pos` or `/api/v1/purchase-orders`
 
 ### Create Purchase Order
+
 **Endpoint:** `POST /pos`
 
 #### Description
+
 Create PO from selected part lines with structured numbering and vendor management.
 
 #### Request Body
+
 ```json
 {
   "part_line_ids": ["string"],
@@ -91,6 +104,7 @@ Create PO from selected part lines with structured numbering and vendor manageme
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -99,25 +113,29 @@ Create PO from selected part lines with structured numbering and vendor manageme
     "po_id": "string",
     "po_number": "RO2024-2409-PART-001",
     "status": "draft",
-    "total_amount": 1250.00,
+    "total_amount": 1250.0,
     "part_count": 5
   }
 }
 ```
 
 #### Features
+
 - **Structured PO numbering:** `${ro_number}-${YYMM}-${vendorCode}-${seq}`
 - **Vendor code generation:** 4 chars uppercase from supplier name
 - **Margin validation:** Real-time margin checking against vendor agreements
 - **Status workflow:** draft → sent → ack → partial → received → closed
 
 ### Receive Purchase Order
+
 **Endpoint:** `POST /pos/:id/receive`
 
 #### Description
+
 Partial receiving with quantity tracking and returns handling.
 
 #### Request Body
+
 ```json
 {
   "received_items": [
@@ -132,6 +150,7 @@ Partial receiving with quantity tracking and returns handling.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -146,12 +165,15 @@ Partial receiving with quantity tracking and returns handling.
 ```
 
 ### Install Parts
+
 **Endpoint:** `POST /part-lines/:id/install`
 
 #### Description
+
 Install parts and update status with technician tracking.
 
 #### Request Body
+
 ```json
 {
   "installed_quantity": 2,
@@ -161,13 +183,16 @@ Install parts and update status with technician tracking.
 ```
 
 ### Vendor-Specific PO Views
+
 **Endpoint:** `GET /pos/vendor/:vendorId`
 
 #### Query Parameters
+
 - `status`: Filter by PO status
 - `date_range`: Number of days (default: 30)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -185,12 +210,15 @@ Install parts and update status with technician tracking.
 ```
 
 ### Split Purchase Orders
+
 **Endpoint:** `POST /pos/:id/split`
 
 #### Description
+
 Split POs by vendor or delivery with intelligent grouping.
 
 #### Request Body
+
 ```json
 {
   "split_by": "vendor" | "delivery",
@@ -210,16 +238,20 @@ Split POs by vendor or delivery with intelligent grouping.
 ## 3. Advanced Parts Management
 
 ### Base Routes
+
 - `/api/parts-workflow`
 - `/api/v1/parts-workflow`
 
 ### Parts Workflow Status
+
 **Endpoint:** `GET /workflow/:roId`
 
 #### Description
+
 Parts status buckets for repair order with completion tracking.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -253,15 +285,19 @@ Parts status buckets for repair order with completion tracking.
 ```
 
 #### Workflow States
+
 - **needed** → **sourcing** → **ordered** → **backordered** → **received** → **installed** → **returned** → **cancelled**
 
 ### Bulk Status Updates
+
 **Endpoint:** `POST /bulk-update`
 
 #### Description
+
 Multi-select status updates with validation rules.
 
 #### Request Body
+
 ```json
 {
   "part_ids": ["string"],
@@ -273,6 +309,7 @@ Multi-select status updates with validation rules.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -286,9 +323,11 @@ Multi-select status updates with validation rules.
 ```
 
 ### Advanced Parts Search
+
 **Endpoint:** `GET /search`
 
 #### Query Parameters
+
 - `q`: Search query (part number, description)
 - `status`: Filter by status
 - `vendor_id`: Filter by vendor
@@ -302,6 +341,7 @@ Multi-select status updates with validation rules.
 - `limit`: Results per page (default: 50)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -320,12 +360,15 @@ Multi-select status updates with validation rules.
 ```
 
 ### Vendor Quote Requests
+
 **Endpoint:** `POST /vendor-quote`
 
 #### Description
+
 Request quotes from multiple vendors with pricing estimates.
 
 #### Request Body
+
 ```json
 {
   "part_requests": [
@@ -343,6 +386,7 @@ Request quotes from multiple vendors with pricing estimates.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -363,14 +407,17 @@ Request quotes from multiple vendors with pricing estimates.
 ```
 
 ### Margin Analysis
+
 **Endpoint:** `GET /margin-analysis`
 
 #### Query Parameters
+
 - `ro_id`: Filter by repair order
 - `vendor_id`: Filter by vendor
 - `date_range`: Number of days (default: 30)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -393,18 +440,22 @@ Request quotes from multiple vendors with pricing estimates.
 ## 4. Scheduling & Capacity Management
 
 ### Base Routes
+
 - `/api/scheduling`
 - `/api/v1/scheduling`
 
 ### Real-Time Capacity Analysis
+
 **Endpoint:** `GET /capacity`
 
 #### Query Parameters
+
 - `date`: Analysis date (default: today)
 - `department`: Filter by department
 - `view`: daily/weekly (default: daily)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -435,6 +486,7 @@ Request quotes from multiple vendors with pricing estimates.
 ```
 
 #### Departments
+
 - **body**: Body work and frame straightening
 - **paint**: Paint preparation and application
 - **mechanical**: Mechanical repairs and assembly
@@ -442,12 +494,15 @@ Request quotes from multiple vendors with pricing estimates.
 - **adas_calibration**: ADAS calibration and testing
 
 ### Smart Scheduling
+
 **Endpoint:** `POST /book`
 
 #### Description
+
 Smart scheduling with constraint handling and skills matrix.
 
 #### Request Body
+
 ```json
 {
   "ro_id": "string",
@@ -468,6 +523,7 @@ Smart scheduling with constraint handling and skills matrix.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -491,14 +547,17 @@ Smart scheduling with constraint handling and skills matrix.
 ```
 
 ### Technician Availability
+
 **Endpoint:** `GET /technicians`
 
 #### Query Parameters
+
 - `date`: Availability date (default: today)
 - `department`: Filter by department
 - `skill_filter`: Filter by skill/certification
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -511,7 +570,7 @@ Smart scheduling with constraint handling and skills matrix.
         "departments": ["body", "paint"],
         "certifications": ["aluminum_repair", "frame_straightening"],
         "skill_level": "intermediate",
-        "hourly_rate": 45.00,
+        "hourly_rate": 45.0,
         "availability": {
           "date": "2024-08-29",
           "total_hours": 8,
@@ -538,12 +597,15 @@ Smart scheduling with constraint handling and skills matrix.
 ```
 
 ### What-If Analysis
+
 **Endpoint:** `POST /what-if`
 
 #### Description
+
 Scheduling scenario planning with comparison analysis.
 
 #### Request Body
+
 ```json
 {
   "scenarios": [
@@ -563,6 +625,7 @@ Scheduling scenario planning with comparison analysis.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -576,13 +639,16 @@ Scheduling scenario planning with comparison analysis.
 ```
 
 ### Smart ETA Calculations
+
 **Endpoint:** `GET /smart-eta/:roId`
 
 #### Query Parameters
+
 - `include_confidence`: Include confidence analysis (default: true)
 - `breakdown`: Include detailed breakdown (default: true)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -615,18 +681,22 @@ Scheduling scenario planning with comparison analysis.
 ## 5. Loaner Fleet Management
 
 ### Base Routes
+
 - `/api/loaners` or `/api/loaner-fleet`
 - `/api/v1/loaners` or `/api/v1/loaner-fleet`
 
 ### Fleet Status
+
 **Endpoint:** `GET /fleet`
 
 #### Query Parameters
+
 - `status`: Filter by vehicle status
 - `vehicle_type`: Filter by vehicle type
 - `availability_date`: Check availability for specific date
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -657,12 +727,15 @@ Scheduling scenario planning with comparison analysis.
 ```
 
 ### Create Reservation
+
 **Endpoint:** `POST /reserve`
 
 #### Description
+
 Create loaner reservations with vehicle assignment and preferences.
 
 #### Request Body
+
 ```json
 {
   "customer_id": "string",
@@ -679,6 +752,7 @@ Create loaner reservations with vehicle assignment and preferences.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -709,12 +783,15 @@ Create loaner reservations with vehicle assignment and preferences.
 ```
 
 ### Vehicle Checkout
+
 **Endpoint:** `POST /check-out`
 
 #### Description
+
 Vehicle checkout with digital paperwork and inspection.
 
 #### Request Body
+
 ```json
 {
   "reservation_id": "string",
@@ -736,6 +813,7 @@ Vehicle checkout with digital paperwork and inspection.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -755,12 +833,15 @@ Vehicle checkout with digital paperwork and inspection.
 ```
 
 ### Vehicle Check-In
+
 **Endpoint:** `POST /check-in`
 
 #### Description
+
 Return processing with damage assessment and additional charges.
 
 #### Request Body
+
 ```json
 {
   "reservation_id": "string",
@@ -777,7 +858,7 @@ Return processing with damage assessment and additional charges.
     "exterior_condition": "good"
   },
   "additional_charges": {
-    "fuel_charge": 25.00,
+    "fuel_charge": 25.0,
     "cleaning_charge": 0,
     "damage_charge": 0
   },
@@ -786,6 +867,7 @@ Return processing with damage assessment and additional charges.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -799,7 +881,7 @@ Return processing with damage assessment and additional charges.
         "average_miles_per_day": "62.5"
       },
       "financial_summary": {
-        "total_additional": 25.00,
+        "total_additional": 25.0,
         "payment_due": true
       },
       "vehicle_status": "available"
@@ -809,14 +891,17 @@ Return processing with damage assessment and additional charges.
 ```
 
 ### Fleet Utilization Analytics
+
 **Endpoint:** `GET /utilization`
 
 #### Query Parameters
+
 - `period`: Analysis period in days (default: 30)
 - `vehicle_id`: Filter by specific vehicle
 - `detailed`: Include detailed metrics (default: false)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -846,16 +931,20 @@ Return processing with damage assessment and additional charges.
 ## 6. Customer Communication System
 
 ### Base Routes
+
 - `/api/customer-communication`
 - `/api/v1/customer-communication`
 
 ### Send Communication
+
 **Endpoint:** `POST /send`
 
 #### Description
+
 Multi-channel communication with template processing and automation.
 
 #### Request Body
+
 ```json
 {
   "customer_id": "string",
@@ -876,6 +965,7 @@ Multi-channel communication with template processing and automation.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -894,21 +984,21 @@ Multi-channel communication with template processing and automation.
         }
       ]
     },
-    "next_steps": [
-      "Monitor delivery confirmation",
-      "Track customer response"
-    ]
+    "next_steps": ["Monitor delivery confirmation", "Track customer response"]
   }
 }
 ```
 
 ### Automated Communication Triggers
+
 **Endpoint:** `POST /auto-trigger`
 
 #### Description
+
 Event-based automated communication triggers.
 
 #### Request Body
+
 ```json
 {
   "trigger_event": "repair_completed" | "parts_arrived" | "ready_for_pickup",
@@ -925,6 +1015,7 @@ Event-based automated communication triggers.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -942,9 +1033,11 @@ Event-based automated communication triggers.
 ```
 
 ### Communication History
+
 **Endpoint:** `GET /history/:customerId`
 
 #### Query Parameters
+
 - `limit`: Number of records (default: 50)
 - `offset`: Pagination offset (default: 0)
 - `channel`: Filter by communication channel
@@ -954,6 +1047,7 @@ Event-based automated communication triggers.
 - `include_timeline`: Include timeline entries (default: true)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -985,12 +1079,15 @@ Event-based automated communication triggers.
 ```
 
 ### Communication Templates
+
 **Endpoint:** `POST /templates`
 
 #### Description
+
 Create and manage communication templates with automation rules.
 
 #### Request Body
+
 ```json
 {
   "name": "Parts Arrival Notification",
@@ -1012,11 +1109,13 @@ Create and manage communication templates with automation rules.
 **Endpoint:** `GET /templates`
 
 #### Query Parameters
+
 - `category`: Filter by template category
 - `automated`: Filter automated templates (true/false)
 - `communication_type`: Filter by communication type
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1035,12 +1134,15 @@ Create and manage communication templates with automation rules.
 ```
 
 ### Bulk Communications
+
 **Endpoint:** `POST /bulk-send`
 
 #### Description
+
 Send bulk communications to up to 100 recipients.
 
 #### Request Body
+
 ```json
 {
   "recipient_type": "customers" | "active_jobs" | "custom_list",
@@ -1057,6 +1159,7 @@ Send bulk communications to up to 100 recipients.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1079,16 +1182,20 @@ Send bulk communications to up to 100 recipients.
 ## 7. Quality Control & Compliance
 
 ### Base Routes
+
 - `/api/qc` or `/api/quality-control`
 - `/api/v1/qc` or `/api/v1/quality-control`
 
 ### Quality Checklists
+
 **Endpoint:** `POST /checklist`
 
 #### Description
+
 Stage-specific quality checklists with pass/fail tracking.
 
 #### Request Body
+
 ```json
 {
   "ro_id": "string",
@@ -1112,6 +1219,7 @@ Stage-specific quality checklists with pass/fail tracking.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1144,12 +1252,15 @@ Stage-specific quality checklists with pass/fail tracking.
 ```
 
 ### Photo Validation
+
 **Endpoint:** `POST /photos`
 
 #### Description
+
 Required photo capture with validation and compliance checking.
 
 #### Request Body
+
 ```json
 {
   "ro_id": "string",
@@ -1170,6 +1281,7 @@ Required photo capture with validation and compliance checking.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1190,12 +1302,15 @@ Required photo capture with validation and compliance checking.
 ```
 
 ### Compliance Requirements
+
 **Endpoint:** `GET /compliance/:roId`
 
 #### Description
+
 ADAS scan and calibration requirements with regulatory compliance.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1233,12 +1348,15 @@ ADAS scan and calibration requirements with regulatory compliance.
 ```
 
 ### Re-Inspection
+
 **Endpoint:** `POST /inspection`
 
 #### Description
+
 Re-inspection forms and punch-lists with escalation workflows.
 
 #### Request Body
+
 ```json
 {
   "original_inspection_id": "string",
@@ -1259,6 +1377,7 @@ Re-inspection forms and punch-lists with escalation workflows.
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1275,22 +1394,22 @@ Re-inspection forms and punch-lists with escalation workflows.
         "escalated": 0
       }
     },
-    "next_steps": [
-      "All items resolved",
-      "Proceed to next stage"
-    ]
+    "next_steps": ["All items resolved", "Proceed to next stage"]
   }
 }
 ```
 
 ### Compliance Certificates
+
 **Endpoint:** `GET /certificates/:roId`
 
 #### Query Parameters
+
 - `certificate_type`: Filter by certificate type
 - `include_drafts`: Include draft certificates (default: false)
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -1334,6 +1453,7 @@ Re-inspection forms and punch-lists with escalation workflows.
 All API endpoints return consistent error responses:
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -1343,6 +1463,7 @@ All API endpoints return consistent error responses:
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -1353,6 +1474,7 @@ All API endpoints return consistent error responses:
 ```
 
 ### Common HTTP Status Codes
+
 - **200 OK**: Success
 - **201 Created**: Resource created
 - **400 Bad Request**: Invalid request data
@@ -1370,6 +1492,7 @@ All API endpoints return consistent error responses:
 All major operations broadcast real-time updates via Socket.io:
 
 ### Event Types
+
 - `po_update`: Purchase order changes
 - `parts_update`: Parts status changes
 - `scheduling_update`: Scheduling changes
@@ -1378,8 +1501,9 @@ All major operations broadcast real-time updates via Socket.io:
 - `qc_update`: Quality control updates
 
 ### Example Socket Event
+
 ```javascript
-socket.on('parts_update', (data) => {
+socket.on('parts_update', data => {
   console.log('Parts update:', data);
   // {
   //   part_id: "string",
@@ -1396,7 +1520,9 @@ socket.on('parts_update', (data) => {
 ## Integration Features
 
 ### Third-Party System Hooks
+
 All major operations include hooks for:
+
 - **Mitchell**: Estimate integration
 - **Audatex**: Damage assessment
 - **DMS**: Dealership management systems
@@ -1405,7 +1531,9 @@ All major operations include hooks for:
 - **Payment processors**: Financial transactions
 
 ### Webhook Support
+
 Configure webhooks for external system notifications on:
+
 - Job status changes
 - Parts availability updates
 - Completion notifications
@@ -1416,6 +1544,7 @@ Configure webhooks for external system notifications on:
 ## Performance Considerations
 
 ### Optimization Features
+
 - **Database indexing**: Optimized queries for all search operations
 - **Caching**: 5-minute cache for frequently accessed data
 - **Pagination**: All list endpoints support pagination
@@ -1424,6 +1553,7 @@ Configure webhooks for external system notifications on:
 - **Query optimization**: Efficient database operations with relationship loading
 
 ### Scalability
+
 - **Modular architecture**: Independent service scaling
 - **Database sharding**: Multi-shop support
 - **Load balancing**: Horizontal scaling support

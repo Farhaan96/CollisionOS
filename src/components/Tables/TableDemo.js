@@ -38,9 +38,21 @@ import { premiumDesignSystem } from '../../theme/premiumDesignSystem';
 const generateMockData = (count = 10000) => {
   const statuses = ['Active', 'Pending', 'Completed', 'Cancelled', 'On Hold'];
   const priorities = ['Low', 'Medium', 'High', 'Critical'];
-  const departments = ['Sales', 'Marketing', 'Engineering', 'Support', 'Operations'];
-  const names = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown'];
-  
+  const departments = [
+    'Sales',
+    'Marketing',
+    'Engineering',
+    'Support',
+    'Operations',
+  ];
+  const names = [
+    'John Doe',
+    'Jane Smith',
+    'Mike Johnson',
+    'Sarah Wilson',
+    'David Brown',
+  ];
+
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
     name: names[Math.floor(Math.random() * names.length)],
@@ -50,7 +62,9 @@ const generateMockData = (count = 10000) => {
     priority: priorities[Math.floor(Math.random() * priorities.length)],
     revenue: Math.random() * 100000,
     progress: Math.floor(Math.random() * 101),
-    createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(
+      Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000
+    ).toISOString(),
     updatedAt: new Date().toISOString(),
     rating: Math.floor(Math.random() * 5) + 1,
     isActive: Math.random() > 0.3,
@@ -84,122 +98,160 @@ const TableDemo = () => {
   }, []);
 
   // Define columns
-  const columns = useMemo(() => [
-    createColumn('id', 'ID', { 
-      width: 80, 
-      editable: false,
-      sortable: true,
-      required: true,
-    }),
-    createColumn('name', 'Name', { 
-      width: 200,
-      quickFilter: true,
-    }),
-    createColumn('email', 'Email', { 
-      width: 250,
-      quickFilter: true,
-    }),
-    createColumn('department', 'Department', { 
-      width: 150,
-      type: 'select',
-      options: [
-        { value: 'Sales', label: 'Sales' },
-        { value: 'Marketing', label: 'Marketing' },
-        { value: 'Engineering', label: 'Engineering' },
-        { value: 'Support', label: 'Support' },
-        { value: 'Operations', label: 'Operations' },
-      ],
-      quickFilter: true,
-    }),
-    createStatusColumn('status', 'Status', {
-      'Active': 'success',
-      'Pending': 'warning', 
-      'Completed': 'info',
-      'Cancelled': 'error',
-      'On Hold': 'default',
-    }, { 
-      width: 120,
-      quickFilter: true,
-    }),
-    createStatusColumn('priority', 'Priority', {
-      'Low': 'info',
-      'Medium': 'warning',
-      'High': 'error',
-      'Critical': 'error',
-    }, { 
-      width: 100,
-    }),
-    createCurrencyColumn('revenue', 'Revenue', { 
-      width: 120,
-      type: 'number',
-    }),
-    createCustomColumn('progress', 'Progress', (value) => (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Box
-          sx={{
-            width: 60,
-            height: 8,
-            backgroundColor: alpha(theme.palette.primary.main, 0.2),
-            borderRadius: 4,
-            position: 'relative',
-          }}
-        >
-          <Box
-            sx={{
-              width: `${value}%`,
-              height: '100%',
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              borderRadius: 4,
-              transition: 'width 0.3s ease',
-            }}
-          />
-        </Box>
-        <Typography variant="body2" sx={{ minWidth: '35px', fontSize: '0.75rem' }}>
-          {value}%
-        </Typography>
-      </Box>
-    ), {
-      width: 120,
-      editable: false,
-    }),
-    createCustomColumn('rating', 'Rating', (value) => (
-      <Box sx={{ display: 'flex' }}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <IconButton key={i} size="small" sx={{ p: 0.25 }}>
-            {i < value ? (
-              <Star sx={{ fontSize: '1rem', color: theme.palette.warning.main }} />
-            ) : (
-              <StarBorder sx={{ fontSize: '1rem', color: theme.palette.action.disabled }} />
-            )}
-          </IconButton>
-        ))}
-      </Box>
-    ), {
-      width: 140,
-      editable: false,
-    }),
-    createDateColumn('createdAt', 'Created', { 
-      width: 120,
-      editable: false,
-    }),
-    createCustomColumn('actions', 'Actions', (value, row) => (
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
-        <IconButton size="small" color="primary">
-          <Visibility fontSize="small" />
-        </IconButton>
-        <IconButton size="small" color="info">
-          <Edit fontSize="small" />
-        </IconButton>
-        <IconButton size="small" color="error">
-          <Delete fontSize="small" />
-        </IconButton>
-      </Box>
-    ), {
-      width: 120,
-      editable: false,
-      sortable: false,
-    }),
-  ], [theme]);
+  const columns = useMemo(
+    () => [
+      createColumn('id', 'ID', {
+        width: 80,
+        editable: false,
+        sortable: true,
+        required: true,
+      }),
+      createColumn('name', 'Name', {
+        width: 200,
+        quickFilter: true,
+      }),
+      createColumn('email', 'Email', {
+        width: 250,
+        quickFilter: true,
+      }),
+      createColumn('department', 'Department', {
+        width: 150,
+        type: 'select',
+        options: [
+          { value: 'Sales', label: 'Sales' },
+          { value: 'Marketing', label: 'Marketing' },
+          { value: 'Engineering', label: 'Engineering' },
+          { value: 'Support', label: 'Support' },
+          { value: 'Operations', label: 'Operations' },
+        ],
+        quickFilter: true,
+      }),
+      createStatusColumn(
+        'status',
+        'Status',
+        {
+          Active: 'success',
+          Pending: 'warning',
+          Completed: 'info',
+          Cancelled: 'error',
+          'On Hold': 'default',
+        },
+        {
+          width: 120,
+          quickFilter: true,
+        }
+      ),
+      createStatusColumn(
+        'priority',
+        'Priority',
+        {
+          Low: 'info',
+          Medium: 'warning',
+          High: 'error',
+          Critical: 'error',
+        },
+        {
+          width: 100,
+        }
+      ),
+      createCurrencyColumn('revenue', 'Revenue', {
+        width: 120,
+        type: 'number',
+      }),
+      createCustomColumn(
+        'progress',
+        'Progress',
+        value => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                width: 60,
+                height: 8,
+                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                borderRadius: 4,
+                position: 'relative',
+              }}
+            >
+              <Box
+                sx={{
+                  width: `${value}%`,
+                  height: '100%',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  borderRadius: 4,
+                  transition: 'width 0.3s ease',
+                }}
+              />
+            </Box>
+            <Typography
+              variant='body2'
+              sx={{ minWidth: '35px', fontSize: '0.75rem' }}
+            >
+              {value}%
+            </Typography>
+          </Box>
+        ),
+        {
+          width: 120,
+          editable: false,
+        }
+      ),
+      createCustomColumn(
+        'rating',
+        'Rating',
+        value => (
+          <Box sx={{ display: 'flex' }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <IconButton key={i} size='small' sx={{ p: 0.25 }}>
+                {i < value ? (
+                  <Star
+                    sx={{ fontSize: '1rem', color: theme.palette.warning.main }}
+                  />
+                ) : (
+                  <StarBorder
+                    sx={{
+                      fontSize: '1rem',
+                      color: theme.palette.action.disabled,
+                    }}
+                  />
+                )}
+              </IconButton>
+            ))}
+          </Box>
+        ),
+        {
+          width: 140,
+          editable: false,
+        }
+      ),
+      createDateColumn('createdAt', 'Created', {
+        width: 120,
+        editable: false,
+      }),
+      createCustomColumn(
+        'actions',
+        'Actions',
+        (value, row) => (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <IconButton size='small' color='primary'>
+              <Visibility fontSize='small' />
+            </IconButton>
+            <IconButton size='small' color='info'>
+              <Edit fontSize='small' />
+            </IconButton>
+            <IconButton size='small' color='error'>
+              <Delete fontSize='small' />
+            </IconButton>
+          </Box>
+        ),
+        {
+          width: 120,
+          editable: false,
+          sortable: false,
+        }
+      ),
+    ],
+    [theme]
+  );
 
   // Initialize visible columns
   useEffect(() => {
@@ -229,10 +281,12 @@ const TableDemo = () => {
 
       filtered = filtered.filter(row => {
         const value = row[filter.column];
-        
+
         switch (filter.operator) {
           case 'contains':
-            return String(value).toLowerCase().includes(String(filter.value).toLowerCase());
+            return String(value)
+              .toLowerCase()
+              .includes(String(filter.value).toLowerCase());
           case 'equals':
             return value === filter.value;
           case 'greaterThan':
@@ -250,7 +304,7 @@ const TableDemo = () => {
       filtered.sort((a, b) => {
         const aValue = a[sortBy];
         const bValue = b[sortBy];
-        
+
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
         return 0;
@@ -268,15 +322,15 @@ const TableDemo = () => {
   }, [filteredData, page, rowsPerPage]);
 
   // Handle row actions
-  const handleRowClick = useCallback((row) => {
+  const handleRowClick = useCallback(row => {
     console.log('Row clicked:', row);
   }, []);
 
-  const handleRowEdit = useCallback((row) => {
+  const handleRowEdit = useCallback(row => {
     console.log('Row edit:', row);
   }, []);
 
-  const handleRowDelete = useCallback((row) => {
+  const handleRowDelete = useCallback(row => {
     console.log('Row delete:', row);
   }, []);
 
@@ -317,9 +371,7 @@ const TableDemo = () => {
     {
       id: 'sales-dept',
       name: 'Sales Department',
-      filters: [
-        { column: 'department', operator: 'equals', value: 'Sales' },
-      ],
+      filters: [{ column: 'department', operator: 'equals', value: 'Sales' }],
       searchValue: '',
       createdAt: '2024-01-10T15:30:00Z',
     },
@@ -334,7 +386,7 @@ const TableDemo = () => {
       description: 'Set status to active for selected items',
     },
     {
-      id: 'deactivate', 
+      id: 'deactivate',
       label: 'Deactivate Selected',
       icon: <Cancel />,
       description: 'Set status to inactive for selected items',
@@ -372,27 +424,34 @@ const TableDemo = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth='xl' sx={{ py: 4 }}>
       <Paper sx={{ ...glassStyles, p: 3, mb: 4 }}>
-        <Typography variant="h4" sx={{ 
-          fontWeight: 700, 
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          color: 'transparent',
-          mb: 2,
-        }}>
+        <Typography
+          variant='h4'
+          sx={{
+            fontWeight: 700,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            mb: 2,
+          }}
+        >
           Enterprise Data Tables Demo
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Virtualized tables with smart filtering, supporting 10,000+ rows with enterprise-grade features.
+        <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
+          Virtualized tables with smart filtering, supporting 10,000+ rows with
+          enterprise-grade features.
         </Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Chip label={`${filteredData.length.toLocaleString()} Records`} color="primary" />
-          <Chip label="Virtual Scrolling" color="secondary" />
-          <Chip label="Smart Filtering" color="info" />
-          <Chip label="Glassmorphism Design" color="success" />
+          <Chip
+            label={`${filteredData.length.toLocaleString()} Records`}
+            color='primary'
+          />
+          <Chip label='Virtual Scrolling' color='secondary' />
+          <Chip label='Smart Filtering' color='info' />
+          <Chip label='Glassmorphism Design' color='success' />
         </Box>
       </Paper>
 
@@ -404,12 +463,12 @@ const TableDemo = () => {
         savedPresets={savedPresets}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
-        searchPlaceholder="Search 10,000+ records..."
+        searchPlaceholder='Search 10,000+ records...'
       />
 
       {/* Table Toolbar */}
       <TableToolbar
-        title="Customer Data"
+        title='Customer Data'
         searchValue={searchValue}
         onSearchChange={setSearchValue}
         density={density}
@@ -443,7 +502,9 @@ const TableDemo = () => {
         sortBy={sortBy}
         sortOrder={sortOrder}
         height={600}
-        rowHeight={density === 'compact' ? 40 : density === 'comfortable' ? 64 : 52}
+        rowHeight={
+          density === 'compact' ? 40 : density === 'comfortable' ? 64 : 52
+        }
         stickyColumns={['id', 'name']}
       />
 

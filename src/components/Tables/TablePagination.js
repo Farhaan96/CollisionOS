@@ -45,7 +45,8 @@ const TablePagination = ({
   showTotalRecords = true,
   showProgressBar = false,
   labelRowsPerPage = 'Rows per page:',
-  labelDisplayedRows = ({ from, to, count }) => `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`,
+  labelDisplayedRows = ({ from, to, count }) =>
+    `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`,
   rowsPerPageOptions = PAGE_SIZE_OPTIONS,
   component = 'div',
   className,
@@ -88,16 +89,19 @@ const TablePagination = ({
     }
   }, [onPageChange, page, totalPages]);
 
-  const handleRowsPerPageChange = useCallback((event) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
-    if (onRowsPerPageChange) {
-      onRowsPerPageChange(newRowsPerPage);
-    }
-    // Reset to first page when changing page size
-    if (onPageChange) {
-      onPageChange(0);
-    }
-  }, [onRowsPerPageChange, onPageChange]);
+  const handleRowsPerPageChange = useCallback(
+    event => {
+      const newRowsPerPage = parseInt(event.target.value, 10);
+      if (onRowsPerPageChange) {
+        onRowsPerPageChange(newRowsPerPage);
+      }
+      // Reset to first page when changing page size
+      if (onPageChange) {
+        onPageChange(0);
+      }
+    },
+    [onRowsPerPageChange, onPageChange]
+  );
 
   const handleJumpToPage = useCallback(() => {
     const targetPage = parseInt(jumpToPageValue, 10) - 1; // Convert to 0-based index
@@ -107,11 +111,14 @@ const TablePagination = ({
     setJumpToPageValue('');
   }, [jumpToPageValue, totalPages, onPageChange]);
 
-  const handleJumpToPageKeyPress = useCallback((event) => {
-    if (event.key === 'Enter') {
-      handleJumpToPage();
-    }
-  }, [handleJumpToPage]);
+  const handleJumpToPageKeyPress = useCallback(
+    event => {
+      if (event.key === 'Enter') {
+        handleJumpToPage();
+      }
+    },
+    [handleJumpToPage]
+  );
 
   // Generate page number buttons for desktop view
   const pageButtons = useMemo(() => {
@@ -132,7 +139,7 @@ const TablePagination = ({
       buttons.push(
         <Button
           key={0}
-          size="small"
+          size='small'
           onClick={() => onPageChange && onPageChange(0)}
           sx={{
             minWidth: '32px',
@@ -140,7 +147,7 @@ const TablePagination = ({
             background: alpha(theme.palette.background.paper, 0.5),
             '&:hover': {
               background: alpha(theme.palette.primary.main, 0.1),
-            }
+            },
           }}
         >
           1
@@ -149,7 +156,7 @@ const TablePagination = ({
 
       if (startPage > 1) {
         buttons.push(
-          <Typography key="start-ellipsis" sx={{ px: 1, alignSelf: 'center' }}>
+          <Typography key='start-ellipsis' sx={{ px: 1, alignSelf: 'center' }}>
             ...
           </Typography>
         );
@@ -161,25 +168,27 @@ const TablePagination = ({
       buttons.push(
         <Button
           key={i}
-          size="small"
+          size='small'
           variant={i === page ? 'contained' : 'outlined'}
           onClick={() => onPageChange && onPageChange(i)}
           sx={{
             minWidth: '32px',
             height: '32px',
-            ...(i === page ? {
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              color: 'white',
-              '&:hover': {
-                background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-              }
-            } : {
-              background: alpha(theme.palette.background.paper, 0.5),
-              borderColor: alpha(theme.palette.primary.main, 0.3),
-              '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.1),
-              }
-            })
+            ...(i === page
+              ? {
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  color: 'white',
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                  },
+                }
+              : {
+                  background: alpha(theme.palette.background.paper, 0.5),
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&:hover': {
+                    background: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }),
           }}
         >
           {i + 1}
@@ -191,7 +200,7 @@ const TablePagination = ({
     if (endPage < totalPages - 1) {
       if (endPage < totalPages - 2) {
         buttons.push(
-          <Typography key="end-ellipsis" sx={{ px: 1, alignSelf: 'center' }}>
+          <Typography key='end-ellipsis' sx={{ px: 1, alignSelf: 'center' }}>
             ...
           </Typography>
         );
@@ -200,7 +209,7 @@ const TablePagination = ({
       buttons.push(
         <Button
           key={totalPages - 1}
-          size="small"
+          size='small'
           onClick={() => onPageChange && onPageChange(totalPages - 1)}
           sx={{
             minWidth: '32px',
@@ -208,7 +217,7 @@ const TablePagination = ({
             background: alpha(theme.palette.background.paper, 0.5),
             '&:hover': {
               background: alpha(theme.palette.primary.main, 0.1),
-            }
+            },
           }}
         >
           {totalPages}
@@ -231,20 +240,27 @@ const TablePagination = ({
   if (loading) {
     return (
       <Paper sx={{ ...glassStyles, p: 2, mt: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-          <Skeleton variant="text" width={150} />
-          <Skeleton variant="rectangular" width={200} height={32} />
-          <Skeleton variant="text" width={100} />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Skeleton variant='text' width={150} />
+          <Skeleton variant='rectangular' width={200} height={32} />
+          <Skeleton variant='text' width={100} />
         </Box>
         {showProgressBar && (
-          <LinearProgress 
-            sx={{ 
+          <LinearProgress
+            sx={{
               mt: 1,
               background: alpha(theme.palette.primary.main, 0.1),
               '& .MuiLinearProgress-bar': {
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              }
-            }} 
+              },
+            }}
           />
         )}
       </Paper>
@@ -254,7 +270,7 @@ const TablePagination = ({
   if (count === 0) {
     return (
       <Paper sx={{ ...glassStyles, p: 2, mt: 2 }}>
-        <Typography variant="body2" color="text.secondary" textAlign="center">
+        <Typography variant='body2' color='text.secondary' textAlign='center'>
           No data available
         </Typography>
       </Paper>
@@ -262,17 +278,17 @@ const TablePagination = ({
   }
 
   return (
-    <Paper 
+    <Paper
       component={component}
-      className={className} 
+      className={className}
       sx={{ ...glassStyles, p: 2, mt: 2 }}
       {...props}
     >
       {showProgressBar && (
-        <LinearProgress 
-          variant="determinate" 
-          value={(page + 1) / totalPages * 100} 
-          sx={{ 
+        <LinearProgress
+          variant='determinate'
+          value={((page + 1) / totalPages) * 100}
+          sx={{
             mb: 2,
             height: 4,
             borderRadius: 2,
@@ -280,33 +296,37 @@ const TablePagination = ({
             '& .MuiLinearProgress-bar': {
               background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
               borderRadius: 2,
-            }
-          }} 
+            },
+          }}
         />
       )}
 
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        flexWrap: isMobile ? 'wrap' : 'nowrap',
-        gap: 2 
-      }}>
-        {/* Left section - Rows per page and total records */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
           gap: 2,
-          flexWrap: 'wrap',
-          minWidth: isMobile ? '100%' : 'auto',
-          justifyContent: isMobile ? 'space-between' : 'flex-start',
-        }}>
+        }}
+      >
+        {/* Left section - Rows per page and total records */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            flexWrap: 'wrap',
+            minWidth: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'space-between' : 'flex-start',
+          }}
+        >
           {showRowsPerPage && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+              <Typography variant='body2' sx={{ whiteSpace: 'nowrap' }}>
                 {labelRowsPerPage}
               </Typography>
-              <FormControl size="small" sx={{ minWidth: 70 }}>
+              <FormControl size='small' sx={{ minWidth: 70 }}>
                 <Select
                   value={rowsPerPage}
                   onChange={handleRowsPerPageChange}
@@ -316,10 +336,10 @@ const TablePagination = ({
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: theme.palette.primary.main,
-                    }
+                    },
                   }}
                 >
-                  {rowsPerPageOptions.map((option) => (
+                  {rowsPerPageOptions.map(option => (
                     <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
@@ -333,14 +353,14 @@ const TablePagination = ({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Chip
                 label={`Total: ${count.toLocaleString()}`}
-                size="small"
+                size='small'
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.8)}, ${alpha(theme.palette.info.dark, 0.8)})`,
                   color: 'white',
                   fontWeight: 600,
                 }}
               />
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 {labelDisplayedRows({ from, to, count })}
               </Typography>
             </Box>
@@ -355,40 +375,42 @@ const TablePagination = ({
         )}
 
         {/* Right section - Navigation controls */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1,
-          minWidth: isMobile ? '100%' : 'auto',
-          justifyContent: isMobile ? 'center' : 'flex-end',
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            minWidth: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'center' : 'flex-end',
+          }}
+        >
           {/* Jump to page (desktop only) */}
           {!isMobile && showJumpToPage && totalPages > 5 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2 }}>
-              <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+              <Typography variant='body2' sx={{ whiteSpace: 'nowrap' }}>
                 Page:
               </Typography>
               <TextField
-                size="small"
+                size='small'
                 value={jumpToPageValue}
-                onChange={(e) => setJumpToPageValue(e.target.value)}
+                onChange={e => setJumpToPageValue(e.target.value)}
                 onKeyPress={handleJumpToPageKeyPress}
                 onBlur={handleJumpToPage}
                 placeholder={`${page + 1}`}
-                type="number"
+                type='number'
                 inputProps={{
                   min: 1,
                   max: totalPages,
-                  style: { textAlign: 'center', width: '50px' }
+                  style: { textAlign: 'center', width: '50px' },
                 }}
                 sx={{
                   width: '80px',
                   '& .MuiOutlinedInput-root': {
                     background: alpha(theme.palette.background.paper, 0.5),
-                  }
+                  },
                 }}
               />
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 of {totalPages}
               </Typography>
             </Box>
@@ -400,7 +422,7 @@ const TablePagination = ({
               <IconButton
                 onClick={handleFirstPage}
                 disabled={!canGoBack}
-                size="small"
+                size='small'
                 sx={{
                   background: alpha(theme.palette.background.paper, 0.5),
                   '&:hover': {
@@ -408,17 +430,17 @@ const TablePagination = ({
                   },
                   '&:disabled': {
                     background: alpha(theme.palette.background.paper, 0.3),
-                  }
+                  },
                 }}
               >
                 {isMobile ? <KeyboardDoubleArrowLeft /> : <FirstPage />}
               </IconButton>
             )}
-            
+
             <IconButton
               onClick={handlePreviousPage}
               disabled={!canGoBack}
-              size="small"
+              size='small'
               sx={{
                 background: alpha(theme.palette.background.paper, 0.5),
                 '&:hover': {
@@ -426,7 +448,7 @@ const TablePagination = ({
                 },
                 '&:disabled': {
                   background: alpha(theme.palette.background.paper, 0.3),
-                }
+                },
               }}
             >
               {isMobile ? <KeyboardArrowLeft /> : <NavigateBefore />}
@@ -435,10 +457,10 @@ const TablePagination = ({
             {/* Mobile page indicator */}
             {isMobile && (
               <Box sx={{ mx: 2, textAlign: 'center', minWidth: '80px' }}>
-                <Typography variant="body2" fontWeight="600">
+                <Typography variant='body2' fontWeight='600'>
                   {page + 1} / {totalPages}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   {labelDisplayedRows({ from, to, count })}
                 </Typography>
               </Box>
@@ -447,7 +469,7 @@ const TablePagination = ({
             <IconButton
               onClick={handleNextPage}
               disabled={!canGoForward}
-              size="small"
+              size='small'
               sx={{
                 background: alpha(theme.palette.background.paper, 0.5),
                 '&:hover': {
@@ -455,7 +477,7 @@ const TablePagination = ({
                 },
                 '&:disabled': {
                   background: alpha(theme.palette.background.paper, 0.3),
-                }
+                },
               }}
             >
               {isMobile ? <KeyboardArrowRight /> : <NavigateNext />}
@@ -465,7 +487,7 @@ const TablePagination = ({
               <IconButton
                 onClick={handleLastPage}
                 disabled={!canGoForward}
-                size="small"
+                size='small'
                 sx={{
                   background: alpha(theme.palette.background.paper, 0.5),
                   '&:hover': {
@@ -473,7 +495,7 @@ const TablePagination = ({
                   },
                   '&:disabled': {
                     background: alpha(theme.palette.background.paper, 0.3),
-                  }
+                  },
                 }}
               >
                 {isMobile ? <KeyboardDoubleArrowRight /> : <LastPage />}

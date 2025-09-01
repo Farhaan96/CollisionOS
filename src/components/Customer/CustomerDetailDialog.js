@@ -27,7 +27,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import {
   Person,
@@ -43,7 +43,7 @@ import {
   Edit,
   History,
   Note,
-  Loyalty
+  Loyalty,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
@@ -65,12 +65,12 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
 
   const loadCustomerDetails = async () => {
     if (!customer?.id) return;
-    
+
     setLoading(true);
     try {
       const [vehiclesData, jobsData] = await Promise.all([
         customerService.getCustomerVehicles(customer.id),
-        customerService.getCustomerJobs(customer.id)
+        customerService.getCustomerJobs(customer.id),
       ]);
       setVehicles(vehiclesData || []);
       setJobs(jobsData || []);
@@ -87,62 +87,84 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
 
   const getCustomerTypeIcon = () => {
     switch (customer?.customerType) {
-      case 'individual': return <Person />;
-      case 'business': return <Business />;
-      case 'insurance': return <AttachMoney />;
-      case 'fleet': return <DirectionsCar />;
-      default: return <Person />;
+      case 'individual':
+        return <Person />;
+      case 'business':
+        return <Business />;
+      case 'insurance':
+        return <AttachMoney />;
+      case 'fleet':
+        return <DirectionsCar />;
+      default:
+        return <Person />;
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'default';
-      case 'prospect': return 'warning';
-      case 'vip': return 'error';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'default';
+      case 'prospect':
+        return 'warning';
+      case 'vip':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
-  const formatDate = (date) => {
+  const formatDate = date => {
     return date ? new Date(date).toLocaleDateString() : 'N/A';
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = amount => {
     return amount ? `$${amount.toLocaleString()}` : '$0';
   };
 
   if (!customer) return null;
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth='lg'
       fullWidth
       PaperProps={{
         component: motion.div,
         initial: { opacity: 0, scale: 0.9 },
         animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.9 }
+        exit: { opacity: 0, scale: 0.9 },
       }}
     >
       <DialogTitle>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 56, height: 56 }}>
+            <Avatar
+              sx={{
+                bgcolor: theme.palette.primary.main,
+                width: 56,
+                height: 56,
+              }}
+            >
               {getCustomerTypeIcon()}
             </Avatar>
             <Box>
-              <Typography variant="h5">
+              <Typography variant='h5'>
                 {customer.firstName} {customer.lastName}
               </Typography>
-              <Typography variant="subtitle1" color="text.secondary">
+              <Typography variant='subtitle1' color='text.secondary'>
                 {customer.customerNumber}
               </Typography>
               {customer.companyName && (
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography variant='subtitle2' color='text.secondary'>
                   {customer.companyName}
                 </Typography>
               )}
@@ -152,7 +174,7 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Chip
               label={customer.customerStatus}
               color={getStatusColor(customer.customerStatus)}
-              size="small"
+              size='small'
             />
             <IconButton onClick={onClose}>
               <Close />
@@ -164,10 +186,10 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
       <DialogContent>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Overview" />
-            <Tab label="Vehicles" />
-            <Tab label="Service History" />
-            <Tab label="Financial" />
+            <Tab label='Overview' />
+            <Tab label='Vehicles' />
+            <Tab label='Service History' />
+            <Tab label='Financial' />
           </Tabs>
         </Box>
 
@@ -178,34 +200,59 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      mb: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <Phone />
                     Contact Information
                   </Typography>
                   <List dense>
                     {customer.phone && (
                       <ListItem>
-                        <ListItemIcon><Phone /></ListItemIcon>
-                        <ListItemText primary="Phone" secondary={customer.phone} />
+                        <ListItemIcon>
+                          <Phone />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary='Phone'
+                          secondary={customer.phone}
+                        />
                       </ListItem>
                     )}
                     {customer.mobile && (
                       <ListItem>
-                        <ListItemIcon><Phone /></ListItemIcon>
-                        <ListItemText primary="Mobile" secondary={customer.mobile} />
+                        <ListItemIcon>
+                          <Phone />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary='Mobile'
+                          secondary={customer.mobile}
+                        />
                       </ListItem>
                     )}
                     {customer.email && (
                       <ListItem>
-                        <ListItemIcon><Email /></ListItemIcon>
-                        <ListItemText primary="Email" secondary={customer.email} />
+                        <ListItemIcon>
+                          <Email />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary='Email'
+                          secondary={customer.email}
+                        />
                       </ListItem>
                     )}
                     <ListItem>
-                      <ListItemIcon><LocationOn /></ListItemIcon>
-                      <ListItemText 
-                        primary="Address" 
-                        secondary={`${customer.address || ''}, ${customer.city || ''}, ${customer.state || ''} ${customer.zipCode || ''}`} 
+                      <ListItemIcon>
+                        <LocationOn />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary='Address'
+                        secondary={`${customer.address || ''}, ${customer.city || ''}, ${customer.state || ''} ${customer.zipCode || ''}`}
                       />
                     </ListItem>
                   </List>
@@ -217,38 +264,68 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      mb: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <Person />
                     Customer Details
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Type</Typography>
-                      <Typography variant="body1">{customer.customerType}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Type
+                      </Typography>
+                      <Typography variant='body1'>
+                        {customer.customerType}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Status</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Status
+                      </Typography>
                       <Chip
                         label={customer.customerStatus}
                         color={getStatusColor(customer.customerStatus)}
-                        size="small"
+                        size='small'
                       />
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">First Visit</Typography>
-                      <Typography variant="body1">{formatDate(customer.firstVisitDate)}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        First Visit
+                      </Typography>
+                      <Typography variant='body1'>
+                        {formatDate(customer.firstVisitDate)}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Last Visit</Typography>
-                      <Typography variant="body1">{formatDate(customer.lastVisitDate)}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Last Visit
+                      </Typography>
+                      <Typography variant='body1'>
+                        {formatDate(customer.lastVisitDate)}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Preferred Contact</Typography>
-                      <Typography variant="body1">{customer.preferredContact}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Preferred Contact
+                      </Typography>
+                      <Typography variant='body1'>
+                        {customer.preferredContact}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Referral Source</Typography>
-                      <Typography variant="body1">{customer.referralSource || 'N/A'}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Referral Source
+                      </Typography>
+                      <Typography variant='body1'>
+                        {customer.referralSource || 'N/A'}
+                      </Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -259,32 +336,38 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+                  <Typography variant='h6' sx={{ mb: 2 }}>
                     Communication Preferences
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="text.secondary">SMS</Typography>
-                      <Chip 
-                        label={customer.smsOptIn ? 'Enabled' : 'Disabled'} 
+                      <Typography variant='body2' color='text.secondary'>
+                        SMS
+                      </Typography>
+                      <Chip
+                        label={customer.smsOptIn ? 'Enabled' : 'Disabled'}
                         color={customer.smsOptIn ? 'success' : 'default'}
-                        size="small"
+                        size='small'
                       />
                     </Grid>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="text.secondary">Email</Typography>
-                      <Chip 
-                        label={customer.emailOptIn ? 'Enabled' : 'Disabled'} 
+                      <Typography variant='body2' color='text.secondary'>
+                        Email
+                      </Typography>
+                      <Chip
+                        label={customer.emailOptIn ? 'Enabled' : 'Disabled'}
                         color={customer.emailOptIn ? 'success' : 'default'}
-                        size="small"
+                        size='small'
                       />
                     </Grid>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="text.secondary">Marketing</Typography>
-                      <Chip 
-                        label={customer.marketingOptIn ? 'Enabled' : 'Disabled'} 
+                      <Typography variant='body2' color='text.secondary'>
+                        Marketing
+                      </Typography>
+                      <Chip
+                        label={customer.marketingOptIn ? 'Enabled' : 'Disabled'}
                         color={customer.marketingOptIn ? 'success' : 'default'}
-                        size="small"
+                        size='small'
                       />
                     </Grid>
                   </Grid>
@@ -296,18 +379,34 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      mb: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <Loyalty />
                     Loyalty Information
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Loyalty Points</Typography>
-                      <Typography variant="h5" color="primary">{customer.loyaltyPoints || 0}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Loyalty Points
+                      </Typography>
+                      <Typography variant='h5' color='primary'>
+                        {customer.loyaltyPoints || 0}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Credit Limit</Typography>
-                      <Typography variant="h6">{formatCurrency(customer.creditLimit)}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Credit Limit
+                      </Typography>
+                      <Typography variant='h6'>
+                        {formatCurrency(customer.creditLimit)}
+                      </Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -319,11 +418,19 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
               <Grid item xs={12}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography
+                      variant='h6'
+                      sx={{
+                        mb: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
                       <Note />
                       Notes
                     </Typography>
-                    <Typography variant="body1">{customer.notes}</Typography>
+                    <Typography variant='body1'>{customer.notes}</Typography>
                   </CardContent>
                 </Card>
               </Grid>
@@ -334,44 +441,69 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
         {/* Vehicles Tab */}
         {activeTab === 1 && (
           <Box>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant='h6' sx={{ mb: 2 }}>
               Customer Vehicles ({vehicles.length})
             </Typography>
             {vehicles.length > 0 ? (
               <Grid container spacing={2}>
-                {vehicles.map((vehicle) => (
+                {vehicles.map(vehicle => (
                   <Grid item xs={12} md={6} key={vehicle.id}>
                     <Card>
                       <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                          <Avatar sx={{ bgcolor: theme.palette.secondary.main }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            mb: 2,
+                          }}
+                        >
+                          <Avatar
+                            sx={{ bgcolor: theme.palette.secondary.main }}
+                          >
                             <DirectionsCar />
                           </Avatar>
                           <Box>
-                            <Typography variant="h6">
+                            <Typography variant='h6'>
                               {vehicle.year} {vehicle.make} {vehicle.model}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant='body2' color='text.secondary'>
                               VIN: {vehicle.vin}
                             </Typography>
                           </Box>
                         </Box>
                         <Grid container spacing={1}>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="text.secondary">License Plate</Typography>
-                            <Typography variant="body2">{vehicle.licensePlate || 'N/A'}</Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                              License Plate
+                            </Typography>
+                            <Typography variant='body2'>
+                              {vehicle.licensePlate || 'N/A'}
+                            </Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="text.secondary">Color</Typography>
-                            <Typography variant="body2">{vehicle.color || 'N/A'}</Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                              Color
+                            </Typography>
+                            <Typography variant='body2'>
+                              {vehicle.color || 'N/A'}
+                            </Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="text.secondary">Mileage</Typography>
-                            <Typography variant="body2">{vehicle.mileage?.toLocaleString() || 'N/A'} km</Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                              Mileage
+                            </Typography>
+                            <Typography variant='body2'>
+                              {vehicle.mileage?.toLocaleString() || 'N/A'} km
+                            </Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="text.secondary">Insurance</Typography>
-                            <Typography variant="body2">{vehicle.insuranceCompany || 'N/A'}</Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                              Insurance
+                            </Typography>
+                            <Typography variant='body2'>
+                              {vehicle.insuranceCompany || 'N/A'}
+                            </Typography>
                           </Grid>
                         </Grid>
                       </CardContent>
@@ -380,7 +512,11 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
                 ))}
               </Grid>
             ) : (
-              <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+                sx={{ textAlign: 'center', py: 4 }}
+              >
                 No vehicles found for this customer
               </Typography>
             )}
@@ -390,7 +526,7 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
         {/* Service History Tab */}
         {activeTab === 2 && (
           <Box>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant='h6' sx={{ mb: 2 }}>
               Service History ({jobs.length})
             </Typography>
             {jobs.length > 0 ? (
@@ -406,15 +542,17 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {jobs.map((job) => (
+                    {jobs.map(job => (
                       <TableRow key={job.id}>
                         <TableCell>{job.jobNumber}</TableCell>
                         <TableCell>
-                          {job.vehicle ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}` : 'N/A'}
+                          {job.vehicle
+                            ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`
+                            : 'N/A'}
                         </TableCell>
                         <TableCell>{formatDate(job.createdAt)}</TableCell>
                         <TableCell>
-                          <Chip label={job.status} size="small" />
+                          <Chip label={job.status} size='small' />
                         </TableCell>
                         <TableCell>{formatCurrency(job.totalAmount)}</TableCell>
                       </TableRow>
@@ -423,7 +561,11 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
                 </Table>
               </TableContainer>
             ) : (
-              <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+                sx={{ textAlign: 'center', py: 4 }}
+              >
                 No service history found for this customer
               </Typography>
             )}
@@ -436,22 +578,40 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      mb: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <AttachMoney />
                     Financial Summary
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <Typography variant="body2" color="text.secondary">Credit Limit</Typography>
-                      <Typography variant="h5">{formatCurrency(customer.creditLimit)}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Credit Limit
+                      </Typography>
+                      <Typography variant='h5'>
+                        {formatCurrency(customer.creditLimit)}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Payment Terms</Typography>
-                      <Typography variant="body1">{customer.paymentTerms || 'Immediate'}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Payment Terms
+                      </Typography>
+                      <Typography variant='body1'>
+                        {customer.paymentTerms || 'Immediate'}
+                      </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Total Jobs</Typography>
-                      <Typography variant="body1">{jobs.length}</Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Total Jobs
+                      </Typography>
+                      <Typography variant='body1'>{jobs.length}</Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -460,14 +620,25 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+                  <Typography variant='h6' sx={{ mb: 2 }}>
                     Recent Activity
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Revenue: {formatCurrency(jobs.reduce((sum, job) => sum + (job.totalAmount || 0), 0))}
+                  <Typography variant='body2' color='text.secondary'>
+                    Total Revenue:{' '}
+                    {formatCurrency(
+                      jobs.reduce((sum, job) => sum + (job.totalAmount || 0), 0)
+                    )}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Average Job Value: {formatCurrency(jobs.length > 0 ? jobs.reduce((sum, job) => sum + (job.totalAmount || 0), 0) / jobs.length : 0)}
+                  <Typography variant='body2' color='text.secondary'>
+                    Average Job Value:{' '}
+                    {formatCurrency(
+                      jobs.length > 0
+                        ? jobs.reduce(
+                            (sum, job) => sum + (job.totalAmount || 0),
+                            0
+                          ) / jobs.length
+                        : 0
+                    )}
                   </Typography>
                 </CardContent>
               </Card>
@@ -479,7 +650,11 @@ const CustomerDetailDialog = ({ open, customer, onClose, onEdit }) => {
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose}>Close</Button>
         {onEdit && (
-          <Button onClick={() => onEdit(customer)} variant="contained" startIcon={<Edit />}>
+          <Button
+            onClick={() => onEdit(customer)}
+            variant='contained'
+            startIcon={<Edit />}
+          >
             Edit Customer
           </Button>
         )}

@@ -4,19 +4,22 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import Toast from '../../../../src/components/Notifications/Toast';
-import { NOTIFICATION_TYPES, NOTIFICATION_PRIORITIES } from '../../../../src/components/Notifications/NotificationProvider';
+import {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_PRIORITIES,
+} from '../../../../src/components/Notifications/NotificationProvider';
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>
+    div: ({ children, ...props }) => <div {...props}>{children}</div>,
   },
   AnimatePresence: ({ children }) => <div>{children}</div>,
-  useMotionValue: (initial) => ({
+  useMotionValue: initial => ({
     set: jest.fn(),
-    get: () => initial
+    get: () => initial,
   }),
-  useTransform: () => ({ set: jest.fn() })
+  useTransform: () => ({ set: jest.fn() }),
 }));
 
 // Mock animation hooks
@@ -26,8 +29,8 @@ jest.mock('../../../../src/hooks/useAnimation', () => ({
     y: { set: jest.fn() },
     scale: { set: jest.fn() },
     dragControls: {},
-    resetPosition: jest.fn()
-  })
+    resetPosition: jest.fn(),
+  }),
 }));
 
 const theme = createTheme();
@@ -43,15 +46,15 @@ describe('Toast Component', () => {
       title: 'Test Title',
       message: 'Test message',
       timestamp: Date.now(),
-      priority: NOTIFICATION_PRIORITIES.NORMAL
+      priority: NOTIFICATION_PRIORITIES.NORMAL,
     },
     onDismiss: mockOnDismiss,
     onAction: mockOnAction,
     index: 0,
     total: 1,
     settings: {
-      pauseOnHover: true
-    }
+      pauseOnHover: true,
+    },
   };
 
   beforeEach(() => {
@@ -74,14 +77,14 @@ describe('Toast Component', () => {
   describe('Rendering', () => {
     test('renders toast with title and message', () => {
       renderToast();
-      
+
       expect(screen.getByText('Test Title')).toBeInTheDocument();
       expect(screen.getByText('Test message')).toBeInTheDocument();
     });
 
     test('renders with correct ARIA attributes', () => {
       renderToast();
-      
+
       const toast = screen.getByRole('alert');
       expect(toast).toHaveAttribute('aria-labelledby', 'toast-title-test-1');
       expect(toast).toHaveAttribute('aria-describedby', 'toast-message-test-1');
@@ -92,22 +95,23 @@ describe('Toast Component', () => {
         NOTIFICATION_TYPES.SUCCESS,
         NOTIFICATION_TYPES.ERROR,
         NOTIFICATION_TYPES.WARNING,
-        NOTIFICATION_TYPES.INFO
+        NOTIFICATION_TYPES.INFO,
       ];
 
       types.forEach(type => {
         const { unmount } = renderToast({
           notification: {
             ...defaultProps.notification,
-            type
-          }
+            type,
+          },
         });
-        
+
         // Check that an icon is present
-        const iconElement = screen.getByTestId('notification-icon') || 
-                           screen.getByRole('alert').querySelector('svg');
+        const iconElement =
+          screen.getByTestId('notification-icon') ||
+          screen.getByRole('alert').querySelector('svg');
         expect(iconElement).toBeInTheDocument();
-        
+
         unmount();
       });
     });
@@ -116,10 +120,10 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          count: 3
-        }
+          count: 3,
+        },
       });
-      
+
       expect(screen.getByText('3')).toBeInTheDocument();
     });
 
@@ -127,10 +131,10 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          priority: NOTIFICATION_PRIORITIES.CRITICAL
-        }
+          priority: NOTIFICATION_PRIORITIES.CRITICAL,
+        },
       });
-      
+
       expect(screen.getByText('Critical')).toBeInTheDocument();
     });
 
@@ -138,10 +142,10 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          avatar: 'https://example.com/avatar.jpg'
-        }
+          avatar: 'https://example.com/avatar.jpg',
+        },
       });
-      
+
       const avatar = screen.getByRole('img');
       expect(avatar).toHaveAttribute('src', 'https://example.com/avatar.jpg');
     });
@@ -151,35 +155,33 @@ describe('Toast Component', () => {
     test('renders action buttons when provided', () => {
       const actions = [
         { label: 'Action 1', handler: jest.fn() },
-        { label: 'Action 2', handler: jest.fn() }
+        { label: 'Action 2', handler: jest.fn() },
       ];
 
       renderToast({
         notification: {
           ...defaultProps.notification,
-          actions
-        }
+          actions,
+        },
       });
-      
+
       expect(screen.getByText('Action 1')).toBeInTheDocument();
       expect(screen.getByText('Action 2')).toBeInTheDocument();
     });
 
     test('calls action handler when action button is clicked', () => {
       const actionHandler = jest.fn();
-      const actions = [
-        { label: 'Test Action', handler: actionHandler }
-      ];
+      const actions = [{ label: 'Test Action', handler: actionHandler }];
 
       renderToast({
         notification: {
           ...defaultProps.notification,
-          actions
-        }
+          actions,
+        },
       });
-      
+
       fireEvent.click(screen.getByText('Test Action'));
-      
+
       expect(actionHandler).toHaveBeenCalledWith(defaultProps.notification);
       expect(mockOnDismiss).toHaveBeenCalledWith('test-1');
     });
@@ -187,22 +189,22 @@ describe('Toast Component', () => {
     test('does not dismiss when action has dismissOnClick: false', () => {
       const actionHandler = jest.fn();
       const actions = [
-        { 
-          label: 'Test Action', 
+        {
+          label: 'Test Action',
           handler: actionHandler,
-          dismissOnClick: false
-        }
+          dismissOnClick: false,
+        },
       ];
 
       renderToast({
         notification: {
           ...defaultProps.notification,
-          actions
-        }
+          actions,
+        },
       });
-      
+
       fireEvent.click(screen.getByText('Test Action'));
-      
+
       expect(actionHandler).toHaveBeenCalled();
       expect(mockOnDismiss).not.toHaveBeenCalled();
     });
@@ -213,10 +215,10 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          allowDismiss: true
-        }
+          allowDismiss: true,
+        },
       });
-      
+
       const dismissButton = screen.getByLabelText('Dismiss notification');
       expect(dismissButton).toBeInTheDocument();
     });
@@ -225,13 +227,13 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          allowDismiss: true
-        }
+          allowDismiss: true,
+        },
       });
-      
+
       const dismissButton = screen.getByLabelText('Dismiss notification');
       fireEvent.click(dismissButton);
-      
+
       expect(mockOnDismiss).toHaveBeenCalledWith('test-1');
     });
 
@@ -239,10 +241,10 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          allowDismiss: false
-        }
+          allowDismiss: false,
+        },
       });
-      
+
       const dismissButton = screen.queryByLabelText('Dismiss notification');
       expect(dismissButton).not.toBeInTheDocument();
     });
@@ -251,13 +253,13 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          duration: 1000
-        }
+          duration: 1000,
+        },
       });
-      
+
       // Fast-forward time
       jest.advanceTimersByTime(1000);
-      
+
       await waitFor(() => {
         expect(mockOnDismiss).toHaveBeenCalledWith('test-1');
       });
@@ -268,12 +270,12 @@ describe('Toast Component', () => {
         notification: {
           ...defaultProps.notification,
           persistent: true,
-          duration: 1000
-        }
+          duration: 1000,
+        },
       });
-      
+
       jest.advanceTimersByTime(2000);
-      
+
       expect(mockOnDismiss).not.toHaveBeenCalled();
     });
 
@@ -281,30 +283,30 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          duration: 2000
+          duration: 2000,
         },
         settings: {
-          pauseOnHover: true
-        }
+          pauseOnHover: true,
+        },
       });
-      
+
       const toast = screen.getByRole('alert');
-      
+
       // Hover over toast
       fireEvent.mouseEnter(toast);
-      
+
       // Advance time while hovered
       jest.advanceTimersByTime(1000);
-      
+
       // Should not dismiss while hovered
       expect(mockOnDismiss).not.toHaveBeenCalled();
-      
+
       // Mouse leave
       fireEvent.mouseLeave(toast);
-      
+
       // Now advance time to complete duration
       jest.advanceTimersByTime(2000);
-      
+
       expect(mockOnDismiss).toHaveBeenCalledWith('test-1');
     });
   });
@@ -315,10 +317,10 @@ describe('Toast Component', () => {
         notification: {
           ...defaultProps.notification,
           showProgress: true,
-          duration: 2000
-        }
+          duration: 2000,
+        },
       });
-      
+
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toBeInTheDocument();
     });
@@ -328,10 +330,10 @@ describe('Toast Component', () => {
         notification: {
           ...defaultProps.notification,
           showProgress: false,
-          duration: 2000
-        }
+          duration: 2000,
+        },
       });
-      
+
       const progressBar = screen.queryByRole('progressbar');
       expect(progressBar).not.toBeInTheDocument();
     });
@@ -341,10 +343,10 @@ describe('Toast Component', () => {
         notification: {
           ...defaultProps.notification,
           persistent: true,
-          showProgress: true
-        }
+          showProgress: true,
+        },
       });
-      
+
       const progressBar = screen.queryByRole('progressbar');
       expect(progressBar).not.toBeInTheDocument();
     });
@@ -353,16 +355,16 @@ describe('Toast Component', () => {
   describe('Gesture Handling', () => {
     test('handles swipe to dismiss', () => {
       const { container } = renderToast();
-      
+
       const toast = container.firstChild;
-      
+
       // Simulate swipe gesture (this would normally be handled by framer-motion)
       // We'll test the callback directly
       const mockDragEnd = {
         offset: { x: 150, y: 0 },
-        velocity: { x: 600, y: 0 }
+        velocity: { x: 600, y: 0 },
       };
-      
+
       // This would be called by framer-motion's onDragEnd
       // For now, we just test that the component renders without errors
       expect(toast).toBeInTheDocument();
@@ -374,10 +376,10 @@ describe('Toast Component', () => {
       const { container } = renderToast({
         notification: {
           ...defaultProps.notification,
-          type: NOTIFICATION_TYPES.ERROR
-        }
+          type: NOTIFICATION_TYPES.ERROR,
+        },
       });
-      
+
       // Check that the container has appropriate styling
       expect(container.firstChild).toBeInTheDocument();
     });
@@ -385,9 +387,9 @@ describe('Toast Component', () => {
     test('applies stacking styles when index > 0', () => {
       const { container } = renderToast({
         index: 2,
-        total: 5
+        total: 5,
       });
-      
+
       expect(container.firstChild).toBeInTheDocument();
     });
   });
@@ -397,12 +399,12 @@ describe('Toast Component', () => {
       renderToast({
         notification: {
           ...defaultProps.notification,
-          allowDismiss: true
-        }
+          allowDismiss: true,
+        },
       });
-      
+
       const dismissButton = screen.getByLabelText('Dismiss notification');
-      
+
       // Test that button is focusable
       dismissButton.focus();
       expect(document.activeElement).toBe(dismissButton);
@@ -410,10 +412,10 @@ describe('Toast Component', () => {
 
     test('provides screen reader friendly content', () => {
       renderToast();
-      
+
       const titleElement = screen.getByText('Test Title');
       const messageElement = screen.getByText('Test message');
-      
+
       expect(titleElement).toHaveAttribute('id', 'toast-title-test-1');
       expect(messageElement).toHaveAttribute('id', 'toast-message-test-1');
     });

@@ -32,7 +32,7 @@ import {
   CircularProgress,
   Collapse,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Search,
@@ -49,27 +49,57 @@ import {
   ExpandMore,
   ExpandLess,
   FilterList,
-  Clear
+  Clear,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { partsService } from '../../services/partsService';
 
 // Utility function for currency formatting
-const formatCurrency = (amount) => {
+const formatCurrency = amount => {
   if (!amount || isNaN(amount)) return 'N/A';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(amount);
 };
 
 // Parts suppliers configuration
 const PARTS_SUPPLIERS = {
-  oem_direct: { name: 'OEM Direct', type: 'OEM', color: '#1976d2', rating: 4.8, deliveryTime: '2-5 days' },
-  oe_connection: { name: 'OE Connection', type: 'OEM', color: '#2e7d32', rating: 4.6, deliveryTime: '1-3 days' },
-  parts_trader: { name: 'PartsTrader', type: 'Aftermarket', color: '#ed6c02', rating: 4.4, deliveryTime: '1-2 days' },
-  lkq: { name: 'LKQ/Recycled', type: 'Recycled', color: '#388e3c', rating: 4.2, deliveryTime: '1-4 days' },
-  remanufactured: { name: 'Remanufactured Pro', type: 'Remanufactured', color: '#7b1fa2', rating: 4.5, deliveryTime: '3-7 days' }
+  oem_direct: {
+    name: 'OEM Direct',
+    type: 'OEM',
+    color: '#1976d2',
+    rating: 4.8,
+    deliveryTime: '2-5 days',
+  },
+  oe_connection: {
+    name: 'OE Connection',
+    type: 'OEM',
+    color: '#2e7d32',
+    rating: 4.6,
+    deliveryTime: '1-3 days',
+  },
+  parts_trader: {
+    name: 'PartsTrader',
+    type: 'Aftermarket',
+    color: '#ed6c02',
+    rating: 4.4,
+    deliveryTime: '1-2 days',
+  },
+  lkq: {
+    name: 'LKQ/Recycled',
+    type: 'Recycled',
+    color: '#388e3c',
+    rating: 4.2,
+    deliveryTime: '1-4 days',
+  },
+  remanufactured: {
+    name: 'Remanufactured Pro',
+    type: 'Remanufactured',
+    color: '#7b1fa2',
+    rating: 4.5,
+    deliveryTime: '3-7 days',
+  },
 };
 
 const PART_CATEGORIES = {
@@ -78,14 +108,19 @@ const PART_CATEGORIES = {
   electrical: { label: 'Electrical', color: '#7b1fa2' },
   interior: { label: 'Interior', color: '#d32f2f' },
   glass: { label: 'Glass', color: '#1565c0' },
-  consumables: { label: 'Consumables', color: '#2e7d32' }
+  consumables: { label: 'Consumables', color: '#2e7d32' },
 };
 
 const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [vehicleSearch, setVehicleSearch] = useState({ make: '', model: '', year: '', category: '' });
+  const [vehicleSearch, setVehicleSearch] = useState({
+    make: '',
+    model: '',
+    year: '',
+    category: '',
+  });
   const [searchResults, setSearchResults] = useState([]);
   const [priceComparison, setPriceComparison] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -96,14 +131,14 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
     partType: '',
     supplier: '',
     category: '',
-    priceRange: [0, 1000]
+    priceRange: [0, 1000],
   });
   const scannerRef = useRef(null);
 
   // Handle search
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
-    
+
     setLoading(true);
     setErrorMessage('');
     try {
@@ -122,26 +157,36 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
   const handleVehicleSearch = async () => {
     const { make, model, year, category } = vehicleSearch;
     if (!make || !model || !year) return;
-    
+
     setLoading(true);
     setErrorMessage('');
     try {
-      const results = await partsService.searchPartsByVehicle(make, model, year, category);
+      const results = await partsService.searchPartsByVehicle(
+        make,
+        model,
+        year,
+        category
+      );
       setSearchResults(Array.isArray(results) ? results : []);
     } catch (error) {
       console.error('Vehicle search failed:', error);
       setSearchResults([]);
-      setErrorMessage('Failed to search parts for this vehicle. Please try again.');
+      setErrorMessage(
+        'Failed to search parts for this vehicle. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   // Handle price comparison
-  const handlePriceComparison = async (partNumber) => {
+  const handlePriceComparison = async partNumber => {
     setLoading(true);
     try {
-      const comparison = await partsService.comparePrices(partNumber, Object.keys(PARTS_SUPPLIERS));
+      const comparison = await partsService.comparePrices(
+        partNumber,
+        Object.keys(PARTS_SUPPLIERS)
+      );
       setPriceComparison(Array.isArray(comparison) ? comparison : []);
     } catch (error) {
       console.error('Price comparison failed:', error);
@@ -153,9 +198,9 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
   };
 
   // Handle barcode scan
-  const handleBarcodeScan = async (barcode) => {
+  const handleBarcodeScan = async barcode => {
     if (!barcode?.trim()) return;
-    
+
     setLoading(true);
     try {
       const result = await partsService.lookupByBarcode(barcode);
@@ -170,7 +215,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
   };
 
   // Toggle part selection
-  const togglePartSelection = (part) => {
+  const togglePartSelection = part => {
     setSelectedParts(prev => {
       const isSelected = prev.find(p => p.id === part.id);
       if (isSelected) {
@@ -196,7 +241,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
       partType: '',
       supplier: '',
       category: '',
-      priceRange: [0, 1000]
+      priceRange: [0, 1000],
     });
   };
 
@@ -204,7 +249,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
   const SearchResultCard = ({ part, index }) => {
     const isSelected = selectedParts.find(p => p.id === part.id);
     const isExpanded = expandedCard === part.id;
-    
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -214,77 +259,104 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
         <Card
           sx={{
             mb: 2,
-            border: isSelected ? `2px solid ${theme.palette.primary.main}` : '1px solid',
+            border: isSelected
+              ? `2px solid ${theme.palette.primary.main}`
+              : '1px solid',
             borderColor: isSelected ? 'primary.main' : 'divider',
             cursor: 'pointer',
             '&:hover': {
               boxShadow: theme.shadows[4],
               transform: 'translateY(-2px)',
-              transition: 'all 0.2s ease'
-            }
+              transition: 'all 0.2s ease',
+            },
           }}
         >
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                mb: 2,
+              }}
+            >
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                <Typography variant='h6' fontWeight='bold' gutterBottom>
                   {part.partNumber || 'Unknown Part Number'}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                  sx={{ mb: 1 }}
+                >
                   {part.description || 'No description available'}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                   {part.category && (
                     <Chip
-                      size="small"
-                      label={PART_CATEGORIES[part.category]?.label || part.category}
+                      size='small'
+                      label={
+                        PART_CATEGORIES[part.category]?.label || part.category
+                      }
                       sx={{
-                        backgroundColor: alpha(PART_CATEGORIES[part.category]?.color || '#666', 0.1),
-                        color: PART_CATEGORIES[part.category]?.color || '#666'
+                        backgroundColor: alpha(
+                          PART_CATEGORIES[part.category]?.color || '#666',
+                          0.1
+                        ),
+                        color: PART_CATEGORIES[part.category]?.color || '#666',
                       }}
                     />
                   )}
                   {part.partType && (
                     <Chip
-                      size="small"
+                      size='small'
                       label={part.partType.toUpperCase()}
-                      variant="outlined"
+                      variant='outlined'
                     />
                   )}
                   {part.fits && (
                     <Chip
-                      size="small"
+                      size='small'
                       icon={<DirectionsCar />}
                       label={`Fits: ${part.fits}`}
-                      variant="outlined"
+                      variant='outlined'
                     />
                   )}
                 </Box>
               </Box>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                <Typography variant="h5" color="primary" fontWeight="bold">
-                  {part.price ? formatCurrency(part.price) : 'Price not available'}
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: 1,
+                }}
+              >
+                <Typography variant='h5' color='primary' fontWeight='bold'>
+                  {part.price
+                    ? formatCurrency(part.price)
+                    : 'Price not available'}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                   <IconButton
-                    size="small"
+                    size='small'
                     onClick={() => setExpandedCard(isExpanded ? null : part.id)}
                   >
                     {isExpanded ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
                   <IconButton
-                    size="small"
-                    color="primary"
+                    size='small'
+                    color='primary'
                     onClick={() => handlePriceComparison(part.partNumber)}
                   >
                     <Compare />
                   </IconButton>
                   <Button
                     variant={isSelected ? 'contained' : 'outlined'}
-                    size="small"
+                    size='small'
                     onClick={() => togglePartSelection(part)}
                     sx={{ minWidth: 80 }}
                   >
@@ -293,41 +365,66 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
                 </Box>
               </Box>
             </Box>
-            
+
             {/* Expanded Details */}
             <Collapse in={isExpanded}>
-              <Box sx={{ pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Box
+                sx={{ pt: 2, borderTop: '1px solid', borderColor: 'divider' }}
+              >
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <Typography variant='subtitle2' gutterBottom>
                       Supplier Information
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, bgcolor: part.supplier?.color }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 1,
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          bgcolor: part.supplier?.color,
+                        }}
+                      >
                         {part.supplier?.name?.charAt(0)}
                       </Avatar>
-                      <Typography variant="body2">{part.supplier?.name}</Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography variant='body2'>
+                        {part.supplier?.name}
+                      </Typography>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
                         <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                        <Typography variant="caption">{part.supplier?.rating}/5.0</Typography>
+                        <Typography variant='caption'>
+                          {part.supplier?.rating}/5.0
+                        </Typography>
                       </Box>
                     </Box>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant='caption' color='text.secondary'>
                       Delivery: {part.supplier?.deliveryTime}
                     </Typography>
                   </Grid>
-                  
+
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <Typography variant='subtitle2' gutterBottom>
                       Part Details
                     </Typography>
                     {part.oemPartNumber && (
-                      <Typography variant="body2">OEM #: {part.oemPartNumber}</Typography>
+                      <Typography variant='body2'>
+                        OEM #: {part.oemPartNumber}
+                      </Typography>
                     )}
                     {part.warranty && (
-                      <Typography variant="body2">Warranty: {part.warranty}</Typography>
+                      <Typography variant='body2'>
+                        Warranty: {part.warranty}
+                      </Typography>
                     )}
-                    <Typography variant="body2">
+                    <Typography variant='body2'>
                       Availability: {part.availability || 'In Stock'}
                     </Typography>
                   </Grid>
@@ -346,11 +443,11 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
 
     return (
       <Box sx={{ mt: 3 }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           Price Comparison
         </Typography>
-        <TableContainer component={Paper} elevation={0} variant="outlined">
-          <Table size="small">
+        <TableContainer component={Paper} elevation={0} variant='outlined'>
+          <Table size='small'>
             <TableHead>
               <TableRow>
                 <TableCell>Supplier</TableCell>
@@ -368,7 +465,13 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
                 <TableRow key={index}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, bgcolor: item.supplier.color }}>
+                      <Avatar
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          bgcolor: item.supplier.color,
+                        }}
+                      >
                         {item.supplier.name.charAt(0)}
                       </Avatar>
                       {item.supplier.name}
@@ -378,21 +481,27 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
                   <TableCell>{formatCurrency(item.price)}</TableCell>
                   <TableCell>{formatCurrency(item.shipping)}</TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant='body2' fontWeight='bold'>
                       {formatCurrency(item.price + item.shipping)}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
                       <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                      <Typography variant="caption">{item.supplier.rating}</Typography>
+                      <Typography variant='caption'>
+                        {item.supplier.rating}
+                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption">{item.supplier.deliveryTime}</Typography>
+                    <Typography variant='caption'>
+                      {item.supplier.deliveryTime}
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                    <Button size="small" variant="outlined">
+                    <Button size='small' variant='outlined'>
                       Select
                     </Button>
                   </TableCell>
@@ -409,24 +518,30 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth='lg'
       fullWidth
       PaperProps={{
         sx: {
           height: '90vh',
-          borderRadius: 3
-        }
+          borderRadius: 3,
+        },
       }}
     >
       <DialogTitle>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Search Parts</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant='h6'>Search Parts</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {selectedParts.length > 0 && (
               <Chip
                 label={`${selectedParts.length} selected`}
-                color="primary"
-                size="small"
+                color='primary'
+                size='small'
               />
             )}
             <IconButton onClick={onClose}>
@@ -438,10 +553,14 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
 
       <DialogContent>
         {/* Search Tabs */}
-        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} sx={{ mb: 2 }}>
-          <Tab label="Text Search" />
-          <Tab label="Vehicle Search" />
-          <Tab label="Barcode Scan" />
+        <Tabs
+          value={activeTab}
+          onChange={(e, newValue) => setActiveTab(newValue)}
+          sx={{ mb: 2 }}
+        >
+          <Tab label='Text Search' />
+          <Tab label='Vehicle Search' />
+          <Tab label='Barcode Scan' />
         </Tabs>
 
         {/* Text Search */}
@@ -450,19 +569,23 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <TextField
                 fullWidth
-                placeholder="Search by part number, description, or keywords..."
+                placeholder='Search by part number, description, or keywords...'
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onChange={e => setSearchTerm(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSearch()}
                 InputProps={{
-                  startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <Search sx={{ mr: 1, color: 'text.secondary' }} />
+                  ),
                 }}
               />
               <Button
-                variant="contained"
+                variant='contained'
                 onClick={handleSearch}
                 disabled={loading || !searchTerm.trim()}
-                startIcon={loading ? <CircularProgress size={16} /> : <Search />}
+                startIcon={
+                  loading ? <CircularProgress size={16} /> : <Search />
+                }
                 sx={{ minWidth: 120 }}
               >
                 {loading ? 'Searching...' : 'Search'}
@@ -471,31 +594,37 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
 
             {/* Filters */}
             <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size='small' sx={{ minWidth: 120 }}>
                 <InputLabel>Part Type</InputLabel>
                 <Select
                   value={filters.partType}
-                  onChange={(e) => setFilters(prev => ({ ...prev, partType: e.target.value }))}
-                  label="Part Type"
+                  onChange={e =>
+                    setFilters(prev => ({ ...prev, partType: e.target.value }))
+                  }
+                  label='Part Type'
                 >
-                  <MenuItem value="">All Types</MenuItem>
-                  <MenuItem value="oem">OEM</MenuItem>
-                  <MenuItem value="aftermarket">Aftermarket</MenuItem>
-                  <MenuItem value="recycled">Recycled</MenuItem>
-                  <MenuItem value="remanufactured">Remanufactured</MenuItem>
+                  <MenuItem value=''>All Types</MenuItem>
+                  <MenuItem value='oem'>OEM</MenuItem>
+                  <MenuItem value='aftermarket'>Aftermarket</MenuItem>
+                  <MenuItem value='recycled'>Recycled</MenuItem>
+                  <MenuItem value='remanufactured'>Remanufactured</MenuItem>
                 </Select>
               </FormControl>
 
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size='small' sx={{ minWidth: 120 }}>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={filters.category}
-                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                  label="Category"
+                  onChange={e =>
+                    setFilters(prev => ({ ...prev, category: e.target.value }))
+                  }
+                  label='Category'
                 >
-                  <MenuItem value="">All Categories</MenuItem>
+                  <MenuItem value=''>All Categories</MenuItem>
                   {Object.entries(PART_CATEGORIES).map(([key, category]) => (
-                    <MenuItem key={key} value={key}>{category.label}</MenuItem>
+                    <MenuItem key={key} value={key}>
+                      {category.label}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -518,29 +647,44 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
               <Grid item xs={12} sm={3}>
                 <TextField
                   fullWidth
-                  label="Make"
+                  label='Make'
                   value={vehicleSearch.make}
-                  onChange={(e) => setVehicleSearch(prev => ({ ...prev, make: e.target.value }))}
-                  placeholder="Toyota, Ford, etc."
+                  onChange={e =>
+                    setVehicleSearch(prev => ({
+                      ...prev,
+                      make: e.target.value,
+                    }))
+                  }
+                  placeholder='Toyota, Ford, etc.'
                 />
               </Grid>
               <Grid item xs={12} sm={3}>
                 <TextField
                   fullWidth
-                  label="Model"
+                  label='Model'
                   value={vehicleSearch.model}
-                  onChange={(e) => setVehicleSearch(prev => ({ ...prev, model: e.target.value }))}
-                  placeholder="Camry, F-150, etc."
+                  onChange={e =>
+                    setVehicleSearch(prev => ({
+                      ...prev,
+                      model: e.target.value,
+                    }))
+                  }
+                  placeholder='Camry, F-150, etc.'
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
                 <TextField
                   fullWidth
-                  label="Year"
-                  type="number"
+                  label='Year'
+                  type='number'
                   value={vehicleSearch.year}
-                  onChange={(e) => setVehicleSearch(prev => ({ ...prev, year: e.target.value }))}
-                  placeholder="2022"
+                  onChange={e =>
+                    setVehicleSearch(prev => ({
+                      ...prev,
+                      year: e.target.value,
+                    }))
+                  }
+                  placeholder='2022'
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
@@ -548,12 +692,19 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
                   <InputLabel>Category</InputLabel>
                   <Select
                     value={vehicleSearch.category}
-                    onChange={(e) => setVehicleSearch(prev => ({ ...prev, category: e.target.value }))}
-                    label="Category"
+                    onChange={e =>
+                      setVehicleSearch(prev => ({
+                        ...prev,
+                        category: e.target.value,
+                      }))
+                    }
+                    label='Category'
                   >
-                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value=''>All</MenuItem>
                     {Object.entries(PART_CATEGORIES).map(([key, category]) => (
-                      <MenuItem key={key} value={key}>{category.label}</MenuItem>
+                      <MenuItem key={key} value={key}>
+                        {category.label}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -561,9 +712,14 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
               <Grid item xs={12} sm={2}>
                 <Button
                   fullWidth
-                  variant="contained"
+                  variant='contained'
                   onClick={handleVehicleSearch}
-                  disabled={loading || !vehicleSearch.make || !vehicleSearch.model || !vehicleSearch.year}
+                  disabled={
+                    loading ||
+                    !vehicleSearch.make ||
+                    !vehicleSearch.model ||
+                    !vehicleSearch.year
+                  }
                   sx={{ height: '100%' }}
                 >
                   {loading ? <CircularProgress size={20} /> : 'Search'}
@@ -576,17 +732,20 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
         {/* Barcode Scan */}
         {activeTab === 2 && (
           <Box sx={{ mb: 3 }}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Click the camera button to activate barcode scanning, or enter a barcode manually.
+            <Alert severity='info' sx={{ mb: 2 }}>
+              Click the camera button to activate barcode scanning, or enter a
+              barcode manually.
             </Alert>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField
                 fullWidth
-                placeholder="Enter barcode or part number"
-                onKeyPress={(e) => e.key === 'Enter' && handleBarcodeScan(e.target.value)}
+                placeholder='Enter barcode or part number'
+                onKeyPress={e =>
+                  e.key === 'Enter' && handleBarcodeScan(e.target.value)
+                }
               />
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<QrCode />}
                 onClick={() => {
                   // Implement barcode scanner activation
@@ -595,7 +754,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
                 Scan
               </Button>
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<PhotoCamera />}
                 onClick={() => {
                   // Implement photo recognition
@@ -609,7 +768,11 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
 
         {/* Error Message */}
         {errorMessage && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErrorMessage('')}>
+          <Alert
+            severity='error'
+            sx={{ mb: 2 }}
+            onClose={() => setErrorMessage('')}
+          >
             {errorMessage}
           </Alert>
         )}
@@ -622,12 +785,16 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
             >
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Search Results ({searchResults.length} found)
               </Typography>
               <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
                 {searchResults.map((part, index) => (
-                  <SearchResultCard key={part.id || index} part={part} index={index} />
+                  <SearchResultCard
+                    key={part.id || index}
+                    part={part}
+                    index={index}
+                  />
                 ))}
               </Box>
             </motion.div>
@@ -638,27 +805,33 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
         <PriceComparisonTable />
 
         {/* No Results */}
-        {!loading && searchResults.length === 0 && (searchTerm || vehicleSearch.make) && (
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            py: 4,
-            color: 'text.secondary'
-          }}>
-            <Search sx={{ fontSize: 48, mb: 2 }} />
-            <Typography variant="h6" gutterBottom>No parts found</Typography>
-            <Typography variant="body2" textAlign="center">
-              Try adjusting your search criteria or filters
-            </Typography>
-          </Box>
-        )}
+        {!loading &&
+          searchResults.length === 0 &&
+          (searchTerm || vehicleSearch.make) && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                py: 4,
+                color: 'text.secondary',
+              }}
+            >
+              <Search sx={{ fontSize: 48, mb: 2 }} />
+              <Typography variant='h6' gutterBottom>
+                No parts found
+              </Typography>
+              <Typography variant='body2' textAlign='center'>
+                Try adjusting your search criteria or filters
+              </Typography>
+            </Box>
+          )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
         <Button
-          variant="contained"
+          variant='contained'
           onClick={handleAddSelectedParts}
           disabled={selectedParts.length === 0}
           startIcon={<ShoppingCart />}

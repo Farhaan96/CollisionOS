@@ -10,11 +10,12 @@ const QualityControlDashboard = () => {
     <Box sx={{ p: 3, pb: 10 }}>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant='h4' component='h1' gutterBottom>
           Quality Control
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Ensure the highest quality standards in every repair with comprehensive inspection and calibration systems
+        <Typography variant='body1' color='text.secondary'>
+          Ensure the highest quality standards in every repair with
+          comprehensive inspection and calibration systems
         </Typography>
       </Box>
 

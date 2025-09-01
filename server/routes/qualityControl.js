@@ -1,7 +1,7 @@
 /**
  * CollisionOS Quality Control & Compliance APIs
  * Phase 2 Backend Development
- * 
+ *
  * Complete QC workflow with compliance tracking
  * Features:
  * - Stage-specific quality checklists
@@ -16,13 +16,13 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
-const { 
+const {
   ProductionWorkflow,
   RepairOrderManagement,
   User,
   Attachment,
   VehicleProfile,
-  AdvancedPartsManagement
+  AdvancedPartsManagement,
 } = require('../database/models');
 const { realtimeService } = require('../services/realtimeService');
 const rateLimit = require('express-rate-limit');
@@ -31,12 +31,12 @@ const rateLimit = require('express-rate-limit');
 const qcRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 QC operations per 15 minutes
-  message: 'Too many QC operations, please try again later.'
+  message: 'Too many QC operations, please try again later.',
 });
 
 /**
  * POST /api/qc/checklist - Stage-specific quality checklists
- * 
+ *
  * Body: {
  *   ro_id: string,
  *   stage: string,
@@ -62,49 +62,52 @@ router.post('/checklist', qcRateLimit, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
 
-    const { 
-      ro_id, 
-      stage, 
-      checklist_items, 
-      overall_status, 
+    const {
+      ro_id,
+      stage,
+      checklist_items,
+      overall_status,
       inspector_id,
       inspection_notes,
-      reinspection_required = false
+      reinspection_required = false,
     } = req.body;
     const { shopId, userId } = req.user;
 
     // Validate repair order and stage
     const repair_order = await RepairOrderManagement.findOne({
-      where: { id: ro_id, shopId }
+      where: { id: ro_id, shopId },
     });
 
     if (!repair_order) {
       return res.status(404).json({
         success: false,
-        message: 'Repair order not found'
+        message: 'Repair order not found',
       });
     }
 
     // Validate inspector
     const inspector = await User.findByPk(inspector_id);
-    if (!inspector || !['manager', 'supervisor', 'qc_inspector'].includes(inspector.role)) {
+    if (
+      !inspector ||
+      !['manager', 'supervisor', 'qc_inspector'].includes(inspector.role)
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid inspector or insufficient privileges'
+        message: 'Invalid inspector or insufficient privileges',
       });
     }
 
     // Get or create workflow entry for this stage
     let workflow = await ProductionWorkflow.findOne({
-      where: { 
-        repairOrderId: ro_id, 
+      where: {
+        repairOrderId: ro_id,
         stage: stage,
-        shopId 
-      }
+        shopId,
+      },
     });
 
     if (!workflow) {
@@ -114,30 +117,37 @@ router.post('/checklist', qcRateLimit, async (req, res) => {
         status: 'in_progress',
         shopId,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
       });
     }
 
     // Process checklist items
-    const processed_items = await processChecklistItems(checklist_items, workflow.id, inspector_id);
-    
+    const processed_items = await processChecklistItems(
+      checklist_items,
+      workflow.id,
+      inspector_id
+    );
+
     // Calculate pass/fail statistics
     const checklist_stats = calculateChecklistStats(processed_items);
 
     // Update workflow with QC results
-    await ProductionWorkflow.update({
-      qc_status: overall_status,
-      qc_completed: overall_status !== 'fail',
-      qc_inspector: inspector_id,
-      qc_completion_date: new Date(),
-      qc_checklist_results: JSON.stringify(processed_items),
-      qc_notes: inspection_notes,
-      reinspection_required,
-      status: overall_status === 'pass' ? 'completed' : 'qc_failed',
-      updatedBy: userId
-    }, {
-      where: { id: workflow.id }
-    });
+    await ProductionWorkflow.update(
+      {
+        qc_status: overall_status,
+        qc_completed: overall_status !== 'fail',
+        qc_inspector: inspector_id,
+        qc_completion_date: new Date(),
+        qc_checklist_results: JSON.stringify(processed_items),
+        qc_notes: inspection_notes,
+        reinspection_required,
+        status: overall_status === 'pass' ? 'completed' : 'qc_failed',
+        updatedBy: userId,
+      },
+      {
+        where: { id: workflow.id },
+      }
+    );
 
     // Create QC documentation record
     const qc_record = {
@@ -150,35 +160,43 @@ router.post('/checklist', qcRateLimit, async (req, res) => {
       checklist_stats,
       overall_status,
       reinspection_required,
-      compliance_status: calculateComplianceStatus(stage, processed_items)
+      compliance_status: calculateComplianceStatus(stage, processed_items),
     };
 
     // Handle failed inspections
     if (overall_status === 'fail') {
-      await handleFailedInspection(workflow.id, processed_items, inspector_id, userId);
+      await handleFailedInspection(
+        workflow.id,
+        processed_items,
+        inspector_id,
+        userId
+      );
     }
 
     // Create compliance certificate if all QC passed
     let compliance_certificate = null;
     if (overall_status === 'pass') {
       compliance_certificate = await generateComplianceCertificate(
-        repair_order, 
-        stage, 
+        repair_order,
+        stage,
         processed_items,
         inspector
       );
     }
 
     // Broadcast real-time update
-    realtimeService.broadcastQCUpdate({
-      ro_id,
-      ro_number: repair_order.ro_number,
-      stage,
-      qc_status: overall_status,
-      inspector_name: `${inspector.firstName} ${inspector.lastName}`,
-      pass_rate: checklist_stats.pass_percentage,
-      reinspection_required
-    }, 'inspection_completed');
+    realtimeService.broadcastQCUpdate(
+      {
+        ro_id,
+        ro_number: repair_order.ro_number,
+        stage,
+        qc_status: overall_status,
+        inspector_name: `${inspector.firstName} ${inspector.lastName}`,
+        pass_rate: checklist_stats.pass_percentage,
+        reinspection_required,
+      },
+      'inspection_completed'
+    );
 
     res.json({
       success: true,
@@ -187,25 +205,29 @@ router.post('/checklist', qcRateLimit, async (req, res) => {
         qc_record,
         checklist_summary: checklist_stats,
         compliance_certificate,
-        next_steps: overall_status === 'pass' ? 
-          ['Stage ready for next workflow step', 'Update production board'] :
-          ['Address failed items', 'Schedule re-inspection', 'Update technician assignments']
-      }
+        next_steps:
+          overall_status === 'pass'
+            ? ['Stage ready for next workflow step', 'Update production board']
+            : [
+                'Address failed items',
+                'Schedule re-inspection',
+                'Update technician assignments',
+              ],
+      },
     });
-
   } catch (error) {
     console.error('QC checklist error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to process quality checklist',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/qc/photos - Required photo capture and validation
- * 
+ *
  * Body: {
  *   ro_id: string,
  *   stage: string,
@@ -223,24 +245,24 @@ router.post('/checklist', qcRateLimit, async (req, res) => {
  */
 router.post('/photos', qcRateLimit, async (req, res) => {
   try {
-    const { 
-      ro_id, 
-      stage, 
-      photo_requirements, 
-      photographer_id, 
-      verification_complete 
+    const {
+      ro_id,
+      stage,
+      photo_requirements,
+      photographer_id,
+      verification_complete,
     } = req.body;
     const { shopId, userId } = req.user;
 
     // Validate repair order
     const repair_order = await RepairOrderManagement.findOne({
-      where: { id: ro_id, shopId }
+      where: { id: ro_id, shopId },
     });
 
     if (!repair_order) {
       return res.status(404).json({
         success: false,
-        message: 'Repair order not found'
+        message: 'Repair order not found',
       });
     }
 
@@ -258,20 +280,22 @@ router.post('/photos', qcRateLimit, async (req, res) => {
         category: requirement.category,
         required: requirement.required,
         photos_provided: requirement.photo_urls?.length || 0,
-        status: 'pending'
+        status: 'pending',
       };
 
       // Validate photos exist and are accessible
       if (requirement.photo_urls && requirement.photo_urls.length > 0) {
         const photo_validation = await validatePhotoAttachments(
-          requirement.photo_urls, 
-          ro_id, 
+          requirement.photo_urls,
+          ro_id,
           shopId
         );
-        
-        validation_result.status = photo_validation.all_valid ? 'completed' : 'invalid';
+
+        validation_result.status = photo_validation.all_valid
+          ? 'completed'
+          : 'invalid';
         validation_result.photo_issues = photo_validation.issues;
-        
+
         if (photo_validation.all_valid && requirement.required) {
           total_completed++;
         }
@@ -294,7 +318,7 @@ router.post('/photos', qcRateLimit, async (req, res) => {
             uploadedBy: photographer_id,
             qc_stage: stage,
             qc_requirement_id: requirement.requirement_id,
-            shopId
+            shopId,
           });
         }
       }
@@ -303,27 +327,34 @@ router.post('/photos', qcRateLimit, async (req, res) => {
     }
 
     // Calculate completion status
-    const completion_percentage = total_required > 0 ? 
-      ((total_completed / total_required) * 100) : 100;
-    
-    const overall_photo_status = completion_percentage === 100 ? 'complete' : 
-      completion_percentage > 0 ? 'partial' : 'incomplete';
+    const completion_percentage =
+      total_required > 0 ? (total_completed / total_required) * 100 : 100;
+
+    const overall_photo_status =
+      completion_percentage === 100
+        ? 'complete'
+        : completion_percentage > 0
+          ? 'partial'
+          : 'incomplete';
 
     // Update workflow with photo verification status
-    await ProductionWorkflow.update({
-      photo_verification_status: overall_photo_status,
-      photo_verification_date: verification_complete ? new Date() : null,
-      photo_requirements_met: completion_percentage === 100,
-      photo_completion_percentage: completion_percentage,
-      photo_verification_results: JSON.stringify(photo_validation_results),
-      updatedBy: userId
-    }, {
-      where: { 
-        repairOrderId: ro_id, 
-        stage: stage,
-        shopId 
+    await ProductionWorkflow.update(
+      {
+        photo_verification_status: overall_photo_status,
+        photo_verification_date: verification_complete ? new Date() : null,
+        photo_requirements_met: completion_percentage === 100,
+        photo_completion_percentage: completion_percentage,
+        photo_verification_results: JSON.stringify(photo_validation_results),
+        updatedBy: userId,
+      },
+      {
+        where: {
+          repairOrderId: ro_id,
+          stage: stage,
+          shopId,
+        },
       }
-    });
+    );
 
     // Generate photo verification report
     const verification_report = {
@@ -337,20 +368,26 @@ router.post('/photos', qcRateLimit, async (req, res) => {
       completed_photos: total_completed,
       completion_percentage: completion_percentage.toFixed(1),
       overall_status: overall_photo_status,
-      verification_complete
+      verification_complete,
     };
 
     // Check for compliance requirements
-    const compliance_check = await checkPhotoCompliance(stage, photo_validation_results);
+    const compliance_check = await checkPhotoCompliance(
+      stage,
+      photo_validation_results
+    );
 
     // Broadcast real-time update
-    realtimeService.broadcastQCUpdate({
-      ro_id,
-      stage,
-      photo_verification_status: overall_photo_status,
-      completion_percentage,
-      compliance_issues: compliance_check.issues.length
-    }, 'photo_verification');
+    realtimeService.broadcastQCUpdate(
+      {
+        ro_id,
+        stage,
+        photo_verification_status: overall_photo_status,
+        completion_percentage,
+        compliance_issues: compliance_check.issues.length,
+      },
+      'photo_verification'
+    );
 
     res.json({
       success: true,
@@ -359,19 +396,24 @@ router.post('/photos', qcRateLimit, async (req, res) => {
         verification_report,
         photo_validation_results,
         compliance_check,
-        missing_requirements: photo_validation_results.filter(r => r.status === 'missing'),
-        next_steps: overall_photo_status === 'complete' ? 
-          ['All photo requirements met', 'Proceed with quality inspection'] :
-          ['Complete missing photo requirements', 'Re-submit for verification']
-      }
+        missing_requirements: photo_validation_results.filter(
+          r => r.status === 'missing'
+        ),
+        next_steps:
+          overall_photo_status === 'complete'
+            ? ['All photo requirements met', 'Proceed with quality inspection']
+            : [
+                'Complete missing photo requirements',
+                'Re-submit for verification',
+              ],
+      },
     });
-
   } catch (error) {
     console.error('Photo verification error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to process photo verification',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -390,26 +432,29 @@ router.get('/compliance/:roId', async (req, res) => {
       include: [
         {
           model: VehicleProfile,
-          as: 'vehicleProfile'
-        }
-      ]
+          as: 'vehicleProfile',
+        },
+      ],
     });
 
     if (!repair_order) {
       return res.status(404).json({
         success: false,
-        message: 'Repair order not found'
+        message: 'Repair order not found',
       });
     }
 
     // Determine ADAS requirements based on vehicle and repair scope
     const adas_requirements = await determineADASRequirements(
-      repair_order.vehicleProfile, 
+      repair_order.vehicleProfile,
       repair_order
     );
 
     // Get calibration compliance status
-    const calibration_status = await getCalibrationComplianceStatus(roId, shopId);
+    const calibration_status = await getCalibrationComplianceStatus(
+      roId,
+      shopId
+    );
 
     // Check scan requirements
     const scan_requirements = await getScanRequirements(repair_order);
@@ -422,38 +467,39 @@ router.get('/compliance/:roId', async (req, res) => {
         year: repair_order.vehicleProfile?.vehicle_year,
         make: repair_order.vehicleProfile?.vehicle_make,
         model: repair_order.vehicleProfile?.vehicle_model,
-        vin: repair_order.vehicleProfile?.vin
+        vin: repair_order.vehicleProfile?.vin,
       },
       adas_requirements,
       calibration_status,
       scan_requirements,
       overall_compliance: calculateOverallCompliance(
-        adas_requirements, 
-        calibration_status, 
+        adas_requirements,
+        calibration_status,
         scan_requirements
       ),
       compliance_certificates: await getComplianceCertificates(roId, shopId),
-      regulatory_requirements: getApplicableRegulations(repair_order.vehicleProfile)
+      regulatory_requirements: getApplicableRegulations(
+        repair_order.vehicleProfile
+      ),
     };
 
     res.json({
       success: true,
-      data: compliance_report
+      data: compliance_report,
     });
-
   } catch (error) {
     console.error('Compliance check error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to check compliance requirements',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/qc/inspection - Re-inspection forms and punch-lists
- * 
+ *
  * Body: {
  *   original_inspection_id: string,
  *   ro_id: string,
@@ -471,25 +517,25 @@ router.get('/compliance/:roId', async (req, res) => {
  */
 router.post('/inspection', qcRateLimit, async (req, res) => {
   try {
-    const { 
+    const {
       original_inspection_id,
-      ro_id, 
-      reinspection_items, 
+      ro_id,
+      reinspection_items,
       inspector_id,
       reinspection_type,
-      punch_list_complete
+      punch_list_complete,
     } = req.body;
     const { shopId, userId } = req.user;
 
     // Validate original inspection
     const original_workflow = await ProductionWorkflow.findOne({
-      where: { id: original_inspection_id, shopId }
+      where: { id: original_inspection_id, shopId },
     });
 
     if (!original_workflow) {
       return res.status(404).json({
         success: false,
-        message: 'Original inspection not found'
+        message: 'Original inspection not found',
       });
     }
 
@@ -508,14 +554,14 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
         verification_photos: item.verification_photos || [],
         status: item.status,
         reinspected_date: new Date(),
-        reinspected_by: inspector_id
+        reinspected_by: inspector_id,
       };
 
       // Validate verification photos if provided
       if (item.verification_photos && item.verification_photos.length > 0) {
         const photo_validation = await validatePhotoAttachments(
-          item.verification_photos, 
-          ro_id, 
+          item.verification_photos,
+          ro_id,
           shopId
         );
         processed_item.photo_validation = photo_validation;
@@ -525,16 +571,27 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
 
       // Count status distribution
       switch (item.status) {
-        case 'resolved': resolved_count++; break;
-        case 'pending': pending_count++; break;
-        case 'escalated': escalated_count++; break;
+        case 'resolved':
+          resolved_count++;
+          break;
+        case 'pending':
+          pending_count++;
+          break;
+        case 'escalated':
+          escalated_count++;
+          break;
       }
     }
 
     // Determine overall reinspection status
-    const overall_status = escalated_count > 0 ? 'escalated' :
-      pending_count > 0 ? 'pending' :
-      resolved_count === reinspection_items.length ? 'passed' : 'partial';
+    const overall_status =
+      escalated_count > 0
+        ? 'escalated'
+        : pending_count > 0
+          ? 'pending'
+          : resolved_count === reinspection_items.length
+            ? 'passed'
+            : 'partial';
 
     // Create reinspection workflow entry
     const reinspection_workflow = await ProductionWorkflow.create({
@@ -550,18 +607,21 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
       punch_list_complete,
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Update original workflow
-    await ProductionWorkflow.update({
-      reinspection_status: overall_status,
-      reinspection_completed: overall_status === 'passed',
-      reinspection_id: reinspection_workflow.id,
-      updatedBy: userId
-    }, {
-      where: { id: original_inspection_id }
-    });
+    await ProductionWorkflow.update(
+      {
+        reinspection_status: overall_status,
+        reinspection_completed: overall_status === 'passed',
+        reinspection_id: reinspection_workflow.id,
+        updatedBy: userId,
+      },
+      {
+        where: { id: original_inspection_id },
+      }
+    );
 
     // Generate reinspection report
     const reinspection_report = {
@@ -575,12 +635,14 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
         total_items: reinspection_items.length,
         resolved: resolved_count,
         pending: pending_count,
-        escalated: escalated_count
+        escalated: escalated_count,
       },
       overall_status,
       punch_list_complete,
-      resolution_rate: reinspection_items.length > 0 ? 
-        ((resolved_count / reinspection_items.length) * 100).toFixed(1) : '100.0'
+      resolution_rate:
+        reinspection_items.length > 0
+          ? ((resolved_count / reinspection_items.length) * 100).toFixed(1)
+          : '100.0',
     };
 
     // Handle escalated items
@@ -594,13 +656,16 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
     }
 
     // Broadcast real-time update
-    realtimeService.broadcastQCUpdate({
-      ro_id,
-      reinspection_status: overall_status,
-      resolution_rate: reinspection_report.resolution_rate,
-      escalated_items: escalated_count,
-      punch_list_complete
-    }, 'reinspection_completed');
+    realtimeService.broadcastQCUpdate(
+      {
+        ro_id,
+        reinspection_status: overall_status,
+        resolution_rate: reinspection_report.resolution_rate,
+        escalated_items: escalated_count,
+        punch_list_complete,
+      },
+      'reinspection_completed'
+    );
 
     res.json({
       success: true,
@@ -608,21 +673,23 @@ router.post('/inspection', qcRateLimit, async (req, res) => {
       data: {
         reinspection_report,
         processed_items,
-        escalated_items: processed_items.filter(item => item.status === 'escalated'),
-        next_steps: overall_status === 'passed' ? 
-          ['All items resolved', 'Proceed to next stage'] :
-          escalated_count > 0 ?
-            ['Review escalated items', 'Manager intervention required'] :
-            ['Complete pending items', 'Schedule follow-up inspection']
-      }
+        escalated_items: processed_items.filter(
+          item => item.status === 'escalated'
+        ),
+        next_steps:
+          overall_status === 'passed'
+            ? ['All items resolved', 'Proceed to next stage']
+            : escalated_count > 0
+              ? ['Review escalated items', 'Manager intervention required']
+              : ['Complete pending items', 'Schedule follow-up inspection'],
+      },
     });
-
   } catch (error) {
     console.error('Reinspection error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to process reinspection',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -637,15 +704,15 @@ router.get('/certificates/:roId', async (req, res) => {
     const { certificate_type, include_drafts = false } = req.query;
 
     // Get all certificates for this RO
-    const where_clause = { 
-      repairOrderId: roId, 
-      shopId 
+    const where_clause = {
+      repairOrderId: roId,
+      shopId,
     };
-    
+
     if (certificate_type) {
       where_clause.certificate_type = certificate_type;
     }
-    
+
     if (include_drafts !== 'true') {
       where_clause.status = { [Op.ne]: 'draft' };
     }
@@ -653,7 +720,10 @@ router.get('/certificates/:roId', async (req, res) => {
     const certificates = await getQualityCertificates(where_clause);
 
     // Generate missing certificates if needed
-    const missing_certificates = await identifyMissingCertificates(roId, shopId);
+    const missing_certificates = await identifyMissingCertificates(
+      roId,
+      shopId
+    );
 
     // Calculate compliance score
     const compliance_score = await calculateComplianceScore(roId, certificates);
@@ -667,20 +737,24 @@ router.get('/certificates/:roId', async (req, res) => {
         compliance_score,
         certificate_summary: {
           total_certificates: certificates.length,
-          valid_certificates: certificates.filter(c => c.status === 'valid').length,
-          expired_certificates: certificates.filter(c => c.status === 'expired').length,
-          pending_certificates: missing_certificates.length
+          valid_certificates: certificates.filter(c => c.status === 'valid')
+            .length,
+          expired_certificates: certificates.filter(c => c.status === 'expired')
+            .length,
+          pending_certificates: missing_certificates.length,
         },
-        regulatory_compliance: await checkRegulatoryCompliance(roId, certificates)
-      }
+        regulatory_compliance: await checkRegulatoryCompliance(
+          roId,
+          certificates
+        ),
+      },
     });
-
   } catch (error) {
     console.error('Certificates fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get compliance certificates',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -689,20 +763,28 @@ router.get('/certificates/:roId', async (req, res) => {
  * Helper Functions
  */
 
-async function processChecklistItems(checklist_items, workflow_id, inspector_id) {
+async function processChecklistItems(
+  checklist_items,
+  workflow_id,
+  inspector_id
+) {
   return checklist_items.map(item => ({
     ...item,
     workflow_id,
     inspector_id,
     inspection_timestamp: new Date(),
-    compliance_level: calculateItemComplianceLevel(item)
+    compliance_level: calculateItemComplianceLevel(item),
   }));
 }
 
 function calculateChecklistStats(processed_items) {
   const total_items = processed_items.length;
-  const passed_items = processed_items.filter(item => item.status === 'pass').length;
-  const failed_items = processed_items.filter(item => item.status === 'fail').length;
+  const passed_items = processed_items.filter(
+    item => item.status === 'pass'
+  ).length;
+  const failed_items = processed_items.filter(
+    item => item.status === 'fail'
+  ).length;
   const na_items = processed_items.filter(item => item.status === 'na').length;
 
   return {
@@ -710,41 +792,63 @@ function calculateChecklistStats(processed_items) {
     passed_items,
     failed_items,
     na_items,
-    pass_percentage: total_items > 0 ? ((passed_items / total_items) * 100).toFixed(1) : '0.0',
-    fail_percentage: total_items > 0 ? ((failed_items / total_items) * 100).toFixed(1) : '0.0'
+    pass_percentage:
+      total_items > 0 ? ((passed_items / total_items) * 100).toFixed(1) : '0.0',
+    fail_percentage:
+      total_items > 0 ? ((failed_items / total_items) * 100).toFixed(1) : '0.0',
   };
 }
 
 function calculateComplianceStatus(stage, processed_items) {
-  const critical_items = processed_items.filter(item => 
-    item.category === 'safety' || item.category === 'regulatory'
+  const critical_items = processed_items.filter(
+    item => item.category === 'safety' || item.category === 'regulatory'
   );
-  
-  const critical_failures = critical_items.filter(item => item.status === 'fail');
-  
+
+  const critical_failures = critical_items.filter(
+    item => item.status === 'fail'
+  );
+
   return {
     level: critical_failures.length === 0 ? 'compliant' : 'non_compliant',
     critical_items: critical_items.length,
     critical_failures: critical_failures.length,
-    compliance_score: critical_items.length > 0 ? 
-      (((critical_items.length - critical_failures.length) / critical_items.length) * 100).toFixed(1) : '100.0'
+    compliance_score:
+      critical_items.length > 0
+        ? (
+            ((critical_items.length - critical_failures.length) /
+              critical_items.length) *
+            100
+          ).toFixed(1)
+        : '100.0',
   };
 }
 
-async function handleFailedInspection(workflow_id, processed_items, inspector_id, user_id) {
+async function handleFailedInspection(
+  workflow_id,
+  processed_items,
+  inspector_id,
+  user_id
+) {
   const failed_items = processed_items.filter(item => item.status === 'fail');
-  
+
   // Create corrective action tasks for failed items
   for (const failed_item of failed_items) {
     console.log(`Creating corrective action for: ${failed_item.description}`);
     // In real implementation, would create task assignments
   }
-  
+
   // Notify relevant personnel
-  console.log(`Failed inspection notification sent for workflow ${workflow_id}`);
+  console.log(
+    `Failed inspection notification sent for workflow ${workflow_id}`
+  );
 }
 
-async function generateComplianceCertificate(repair_order, stage, processed_items, inspector) {
+async function generateComplianceCertificate(
+  repair_order,
+  stage,
+  processed_items,
+  inspector
+) {
   return {
     certificate_id: `CERT-${Date.now()}`,
     certificate_type: `qc_${stage}`,
@@ -755,7 +859,7 @@ async function generateComplianceCertificate(repair_order, stage, processed_item
     expiry_date: null, // QC certificates don't typically expire
     status: 'valid',
     compliance_items: processed_items.filter(item => item.status === 'pass'),
-    digital_signature: generateDigitalSignature(repair_order, inspector)
+    digital_signature: generateDigitalSignature(repair_order, inspector),
   };
 }
 
@@ -775,8 +879,8 @@ async function validatePhotoAttachments(photo_urls, ro_id, shop_id) {
       where: {
         file_path: photo_url,
         repairOrderId: ro_id,
-        shopId: shop_id
-      }
+        shopId: shop_id,
+      },
     });
 
     if (!attachment) {
@@ -793,45 +897,53 @@ async function validatePhotoAttachments(photo_urls, ro_id, shop_id) {
 
 async function checkPhotoCompliance(stage, photo_validation_results) {
   const compliance_issues = [];
-  
+
   // Check for stage-specific photo requirements
   const stage_requirements = getStagePhotoRequirements(stage);
-  
+
   for (const requirement of stage_requirements) {
     const matching_result = photo_validation_results.find(
       result => result.category === requirement.category
     );
-    
+
     if (!matching_result || matching_result.status !== 'completed') {
-      compliance_issues.push(`Missing required photos for: ${requirement.category}`);
+      compliance_issues.push(
+        `Missing required photos for: ${requirement.category}`
+      );
     }
   }
 
   return {
     compliant: compliance_issues.length === 0,
     issues: compliance_issues,
-    compliance_percentage: stage_requirements.length > 0 ?
-      (((stage_requirements.length - compliance_issues.length) / stage_requirements.length) * 100).toFixed(1) : '100.0'
+    compliance_percentage:
+      stage_requirements.length > 0
+        ? (
+            ((stage_requirements.length - compliance_issues.length) /
+              stage_requirements.length) *
+            100
+          ).toFixed(1)
+        : '100.0',
   };
 }
 
 function getStagePhotoRequirements(stage) {
   const requirements = {
-    'damage_assessment': [
-      { category: 'damage_assessment', description: 'Initial damage photos' }
+    damage_assessment: [
+      { category: 'damage_assessment', description: 'Initial damage photos' },
     ],
-    'body_work': [
-      { category: 'repair_progress', description: 'Repair progress photos' }
+    body_work: [
+      { category: 'repair_progress', description: 'Repair progress photos' },
     ],
-    'paint': [
-      { category: 'final_quality', description: 'Paint finish quality photos' }
+    paint: [
+      { category: 'final_quality', description: 'Paint finish quality photos' },
     ],
-    'final_inspection': [
+    final_inspection: [
       { category: 'compliance', description: 'Final compliance photos' },
-      { category: 'final_quality', description: 'Completed repair photos' }
-    ]
+      { category: 'final_quality', description: 'Completed repair photos' },
+    ],
   };
-  
+
   return requirements[stage] || [];
 }
 
@@ -840,27 +952,33 @@ async function determineADASRequirements(vehicle_profile, repair_order) {
     return {
       adas_equipped: false,
       requirements: [],
-      calibration_needed: false
+      calibration_needed: false,
     };
   }
 
   // Determine if vehicle has ADAS systems (based on year and features)
-  const has_adas = vehicle_profile.vehicle_year >= 2018 || 
-    (vehicle_profile.vehicle_features && 
-     JSON.parse(vehicle_profile.vehicle_features).includes('ADAS'));
+  const has_adas =
+    vehicle_profile.vehicle_year >= 2018 ||
+    (vehicle_profile.vehicle_features &&
+      JSON.parse(vehicle_profile.vehicle_features).includes('ADAS'));
 
   if (!has_adas) {
     return {
       adas_equipped: false,
       requirements: [],
-      calibration_needed: false
+      calibration_needed: false,
     };
   }
 
   // Determine calibration requirements based on repair scope
   const repair_areas = await getRepairAreas(repair_order.id);
-  const calibration_triggers = ['front_end', 'windshield', 'bumper', 'headlights'];
-  const calibration_needed = repair_areas.some(area => 
+  const calibration_triggers = [
+    'front_end',
+    'windshield',
+    'bumper',
+    'headlights',
+  ];
+  const calibration_needed = repair_areas.some(area =>
     calibration_triggers.includes(area)
   );
 
@@ -868,13 +986,15 @@ async function determineADASRequirements(vehicle_profile, repair_order) {
     adas_equipped: true,
     systems_detected: ['FCW', 'AEB', 'LKA'], // Would be determined from vehicle database
     calibration_needed,
-    requirements: calibration_needed ? [
-      'Pre-scan required',
-      'Post-repair scan required',
-      'Dynamic calibration required',
-      'Test drive verification required'
-    ] : ['Post-repair scan recommended'],
-    estimated_time: calibration_needed ? 2.5 : 1.0 // hours
+    requirements: calibration_needed
+      ? [
+          'Pre-scan required',
+          'Post-repair scan required',
+          'Dynamic calibration required',
+          'Test drive verification required',
+        ]
+      : ['Post-repair scan recommended'],
+    estimated_time: calibration_needed ? 2.5 : 1.0, // hours
   };
 }
 
@@ -882,7 +1002,7 @@ async function getRepairAreas(ro_id) {
   // Get repair areas from parts or operations
   const parts = await AdvancedPartsManagement.findAll({
     where: { repairOrderId: ro_id },
-    attributes: ['part_category', 'operation_area']
+    attributes: ['part_category', 'operation_area'],
   });
 
   const areas = new Set();
@@ -900,26 +1020,26 @@ async function getCalibrationComplianceStatus(ro_id, shop_id) {
     where: {
       repairOrderId: ro_id,
       shopId: shop_id,
-      stage: { [Op.like]: '%calibration%' }
-    }
+      stage: { [Op.like]: '%calibration%' },
+    },
   });
 
   return {
-    pre_scan_completed: calibration_workflows.some(w => 
-      w.stage.includes('pre_scan') && w.status === 'completed'
+    pre_scan_completed: calibration_workflows.some(
+      w => w.stage.includes('pre_scan') && w.status === 'completed'
     ),
-    post_scan_completed: calibration_workflows.some(w => 
-      w.stage.includes('post_scan') && w.status === 'completed'
+    post_scan_completed: calibration_workflows.some(
+      w => w.stage.includes('post_scan') && w.status === 'completed'
     ),
-    calibration_completed: calibration_workflows.some(w => 
-      w.stage.includes('calibration') && w.status === 'completed'
+    calibration_completed: calibration_workflows.some(
+      w => w.stage.includes('calibration') && w.status === 'completed'
     ),
-    test_drive_completed: calibration_workflows.some(w => 
-      w.stage.includes('test_drive') && w.status === 'completed'
+    test_drive_completed: calibration_workflows.some(
+      w => w.stage.includes('test_drive') && w.status === 'completed'
     ),
-    calibration_certificates: calibration_workflows.filter(w => 
-      w.qc_status === 'pass'
-    ).length
+    calibration_certificates: calibration_workflows.filter(
+      w => w.qc_status === 'pass'
+    ).length,
   };
 }
 
@@ -930,11 +1050,15 @@ async function getScanRequirements(repair_order) {
     scan_tools_needed: ['OEM Scanner', 'J2534 Device'],
     dtc_clearing_required: true,
     documentation_required: true,
-    estimated_time: 1.5 // hours
+    estimated_time: 1.5, // hours
   };
 }
 
-function calculateOverallCompliance(adas_requirements, calibration_status, scan_requirements) {
+function calculateOverallCompliance(
+  adas_requirements,
+  calibration_status,
+  scan_requirements
+) {
   let compliance_score = 100;
   const required_items = [];
   const completed_items = [];
@@ -960,17 +1084,26 @@ function calculateOverallCompliance(adas_requirements, calibration_status, scan_
     }
   }
 
-  const completion_rate = required_items.length > 0 ?
-    (completed_items.length / required_items.length) * 100 : 100;
+  const completion_rate =
+    required_items.length > 0
+      ? (completed_items.length / required_items.length) * 100
+      : 100;
 
   return {
-    compliance_level: completion_rate === 100 ? 'full' : 
-      completion_rate >= 75 ? 'substantial' : 
-      completion_rate >= 50 ? 'partial' : 'minimal',
+    compliance_level:
+      completion_rate === 100
+        ? 'full'
+        : completion_rate >= 75
+          ? 'substantial'
+          : completion_rate >= 50
+            ? 'partial'
+            : 'minimal',
     completion_percentage: completion_rate.toFixed(1),
     required_items,
     completed_items,
-    pending_items: required_items.filter(item => !completed_items.includes(item))
+    pending_items: required_items.filter(
+      item => !completed_items.includes(item)
+    ),
   };
 }
 
@@ -982,22 +1115,27 @@ async function getComplianceCertificates(ro_id, shop_id) {
       type: 'quality_inspection',
       status: 'valid',
       issue_date: '2024-08-28',
-      inspector: 'John Smith'
-    }
+      inspector: 'John Smith',
+    },
   ];
 }
 
 function getApplicableRegulations(vehicle_profile) {
   const regulations = ['DOT Safety Standards'];
-  
+
   if (vehicle_profile?.vehicle_year >= 2018) {
     regulations.push('NHTSA ADAS Guidelines');
   }
-  
+
   return regulations;
 }
 
-async function handleEscalatedItems(escalated_items, ro_id, inspector_id, user_id) {
+async function handleEscalatedItems(
+  escalated_items,
+  ro_id,
+  inspector_id,
+  user_id
+) {
   // Create escalation notifications and tasks
   console.log(`Escalating ${escalated_items.length} items for RO ${ro_id}`);
   // In real implementation, would create manager notifications and escalation workflow
@@ -1012,8 +1150,8 @@ async function getQualityCertificates(where_clause) {
       status: 'valid',
       issue_date: new Date(),
       inspector: 'Quality Inspector',
-      compliance_score: '98.5'
-    }
+      compliance_score: '98.5',
+    },
   ];
 }
 
@@ -1023,8 +1161,8 @@ async function identifyMissingCertificates(ro_id, shop_id) {
     {
       certificate_type: 'adas_calibration',
       description: 'ADAS Calibration Certificate',
-      required_by: 'Vehicle has ADAS systems and front-end repair'
-    }
+      required_by: 'Vehicle has ADAS systems and front-end repair',
+    },
   ];
 }
 
@@ -1034,7 +1172,7 @@ async function calculateComplianceScore(ro_id, certificates) {
     overall_score: 92.5,
     quality_score: 95.0,
     compliance_score: 90.0,
-    timeliness_score: 88.0
+    timeliness_score: 88.0,
   };
 }
 
@@ -1043,7 +1181,7 @@ async function checkRegulatoryCompliance(ro_id, certificates) {
     dot_compliant: true,
     nhtsa_compliant: true,
     state_inspection_ready: true,
-    outstanding_issues: []
+    outstanding_issues: [],
   };
 }
 

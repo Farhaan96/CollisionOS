@@ -21,6 +21,7 @@ npm run validate
 ### Phase 1: Environment Preparation
 
 #### 1.1 Prerequisites Check
+
 ```bash
 # Check Node.js version (requires 16+)
 node --version
@@ -36,6 +37,7 @@ npm install
 ```
 
 #### 1.2 Backup Current Data
+
 ```bash
 # Create backup of current database
 cp ../data/collisionos.db ../data/collisionos_backup_$(date +%Y%m%d_%H%M%S).db
@@ -47,12 +49,14 @@ ls -la ../data/collisionos_backup_*.db
 ### Phase 2: Supabase Project Setup
 
 #### 2.1 Create and Configure Supabase Project
+
 ```bash
 # Run the setup script
 npm run setup
 ```
 
 This script will:
+
 - Install Supabase CLI if needed
 - Guide you through project creation
 - Set up authentication configuration
@@ -63,6 +67,7 @@ This script will:
 - Generate configuration file
 
 **Expected Output:**
+
 ```
 🌐 Setting up Supabase project...
 ✅ Supabase CLI installed
@@ -98,12 +103,14 @@ If the setup script doesn't complete automatically, manually configure:
 ### Phase 3: Data Seeding
 
 #### 3.1 Seed Test Data
+
 ```bash
 # Run the seeding script
 npm run seed
 ```
 
 This script will create:
+
 - **1 Shop**: CollisionOS Test Shop
 - **6 Users**: Owner, Manager, Service Advisor, Estimator, Technician, Parts Manager
 - **5 Customers**: Individual, Business, Insurance, VIP customers
@@ -117,6 +124,7 @@ This script will create:
 - **2 Notifications**: Job assignments and low stock alerts
 
 **Expected Output:**
+
 ```
 🌱 Starting comprehensive test data seeding...
 📊 Seeding shops...
@@ -152,6 +160,7 @@ This script will create:
 ```
 
 #### 3.2 Verify Seeding Results
+
 ```bash
 # Check the seeding report
 cat seeding-report.json
@@ -163,12 +172,14 @@ tail -f seeding-log.txt
 ### Phase 4: Data Testing
 
 #### 4.1 Test Seeded Data
+
 ```bash
 # Run comprehensive data tests
 npm run test-seeded
 ```
 
 This script will test:
+
 - **Data Existence**: All entities have correct record counts
 - **Data Validation**: Field values match expected data
 - **Relationships**: Foreign key relationships work correctly
@@ -179,6 +190,7 @@ This script will test:
 - **Realtime**: Subscription functionality
 
 **Expected Output:**
+
 ```
 🧪 Starting comprehensive seeded data testing...
 ✅ Test passed: Shop Data Validation (45ms)
@@ -217,6 +229,7 @@ This script will test:
 ```
 
 #### 4.2 Review Test Results
+
 ```bash
 # Check the test report
 cat test-report.json
@@ -228,12 +241,14 @@ tail -f test-results.txt
 ### Phase 5: Full System Validation
 
 #### 5.1 Run Complete Validation Suite
+
 ```bash
 # Run the full validation script
 npm run validate
 ```
 
 This script will test:
+
 - **Database Structure**: Table existence, indexes, constraints
 - **RLS Policies**: Row Level Security enforcement
 - **Authentication**: User roles and permissions
@@ -242,6 +257,7 @@ This script will test:
 - **Performance**: Query optimization and response times
 
 #### 5.2 Export and Migrate Real Data (Optional)
+
 ```bash
 # Export current data from existing database
 npm run export
@@ -256,15 +272,17 @@ npm run validate
 ### Phase 6: Application Integration
 
 #### 6.1 Update Application Configuration
+
 1. **Update Supabase Client**
+
    ```javascript
    // src/services/supabaseClient.js
-   import { createClient } from '@supabase/supabase-js'
-   
-   const supabaseUrl = 'YOUR_SUPABASE_URL'
-   const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'
-   
-   export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+   import { createClient } from '@supabase/supabase-js';
+
+   const supabaseUrl = 'YOUR_SUPABASE_URL';
+   const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+
+   export const supabase = createClient(supabaseUrl, supabaseAnonKey);
    ```
 
 2. **Update Environment Variables**
@@ -275,6 +293,7 @@ npm run validate
    ```
 
 #### 6.2 Test Application Integration
+
 ```bash
 # Start the application
 cd ..
@@ -292,6 +311,7 @@ npm start
 ### Phase 7: Monitoring and Verification
 
 #### 7.1 Monitor System Performance
+
 ```bash
 # Check Supabase dashboard for:
 # - Database performance
@@ -302,6 +322,7 @@ npm start
 ```
 
 #### 7.2 Verify Business Operations
+
 1. **Customer Management**
    - Create new customer
    - Add vehicle to customer
@@ -328,6 +349,7 @@ npm start
 ### Common Issues and Solutions
 
 #### 1. Setup Script Fails
+
 ```bash
 # Check Supabase CLI installation
 npx supabase --version
@@ -341,6 +363,7 @@ cat supabase-config.json
 ```
 
 #### 2. Seeding Script Fails
+
 ```bash
 # Check Supabase connection
 node -e "
@@ -360,6 +383,7 @@ client.rpc('get_schema_info').then(console.log).catch(console.error);
 ```
 
 #### 3. Test Script Fails
+
 ```bash
 # Check seeded data
 node -e "
@@ -377,6 +401,7 @@ Promise.all([
 ```
 
 #### 4. Performance Issues
+
 ```bash
 # Check query performance
 node -e "
@@ -393,18 +418,21 @@ client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440
 ## Success Criteria
 
 ### Performance Targets
+
 - ✅ All queries complete in < 100ms
 - ✅ Complex joins complete in < 200ms
 - ✅ Concurrent queries complete in < 1 second
 - ✅ Realtime subscriptions connect in < 500ms
 
 ### Data Integrity
+
 - ✅ All foreign key relationships valid
 - ✅ No orphaned records
 - ✅ Business logic calculations correct
 - ✅ Data types and constraints enforced
 
 ### Functionality
+
 - ✅ All CRUD operations work
 - ✅ Role-based access control enforced
 - ✅ Realtime updates function
@@ -412,6 +440,7 @@ client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440
 - ✅ Authentication flow complete
 
 ### Business Logic
+
 - ✅ Job workflow progression valid
 - ✅ Financial calculations accurate
 - ✅ Inventory management functional
@@ -421,6 +450,7 @@ client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440
 ## Next Steps
 
 ### Immediate (Week 1)
+
 1. Monitor system performance daily
 2. Address any user-reported issues
 3. Optimize slow queries
@@ -428,6 +458,7 @@ client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440
 5. Update application documentation
 
 ### Short-term (Month 1)
+
 1. Implement additional Supabase features
 2. Optimize real-time subscriptions
 3. Set up monitoring and alerting
@@ -435,6 +466,7 @@ client.from('jobs').select('*').eq('shop_id', '550e8400-e29b-41d4-a716-446655440
 5. Plan feature enhancements
 
 ### Long-term (Months 2-6)
+
 1. Migrate to Edge Functions if applicable
 2. Implement advanced security features
 3. Optimize for global performance

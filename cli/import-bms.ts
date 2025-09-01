@@ -73,8 +73,15 @@ class BMSImportCLI {
       .option('-f, --format <format>', 'File format (auto|bms|ems)', 'auto')
       .option('-d, --dry-run', 'Validate files without importing to database')
       .option('-v, --verbose', 'Show detailed output')
-      .option('-b, --batch-size <size>', 'Number of files to process in parallel', '5')
-      .option('-c, --continue-on-error', 'Continue processing even if some files fail')
+      .option(
+        '-b, --batch-size <size>',
+        'Number of files to process in parallel',
+        '5'
+      )
+      .option(
+        '-c, --continue-on-error',
+        'Continue processing even if some files fail'
+      )
       .action(async (directory: string, options: ImportOptions) => {
         await this.importBatch(directory, options);
       });
@@ -94,7 +101,10 @@ class BMSImportCLI {
   /**
    * Import a single BMS/EMS file
    */
-  private async importSingleFile(filepath: string, options: ImportOptions): Promise<void> {
+  private async importSingleFile(
+    filepath: string,
+    options: ImportOptions
+  ): Promise<void> {
     const startTime = Date.now();
     const spinner = ora('Processing file...').start();
 
@@ -108,14 +118,14 @@ class BMSImportCLI {
       spinner.text = `Reading file: ${basename(filepath)}`;
       const fileContent = await readFile(filepath, 'utf-8');
       const fileStats = await stat(filepath);
-      
+
       // Detect format
       const format = this.detectFormat(filepath, fileContent, options.format);
       spinner.text = `Parsing ${format.toUpperCase()} file...`;
 
       // Parse file
       const payload = await this.parseFile(fileContent, format);
-      
+
       if (options.verbose) {
         spinner.stop();
         console.log(chalk.blue('📄 File Information:'));
@@ -125,16 +135,18 @@ class BMSImportCLI {
         console.log(`  Source System: ${payload.meta.source_system}`);
         console.log(`  Lines: ${payload.lines.length}`);
         console.log(`  Parts: ${payload.parts.length}`);
-        
+
         if (payload.meta.unknown_tags.length > 0) {
-          console.log(chalk.yellow(`  Unknown Tags: ${payload.meta.unknown_tags.length}`));
+          console.log(
+            chalk.yellow(`  Unknown Tags: ${payload.meta.unknown_tags.length}`)
+          );
           if (options.verbose) {
             payload.meta.unknown_tags.forEach(tag => {
               console.log(`    - ${tag}`);
             });
           }
         }
-        
+
         spinner.start();
       }
 
@@ -150,28 +162,35 @@ class BMSImportCLI {
 
       // Display results
       console.log(chalk.green('✅ Import completed successfully!'));
-      
+
       if (!options.dryRun && result) {
         console.log(`Job Number: ${result.jobNumber}`);
-        console.log(`Customer: ${payload.customer.firstName} ${payload.customer.lastName}`);
-        console.log(`Vehicle: ${payload.vehicle.year} ${payload.vehicle.make} ${payload.vehicle.model}`);
+        console.log(
+          `Customer: ${payload.customer.firstName} ${payload.customer.lastName}`
+        );
+        console.log(
+          `Vehicle: ${payload.vehicle.year} ${payload.vehicle.make} ${payload.vehicle.model}`
+        );
         console.log(`Total Amount: $${this.calculateTotal(payload.lines)}`);
       }
 
       console.log(`Processing Time: ${processingTime}ms`);
 
       if (payload.meta.unknown_tags.length > 0) {
-        console.log(chalk.yellow(`⚠️  ${payload.meta.unknown_tags.length} unknown tags encountered`));
+        console.log(
+          chalk.yellow(
+            `⚠️  ${payload.meta.unknown_tags.length} unknown tags encountered`
+          )
+        );
       }
-
     } catch (error) {
       spinner.stop();
       console.error(chalk.red('❌ Import failed:'), error.message);
-      
+
       if (options.verbose) {
         console.error(chalk.gray(error.stack));
       }
-      
+
       process.exit(1);
     }
   }
@@ -179,7 +198,10 @@ class BMSImportCLI {
   /**
    * Import multiple files from a directory
    */
-  private async importBatch(directory: string, options: ImportOptions): Promise<void> {
+  private async importBatch(
+    directory: string,
+    options: ImportOptions
+  ): Promise<void> {
     const startTime = Date.now();
     const spinner = ora('Scanning directory...').start();
 
@@ -192,7 +214,7 @@ class BMSImportCLI {
 
       // Get all BMS/EMS files
       const files = await this.findImportFiles(directory);
-      
+
       if (files.length === 0) {
         spinner.stop();
         console.log(chalk.yellow('⚠️  No BMS/EMS files found in directory'));
@@ -211,22 +233,27 @@ class BMSImportCLI {
         skippedCount: 0,
         results: [],
         unknownTags: new Set(),
-        processingTime: 0
+        processingTime: 0,
       };
 
-      const progressBar = new ProgressBar('Processing [:bar] :percent :current/:total (:etas remaining)', {
-        total: files.length,
-        width: 50,
-        complete: '█',
-        incomplete: '░'
-      });
+      const progressBar = new ProgressBar(
+        'Processing [:bar] :percent :current/:total (:etas remaining)',
+        {
+          total: files.length,
+          width: 50,
+          complete: '█',
+          incomplete: '░',
+        }
+      );
 
       for (let i = 0; i < files.length; i += batchSize) {
         const batch = files.slice(i, i + batchSize);
-        const batchPromises = batch.map(file => this.processFile(file, options));
-        
+        const batchPromises = batch.map(file =>
+          this.processFile(file, options)
+        );
+
         const batchResults = await Promise.allSettled(batchPromises);
-        
+
         for (const [index, result] of batchResults.entries()) {
           const filename = batch[index];
           progressBar.tick();
@@ -234,19 +261,25 @@ class BMSImportCLI {
           if (result.status === 'fulfilled') {
             summary.results.push(result.value);
             summary.successCount++;
-            
+
             // Collect unknown tags
-            result.value.unknownTags?.forEach(tag => summary.unknownTags.add(tag));
+            result.value.unknownTags?.forEach(tag =>
+              summary.unknownTags.add(tag)
+            );
           } else {
             summary.results.push({
               file: filename,
               success: false,
-              error: result.reason?.message || 'Unknown error'
+              error: result.reason?.message || 'Unknown error',
             });
             summary.errorCount++;
 
             if (!options.continueOnError) {
-              console.log(chalk.red(`❌ Stopping batch processing due to error in ${filename}`));
+              console.log(
+                chalk.red(
+                  `❌ Stopping batch processing due to error in ${filename}`
+                )
+              );
               break;
             }
           }
@@ -259,7 +292,6 @@ class BMSImportCLI {
 
       summary.processingTime = Date.now() - startTime;
       this.printBatchSummary(summary, options);
-
     } catch (error) {
       spinner.stop();
       console.error(chalk.red('❌ Batch import failed:'), error.message);
@@ -270,11 +302,14 @@ class BMSImportCLI {
   /**
    * Validate a file without importing
    */
-  private async validateFile(filepath: string, options: ImportOptions): Promise<void> {
+  private async validateFile(
+    filepath: string,
+    options: ImportOptions
+  ): Promise<void> {
     try {
       const fileContent = await readFile(filepath, 'utf-8');
       const format = this.detectFormat(filepath, fileContent, options.format);
-      
+
       console.log(chalk.blue('🔍 Validating file...'));
       console.log(`  Format: ${format.toUpperCase()}`);
 
@@ -282,29 +317,34 @@ class BMSImportCLI {
 
       console.log(chalk.green('✅ File validation successful!'));
       console.log(`  Source System: ${payload.meta.source_system}`);
-      console.log(`  Customer: ${payload.customer.firstName} ${payload.customer.lastName}`);
-      console.log(`  Vehicle: ${payload.vehicle.year} ${payload.vehicle.make} ${payload.vehicle.model}`);
+      console.log(
+        `  Customer: ${payload.customer.firstName} ${payload.customer.lastName}`
+      );
+      console.log(
+        `  Vehicle: ${payload.vehicle.year} ${payload.vehicle.make} ${payload.vehicle.model}`
+      );
       console.log(`  Lines: ${payload.lines.length}`);
       console.log(`  Parts: ${payload.parts.length}`);
       console.log(`  Total Amount: $${this.calculateTotal(payload.lines)}`);
 
       if (payload.meta.unknown_tags.length > 0) {
-        console.log(chalk.yellow(`  Unknown Tags: ${payload.meta.unknown_tags.length}`));
-        
+        console.log(
+          chalk.yellow(`  Unknown Tags: ${payload.meta.unknown_tags.length}`)
+        );
+
         if (options.verbose) {
           payload.meta.unknown_tags.forEach(tag => {
             console.log(`    - ${tag}`);
           });
         }
       }
-
     } catch (error) {
       console.error(chalk.red('❌ Validation failed:'), error.message);
-      
+
       if (options.verbose) {
         console.error(chalk.gray(error.stack));
       }
-      
+
       process.exit(1);
     }
   }
@@ -312,13 +352,16 @@ class BMSImportCLI {
   /**
    * Process a single file and return result
    */
-  private async processFile(filepath: string, options: ImportOptions): Promise<ImportResult> {
+  private async processFile(
+    filepath: string,
+    options: ImportOptions
+  ): Promise<ImportResult> {
     try {
       const fileContent = await readFile(filepath, 'utf-8');
       const format = this.detectFormat(filepath, fileContent, options.format);
-      
+
       const payload = await this.parseFile(fileContent, format);
-      
+
       let job = null;
       if (!options.dryRun && this.normalizer) {
         job = await this.normalizer.upsertJob(payload);
@@ -329,15 +372,17 @@ class BMSImportCLI {
         success: true,
         jobId: job?.id,
         jobNumber: job?.jobNumber,
-        warnings: payload.meta.unknown_tags.length > 0 ? [`${payload.meta.unknown_tags.length} unknown tags`] : [],
-        unknownTags: payload.meta.unknown_tags
+        warnings:
+          payload.meta.unknown_tags.length > 0
+            ? [`${payload.meta.unknown_tags.length} unknown tags`]
+            : [],
+        unknownTags: payload.meta.unknown_tags,
       };
-
     } catch (error) {
       return {
         file: basename(filepath),
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -359,30 +404,37 @@ class BMSImportCLI {
   /**
    * Detect file format based on content and filename
    */
-  private detectFormat(filepath: string, content: string, userFormat?: string): string {
+  private detectFormat(
+    filepath: string,
+    content: string,
+    userFormat?: string
+  ): string {
     if (userFormat && userFormat !== 'auto') {
       return userFormat;
     }
 
     const extension = extname(filepath).toLowerCase();
-    
+
     // Check file extension first
     if (['.xml', '.bms'].includes(extension)) {
       return 'bms';
     }
-    
+
     if (['.ems', '.txt', '.csv'].includes(extension)) {
       return 'ems';
     }
 
     // Check content patterns
     const firstLine = content.split('\n')[0]?.trim();
-    
+
     // XML content indicates BMS
-    if (content.trim().startsWith('<?xml') || content.includes('<VehicleDamageEstimateAddRq')) {
+    if (
+      content.trim().startsWith('<?xml') ||
+      content.includes('<VehicleDamageEstimateAddRq')
+    ) {
       return 'bms';
     }
-    
+
     // Pipe-delimited content indicates EMS
     if (firstLine?.includes('|') && firstLine?.includes('HDR|')) {
       return 'ems';
@@ -399,14 +451,14 @@ class BMSImportCLI {
     try {
       const { readdir } = await import('fs/promises');
       const files = await readdir(directory);
-      
+
       const importFiles: string[] = [];
       const validExtensions = ['.xml', '.bms', '.ems', '.txt'];
-      
+
       for (const file of files) {
         const filepath = join(directory, file);
         const ext = extname(file).toLowerCase();
-        
+
         if (validExtensions.includes(ext)) {
           const stats = await stat(filepath);
           if (stats.isFile()) {
@@ -414,7 +466,7 @@ class BMSImportCLI {
           }
         }
       }
-      
+
       return importFiles.sort();
     } catch (error) {
       throw new Error(`Failed to scan directory: ${error.message}`);
@@ -445,24 +497,33 @@ class BMSImportCLI {
   /**
    * Print batch processing summary
    */
-  private printBatchSummary(summary: ImportSummary, options: ImportOptions): void {
+  private printBatchSummary(
+    summary: ImportSummary,
+    options: ImportOptions
+  ): void {
     console.log(chalk.blue('\n📊 Batch Import Summary:'));
     console.log(`  Total Files: ${summary.totalFiles}`);
     console.log(chalk.green(`  Successful: ${summary.successCount}`));
-    
+
     if (summary.errorCount > 0) {
       console.log(chalk.red(`  Failed: ${summary.errorCount}`));
     }
-    
+
     if (summary.skippedCount > 0) {
       console.log(chalk.yellow(`  Skipped: ${summary.skippedCount}`));
     }
 
-    console.log(`  Processing Time: ${(summary.processingTime / 1000).toFixed(2)}s`);
-    console.log(`  Average per file: ${(summary.processingTime / summary.totalFiles).toFixed(0)}ms`);
+    console.log(
+      `  Processing Time: ${(summary.processingTime / 1000).toFixed(2)}s`
+    );
+    console.log(
+      `  Average per file: ${(summary.processingTime / summary.totalFiles).toFixed(0)}ms`
+    );
 
     if (summary.unknownTags.size > 0) {
-      console.log(chalk.yellow(`  Unknown Tags Found: ${summary.unknownTags.size}`));
+      console.log(
+        chalk.yellow(`  Unknown Tags Found: ${summary.unknownTags.size}`)
+      );
     }
 
     // Show failed files
@@ -475,7 +536,9 @@ class BMSImportCLI {
     }
 
     // Show files with warnings
-    const warningFiles = summary.results.filter(r => r.success && r.warnings && r.warnings.length > 0);
+    const warningFiles = summary.results.filter(
+      r => r.success && r.warnings && r.warnings.length > 0
+    );
     if (warningFiles.length > 0) {
       console.log(chalk.yellow('\n⚠️  Files with Warnings:'));
       warningFiles.forEach(result => {

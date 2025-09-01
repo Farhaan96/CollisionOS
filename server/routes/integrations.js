@@ -5,20 +5,24 @@
 
 const express = require('express');
 const router = express.Router();
-const { asyncHandler, successResponse, errors } = require('../utils/errorHandler');
+const {
+  asyncHandler,
+  successResponse,
+  errors,
+} = require('../utils/errorHandler');
 const { integrationManager } = require('../services/integrationFramework');
-const { 
-  InsuranceIntegrationService, 
-  MitchellProvider, 
-  CCCProvider, 
-  AudatexProvider 
+const {
+  InsuranceIntegrationService,
+  MitchellProvider,
+  CCCProvider,
+  AudatexProvider,
 } = require('../services/insuranceIntegration');
-const { 
+const {
   PartsSupplierIntegrationService,
   LKQProvider,
   GPCProvider,
   AutoZoneProvider,
-  HollanderProvider
+  HollanderProvider,
 } = require('../services/partsSupplierIntegration');
 
 // Initialize integration services
@@ -38,25 +42,33 @@ const partsSupplierService = new PartsSupplierIntegrationService();
  *       200:
  *         description: List of all integration providers
  */
-router.get('/', asyncHandler(async (req, res) => {
-  // Get statistics from individual services
-  const insuranceStats = insuranceService.getStatistics();
-  const partsStats = partsSupplierService.getStatistics();
-  
-  successResponse(res, {
-    statistics: {
-      totalProviders: insuranceStats.totalProviders + partsStats.totalProviders,
-      providers: {
-        insurance: insuranceStats,
-        partsSupplier: partsStats
-      }
-    },
-    providers: {
-      insurance: insuranceService.getStatistics(),
-      partsSupplier: partsSupplierService.getStatistics()
-    }
-  }, 'Integration providers retrieved successfully');
-}));
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    // Get statistics from individual services
+    const insuranceStats = insuranceService.getStatistics();
+    const partsStats = partsSupplierService.getStatistics();
+
+    successResponse(
+      res,
+      {
+        statistics: {
+          totalProviders:
+            insuranceStats.totalProviders + partsStats.totalProviders,
+          providers: {
+            insurance: insuranceStats,
+            partsSupplier: partsStats,
+          },
+        },
+        providers: {
+          insurance: insuranceService.getStatistics(),
+          partsSupplier: partsSupplierService.getStatistics(),
+        },
+      },
+      'Integration providers retrieved successfully'
+    );
+  })
+);
 
 /**
  * @swagger
@@ -68,16 +80,23 @@ router.get('/', asyncHandler(async (req, res) => {
  *       200:
  *         description: Health status of all providers
  */
-router.get('/health', asyncHandler(async (req, res) => {
-  const insuranceHealth = await insuranceService.healthCheck();
-  const partsHealth = await partsSupplierService.healthCheck();
-  
-  successResponse(res, {
-    insurance: insuranceHealth,
-    partsSuppliers: partsHealth,
-    timestamp: new Date().toISOString()
-  }, 'Health check completed');
-}));
+router.get(
+  '/health',
+  asyncHandler(async (req, res) => {
+    const insuranceHealth = await insuranceService.healthCheck();
+    const partsHealth = await partsSupplierService.healthCheck();
+
+    successResponse(
+      res,
+      {
+        insurance: insuranceHealth,
+        partsSuppliers: partsHealth,
+        timestamp: new Date().toISOString(),
+      },
+      'Health check completed'
+    );
+  })
+);
 
 // Insurance Integration Routes
 
@@ -91,10 +110,13 @@ router.get('/health', asyncHandler(async (req, res) => {
  *       200:
  *         description: List of insurance providers
  */
-router.get('/insurance/providers', asyncHandler(async (req, res) => {
-  const providers = insuranceService.getProviders();
-  successResponse(res, providers, 'Insurance providers retrieved');
-}));
+router.get(
+  '/insurance/providers',
+  asyncHandler(async (req, res) => {
+    const providers = insuranceService.getProviders();
+    successResponse(res, providers, 'Insurance providers retrieved');
+  })
+);
 
 /**
  * @swagger
@@ -120,32 +142,40 @@ router.get('/insurance/providers', asyncHandler(async (req, res) => {
  *       200:
  *         description: Insurance provider registered successfully
  */
-router.post('/insurance/providers', asyncHandler(async (req, res) => {
-  const { name, type, credentials } = req.body;
-  
-  if (!name || !type || !credentials) {
-    throw errors.missingField('name, type, and credentials are required');
-  }
+router.post(
+  '/insurance/providers',
+  asyncHandler(async (req, res) => {
+    const { name, type, credentials } = req.body;
 
-  let provider;
-  switch (type.toLowerCase()) {
-    case 'mitchell':
-      provider = new MitchellProvider(credentials);
-      break;
-    case 'ccc':
-      provider = new CCCProvider(credentials);
-      break;
-    case 'audatex':
-      provider = new AudatexProvider(credentials);
-      break;
-    default:
-      throw errors.invalidField('type', 'Must be mitchell, ccc, or audatex');
-  }
+    if (!name || !type || !credentials) {
+      throw errors.missingField('name, type, and credentials are required');
+    }
 
-  insuranceService.registerProvider(name, provider);
-  
-  successResponse(res, { name, type }, 'Insurance provider registered successfully', 201);
-}));
+    let provider;
+    switch (type.toLowerCase()) {
+      case 'mitchell':
+        provider = new MitchellProvider(credentials);
+        break;
+      case 'ccc':
+        provider = new CCCProvider(credentials);
+        break;
+      case 'audatex':
+        provider = new AudatexProvider(credentials);
+        break;
+      default:
+        throw errors.invalidField('type', 'Must be mitchell, ccc, or audatex');
+    }
+
+    insuranceService.registerProvider(name, provider);
+
+    successResponse(
+      res,
+      { name, type },
+      'Insurance provider registered successfully',
+      201
+    );
+  })
+);
 
 /**
  * @swagger
@@ -168,17 +198,20 @@ router.post('/insurance/providers', asyncHandler(async (req, res) => {
  *       200:
  *         description: Claim submitted successfully
  */
-router.post('/insurance/claims', asyncHandler(async (req, res) => {
-  const { provider, claimData } = req.body;
-  
-  if (!provider || !claimData) {
-    throw errors.missingField('provider and claimData are required');
-  }
+router.post(
+  '/insurance/claims',
+  asyncHandler(async (req, res) => {
+    const { provider, claimData } = req.body;
 
-  const result = await insuranceService.submitClaim(provider, claimData);
-  
-  successResponse(res, result, 'Claim submitted successfully');
-}));
+    if (!provider || !claimData) {
+      throw errors.missingField('provider and claimData are required');
+    }
+
+    const result = await insuranceService.submitClaim(provider, claimData);
+
+    successResponse(res, result, 'Claim submitted successfully');
+  })
+);
 
 /**
  * @swagger
@@ -201,17 +234,23 @@ router.post('/insurance/claims', asyncHandler(async (req, res) => {
  *       200:
  *         description: Estimate submitted successfully
  */
-router.post('/insurance/estimates', asyncHandler(async (req, res) => {
-  const { provider, estimateData } = req.body;
-  
-  if (!provider || !estimateData) {
-    throw errors.missingField('provider and estimateData are required');
-  }
+router.post(
+  '/insurance/estimates',
+  asyncHandler(async (req, res) => {
+    const { provider, estimateData } = req.body;
 
-  const result = await insuranceService.submitEstimate(provider, estimateData);
-  
-  successResponse(res, result, 'Estimate submitted successfully');
-}));
+    if (!provider || !estimateData) {
+      throw errors.missingField('provider and estimateData are required');
+    }
+
+    const result = await insuranceService.submitEstimate(
+      provider,
+      estimateData
+    );
+
+    successResponse(res, result, 'Estimate submitted successfully');
+  })
+);
 
 /**
  * @swagger
@@ -234,18 +273,21 @@ router.post('/insurance/estimates', asyncHandler(async (req, res) => {
  *       200:
  *         description: Claim status retrieved
  */
-router.get('/insurance/claims/:claimNumber/status', asyncHandler(async (req, res) => {
-  const { claimNumber } = req.params;
-  const { provider } = req.query;
-  
-  if (!provider) {
-    throw errors.missingField('provider query parameter is required');
-  }
+router.get(
+  '/insurance/claims/:claimNumber/status',
+  asyncHandler(async (req, res) => {
+    const { claimNumber } = req.params;
+    const { provider } = req.query;
 
-  const status = await insuranceService.getClaimStatus(provider, claimNumber);
-  
-  successResponse(res, status, 'Claim status retrieved');
-}));
+    if (!provider) {
+      throw errors.missingField('provider query parameter is required');
+    }
+
+    const status = await insuranceService.getClaimStatus(provider, claimNumber);
+
+    successResponse(res, status, 'Claim status retrieved');
+  })
+);
 
 // Parts Supplier Integration Routes
 
@@ -259,10 +301,13 @@ router.get('/insurance/claims/:claimNumber/status', asyncHandler(async (req, res
  *       200:
  *         description: List of parts supplier providers
  */
-router.get('/parts/providers', asyncHandler(async (req, res) => {
-  const providers = partsSupplierService.getProviders();
-  successResponse(res, providers, 'Parts supplier providers retrieved');
-}));
+router.get(
+  '/parts/providers',
+  asyncHandler(async (req, res) => {
+    const providers = partsSupplierService.getProviders();
+    successResponse(res, providers, 'Parts supplier providers retrieved');
+  })
+);
 
 /**
  * @swagger
@@ -288,35 +333,46 @@ router.get('/parts/providers', asyncHandler(async (req, res) => {
  *       200:
  *         description: Parts supplier provider registered successfully
  */
-router.post('/parts/providers', asyncHandler(async (req, res) => {
-  const { name, type, credentials } = req.body;
-  
-  if (!name || !type || !credentials) {
-    throw errors.missingField('name, type, and credentials are required');
-  }
+router.post(
+  '/parts/providers',
+  asyncHandler(async (req, res) => {
+    const { name, type, credentials } = req.body;
 
-  let provider;
-  switch (type.toLowerCase()) {
-    case 'lkq':
-      provider = new LKQProvider(credentials);
-      break;
-    case 'gpc':
-      provider = new GPCProvider(credentials);
-      break;
-    case 'autozone':
-      provider = new AutoZoneProvider(credentials);
-      break;
-    case 'hollander':
-      provider = new HollanderProvider(credentials);
-      break;
-    default:
-      throw errors.invalidField('type', 'Must be lkq, gpc, autozone, or hollander');
-  }
+    if (!name || !type || !credentials) {
+      throw errors.missingField('name, type, and credentials are required');
+    }
 
-  partsSupplierService.registerProvider(name, provider);
-  
-  successResponse(res, { name, type }, 'Parts supplier provider registered successfully', 201);
-}));
+    let provider;
+    switch (type.toLowerCase()) {
+      case 'lkq':
+        provider = new LKQProvider(credentials);
+        break;
+      case 'gpc':
+        provider = new GPCProvider(credentials);
+        break;
+      case 'autozone':
+        provider = new AutoZoneProvider(credentials);
+        break;
+      case 'hollander':
+        provider = new HollanderProvider(credentials);
+        break;
+      default:
+        throw errors.invalidField(
+          'type',
+          'Must be lkq, gpc, autozone, or hollander'
+        );
+    }
+
+    partsSupplierService.registerProvider(name, provider);
+
+    successResponse(
+      res,
+      { name, type },
+      'Parts supplier provider registered successfully',
+      201
+    );
+  })
+);
 
 /**
  * @swagger
@@ -341,17 +397,23 @@ router.post('/parts/providers', asyncHandler(async (req, res) => {
  *       200:
  *         description: Parts search results
  */
-router.post('/parts/search', asyncHandler(async (req, res) => {
-  const { searchCriteria, providers } = req.body;
-  
-  if (!searchCriteria) {
-    throw errors.missingField('searchCriteria is required');
-  }
+router.post(
+  '/parts/search',
+  asyncHandler(async (req, res) => {
+    const { searchCriteria, providers } = req.body;
 
-  const results = await partsSupplierService.searchParts(searchCriteria, providers);
-  
-  successResponse(res, results, 'Parts search completed');
-}));
+    if (!searchCriteria) {
+      throw errors.missingField('searchCriteria is required');
+    }
+
+    const results = await partsSupplierService.searchParts(
+      searchCriteria,
+      providers
+    );
+
+    successResponse(res, results, 'Parts search completed');
+  })
+);
 
 /**
  * @swagger
@@ -378,17 +440,27 @@ router.post('/parts/search', asyncHandler(async (req, res) => {
  *       200:
  *         description: Price comparison results
  */
-router.post('/parts/pricing/compare', asyncHandler(async (req, res) => {
-  const { partNumbers, providers } = req.body;
-  
-  if (!partNumbers || !Array.isArray(partNumbers) || partNumbers.length === 0) {
-    throw errors.missingField('partNumbers array is required');
-  }
+router.post(
+  '/parts/pricing/compare',
+  asyncHandler(async (req, res) => {
+    const { partNumbers, providers } = req.body;
 
-  const comparison = await partsSupplierService.comparePrices(partNumbers, providers);
-  
-  successResponse(res, comparison, 'Price comparison completed');
-}));
+    if (
+      !partNumbers ||
+      !Array.isArray(partNumbers) ||
+      partNumbers.length === 0
+    ) {
+      throw errors.missingField('partNumbers array is required');
+    }
+
+    const comparison = await partsSupplierService.comparePrices(
+      partNumbers,
+      providers
+    );
+
+    successResponse(res, comparison, 'Price comparison completed');
+  })
+);
 
 /**
  * @swagger
@@ -412,24 +484,30 @@ router.post('/parts/pricing/compare', asyncHandler(async (req, res) => {
  *       200:
  *         description: Orders created successfully
  */
-router.post('/parts/orders', asyncHandler(async (req, res) => {
-  const { orderData, strategy = 'best_price' } = req.body;
-  
-  if (!orderData) {
-    throw errors.missingField('orderData is required');
-  }
+router.post(
+  '/parts/orders',
+  asyncHandler(async (req, res) => {
+    const { orderData, strategy = 'best_price' } = req.body;
 
-  let result;
-  switch (strategy) {
-    case 'best_price':
-      result = await partsSupplierService.createOrderWithBestPrice(orderData);
-      break;
-    default:
-      throw errors.invalidField('strategy', 'Only best_price strategy is currently supported');
-  }
-  
-  successResponse(res, result, 'Orders created successfully');
-}));
+    if (!orderData) {
+      throw errors.missingField('orderData is required');
+    }
+
+    let result;
+    switch (strategy) {
+      case 'best_price':
+        result = await partsSupplierService.createOrderWithBestPrice(orderData);
+        break;
+      default:
+        throw errors.invalidField(
+          'strategy',
+          'Only best_price strategy is currently supported'
+        );
+    }
+
+    successResponse(res, result, 'Orders created successfully');
+  })
+);
 
 // Webhook Endpoints
 
@@ -454,15 +532,24 @@ router.post('/parts/orders', asyncHandler(async (req, res) => {
  *       200:
  *         description: Webhook processed successfully
  */
-router.post('/webhooks/:provider/:eventType', asyncHandler(async (req, res) => {
-  const { provider, eventType } = req.params;
-  const signature = req.headers['x-signature'] || req.headers['x-hub-signature-256'];
-  const payload = req.body;
-  
-  const result = await integrationManager.handleWebhook(provider, eventType, payload, signature);
-  
-  successResponse(res, result, 'Webhook processed');
-}));
+router.post(
+  '/webhooks/:provider/:eventType',
+  asyncHandler(async (req, res) => {
+    const { provider, eventType } = req.params;
+    const signature =
+      req.headers['x-signature'] || req.headers['x-hub-signature-256'];
+    const payload = req.body;
+
+    const result = await integrationManager.handleWebhook(
+      provider,
+      eventType,
+      payload,
+      signature
+    );
+
+    successResponse(res, result, 'Webhook processed');
+  })
+);
 
 // Configuration Management
 
@@ -476,23 +563,26 @@ router.post('/webhooks/:provider/:eventType', asyncHandler(async (req, res) => {
  *       200:
  *         description: Integration configuration
  */
-router.get('/config', asyncHandler(async (req, res) => {
-  const config = {
-    supportedInsuranceProviders: ['mitchell', 'ccc', 'audatex'],
-    supportedPartsSuppliers: ['lkq', 'gpc', 'autozone', 'hollander'],
-    features: {
-      realTimeUpdates: true,
-      webhookSupport: true,
-      priceComparison: true,
-      automaticOrdering: true
-    },
-    rateLimits: {
-      requestsPerMinute: 60,
-      burstLimit: 10
-    }
-  };
-  
-  successResponse(res, config, 'Integration configuration retrieved');
-}));
+router.get(
+  '/config',
+  asyncHandler(async (req, res) => {
+    const config = {
+      supportedInsuranceProviders: ['mitchell', 'ccc', 'audatex'],
+      supportedPartsSuppliers: ['lkq', 'gpc', 'autozone', 'hollander'],
+      features: {
+        realTimeUpdates: true,
+        webhookSupport: true,
+        priceComparison: true,
+        automaticOrdering: true,
+      },
+      rateLimits: {
+        requestsPerMinute: 60,
+        burstLimit: 10,
+      },
+    };
+
+    successResponse(res, config, 'Integration configuration retrieved');
+  })
+);
 
 module.exports = router;

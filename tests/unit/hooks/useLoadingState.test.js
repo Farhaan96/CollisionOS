@@ -89,8 +89,8 @@ describe('useLoadingState', () => {
     });
 
     it('handles successful operation', async () => {
-      const { result } = renderHook(() => 
-        useLoadingState({ 
+      const { result } = renderHook(() =>
+        useLoadingState({
           minimumLoadTime: 0,
           showNotifications: true,
           successMessage: 'Operation successful!',
@@ -107,11 +107,13 @@ describe('useLoadingState', () => {
       expect(result.current.state).toBe(LOADING_STATES.SUCCESS);
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.progress).toBe(100);
-      expect(mockNotify.success).toHaveBeenCalledWith('Operation successful!', { duration: 3000 });
+      expect(mockNotify.success).toHaveBeenCalledWith('Operation successful!', {
+        duration: 3000,
+      });
     });
 
     it('handles operation errors', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({ showNotifications: true })
       );
 
@@ -133,7 +135,7 @@ describe('useLoadingState', () => {
     });
 
     it('respects minimum load time', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({ minimumLoadTime: 1000 })
       );
 
@@ -164,8 +166,8 @@ describe('useLoadingState', () => {
     });
 
     it('handles operation timeout', async () => {
-      const { result } = renderHook(() => 
-        useLoadingState({ 
+      const { result } = renderHook(() =>
+        useLoadingState({
           maximumLoadTime: 1000,
           showNotifications: true,
         })
@@ -191,8 +193,8 @@ describe('useLoadingState', () => {
     });
 
     it('supports progress tracking', async () => {
-      const { result } = renderHook(() => 
-        useLoadingState({ 
+      const { result } = renderHook(() =>
+        useLoadingState({
           showProgress: true,
           progressInterval: 100,
           minimumLoadTime: 0,
@@ -262,7 +264,7 @@ describe('useLoadingState', () => {
 
   describe('Retry Mechanism', () => {
     it('enables retry when operation fails', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({ retryAttempts: 3 })
       );
 
@@ -282,8 +284,8 @@ describe('useLoadingState', () => {
     });
 
     it('performs manual retry', async () => {
-      const { result } = renderHook(() => 
-        useLoadingState({ 
+      const { result } = renderHook(() =>
+        useLoadingState({
           retryAttempts: 3,
           minimumLoadTime: 0,
         })
@@ -321,7 +323,7 @@ describe('useLoadingState', () => {
     });
 
     it('performs auto-retry with backoff', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({
           autoRetry: true,
           retryAttempts: 2,
@@ -370,7 +372,7 @@ describe('useLoadingState', () => {
     });
 
     it('stops retrying after max attempts', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({
           autoRetry: true,
           retryAttempts: 2,
@@ -389,7 +391,9 @@ describe('useLoadingState', () => {
       // Wait for all retries to complete
       for (let i = 0; i < 3; i++) {
         await waitFor(() => {
-          expect(result.current.isError || result.current.isRetrying).toBe(true);
+          expect(result.current.isError || result.current.isRetrying).toBe(
+            true
+          );
         });
         act(() => {
           vi.advanceTimersByTime(100 * Math.pow(2, i));
@@ -417,7 +421,7 @@ describe('useLoadingState', () => {
 
     it('allows manual success state', () => {
       const mockOnSuccess = vi.fn();
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({ onSuccess: mockOnSuccess })
       );
 
@@ -522,7 +526,9 @@ describe('useLoadingState', () => {
 
   describe('Helper Methods', () => {
     it('withLoading wrapper works correctly', async () => {
-      const { result } = renderHook(() => useLoadingState({ minimumLoadTime: 0 }));
+      const { result } = renderHook(() =>
+        useLoadingState({ minimumLoadTime: 0 })
+      );
 
       const mockOperation = vi.fn().mockResolvedValue('wrapped success');
 
@@ -535,8 +541,8 @@ describe('useLoadingState', () => {
     });
 
     it('withProgressTracking wrapper works correctly', async () => {
-      const { result } = renderHook(() => 
-        useLoadingState({ 
+      const { result } = renderHook(() =>
+        useLoadingState({
           minimumLoadTime: 0,
           showProgress: true,
         })
@@ -552,7 +558,9 @@ describe('useLoadingState', () => {
     });
 
     it('withRetry wrapper works correctly', async () => {
-      const { result } = renderHook(() => useLoadingState({ minimumLoadTime: 0 }));
+      const { result } = renderHook(() =>
+        useLoadingState({ minimumLoadTime: 0 })
+      );
 
       let callCount = 0;
       const mockOperation = vi.fn(() => {
@@ -581,7 +589,9 @@ describe('useLoadingState', () => {
 
   describe('Edge Cases', () => {
     it('handles rapid successive calls', async () => {
-      const { result } = renderHook(() => useLoadingState({ minimumLoadTime: 0 }));
+      const { result } = renderHook(() =>
+        useLoadingState({ minimumLoadTime: 0 })
+      );
 
       const mockOperation1 = vi.fn().mockResolvedValue('first');
       const mockOperation2 = vi.fn().mockResolvedValue('second');
@@ -611,7 +621,7 @@ describe('useLoadingState', () => {
         value: false,
       });
 
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useLoadingState({ showNotifications: true })
       );
 
@@ -639,12 +649,14 @@ describe('useLoadingState', () => {
     });
 
     it('calculates duration correctly', async () => {
-      const { result } = renderHook(() => useLoadingState({ minimumLoadTime: 0 }));
+      const { result } = renderHook(() =>
+        useLoadingState({ minimumLoadTime: 0 })
+      );
 
       const mockOperation = vi.fn().mockResolvedValue('success');
 
       const startTime = Date.now();
-      
+
       await act(async () => {
         await result.current.execute(mockOperation);
       });
@@ -653,7 +665,9 @@ describe('useLoadingState', () => {
       const expectedDuration = endTime - startTime;
 
       expect(result.current.duration).toBeGreaterThanOrEqual(0);
-      expect(result.current.duration).toBeLessThanOrEqual(expectedDuration + 100); // Allow some tolerance
+      expect(result.current.duration).toBeLessThanOrEqual(
+        expectedDuration + 100
+      ); // Allow some tolerance
     });
   });
 });

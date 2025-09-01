@@ -19,7 +19,7 @@ class BMSBatchProcessor extends EventEmitter {
       retryAttempts: 3,
       retryDelay: 5000,
       progressUpdateInterval: 1000,
-      autoCleanupAfter: 24 * 60 * 60 * 1000 // 24 hours
+      autoCleanupAfter: 24 * 60 * 60 * 1000, // 24 hours
     };
   }
 
@@ -31,7 +31,7 @@ class BMSBatchProcessor extends EventEmitter {
    */
   createBatch(files, options = {}) {
     const batchId = this.generateBatchId();
-    
+
     const batch = {
       id: batchId,
       files: files.map((file, index) => ({
@@ -47,7 +47,7 @@ class BMSBatchProcessor extends EventEmitter {
         validation: null,
         startTime: null,
         endTime: null,
-        processingTime: 0
+        processingTime: 0,
       })),
       status: 'created',
       progress: 0,
@@ -60,25 +60,25 @@ class BMSBatchProcessor extends EventEmitter {
         failedFiles: 0,
         skippedFiles: 0,
         totalSize: files.reduce((sum, file) => sum + file.size, 0),
-        processedSize: 0
+        processedSize: 0,
       },
       timestamps: {
         created: new Date(),
         started: null,
         paused: null,
         resumed: null,
-        completed: null
+        completed: null,
       },
       errors: [],
       warnings: [],
       canPause: true,
       canResume: false,
-      canCancel: true
+      canCancel: true,
     };
 
     this.batchQueue.set(batchId, batch);
     this.emit('batchCreated', batch);
-    
+
     return batchId;
   }
 
@@ -88,8 +88,9 @@ class BMSBatchProcessor extends EventEmitter {
    * @returns {Promise} Processing promise
    */
   async startBatch(batchId) {
-    const batch = this.batchQueue.get(batchId) || this.processingBatches.get(batchId);
-    
+    const batch =
+      this.batchQueue.get(batchId) || this.processingBatches.get(batchId);
+
     if (!batch) {
       throw new Error(`Batch ${batchId} not found`);
     }
@@ -131,13 +132,15 @@ class BMSBatchProcessor extends EventEmitter {
    */
   async pauseBatch(batchId) {
     const batch = this.processingBatches.get(batchId);
-    
+
     if (!batch) {
       throw new Error(`Batch ${batchId} not found or not processing`);
     }
 
     if (batch.status !== 'processing') {
-      throw new Error(`Cannot pause batch ${batchId} - not in processing state`);
+      throw new Error(
+        `Cannot pause batch ${batchId} - not in processing state`
+      );
     }
 
     batch.status = 'paused';
@@ -154,7 +157,7 @@ class BMSBatchProcessor extends EventEmitter {
    */
   async resumeBatch(batchId) {
     const batch = this.processingBatches.get(batchId);
-    
+
     if (!batch) {
       throw new Error(`Batch ${batchId} not found`);
     }
@@ -183,8 +186,9 @@ class BMSBatchProcessor extends EventEmitter {
    * @param {string} batchId - Batch identifier
    */
   async cancelBatch(batchId) {
-    const batch = this.processingBatches.get(batchId) || this.batchQueue.get(batchId);
-    
+    const batch =
+      this.processingBatches.get(batchId) || this.batchQueue.get(batchId);
+
     if (!batch) {
       throw new Error(`Batch ${batchId} not found`);
     }
@@ -241,10 +245,10 @@ class BMSBatchProcessor extends EventEmitter {
 
         const file = batch.files[i];
         await this.processFile(batch, file);
-        
+
         batch.currentFileIndex = i + 1;
         batch.statistics.processedFiles++;
-        
+
         // Update progress
         this.updateBatchProgress(batch);
         this.emit('fileProcessed', { batch, file });
@@ -269,17 +273,17 @@ class BMSBatchProcessor extends EventEmitter {
     try {
       // Read file content
       const content = await this.readFileContent(file.originalFile);
-      
+
       // Validate file if validator is available
       if (this.validator) {
         file.validation = await this.validator.validateBMSFile(content);
-        
+
         if (!file.validation.isValid && batch.settings.pauseOnError) {
           file.status = 'failed';
           file.error = {
             type: 'ValidationError',
             message: 'File validation failed',
-            details: file.validation.errors
+            details: file.validation.errors,
           };
           batch.statistics.failedFiles++;
           this.emit('fileError', { batch, file });
@@ -289,7 +293,7 @@ class BMSBatchProcessor extends EventEmitter {
 
       // Parse and save file
       const result = await this.bmsService.uploadBMSFile(file.originalFile);
-      
+
       if (result.success) {
         file.status = 'completed';
         file.result = result.data;
@@ -298,7 +302,6 @@ class BMSBatchProcessor extends EventEmitter {
       } else {
         throw new Error(result.error || 'Unknown processing error');
       }
-
     } catch (error) {
       await this.handleFileError(batch, file, error);
     } finally {
@@ -318,13 +321,13 @@ class BMSBatchProcessor extends EventEmitter {
     file.error = {
       type: error.constructor.name,
       message: error.message,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     batch.errors.push({
       fileId: file.id,
       fileName: file.fileName,
-      error: file.error
+      error: file.error,
     });
 
     // Retry logic
@@ -334,7 +337,7 @@ class BMSBatchProcessor extends EventEmitter {
     } else {
       file.status = 'failed';
       batch.statistics.failedFiles++;
-      
+
       this.emit('fileError', { batch, file });
 
       // Pause batch on error if configured
@@ -360,9 +363,12 @@ class BMSBatchProcessor extends EventEmitter {
     batch.canCancel = false;
 
     // Calculate final statistics
-    batch.statistics.totalProcessingTime = batch.timestamps.completed - batch.timestamps.started;
-    batch.statistics.averageFileTime = batch.statistics.totalProcessingTime / batch.statistics.processedFiles;
-    batch.statistics.successRate = (batch.statistics.successfulFiles / batch.statistics.totalFiles) * 100;
+    batch.statistics.totalProcessingTime =
+      batch.timestamps.completed - batch.timestamps.started;
+    batch.statistics.averageFileTime =
+      batch.statistics.totalProcessingTime / batch.statistics.processedFiles;
+    batch.statistics.successRate =
+      (batch.statistics.successfulFiles / batch.statistics.totalFiles) * 100;
 
     // Move to completed batches
     this.processingBatches.delete(batch.id);
@@ -386,7 +392,7 @@ class BMSBatchProcessor extends EventEmitter {
     batch.error = {
       type: error.constructor.name,
       message: error.message,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
     batch.timestamps.completed = new Date();
 
@@ -404,9 +410,9 @@ class BMSBatchProcessor extends EventEmitter {
   updateBatchProgress(batch) {
     const totalFiles = batch.statistics.totalFiles;
     const processedFiles = batch.statistics.processedFiles;
-    
+
     batch.progress = totalFiles > 0 ? (processedFiles / totalFiles) * 100 : 0;
-    
+
     // Update individual file progress based on processing status
     batch.files.forEach(file => {
       switch (file.status) {
@@ -434,9 +440,10 @@ class BMSBatchProcessor extends EventEmitter {
    * @returns {Object} Batch status
    */
   getBatchStatus(batchId) {
-    const batch = this.batchQueue.get(batchId) || 
-                  this.processingBatches.get(batchId) || 
-                  this.completedBatches.get(batchId);
+    const batch =
+      this.batchQueue.get(batchId) ||
+      this.processingBatches.get(batchId) ||
+      this.completedBatches.get(batchId);
 
     if (!batch) {
       return null;
@@ -456,8 +463,8 @@ class BMSBatchProcessor extends EventEmitter {
         fileName: file.fileName,
         status: file.status,
         progress: file.progress,
-        error: file.error
-      }))
+        error: file.error,
+      })),
     };
   }
 
@@ -467,9 +474,11 @@ class BMSBatchProcessor extends EventEmitter {
    * @returns {Object} Detailed batch information
    */
   getBatchDetails(batchId) {
-    return this.batchQueue.get(batchId) || 
-           this.processingBatches.get(batchId) || 
-           this.completedBatches.get(batchId);
+    return (
+      this.batchQueue.get(batchId) ||
+      this.processingBatches.get(batchId) ||
+      this.completedBatches.get(batchId)
+    );
   }
 
   /**
@@ -481,7 +490,7 @@ class BMSBatchProcessor extends EventEmitter {
     const allBatches = [
       ...Array.from(this.batchQueue.values()),
       ...Array.from(this.processingBatches.values()),
-      ...Array.from(this.completedBatches.values())
+      ...Array.from(this.completedBatches.values()),
     ];
 
     return allBatches
@@ -491,9 +500,12 @@ class BMSBatchProcessor extends EventEmitter {
         status: batch.status,
         progress: batch.progress,
         statistics: batch.statistics,
-        timestamps: batch.timestamps
+        timestamps: batch.timestamps,
       }))
-      .sort((a, b) => new Date(b.timestamps.created) - new Date(a.timestamps.created));
+      .sort(
+        (a, b) =>
+          new Date(b.timestamps.created) - new Date(a.timestamps.created)
+      );
   }
 
   /**
@@ -513,7 +525,7 @@ class BMSBatchProcessor extends EventEmitter {
   readFileContent(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
+      reader.onload = e => resolve(e.target.result);
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsText(file);
     });
@@ -544,7 +556,7 @@ class BMSBatchProcessor extends EventEmitter {
     const allBatches = [
       ...Array.from(this.batchQueue.values()),
       ...Array.from(this.processingBatches.values()),
-      ...Array.from(this.completedBatches.values())
+      ...Array.from(this.completedBatches.values()),
     ];
 
     return {
@@ -552,13 +564,30 @@ class BMSBatchProcessor extends EventEmitter {
       activeBatches: this.processingBatches.size,
       queuedBatches: this.batchQueue.size,
       completedBatches: this.completedBatches.size,
-      totalFiles: allBatches.reduce((sum, batch) => sum + batch.statistics.totalFiles, 0),
-      successfulFiles: allBatches.reduce((sum, batch) => sum + batch.statistics.successfulFiles, 0),
-      failedFiles: allBatches.reduce((sum, batch) => sum + batch.statistics.failedFiles, 0),
-      overallSuccessRate: allBatches.length > 0 
-        ? (allBatches.reduce((sum, batch) => sum + batch.statistics.successfulFiles, 0) / 
-           allBatches.reduce((sum, batch) => sum + batch.statistics.totalFiles, 0)) * 100 
-        : 0
+      totalFiles: allBatches.reduce(
+        (sum, batch) => sum + batch.statistics.totalFiles,
+        0
+      ),
+      successfulFiles: allBatches.reduce(
+        (sum, batch) => sum + batch.statistics.successfulFiles,
+        0
+      ),
+      failedFiles: allBatches.reduce(
+        (sum, batch) => sum + batch.statistics.failedFiles,
+        0
+      ),
+      overallSuccessRate:
+        allBatches.length > 0
+          ? (allBatches.reduce(
+              (sum, batch) => sum + batch.statistics.successfulFiles,
+              0
+            ) /
+              allBatches.reduce(
+                (sum, batch) => sum + batch.statistics.totalFiles,
+                0
+              )) *
+            100
+          : 0,
     };
   }
 }

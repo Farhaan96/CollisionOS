@@ -28,9 +28,9 @@ class VINService {
    */
   async decodeVIN(vin, useApiOnly = false) {
     try {
-      const response = await api.post('/vehicles/decode-vin', { 
-        vin, 
-        useApiOnly 
+      const response = await api.post('/vehicles/decode-vin', {
+        vin,
+        useApiOnly,
       });
       return response.data;
     } catch (error) {
@@ -49,7 +49,7 @@ class VINService {
       if (!Array.isArray(vins) || vins.length === 0) {
         throw new Error('VINs array is required');
       }
-      
+
       if (vins.length > 10) {
         throw new Error('Maximum 10 VINs allowed per batch');
       }
@@ -58,7 +58,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Batch VIN decoding error:', error);
-      throw new Error(error.response?.data?.message || 'Batch VIN decoding failed');
+      throw new Error(
+        error.response?.data?.message || 'Batch VIN decoding failed'
+      );
     }
   }
 
@@ -70,7 +72,7 @@ class VINService {
   async getVehicles(filters = {}) {
     try {
       const params = new URLSearchParams();
-      
+
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== null && value !== undefined && value !== '') {
           params.append(key, value);
@@ -81,7 +83,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Get vehicles error:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch vehicles');
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch vehicles'
+      );
     }
   }
 
@@ -96,7 +100,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Get vehicle error:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch vehicle');
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch vehicle'
+      );
     }
   }
 
@@ -111,7 +117,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Create vehicle error:', error);
-      throw new Error(error.response?.data?.message || 'Failed to create vehicle');
+      throw new Error(
+        error.response?.data?.message || 'Failed to create vehicle'
+      );
     }
   }
 
@@ -127,7 +135,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Update vehicle error:', error);
-      throw new Error(error.response?.data?.message || 'Failed to update vehicle');
+      throw new Error(
+        error.response?.data?.message || 'Failed to update vehicle'
+      );
     }
   }
 
@@ -142,7 +152,9 @@ class VINService {
       return response.data;
     } catch (error) {
       console.error('Delete vehicle error:', error);
-      throw new Error(error.response?.data?.message || 'Failed to delete vehicle');
+      throw new Error(
+        error.response?.data?.message || 'Failed to delete vehicle'
+      );
     }
   }
 
@@ -155,7 +167,7 @@ class VINService {
     const result = {
       valid: false,
       errors: [],
-      normalized: null
+      normalized: null,
     };
 
     if (!vin || typeof vin !== 'string') {
@@ -169,7 +181,9 @@ class VINService {
 
     // Check length
     if (normalized.length !== 17) {
-      result.errors.push(`Invalid length: expected 17 characters, got ${normalized.length}`);
+      result.errors.push(
+        `Invalid length: expected 17 characters, got ${normalized.length}`
+      );
     }
 
     // Check characters (no I, O, Q)
@@ -179,7 +193,9 @@ class VINService {
 
     // Check alphanumeric
     if (!/^[A-HJ-NPR-Z0-9]{17}$/i.test(normalized)) {
-      result.errors.push('VIN must contain only letters and numbers (excluding I, O, Q)');
+      result.errors.push(
+        'VIN must contain only letters and numbers (excluding I, O, Q)'
+      );
     }
 
     result.valid = result.errors.length === 0;
@@ -211,16 +227,16 @@ class VINService {
     }
 
     const normalized = vin.toUpperCase();
-    
+
     return {
-      wmi: normalized.slice(0, 3),        // World Manufacturer Identifier
-      vds: normalized.slice(3, 9),        // Vehicle Descriptor Section
+      wmi: normalized.slice(0, 3), // World Manufacturer Identifier
+      vds: normalized.slice(3, 9), // Vehicle Descriptor Section
       checkDigit: normalized.slice(8, 9), // Check digit
       modelYear: normalized.slice(9, 10), // Model year
       plantCode: normalized.slice(10, 11), // Assembly plant
-      serialNumber: normalized.slice(11),   // Vehicle serial number
-      countryCode: normalized.slice(0, 1),  // Country of manufacture
-      formatted: this.formatVINDisplay(normalized)
+      serialNumber: normalized.slice(11), // Vehicle serial number
+      countryCode: normalized.slice(0, 1), // Country of manufacture
+      formatted: this.formatVINDisplay(normalized),
     };
   }
 
@@ -231,15 +247,32 @@ class VINService {
    */
   getCountryFromVIN(countryCode) {
     const countryMap = {
-      '1': 'United States', '2': 'Canada', '3': 'Mexico',
-      '4': 'United States', '5': 'United States',
-      '6': 'Australia', '8': 'Argentina', '9': 'Brazil',
-      'A': 'South Africa', 'B': 'Kenya', 'C': 'Benin',
-      'J': 'Japan', 'K': 'South Korea', 'L': 'China',
-      'M': 'India', 'N': 'Turkey', 'P': 'Italy',
-      'R': 'Taiwan', 'S': 'United Kingdom', 'T': 'Czech Republic',
-      'U': 'Romania', 'V': 'France', 'W': 'Germany',
-      'X': 'Russia', 'Y': 'Sweden', 'Z': 'Italy'
+      1: 'United States',
+      2: 'Canada',
+      3: 'Mexico',
+      4: 'United States',
+      5: 'United States',
+      6: 'Australia',
+      8: 'Argentina',
+      9: 'Brazil',
+      A: 'South Africa',
+      B: 'Kenya',
+      C: 'Benin',
+      J: 'Japan',
+      K: 'South Korea',
+      L: 'China',
+      M: 'India',
+      N: 'Turkey',
+      P: 'Italy',
+      R: 'Taiwan',
+      S: 'United Kingdom',
+      T: 'Czech Republic',
+      U: 'Romania',
+      V: 'France',
+      W: 'Germany',
+      X: 'Russia',
+      Y: 'Sweden',
+      Z: 'Italy',
     };
 
     return countryMap[countryCode] || 'Unknown';
@@ -253,13 +286,37 @@ class VINService {
   getYearFromCode(yearCode) {
     const yearMap = {
       // 1980s-1990s
-      'A': 1980, 'B': 1981, 'C': 1982, 'D': 1983, 'E': 1984, 'F': 1985, 
-      'G': 1986, 'H': 1987, 'J': 1988, 'K': 1989, 'L': 1990, 'M': 1991, 
-      'N': 1992, 'P': 1993, 'R': 1994, 'S': 1995, 'T': 1996, 'V': 1997, 
-      'W': 1998, 'X': 1999, 'Y': 2000,
+      A: 1980,
+      B: 1981,
+      C: 1982,
+      D: 1983,
+      E: 1984,
+      F: 1985,
+      G: 1986,
+      H: 1987,
+      J: 1988,
+      K: 1989,
+      L: 1990,
+      M: 1991,
+      N: 1992,
+      P: 1993,
+      R: 1994,
+      S: 1995,
+      T: 1996,
+      V: 1997,
+      W: 1998,
+      X: 1999,
+      Y: 2000,
       // 2000s
-      '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, 
-      '6': 2006, '7': 2007, '8': 2008, '9': 2009
+      1: 2001,
+      2: 2002,
+      3: 2003,
+      4: 2004,
+      5: 2005,
+      6: 2006,
+      7: 2007,
+      8: 2008,
+      9: 2009,
     };
 
     const baseYear = yearMap[yearCode];
@@ -270,9 +327,11 @@ class VINService {
       const currentYear = new Date().getFullYear();
       const decade1 = baseYear;
       const decade2 = baseYear + 30;
-      
+
       // Choose the decade that makes most sense
-      return Math.abs(currentYear - decade2) < Math.abs(currentYear - decade1) ? decade2 : decade1;
+      return Math.abs(currentYear - decade2) < Math.abs(currentYear - decade1)
+        ? decade2
+        : decade1;
     }
 
     return baseYear;

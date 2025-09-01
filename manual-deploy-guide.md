@@ -1,6 +1,7 @@
 # Manual Supabase Schema Deployment Guide
 
-## 🎯 **Your Supabase is Connected!** 
+## 🎯 **Your Supabase is Connected!**
+
 Now you just need to deploy the database schema.
 
 ## **Step 1: Access Your Supabase Dashboard**
@@ -12,15 +13,19 @@ Now you just need to deploy the database schema.
 ## **Step 2: Deploy Schema Files in Order**
 
 ### **File 1: Initial Schema**
+
 Copy and paste the contents of `supabase-migration/schema/01_initial_schema.sql`
 
 ### **File 2: Jobs and Workflow**
+
 Copy and paste the contents of `supabase-migration/schema/02_jobs_and_workflow.sql`
 
 ### **File 3: Realtime and Permissions**
+
 Copy and paste the contents of `supabase-migration/schema/03_realtime_and_permissions.sql`
 
 ### **File 4: Advanced Analytics**
+
 Copy and paste the contents of `supabase-migration/schema/04_advanced_analytics.sql`
 
 ## **Step 3: Execute Each File**
@@ -34,6 +39,7 @@ Copy and paste the contents of `supabase-migration/schema/04_advanced_analytics.
 ## **Step 4: Verify Deployment**
 
 After deploying all files, your Supabase dashboard should show:
+
 - **Tables**: 20+ tables (instead of 0)
 - **Functions**: Several database functions
 - **Database Requests**: Active usage
@@ -52,6 +58,7 @@ After deploying all files, your Supabase dashboard should show:
 ## **After Deployment:**
 
 Run this command to verify everything is working:
+
 ```bash
 node test-connection.js
 ```
@@ -65,6 +72,7 @@ node test-connection.js
 ## **Next Steps:**
 
 Once deployed, you can:
+
 1. Test the connection: `node test-connection.js`
 2. Seed test data: `cd supabase-migration && npm run seed`
 3. Start your CollisionOS application

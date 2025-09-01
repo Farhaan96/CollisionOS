@@ -15,11 +15,14 @@ class PartsSupplierProvider extends IntegrationClient {
   constructor(config) {
     super({
       ...config,
-      name: config.name || 'Parts Supplier'
+      name: config.name || 'Parts Supplier',
     });
-    
+
     this.supportedOperations = config.supportedOperations || [
-      'search', 'pricing', 'availability', 'ordering'
+      'search',
+      'pricing',
+      'availability',
+      'ordering',
     ];
   }
 
@@ -34,7 +37,7 @@ class PartsSupplierProvider extends IntegrationClient {
 
     const formattedCriteria = this.formatSearchCriteria(searchCriteria);
     const response = await this.get('/parts/search', formattedCriteria);
-    
+
     return this.formatSearchResults(response);
   }
 
@@ -48,7 +51,7 @@ class PartsSupplierProvider extends IntegrationClient {
 
     const formattedRequest = this.formatPricingRequest(partNumbers);
     const response = await this.post('/parts/pricing', formattedRequest);
-    
+
     return this.formatPricingResults(response);
   }
 
@@ -62,7 +65,7 @@ class PartsSupplierProvider extends IntegrationClient {
 
     const formattedRequest = this.formatAvailabilityRequest(partNumbers);
     const response = await this.post('/parts/availability', formattedRequest);
-    
+
     return this.formatAvailabilityResults(response);
   }
 
@@ -77,7 +80,7 @@ class PartsSupplierProvider extends IntegrationClient {
 
     const formattedOrder = this.formatOrderData(orderData);
     const response = await this.post('/orders', formattedOrder);
-    
+
     return this.formatOrderResponse(response);
   }
 
@@ -94,7 +97,7 @@ class PartsSupplierProvider extends IntegrationClient {
    */
   async cancelOrder(orderNumber, reason = null) {
     const response = await this.delete(`/orders/${orderNumber}`, {
-      data: { reason }
+      data: { reason },
     });
     return this.formatCancelResponse(response);
   }
@@ -102,39 +105,63 @@ class PartsSupplierProvider extends IntegrationClient {
   // Validation methods (override in provider-specific classes)
   validateSearchCriteria(criteria) {
     const errors = [];
-    
+
     if (!criteria.query && !criteria.partNumber && !criteria.vehicleInfo) {
       errors.push('Search query, part number, or vehicle info is required');
     }
-    
+
     return { isValid: errors.length === 0, errors };
   }
 
   validateOrderData(orderData) {
     const errors = [];
-    
-    if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
+
+    if (
+      !orderData.items ||
+      !Array.isArray(orderData.items) ||
+      orderData.items.length === 0
+    ) {
       errors.push('Order items are required');
     }
-    
+
     if (!orderData.shippingAddress) {
       errors.push('Shipping address is required');
     }
-    
+
     return { isValid: errors.length === 0, errors };
   }
 
   // Formatting methods (override in provider-specific classes)
-  formatSearchCriteria(criteria) { return criteria; }
-  formatSearchResults(response) { return response; }
-  formatPricingRequest(partNumbers) { return { parts: partNumbers }; }
-  formatPricingResults(response) { return response; }
-  formatAvailabilityRequest(partNumbers) { return { parts: partNumbers }; }
-  formatAvailabilityResults(response) { return response; }
-  formatOrderData(orderData) { return orderData; }
-  formatOrderResponse(response) { return response; }
-  formatOrderStatus(response) { return response; }
-  formatCancelResponse(response) { return response; }
+  formatSearchCriteria(criteria) {
+    return criteria;
+  }
+  formatSearchResults(response) {
+    return response;
+  }
+  formatPricingRequest(partNumbers) {
+    return { parts: partNumbers };
+  }
+  formatPricingResults(response) {
+    return response;
+  }
+  formatAvailabilityRequest(partNumbers) {
+    return { parts: partNumbers };
+  }
+  formatAvailabilityResults(response) {
+    return response;
+  }
+  formatOrderData(orderData) {
+    return orderData;
+  }
+  formatOrderResponse(response) {
+    return response;
+  }
+  formatOrderStatus(response) {
+    return response;
+  }
+  formatCancelResponse(response) {
+    return response;
+  }
 }
 
 /**
@@ -148,7 +175,7 @@ class LKQProvider extends PartsSupplierProvider {
       authType: 'apikey',
       credentials,
       timeout: 30000,
-      supportedOperations: ['search', 'pricing', 'availability', 'ordering']
+      supportedOperations: ['search', 'pricing', 'availability', 'ordering'],
     });
   }
 
@@ -156,16 +183,18 @@ class LKQProvider extends PartsSupplierProvider {
     return {
       query: criteria.query,
       partNumber: criteria.partNumber,
-      vehicle: criteria.vehicleInfo ? {
-        vin: criteria.vehicleInfo.vin,
-        year: criteria.vehicleInfo.year,
-        make: criteria.vehicleInfo.make,
-        model: criteria.vehicleInfo.model,
-        engine: criteria.vehicleInfo.engine
-      } : undefined,
+      vehicle: criteria.vehicleInfo
+        ? {
+            vin: criteria.vehicleInfo.vin,
+            year: criteria.vehicleInfo.year,
+            make: criteria.vehicleInfo.make,
+            model: criteria.vehicleInfo.model,
+            engine: criteria.vehicleInfo.engine,
+          }
+        : undefined,
       partType: criteria.partType, // OEM, Aftermarket, Recycled
       location: criteria.location,
-      maxDistance: criteria.maxDistance || 50
+      maxDistance: criteria.maxDistance || 50,
     };
   }
 
@@ -185,10 +214,10 @@ class LKQProvider extends PartsSupplierProvider {
         supplier: {
           name: part.supplier.name,
           location: part.supplier.location,
-          rating: part.supplier.rating
+          rating: part.supplier.rating,
         },
-        images: part.images || []
-      }))
+        images: part.images || [],
+      })),
     };
   }
 }
@@ -203,7 +232,7 @@ class GPCProvider extends PartsSupplierProvider {
       baseURL: 'https://api.genpt.com/v2',
       authType: 'oauth',
       credentials,
-      timeout: 25000
+      timeout: 25000,
     });
   }
 
@@ -214,7 +243,7 @@ class GPCProvider extends PartsSupplierProvider {
       vehicleMake: criteria.vehicleInfo?.make,
       vehicleModel: criteria.vehicleInfo?.model,
       categoryFilter: criteria.category,
-      priceRange: criteria.priceRange
+      priceRange: criteria.priceRange,
     };
 
     // Remove undefined values
@@ -227,7 +256,7 @@ class GPCProvider extends PartsSupplierProvider {
     return {
       partNumbers: partNumbers,
       includeAlternates: true,
-      includeCoreExchange: true
+      includeCoreExchange: true,
     };
   }
 }
@@ -244,17 +273,19 @@ class AutoZoneProvider extends PartsSupplierProvider {
       credentials: {
         customHeader: {
           name: 'X-API-Key',
-          value: credentials.apiKey
-        }
+          value: credentials.apiKey,
+        },
       },
-      timeout: 20000
+      timeout: 20000,
     });
   }
 
   async searchParts(searchCriteria) {
     // AutoZone requires vehicle-specific searches
     if (!searchCriteria.vehicleInfo) {
-      throw new ValidationError('Vehicle information is required for AutoZone searches');
+      throw new ValidationError(
+        'Vehicle information is required for AutoZone searches'
+      );
     }
 
     return await super.searchParts(searchCriteria);
@@ -268,7 +299,7 @@ class AutoZoneProvider extends PartsSupplierProvider {
       engine: criteria.vehicleInfo.engine,
       searchType: 'parts',
       category: criteria.category,
-      keyword: criteria.query
+      keyword: criteria.query,
     };
   }
 }
@@ -284,7 +315,7 @@ class HollanderProvider extends PartsSupplierProvider {
       authType: 'basic',
       credentials,
       timeout: 35000,
-      supportedOperations: ['search', 'interchange']
+      supportedOperations: ['search', 'interchange'],
     });
   }
 
@@ -296,7 +327,7 @@ class HollanderProvider extends PartsSupplierProvider {
       partNumber,
       year: vehicleInfo.year,
       make: vehicleInfo.make,
-      model: vehicleInfo.model
+      model: vehicleInfo.model,
     });
 
     return {
@@ -306,8 +337,8 @@ class HollanderProvider extends PartsSupplierProvider {
         description: part.description,
         fitment: part.fitment,
         condition: part.condition,
-        yearRange: part.yearRange
-      }))
+        yearRange: part.yearRange,
+      })),
     };
   }
 }
@@ -327,10 +358,10 @@ class PartsSupplierIntegrationService {
    */
   registerProvider(name, provider) {
     this.providers.set(name, provider);
-    
+
     // Set up webhook handlers
     this.setupWebhookHandlers(name, provider);
-    
+
     console.log(`✅ Parts supplier registered: ${name}`);
   }
 
@@ -339,30 +370,30 @@ class PartsSupplierIntegrationService {
    */
   setupWebhookHandlers(providerName, provider) {
     const { integrationManager } = require('./integrationFramework');
-    
+
     // Order status updates
     integrationManager.registerWebhookHandler(
       providerName,
       'order_status_update',
-      async (payload) => {
+      async payload => {
         await this.handleOrderStatusUpdate(providerName, payload);
       }
     );
-    
+
     // Price updates
     integrationManager.registerWebhookHandler(
       providerName,
       'price_update',
-      async (payload) => {
+      async payload => {
         await this.handlePriceUpdate(providerName, payload);
       }
     );
-    
+
     // Availability updates
     integrationManager.registerWebhookHandler(
       providerName,
       'availability_update',
-      async (payload) => {
+      async payload => {
         await this.handleAvailabilityUpdate(providerName, payload);
       }
     );
@@ -373,10 +404,13 @@ class PartsSupplierIntegrationService {
    */
   async handleOrderStatusUpdate(providerName, payload) {
     try {
-      const { orderNumber, status, trackingNumber, estimatedDelivery } = payload;
-      
-      console.log(`📦 Order status update from ${providerName}: ${orderNumber} -> ${status}`);
-      
+      const { orderNumber, status, trackingNumber, estimatedDelivery } =
+        payload;
+
+      console.log(
+        `📦 Order status update from ${providerName}: ${orderNumber} -> ${status}`
+      );
+
       // Broadcast update
       realtimeService.broadcastPartsUpdate({
         provider: providerName,
@@ -384,9 +418,9 @@ class PartsSupplierIntegrationService {
         orderNumber,
         status,
         trackingNumber,
-        estimatedDelivery
+        estimatedDelivery,
       });
-      
+
       return { success: true, orderNumber, status };
     } catch (error) {
       console.error('Error handling order status update:', error);
@@ -400,32 +434,34 @@ class PartsSupplierIntegrationService {
   async handlePriceUpdate(providerName, payload) {
     try {
       const { partNumber, newPrice, oldPrice, effectiveDate } = payload;
-      
-      console.log(`💰 Price update from ${providerName}: ${partNumber} ${oldPrice} -> ${newPrice}`);
-      
+
+      console.log(
+        `💰 Price update from ${providerName}: ${partNumber} ${oldPrice} -> ${newPrice}`
+      );
+
       // Update local part pricing if exists
       await Part.update(
-        { 
+        {
           costPrice: newPrice,
-          lastPriceUpdate: new Date()
+          lastPriceUpdate: new Date(),
         },
         {
           where: {
             partNumber,
-            primaryVendorId: await this.getVendorId(providerName)
-          }
+            primaryVendorId: await this.getVendorId(providerName),
+          },
         }
       );
-      
+
       // Broadcast update
       realtimeService.broadcastPartsUpdate({
         provider: providerName,
         type: 'price_update',
         partNumber,
         newPrice,
-        oldPrice
+        oldPrice,
       });
-      
+
       return { success: true, partNumber, newPrice };
     } catch (error) {
       console.error('Error handling price update:', error);
@@ -439,9 +475,11 @@ class PartsSupplierIntegrationService {
   async handleAvailabilityUpdate(providerName, payload) {
     try {
       const { partNumber, available, quantity, location } = payload;
-      
-      console.log(`📊 Availability update from ${providerName}: ${partNumber} -> ${available ? 'Available' : 'Out of Stock'}`);
-      
+
+      console.log(
+        `📊 Availability update from ${providerName}: ${partNumber} -> ${available ? 'Available' : 'Out of Stock'}`
+      );
+
       // Broadcast update
       realtimeService.broadcastPartsUpdate({
         provider: providerName,
@@ -449,9 +487,9 @@ class PartsSupplierIntegrationService {
         partNumber,
         available,
         quantity,
-        location
+        location,
       });
-      
+
       return { success: true, partNumber, available };
     } catch (error) {
       console.error('Error handling availability update:', error);
@@ -465,7 +503,7 @@ class PartsSupplierIntegrationService {
   async searchParts(searchCriteria, providers = null) {
     const searchProviders = providers || Array.from(this.providers.keys());
     const results = [];
-    
+
     for (const providerName of searchProviders) {
       try {
         const provider = this.getProvider(providerName);
@@ -473,23 +511,23 @@ class PartsSupplierIntegrationService {
           const providerResults = await provider.searchParts(searchCriteria);
           results.push({
             provider: providerName,
-            results: providerResults
+            results: providerResults,
           });
         }
       } catch (error) {
         console.warn(`Search failed for ${providerName}:`, error.message);
         results.push({
           provider: providerName,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     return {
       searchCriteria,
       providers: searchProviders,
       results,
-      aggregated: this.aggregateSearchResults(results)
+      aggregated: this.aggregateSearchResults(results),
     };
   }
 
@@ -499,47 +537,51 @@ class PartsSupplierIntegrationService {
   async comparePrices(partNumbers, providers = null) {
     const compareProviders = providers || Array.from(this.providers.keys());
     const comparisons = {};
-    
+
     for (const partNumber of partNumbers) {
       comparisons[partNumber] = {
         partNumber,
         providers: [],
         bestPrice: null,
-        averagePrice: null
+        averagePrice: null,
       };
-      
+
       const prices = [];
-      
+
       for (const providerName of compareProviders) {
         try {
           const provider = this.getProvider(providerName);
           if (provider.supportedOperations.includes('pricing')) {
             const pricing = await provider.getPricing([partNumber]);
             const partPricing = pricing.parts && pricing.parts[0];
-            
+
             if (partPricing && partPricing.price) {
               const providerInfo = {
                 provider: providerName,
                 price: partPricing.price,
                 availability: partPricing.availability,
-                deliveryTime: partPricing.deliveryTime
+                deliveryTime: partPricing.deliveryTime,
               };
-              
+
               comparisons[partNumber].providers.push(providerInfo);
               prices.push(partPricing.price);
             }
           }
         } catch (error) {
-          console.warn(`Price check failed for ${providerName}:`, error.message);
+          console.warn(
+            `Price check failed for ${providerName}:`,
+            error.message
+          );
         }
       }
-      
+
       if (prices.length > 0) {
         comparisons[partNumber].bestPrice = Math.min(...prices);
-        comparisons[partNumber].averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+        comparisons[partNumber].averagePrice =
+          prices.reduce((a, b) => a + b, 0) / prices.length;
       }
     }
-    
+
     return comparisons;
   }
 
@@ -550,10 +592,10 @@ class PartsSupplierIntegrationService {
     // First, compare prices for all parts
     const partNumbers = orderData.items.map(item => item.partNumber);
     const priceComparison = await this.comparePrices(partNumbers);
-    
+
     // Group parts by best price provider
     const providerOrders = {};
-    
+
     orderData.items.forEach(item => {
       const comparison = priceComparison[item.partNumber];
       if (comparison && comparison.providers.length > 0) {
@@ -561,22 +603,24 @@ class PartsSupplierIntegrationService {
         const bestProvider = comparison.providers
           .filter(p => p.availability)
           .sort((a, b) => a.price - b.price)[0];
-        
+
         if (bestProvider) {
           if (!providerOrders[bestProvider.provider]) {
             providerOrders[bestProvider.provider] = {
               ...orderData,
-              items: []
+              items: [],
             };
           }
           providerOrders[bestProvider.provider].items.push(item);
         }
       }
     });
-    
+
     // Create orders with each provider
     const orderResults = [];
-    for (const [providerName, providerOrder] of Object.entries(providerOrders)) {
+    for (const [providerName, providerOrder] of Object.entries(
+      providerOrders
+    )) {
       try {
         const provider = this.getProvider(providerName);
         const result = await provider.createOrder(providerOrder);
@@ -584,21 +628,21 @@ class PartsSupplierIntegrationService {
           provider: providerName,
           success: true,
           orderNumber: result.orderNumber,
-          items: providerOrder.items.length
+          items: providerOrder.items.length,
         });
       } catch (error) {
         orderResults.push({
           provider: providerName,
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     return {
       strategy: 'best_price',
       priceComparison,
-      orderResults
+      orderResults,
     };
   }
 
@@ -608,19 +652,19 @@ class PartsSupplierIntegrationService {
   aggregateSearchResults(results) {
     const allParts = [];
     const providerCount = {};
-    
+
     results.forEach(result => {
       if (result.results && result.results.parts) {
         result.results.parts.forEach(part => {
           allParts.push({
             ...part,
-            provider: result.provider
+            provider: result.provider,
           });
         });
         providerCount[result.provider] = result.results.parts.length;
       }
     });
-    
+
     // Remove duplicates based on part number
     const uniqueParts = allParts.reduce((unique, part) => {
       const existing = unique.find(p => p.partNumber === part.partNumber);
@@ -630,11 +674,11 @@ class PartsSupplierIntegrationService {
       }
       return unique;
     }, []);
-    
+
     return {
       totalParts: uniqueParts.length,
       providerCount,
-      parts: uniqueParts.sort((a, b) => (a.price || 0) - (b.price || 0))
+      parts: uniqueParts.sort((a, b) => (a.price || 0) - (b.price || 0)),
     };
   }
 
@@ -643,7 +687,7 @@ class PartsSupplierIntegrationService {
    */
   async getVendorId(providerName) {
     const vendor = await Vendor.findOne({
-      where: { name: providerName }
+      where: { name: providerName },
     });
     return vendor ? vendor.id : null;
   }
@@ -671,18 +715,18 @@ class PartsSupplierIntegrationService {
    */
   async healthCheck() {
     const results = {};
-    
+
     for (const [name, provider] of this.providers) {
       try {
         results[name] = await provider.healthCheck();
       } catch (error) {
         results[name] = {
           status: 'error',
-          error: error.message
+          error: error.message,
         };
       }
     }
-    
+
     return results;
   }
 }
@@ -694,5 +738,5 @@ module.exports = {
   GPCProvider,
   AutoZoneProvider,
   HollanderProvider,
-  PartsSupplierIntegrationService
+  PartsSupplierIntegrationService,
 };

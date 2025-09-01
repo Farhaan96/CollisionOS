@@ -2,13 +2,18 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '../../../../src/components/Auth/ProtectedRoute';
-import { renderWithProviders, createMockUser } from '../../../../src/utils/testUtils';
+import {
+  renderWithProviders,
+  createMockUser,
+} from '../../../../src/utils/testUtils';
 
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   Navigate: jest.fn(() => null),
-  Outlet: jest.fn(() => <div data-testid="protected-content">Protected Content</div>),
+  Outlet: jest.fn(() => (
+    <div data-testid='protected-content'>Protected Content</div>
+  )),
 }));
 
 const MockedNavigate = Navigate;
@@ -177,9 +182,9 @@ describe('ProtectedRoute Component', () => {
 
   describe('Component Integration', () => {
     test('integrates properly with AuthContext', () => {
-      const mockUser = createMockUser({ 
+      const mockUser = createMockUser({
         username: 'testuser',
-        role: 'technician' 
+        role: 'technician',
       });
       const authContextValue = {
         user: mockUser,
@@ -207,7 +212,9 @@ describe('ProtectedRoute Component', () => {
         setIsLoading: jest.fn(),
       };
 
-      const { rerender } = renderWithProviders(<ProtectedRoute />, { authContextValue });
+      const { rerender } = renderWithProviders(<ProtectedRoute />, {
+        authContextValue,
+      });
 
       // Initially should redirect
       expect(MockedNavigate).toHaveBeenCalledWith(
@@ -240,7 +247,9 @@ describe('ProtectedRoute Component', () => {
         setIsLoading: jest.fn(),
       };
 
-      const { rerender } = renderWithProviders(<ProtectedRoute />, { authContextValue });
+      const { rerender } = renderWithProviders(<ProtectedRoute />, {
+        authContextValue,
+      });
 
       const initialCallCount = MockedOutlet.mock.calls.length;
 

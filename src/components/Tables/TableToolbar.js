@@ -111,51 +111,66 @@ const TableToolbar = ({
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
   // Handle search with debouncing
-  const handleSearchChange = useCallback((value) => {
-    setSearchText(value);
-    // Implement debouncing
-    const timer = setTimeout(() => {
-      if (onSearchChange) {
-        onSearchChange(value);
-      }
-    }, 300);
+  const handleSearchChange = useCallback(
+    value => {
+      setSearchText(value);
+      // Implement debouncing
+      const timer = setTimeout(() => {
+        if (onSearchChange) {
+          onSearchChange(value);
+        }
+      }, 300);
 
-    return () => clearTimeout(timer);
-  }, [onSearchChange]);
+      return () => clearTimeout(timer);
+    },
+    [onSearchChange]
+  );
 
   // Handle column visibility toggle
-  const handleColumnToggle = useCallback((columnId) => {
-    if (onVisibleColumnsChange) {
-      const newVisibleColumns = visibleColumns.includes(columnId)
-        ? visibleColumns.filter(id => id !== columnId)
-        : [...visibleColumns, columnId];
-      onVisibleColumnsChange(newVisibleColumns);
-    }
-  }, [visibleColumns, onVisibleColumnsChange]);
+  const handleColumnToggle = useCallback(
+    columnId => {
+      if (onVisibleColumnsChange) {
+        const newVisibleColumns = visibleColumns.includes(columnId)
+          ? visibleColumns.filter(id => id !== columnId)
+          : [...visibleColumns, columnId];
+        onVisibleColumnsChange(newVisibleColumns);
+      }
+    },
+    [visibleColumns, onVisibleColumnsChange]
+  );
 
   // Handle select/deselect all columns
-  const handleToggleAllColumns = useCallback((selectAll) => {
-    if (onVisibleColumnsChange) {
-      const newVisibleColumns = selectAll ? columns.map(col => col.id) : [];
-      onVisibleColumnsChange(newVisibleColumns);
-    }
-  }, [columns, onVisibleColumnsChange]);
+  const handleToggleAllColumns = useCallback(
+    selectAll => {
+      if (onVisibleColumnsChange) {
+        const newVisibleColumns = selectAll ? columns.map(col => col.id) : [];
+        onVisibleColumnsChange(newVisibleColumns);
+      }
+    },
+    [columns, onVisibleColumnsChange]
+  );
 
   // Handle export
-  const handleExport = useCallback((format) => {
-    if (onExport) {
-      onExport(format, selectedRows.length > 0 ? selectedRows : 'all');
-    }
-    setExportMenuAnchor(null);
-  }, [onExport, selectedRows]);
+  const handleExport = useCallback(
+    format => {
+      if (onExport) {
+        onExport(format, selectedRows.length > 0 ? selectedRows : 'all');
+      }
+      setExportMenuAnchor(null);
+    },
+    [onExport, selectedRows]
+  );
 
   // Handle bulk actions
-  const handleBulkAction = useCallback((action) => {
-    if (onBulkAction) {
-      onBulkAction(action, selectedRows);
-    }
-    setBulkMenuAnchor(null);
-  }, [onBulkAction, selectedRows]);
+  const handleBulkAction = useCallback(
+    action => {
+      if (onBulkAction) {
+        onBulkAction(action, selectedRows);
+      }
+      setBulkMenuAnchor(null);
+    },
+    [onBulkAction, selectedRows]
+  );
 
   // Glassmorphism styles
   const glassStyles = {
@@ -171,29 +186,41 @@ const TableToolbar = ({
   const hasSelectedRows = selectedRows.length > 0;
 
   return (
-    <Paper 
-      className={className} 
+    <Paper
+      className={className}
       sx={{ ...glassStyles, p: 2, mb: 2 }}
       {...props}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
         {/* Left Section - Title and Search */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, minWidth: 'fit-content' }}>
+          <Typography
+            variant='h6'
+            sx={{ fontWeight: 600, minWidth: 'fit-content' }}
+          >
             {title}
           </Typography>
-          
+
           {showSearch && (
             <TextField
               placeholder={searchPlaceholder}
               value={searchText}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              size="small"
+              onChange={e => handleSearchChange(e.target.value)}
+              size='small'
               InputProps={{
-                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
+                startAdornment: (
+                  <Search sx={{ mr: 1, color: 'text.secondary' }} />
+                ),
                 endAdornment: searchText && (
                   <IconButton
-                    size="small"
+                    size='small'
                     onClick={() => handleSearchChange('')}
                   >
                     <Clear />
@@ -207,7 +234,7 @@ const TableToolbar = ({
                   background: alpha(theme.palette.background.paper, 0.5),
                   backdropFilter: 'blur(10px)',
                   borderRadius: premiumDesignSystem.borderRadius.lg,
-                }
+                },
               }}
             />
           )}
@@ -218,17 +245,17 @@ const TableToolbar = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
               label={`${selectedRows.length} selected`}
-              size="small"
+              size='small'
               sx={{
                 background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(theme.palette.secondary.main, 0.8)})`,
                 color: 'white',
               }}
             />
             <Button
-              variant="outlined"
-              size="small"
+              variant='outlined'
+              size='small'
               startIcon={<Edit />}
-              onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
+              onClick={e => setBulkMenuAnchor(e.currentTarget)}
               sx={{
                 background: alpha(theme.palette.primary.main, 0.1),
                 borderColor: alpha(theme.palette.primary.main, 0.3),
@@ -242,10 +269,16 @@ const TableToolbar = ({
               onClose={() => setBulkMenuAnchor(null)}
               PaperProps={{ sx: { ...glassStyles, minWidth: 200 } }}
             >
-              {bulkActions.map((action) => (
-                <MenuItem key={action.id} onClick={() => handleBulkAction(action)}>
+              {bulkActions.map(action => (
+                <MenuItem
+                  key={action.id}
+                  onClick={() => handleBulkAction(action)}
+                >
                   <ListItemIcon>{action.icon}</ListItemIcon>
-                  <ListItemText primary={action.label} secondary={action.description} />
+                  <ListItemText
+                    primary={action.label}
+                    secondary={action.description}
+                  />
                 </MenuItem>
               ))}
             </Menu>
@@ -264,7 +297,7 @@ const TableToolbar = ({
                   onViewModeChange(newMode);
                 }
               }}
-              size="small"
+              size='small'
               sx={{
                 '& .MuiToggleButton-root': {
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
@@ -272,14 +305,12 @@ const TableToolbar = ({
                     background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                     color: 'white',
                   },
-                }
+                },
               }}
             >
-              {VIEW_MODES.map((mode) => (
+              {VIEW_MODES.map(mode => (
                 <ToggleButton key={mode.value} value={mode.value}>
-                  <Tooltip title={mode.label}>
-                    {mode.icon}
-                  </Tooltip>
+                  <Tooltip title={mode.label}>{mode.icon}</Tooltip>
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
@@ -288,19 +319,19 @@ const TableToolbar = ({
           {/* Column Visibility Toggle */}
           {showColumnToggle && (
             <>
-              <Tooltip title="Column Visibility">
+              <Tooltip title='Column Visibility'>
                 <Badge
                   badgeContent={visibleColumns.length}
-                  color="primary"
+                  color='primary'
                   max={99}
                 >
                   <IconButton
-                    onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
+                    onClick={e => setColumnMenuAnchor(e.currentTarget)}
                     sx={{
                       background: alpha(theme.palette.primary.main, 0.1),
                       '&:hover': {
                         background: alpha(theme.palette.primary.main, 0.2),
-                      }
+                      },
                     }}
                   >
                     <ViewColumn />
@@ -313,20 +344,32 @@ const TableToolbar = ({
                 onClose={() => setColumnMenuAnchor(null)}
                 PaperProps={{ sx: { ...glassStyles, minWidth: 250 } }}
               >
-                <MenuItem onClick={() => handleToggleAllColumns(visibleColumns.length !== columns.length)}>
+                <MenuItem
+                  onClick={() =>
+                    handleToggleAllColumns(
+                      visibleColumns.length !== columns.length
+                    )
+                  }
+                >
                   <Checkbox
                     checked={visibleColumns.length === columns.length}
-                    indeterminate={visibleColumns.length > 0 && visibleColumns.length < columns.length}
+                    indeterminate={
+                      visibleColumns.length > 0 &&
+                      visibleColumns.length < columns.length
+                    }
                   />
-                  <ListItemText primary="Select All" />
+                  <ListItemText primary='Select All' />
                 </MenuItem>
                 <Divider />
-                {columns.map((column) => (
-                  <MenuItem key={column.id} onClick={() => handleColumnToggle(column.id)}>
+                {columns.map(column => (
+                  <MenuItem
+                    key={column.id}
+                    onClick={() => handleColumnToggle(column.id)}
+                  >
                     <Checkbox checked={visibleColumns.includes(column.id)} />
                     <ListItemText primary={column.label} />
                     {column.required && (
-                      <Chip size="small" label="Required" color="primary" />
+                      <Chip size='small' label='Required' color='primary' />
                     )}
                   </MenuItem>
                 ))}
@@ -339,12 +382,12 @@ const TableToolbar = ({
             <>
               <Tooltip title={`Density: ${currentDensity?.label}`}>
                 <IconButton
-                  onClick={(e) => setDensityMenuAnchor(e.currentTarget)}
+                  onClick={e => setDensityMenuAnchor(e.currentTarget)}
                   sx={{
                     background: alpha(theme.palette.secondary.main, 0.1),
                     '&:hover': {
                       background: alpha(theme.palette.secondary.main, 0.2),
-                    }
+                    },
                   }}
                 >
                   <Density />
@@ -356,7 +399,7 @@ const TableToolbar = ({
                 onClose={() => setDensityMenuAnchor(null)}
                 PaperProps={{ sx: { ...glassStyles, minWidth: 200 } }}
               >
-                {DENSITY_OPTIONS.map((option) => (
+                {DENSITY_OPTIONS.map(option => (
                   <MenuItem
                     key={option.value}
                     selected={density === option.value}
@@ -367,9 +410,9 @@ const TableToolbar = ({
                       setDensityMenuAnchor(null);
                     }}
                   >
-                    <ListItemText 
-                      primary={option.label} 
-                      secondary={`Row height: ${option.rowHeight}px`} 
+                    <ListItemText
+                      primary={option.label}
+                      secondary={`Row height: ${option.rowHeight}px`}
                     />
                   </MenuItem>
                 ))}
@@ -380,15 +423,15 @@ const TableToolbar = ({
           {/* Export Button */}
           {showExportButton && (
             <>
-              <Tooltip title="Export Data">
+              <Tooltip title='Export Data'>
                 <IconButton
-                  onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+                  onClick={e => setExportMenuAnchor(e.currentTarget)}
                   disabled={loading}
                   sx={{
                     background: alpha(theme.palette.success.main, 0.1),
                     '&:hover': {
                       background: alpha(theme.palette.success.main, 0.2),
-                    }
+                    },
                   }}
                 >
                   <GetApp />
@@ -401,18 +444,28 @@ const TableToolbar = ({
                 PaperProps={{ sx: { ...glassStyles, minWidth: 250 } }}
               >
                 <MenuItem disabled>
-                  <ListItemText 
-                    primary="Export Format" 
-                    secondary={hasSelectedRows ? `${selectedRows.length} rows selected` : 'All data'} 
+                  <ListItemText
+                    primary='Export Format'
+                    secondary={
+                      hasSelectedRows
+                        ? `${selectedRows.length} rows selected`
+                        : 'All data'
+                    }
                   />
                 </MenuItem>
                 <Divider />
-                {EXPORT_FORMATS.map((format) => (
-                  <MenuItem key={format.value} onClick={() => handleExport(format.value)}>
+                {EXPORT_FORMATS.map(format => (
+                  <MenuItem
+                    key={format.value}
+                    onClick={() => handleExport(format.value)}
+                  >
                     <ListItemIcon>
                       <Download />
                     </ListItemIcon>
-                    <ListItemText primary={format.label} secondary={format.description} />
+                    <ListItemText
+                      primary={format.label}
+                      secondary={format.description}
+                    />
                   </MenuItem>
                 ))}
               </Menu>
@@ -421,7 +474,7 @@ const TableToolbar = ({
 
           {/* Refresh Button */}
           {showRefreshButton && (
-            <Tooltip title="Refresh Data">
+            <Tooltip title='Refresh Data'>
               <IconButton
                 onClick={onRefresh}
                 disabled={loading}
@@ -432,7 +485,7 @@ const TableToolbar = ({
                   },
                   ...(loading && {
                     animation: 'spin 1s linear infinite',
-                  })
+                  }),
                 }}
               >
                 <Refresh />
@@ -444,9 +497,9 @@ const TableToolbar = ({
           {customActions.length > 0 && (
             <Box sx={{ position: 'relative' }}>
               <SpeedDial
-                ariaLabel="Custom Actions"
+                ariaLabel='Custom Actions'
                 icon={<SpeedDialIcon />}
-                direction="down"
+                direction='down'
                 sx={{
                   position: 'absolute',
                   right: 0,
@@ -457,11 +510,11 @@ const TableToolbar = ({
                     background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                     '&:hover': {
                       background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-                    }
-                  }
+                    },
+                  },
                 }}
               >
-                {customActions.map((action) => (
+                {customActions.map(action => (
                   <SpeedDialAction
                     key={action.id}
                     icon={action.icon}
@@ -473,8 +526,8 @@ const TableToolbar = ({
                         backdropFilter: 'blur(10px)',
                         '&:hover': {
                           background: alpha(theme.palette.primary.main, 0.1),
-                        }
-                      }
+                        },
+                      },
                     }}
                   />
                 ))}
@@ -483,14 +536,14 @@ const TableToolbar = ({
           )}
 
           {/* More Options */}
-          <Tooltip title="More Options">
+          <Tooltip title='More Options'>
             <IconButton
-              onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
+              onClick={e => setMoreMenuAnchor(e.currentTarget)}
               sx={{
                 background: alpha(theme.palette.text.primary, 0.1),
                 '&:hover': {
                   background: alpha(theme.palette.text.primary, 0.2),
-                }
+                },
               }}
             >
               <MoreVert />
@@ -503,16 +556,22 @@ const TableToolbar = ({
             PaperProps={{ sx: { ...glassStyles, minWidth: 200 } }}
           >
             <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-              <ListItemIcon><Print /></ListItemIcon>
-              <ListItemText primary="Print Table" />
+              <ListItemIcon>
+                <Print />
+              </ListItemIcon>
+              <ListItemText primary='Print Table' />
             </MenuItem>
             <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-              <ListItemIcon><Share /></ListItemIcon>
-              <ListItemText primary="Share" />
+              <ListItemIcon>
+                <Share />
+              </ListItemIcon>
+              <ListItemText primary='Share' />
             </MenuItem>
             <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-              <ListItemIcon><Settings /></ListItemIcon>
-              <ListItemText primary="Table Settings" />
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary='Table Settings' />
             </MenuItem>
           </Menu>
         </Box>

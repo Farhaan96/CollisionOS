@@ -8,29 +8,22 @@ class BMSValidator {
   constructor() {
     this.xmlParser = new XMLParser({
       ignoreAttributes: false,
-      attributeNamePrefix: "@_",
-      textNodeName: "#text",
+      attributeNamePrefix: '@_',
+      textNodeName: '#text',
       removeNSPrefix: true,
       trimValues: true,
-      parseAttributeValue: false // Keep as strings for validation
+      parseAttributeValue: false, // Keep as strings for validation
     });
 
     this.validationRules = {
       bms: {
-        requiredElements: [
-          'VehicleInfo',
-          'AdminInfo'
-        ],
-        optionalElements: [
-          'DamageLineInfo',
-          'RepairTotalsInfo',
-          'ClaimInfo'
-        ]
+        requiredElements: ['VehicleInfo', 'AdminInfo'],
+        optionalElements: ['DamageLineInfo', 'RepairTotalsInfo', 'ClaimInfo'],
       },
       ems: {
         requiredRecordTypes: ['HD', 'VH', 'CO'],
-        optionalRecordTypes: ['IN', 'CL', 'LI', 'PA', 'LA', 'TO']
-      }
+        optionalRecordTypes: ['IN', 'CL', 'LI', 'PA', 'LA', 'TO'],
+      },
     };
   }
 
@@ -45,14 +38,14 @@ class BMSValidator {
       warnings: [],
       summary: {
         message: 'File validation passed',
-        details: {}
-      }
+        details: {},
+      },
     };
 
     try {
       // Check if content is XML or text
       const trimmedContent = content.trim();
-      
+
       if (trimmedContent.startsWith('<')) {
         // XML format - BMS
         return await this.validateBMSXML(content, validation);
@@ -61,16 +54,15 @@ class BMSValidator {
         validation.fileType = 'EMS';
         return await this.validateEMSText(content, validation);
       }
-
     } catch (error) {
       validation.isValid = false;
       validation.errors.push({
         type: 'PARSING_ERROR',
         message: `Failed to parse file: ${error.message}`,
-        severity: 'critical'
+        severity: 'critical',
       });
       validation.summary.message = 'File validation failed';
-      
+
       return validation;
     }
   }
@@ -82,7 +74,7 @@ class BMSValidator {
     try {
       // Parse XML
       const parsed = this.xmlParser.parse(content);
-      
+
       // Find root element
       let root = parsed;
       if (parsed.VehicleDamageEstimateAddRq) {
@@ -99,7 +91,7 @@ class BMSValidator {
         validation.errors.push({
           type: 'STRUCTURE_ERROR',
           message: 'No valid BMS root element found',
-          severity: 'critical'
+          severity: 'critical',
         });
         validation.isValid = false;
         return validation;
@@ -107,18 +99,18 @@ class BMSValidator {
 
       // Validate required elements
       this.validateRequiredBMSElements(root, validation);
-      
+
       // Validate vehicle information
       this.validateVehicleInfo(root.VehicleInfo, validation);
-      
+
       // Validate admin information
       this.validateAdminInfo(root.AdminInfo, validation);
-      
+
       // Validate damage lines
       if (root.DamageLineInfo) {
         this.validateDamageLineInfo(root.DamageLineInfo, validation);
       }
-      
+
       // Validate financial totals
       if (root.RepairTotalsInfo) {
         this.validateRepairTotalsInfo(root.RepairTotalsInfo, validation);
@@ -130,15 +122,14 @@ class BMSValidator {
         hasAdminInfo: !!root.AdminInfo,
         hasDamageLines: !!root.DamageLineInfo,
         hasTotals: !!root.RepairTotalsInfo,
-        hasClaimInfo: !!root.ClaimInfo
+        hasClaimInfo: !!root.ClaimInfo,
       };
-
     } catch (error) {
       validation.isValid = false;
       validation.errors.push({
         type: 'XML_PARSING_ERROR',
         message: `XML parsing failed: ${error.message}`,
-        severity: 'critical'
+        severity: 'critical',
       });
     }
 
@@ -157,20 +148,23 @@ class BMSValidator {
    * Validate EMS text format
    */
   async validateEMSText(content, validation) {
-    const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+    const lines = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line);
     const recordTypes = new Set();
     const lineErrors = [];
 
     // Check each line
     lines.forEach((line, index) => {
       const fields = this.parseEMSLine(line);
-      
+
       if (fields.length === 0) {
         validation.warnings.push({
           type: 'EMPTY_LINE',
           message: `Line ${index + 1}: Empty line`,
           line: index + 1,
-          severity: 'low'
+          severity: 'low',
         });
         return;
       }
@@ -188,7 +182,7 @@ class BMSValidator {
         validation.errors.push({
           type: 'MISSING_RECORD_TYPE',
           message: `Required record type '${requiredType}' is missing`,
-          severity: 'high'
+          severity: 'high',
         });
       }
     });
@@ -200,7 +194,8 @@ class BMSValidator {
       hasHeader: recordTypes.has('HD'),
       hasVehicle: recordTypes.has('VH'),
       hasCustomer: recordTypes.has('CO'),
-      hasLineItems: recordTypes.has('LI') || recordTypes.has('PA') || recordTypes.has('LA')
+      hasLineItems:
+        recordTypes.has('LI') || recordTypes.has('PA') || recordTypes.has('LA'),
     };
 
     // Update validation status
@@ -224,7 +219,7 @@ class BMSValidator {
           type: 'MISSING_ELEMENT',
           message: `Required element '${element}' is missing`,
           element,
-          severity: 'high'
+          severity: 'high',
         });
       }
     });
@@ -243,14 +238,14 @@ class BMSValidator {
         validation.warnings.push({
           type: 'INVALID_VIN',
           message: 'VIN should be 17 characters long',
-          severity: 'medium'
+          severity: 'medium',
         });
       }
     } else {
       validation.warnings.push({
         type: 'MISSING_VIN',
         message: 'Vehicle VIN is missing',
-        severity: 'medium'
+        severity: 'medium',
       });
     }
 
@@ -259,7 +254,7 @@ class BMSValidator {
       validation.warnings.push({
         type: 'MISSING_VEHICLE_DESC',
         message: 'Vehicle description is missing',
-        severity: 'low'
+        severity: 'low',
       });
     } else {
       const desc = vehicleInfo.VehicleDesc;
@@ -267,21 +262,21 @@ class BMSValidator {
         validation.warnings.push({
           type: 'MISSING_YEAR',
           message: 'Vehicle year is missing',
-          severity: 'medium'
+          severity: 'medium',
         });
       }
       if (!desc.MakeDesc) {
         validation.warnings.push({
           type: 'MISSING_MAKE',
           message: 'Vehicle make is missing',
-          severity: 'medium'
+          severity: 'medium',
         });
       }
       if (!desc.ModelName) {
         validation.warnings.push({
           type: 'MISSING_MODEL',
           message: 'Vehicle model is missing',
-          severity: 'medium'
+          severity: 'medium',
         });
       }
     }
@@ -298,7 +293,7 @@ class BMSValidator {
       validation.warnings.push({
         type: 'MISSING_POLICY_HOLDER',
         message: 'Policy holder information is missing',
-        severity: 'medium'
+        severity: 'medium',
       });
     }
 
@@ -307,7 +302,7 @@ class BMSValidator {
       validation.warnings.push({
         type: 'MISSING_INSURANCE',
         message: 'Insurance company information is missing',
-        severity: 'low'
+        severity: 'low',
       });
     }
   }
@@ -316,15 +311,17 @@ class BMSValidator {
    * Validate damage line information
    */
   validateDamageLineInfo(damageLineInfo, validation) {
-    const damageLines = Array.isArray(damageLineInfo) ? damageLineInfo : [damageLineInfo];
-    
+    const damageLines = Array.isArray(damageLineInfo)
+      ? damageLineInfo
+      : [damageLineInfo];
+
     damageLines.forEach((line, index) => {
       if (!line.LineType) {
         validation.errors.push({
           type: 'MISSING_LINE_TYPE',
           message: `Damage line ${index + 1}: Line type is missing`,
           line: index + 1,
-          severity: 'high'
+          severity: 'high',
         });
       }
 
@@ -333,7 +330,7 @@ class BMSValidator {
           type: 'MISSING_LINE_DESC',
           message: `Damage line ${index + 1}: Line description is missing`,
           line: index + 1,
-          severity: 'low'
+          severity: 'low',
         });
       }
 
@@ -344,7 +341,7 @@ class BMSValidator {
             type: 'MISSING_PART_NUMBER',
             message: `Damage line ${index + 1}: Part number is missing`,
             line: index + 1,
-            severity: 'medium'
+            severity: 'medium',
           });
         }
       }
@@ -356,7 +353,7 @@ class BMSValidator {
             type: 'MISSING_LABOR_HOURS',
             message: `Damage line ${index + 1}: Labor hours is missing`,
             line: index + 1,
-            severity: 'medium'
+            severity: 'medium',
           });
         }
       }
@@ -371,7 +368,7 @@ class BMSValidator {
       validation.warnings.push({
         type: 'MISSING_SUMMARY_TOTALS',
         message: 'Summary totals information is missing',
-        severity: 'medium'
+        severity: 'medium',
       });
     }
   }
@@ -381,18 +378,18 @@ class BMSValidator {
    */
   validateEMSLine(recordType, fields, lineNumber, validation) {
     const minFieldCounts = {
-      'HD': 2, // Header: type, shop name
-      'VH': 4, // Vehicle: type, year, make, model
-      'CO': 3, // Customer: type, first name, last name
-      'IN': 2, // Insurance: type, company
-      'CL': 2, // Claim: type, claim number
-      'LI': 4, // Line item: type, item type, description, quantity
-      'PA': 4, // Parts: type, part number, description, quantity
-      'LA': 4, // Labor: type, operation, description, hours
-      'TO': 3, // Totals: type, label, amount
-      'TX': 3, // Tax: type, rate, amount
-      'DE': 2, // Deductible: type, amount
-      'NO': 2  // Notes: type, note text
+      HD: 2, // Header: type, shop name
+      VH: 4, // Vehicle: type, year, make, model
+      CO: 3, // Customer: type, first name, last name
+      IN: 2, // Insurance: type, company
+      CL: 2, // Claim: type, claim number
+      LI: 4, // Line item: type, item type, description, quantity
+      PA: 4, // Parts: type, part number, description, quantity
+      LA: 4, // Labor: type, operation, description, hours
+      TO: 3, // Totals: type, label, amount
+      TX: 3, // Tax: type, rate, amount
+      DE: 2, // Deductible: type, amount
+      NO: 2, // Notes: type, note text
     };
 
     const minFields = minFieldCounts[recordType] || 1;
@@ -402,7 +399,7 @@ class BMSValidator {
         message: `Line ${lineNumber}: Record type '${recordType}' requires at least ${minFields} fields, found ${fields.length}`,
         line: lineNumber,
         recordType,
-        severity: 'high'
+        severity: 'high',
       });
     }
 
@@ -411,12 +408,16 @@ class BMSValidator {
       case 'VH':
         if (fields.length >= 2 && fields[1]) {
           const year = parseInt(fields[1]);
-          if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 2) {
+          if (
+            isNaN(year) ||
+            year < 1900 ||
+            year > new Date().getFullYear() + 2
+          ) {
             validation.warnings.push({
               type: 'INVALID_YEAR',
               message: `Line ${lineNumber}: Invalid vehicle year '${fields[1]}'`,
               line: lineNumber,
-              severity: 'medium'
+              severity: 'medium',
             });
           }
         }
@@ -430,7 +431,7 @@ class BMSValidator {
               type: 'INVALID_AMOUNT',
               message: `Line ${lineNumber}: Invalid amount '${fields[2]}'`,
               line: lineNumber,
-              severity: 'medium'
+              severity: 'medium',
             });
           }
         }
@@ -445,29 +446,29 @@ class BMSValidator {
     const fields = [];
     let current = '';
     let escaped = false;
-    
+
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
-      
+
       if (char === '\\' && !escaped) {
         escaped = true;
         continue;
       }
-      
+
       if (char === '|' && !escaped) {
         fields.push(current.trim());
         current = '';
       } else {
         current += char;
       }
-      
+
       escaped = false;
     }
-    
+
     if (current) {
       fields.push(current.trim());
     }
-    
+
     return fields;
   }
 }

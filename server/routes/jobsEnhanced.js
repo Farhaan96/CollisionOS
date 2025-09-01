@@ -1,8 +1,15 @@
 const express = require('express');
-const { authenticateToken, requireManager } = require('../middleware/authSupabase');
+const {
+  authenticateToken,
+  requireManager,
+} = require('../middleware/authSupabase');
 const { databaseService } = require('../services/databaseService');
 const { realtimeService } = require('../services/realtimeService');
-const { asyncHandler, errors, successResponse } = require('../utils/errorHandler');
+const {
+  asyncHandler,
+  errors,
+  successResponse,
+} = require('../utils/errorHandler');
 const { validateBody } = require('../middleware/validation');
 const router = express.Router();
 
@@ -61,27 +68,28 @@ const router = express.Router();
  *                     total:
  *                       type: integer
  */
-router.get('/', 
+router.get(
+  '/',
   authenticateToken(),
   asyncHandler(async (req, res) => {
-    const { 
-      status, 
-      limit = 20, 
-      offset = 0, 
+    const {
+      status,
+      limit = 20,
+      offset = 0,
       search,
       sortBy = 'created_at',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
     } = req.query;
 
     const options = {
       limit: Math.min(parseInt(limit), 100), // Cap at 100
       offset: parseInt(offset),
-      order: [[sortBy, sortOrder]]
+      order: [[sortBy, sortOrder]],
     };
 
     // Build where conditions
     const where = {
-      shop_id: req.user.shopId
+      shop_id: req.user.shopId,
     };
 
     if (status) {
@@ -99,7 +107,7 @@ router.get('/',
         const { Op } = require('sequelize');
         where[Op.or] = [
           { jobNumber: { [Op.iLike]: `%${search}%` } },
-          { customerName: { [Op.iLike]: `%${search}%` } }
+          { customerName: { [Op.iLike]: `%${search}%` } },
         ];
       }
     }
@@ -118,29 +126,49 @@ router.get('/',
         customer: {
           name: job.customer_name || job.customerName,
           phone: job.customer_phone || job.customerPhone,
-          email: job.customer_email || job.customerEmail
+          email: job.customer_email || job.customerEmail,
         },
         vehicle: {
           year: job.vehicle_year || job.vehicleYear,
           make: job.vehicle_make || job.vehicleMake,
           model: job.vehicle_model || job.vehicleModel,
-          vin: job.vehicle_vin || job.vehicleVin
+          vin: job.vehicle_vin || job.vehicleVin,
         },
-        assignedTechnician: job.assigned_technician ? {
-          name: job.assigned_technician.name || job.assignedTechnician?.name,
-          avatar: job.assigned_technician.avatar || job.assignedTechnician?.avatar
-        } : null,
-        daysInShop: job.days_in_shop || Math.floor((new Date() - new Date(job.created_at || job.createdAt)) / (1000 * 60 * 60 * 24)),
-        daysInCurrentStatus: job.days_in_current_status || Math.floor((new Date() - new Date(job.status_changed_at || job.updated_at || job.updatedAt)) / (1000 * 60 * 60 * 24)),
-        progressPercentage: job.progress_percentage || getProgressFromStatus(job.status),
-        targetDate: job.target_date || job.estimated_completion || job.targetDate,
+        assignedTechnician: job.assigned_technician
+          ? {
+              name:
+                job.assigned_technician.name || job.assignedTechnician?.name,
+              avatar:
+                job.assigned_technician.avatar ||
+                job.assignedTechnician?.avatar,
+            }
+          : null,
+        daysInShop:
+          job.days_in_shop ||
+          Math.floor(
+            (new Date() - new Date(job.created_at || job.createdAt)) /
+              (1000 * 60 * 60 * 24)
+          ),
+        daysInCurrentStatus:
+          job.days_in_current_status ||
+          Math.floor(
+            (new Date() -
+              new Date(
+                job.status_changed_at || job.updated_at || job.updatedAt
+              )) /
+              (1000 * 60 * 60 * 24)
+          ),
+        progressPercentage:
+          job.progress_percentage || getProgressFromStatus(job.status),
+        targetDate:
+          job.target_date || job.estimated_completion || job.targetDate,
         partsStatus: job.parts_status || job.partsStatus || 'pending',
         insurance: {
           company: job.insurance_company || job.insurance?.company,
-          claimNumber: job.insurance_claim || job.insurance?.claimNumber
+          claimNumber: job.insurance_claim || job.insurance?.claimNumber,
         },
         createdAt: job.created_at || job.createdAt,
-        updatedAt: job.updated_at || job.updatedAt
+        updatedAt: job.updated_at || job.updatedAt,
       }));
 
       // Get total count for pagination
@@ -148,7 +176,7 @@ router.get('/',
       if (databaseService.useSupabase) {
         const countResult = await databaseService.query('jobs', {
           select: 'id',
-          where: { shop_id: req.user.shopId }
+          where: { shop_id: req.user.shopId },
         });
         total = countResult.length;
       } else {
@@ -160,10 +188,9 @@ router.get('/',
         pagination: {
           limit: options.limit,
           offset: options.offset,
-          total
-        }
+          total,
+        },
       });
-
     } catch (error) {
       console.error('Error fetching jobs:', error);
       throw errors.databaseError('Failed to fetch jobs');
@@ -219,7 +246,8 @@ router.get('/',
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.post('/', 
+router.post(
+  '/',
   authenticateToken(),
   requireManager,
   asyncHandler(async (req, res) => {
@@ -229,12 +257,14 @@ router.post('/',
       customerPhone,
       vehicleInfo,
       description,
-      priority = 'normal'
+      priority = 'normal',
     } = req.body;
 
     // Validate required fields
     if (!customerName || !vehicleInfo) {
-      throw errors.validationError('Customer name and vehicle info are required');
+      throw errors.validationError(
+        'Customer name and vehicle info are required'
+      );
     }
 
     // Generate job number
@@ -255,7 +285,7 @@ router.post('/',
       shop_id: req.user.shopId,
       created_by: req.user.id,
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
     };
 
     try {
@@ -265,7 +295,6 @@ router.post('/',
       realtimeService.broadcastJobUpdate(newJob, 'created');
 
       successResponse(res, newJob, 'Job created successfully', null, 201);
-
     } catch (error) {
       console.error('Error creating job:', error);
       throw errors.databaseError('Failed to create job');
@@ -294,7 +323,8 @@ router.post('/',
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.get('/:id', 
+router.get(
+  '/:id',
   authenticateToken(),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -303,8 +333,8 @@ router.get('/:id',
       const jobs = await databaseService.query('jobs', {
         where: {
           id,
-          shop_id: req.user.shopId
-        }
+          shop_id: req.user.shopId,
+        },
       });
 
       if (!jobs || jobs.length === 0) {
@@ -313,7 +343,6 @@ router.get('/:id',
 
       const job = jobs[0];
       successResponse(res, job, 'Job retrieved successfully');
-
     } catch (error) {
       console.error('Error fetching job:', error);
       if (error.message === 'Job not found') {
@@ -361,7 +390,8 @@ router.get('/:id',
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.put('/:id', 
+router.put(
+  '/:id',
   authenticateToken(),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -374,7 +404,7 @@ router.put('/:id',
     try {
       const updatedJob = await databaseService.update('jobs', updateData, {
         id,
-        shop_id: req.user.shopId
+        shop_id: req.user.shopId,
       });
 
       if (!updatedJob) {
@@ -385,7 +415,6 @@ router.put('/:id',
       realtimeService.broadcastJobUpdate(updatedJob, 'updated');
 
       successResponse(res, updatedJob, 'Job updated successfully');
-
     } catch (error) {
       console.error('Error updating job:', error);
       if (error.message === 'Job not found') {
@@ -434,7 +463,8 @@ router.put('/:id',
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.post('/:id/move', 
+router.post(
+  '/:id/move',
   authenticateToken(),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -445,9 +475,20 @@ router.post('/:id/move',
     }
 
     const validStatuses = [
-      'estimate', 'intake', 'blueprint', 'parts_ordering', 'parts_receiving',
-      'body_structure', 'paint_prep', 'paint_booth', 'reassembly',
-      'quality_control', 'calibration', 'detail', 'ready_pickup', 'delivered'
+      'estimate',
+      'intake',
+      'blueprint',
+      'parts_ordering',
+      'parts_receiving',
+      'body_structure',
+      'paint_prep',
+      'paint_booth',
+      'reassembly',
+      'quality_control',
+      'calibration',
+      'detail',
+      'ready_pickup',
+      'delivered',
     ];
 
     if (!validStatuses.includes(status)) {
@@ -457,7 +498,7 @@ router.post('/:id/move',
     try {
       // Get current job
       const jobs = await databaseService.query('jobs', {
-        where: { id, shop_id: req.user.shopId }
+        where: { id, shop_id: req.user.shopId },
       });
 
       if (!jobs || jobs.length === 0) {
@@ -471,7 +512,7 @@ router.post('/:id/move',
       const updateData = {
         status,
         updated_at: new Date(),
-        updated_by: req.user.id
+        updated_by: req.user.id,
       };
 
       // Add completion timestamp for final status
@@ -481,7 +522,7 @@ router.post('/:id/move',
 
       const updatedJob = await databaseService.update('jobs', updateData, {
         id,
-        shop_id: req.user.shopId
+        shop_id: req.user.shopId,
       });
 
       // Log status change if we have a proper audit table
@@ -492,23 +533,25 @@ router.post('/:id/move',
           new_status: status,
           changed_by: req.user.id,
           notes,
-          changed_at: new Date()
+          changed_at: new Date(),
         });
       } catch (auditError) {
         console.warn('Failed to log status change:', auditError.message);
       }
 
       // Broadcast real-time production update
-      realtimeService.broadcastProductionUpdate({
-        jobId: id,
-        previousStatus,
-        newStatus: status,
-        jobNumber: updatedJob.job_number || updatedJob.jobNumber,
-        updatedBy: req.user.username || req.user.email
-      }, req.user.shopId);
+      realtimeService.broadcastProductionUpdate(
+        {
+          jobId: id,
+          previousStatus,
+          newStatus: status,
+          jobNumber: updatedJob.job_number || updatedJob.jobNumber,
+          updatedBy: req.user.username || req.user.email,
+        },
+        req.user.shopId
+      );
 
       successResponse(res, updatedJob, `Job moved to ${status} successfully`);
-
     } catch (error) {
       console.error('Error moving job:', error);
       if (error.message === 'Job not found') {
@@ -541,7 +584,7 @@ function getProgressFromStatus(status) {
     calibration: 92,
     detail: 95,
     ready_pickup: 98,
-    delivered: 100
+    delivered: 100,
   };
   return statusProgressMap[status] || 0;
 }
@@ -554,19 +597,19 @@ function getProgressFromStatus(status) {
 async function generateJobNumber(shopId) {
   const prefix = 'JOB';
   const year = new Date().getFullYear();
-  
+
   try {
     // Get the highest job number for this year
     let highestNumber = 0;
-    
+
     if (databaseService.useSupabase) {
       const existingJobs = await databaseService.query('jobs', {
         select: 'job_number',
         where: {
-          shop_id: shopId
+          shop_id: shopId,
         },
         order: [['job_number', 'desc']],
-        limit: 1
+        limit: 1,
       });
 
       if (existingJobs.length > 0) {
@@ -581,7 +624,7 @@ async function generateJobNumber(shopId) {
       const lastJob = await Job.findOne({
         where: { shopId },
         order: [['jobNumber', 'DESC']],
-        attributes: ['jobNumber']
+        attributes: ['jobNumber'],
       });
 
       if (lastJob && lastJob.jobNumber) {
@@ -594,7 +637,6 @@ async function generateJobNumber(shopId) {
 
     const nextNumber = highestNumber + 1;
     return `${prefix}${nextNumber.toString().padStart(4, '0')}`;
-    
   } catch (error) {
     console.error('Error generating job number:', error);
     // Fallback to timestamp-based number

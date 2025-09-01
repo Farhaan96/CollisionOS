@@ -42,61 +42,61 @@ export const microAnimations = {
   // Hover scale effect
   hoverScale: {
     rest: { scale: 1 },
-    hover: { 
+    hover: {
       scale: 1.02,
-      transition: springConfigs.gentle 
+      transition: springConfigs.gentle,
     },
-    tap: { 
+    tap: {
       scale: 0.98,
-      transition: { duration: 0.1 } 
+      transition: { duration: 0.1 },
     },
   },
 
   // Bounce on hover
   bounceHover: {
     rest: { scale: 1, y: 0 },
-    hover: { 
+    hover: {
       scale: 1.05,
       y: -2,
-      transition: springConfigs.bouncy 
+      transition: springConfigs.bouncy,
     },
-    tap: { 
+    tap: {
       scale: 0.95,
       y: 1,
-      transition: { duration: 0.1 } 
+      transition: { duration: 0.1 },
     },
   },
 
   // Glow effect
   glowHover: {
-    rest: { 
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' 
+    rest: {
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
     },
-    hover: { 
+    hover: {
       boxShadow: '0 8px 40px rgba(59, 130, 246, 0.3)',
-      transition: { duration: 0.3 } 
+      transition: { duration: 0.3 },
     },
   },
 
   // Slide up reveal
   slideUp: {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 20,
-      scale: 0.95 
+      scale: 0.95,
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       scale: 1,
-      transition: springConfigs.smooth 
+      transition: springConfigs.smooth,
     },
   },
 
   // Staggered fade in
   staggeredFade: {
     hidden: { opacity: 0, y: 10 },
-    visible: (i) => ({
+    visible: i => ({
       opacity: 1,
       y: 0,
       transition: {
@@ -135,21 +135,21 @@ export const microAnimations = {
 
   // Card entrance
   cardEntrance: {
-    hidden: { 
-      opacity: 0, 
-      scale: 0.8, 
-      y: 40 
+    hidden: {
+      opacity: 0,
+      scale: 0.8,
+      y: 40,
     },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
+    visible: {
+      opacity: 1,
+      scale: 1,
       y: 0,
       transition: {
         type: 'spring',
         stiffness: 100,
         damping: 15,
         mass: 1,
-      } 
+      },
     },
   },
 
@@ -267,7 +267,7 @@ export const loadingAnimations = {
 
   dots: {
     initial: { opacity: 0.3, scale: 0.8 },
-    animate: (i) => ({
+    animate: i => ({
       opacity: [0.3, 1, 0.3],
       scale: [0.8, 1, 0.8],
       transition: {

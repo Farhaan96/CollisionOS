@@ -5,16 +5,18 @@
 
 const request = require('supertest');
 const { app } = require('../../server/index');
-const { integrationManager } = require('../../server/services/integrationFramework');
-const { 
+const {
+  integrationManager,
+} = require('../../server/services/integrationFramework');
+const {
   InsuranceIntegrationService,
   MitchellProvider,
-  CCCProvider 
+  CCCProvider,
 } = require('../../server/services/insuranceIntegration');
-const { 
+const {
   PartsSupplierIntegrationService,
   LKQProvider,
-  GPCProvider 
+  GPCProvider,
 } = require('../../server/services/partsSupplierIntegration');
 
 describe('Third-Party Integrations', () => {
@@ -24,13 +26,11 @@ describe('Third-Party Integrations', () => {
 
   beforeAll(async () => {
     // Set up authentication token for tests
-    const authResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'test@collisionos.com',
-        password: 'testpassword'
-      });
-    
+    const authResponse = await request(app).post('/api/auth/login').send({
+      email: 'test@collisionos.com',
+      password: 'testpassword',
+    });
+
     if (authResponse.body && authResponse.body.token) {
       authToken = authResponse.body.token;
     } else {
@@ -98,8 +98,8 @@ describe('Third-Party Integrations', () => {
         credentials: {
           accessToken: 'test-access-token',
           clientId: 'test-client-id',
-          clientSecret: 'test-client-secret'
-        }
+          clientSecret: 'test-client-secret',
+        },
       };
 
       const response = await request(app)
@@ -119,8 +119,8 @@ describe('Third-Party Integrations', () => {
         type: 'ccc',
         credentials: {
           apiKey: 'test-api-key',
-          secretKey: 'test-secret-key'
-        }
+          secretKey: 'test-secret-key',
+        },
       };
 
       const response = await request(app)
@@ -140,9 +140,9 @@ describe('Third-Party Integrations', () => {
           // Missing required fields
           customerInfo: {
             firstName: 'John',
-            lastName: 'Doe'
-          }
-        }
+            lastName: 'Doe',
+          },
+        },
       };
 
       const response = await request(app)
@@ -166,23 +166,23 @@ describe('Third-Party Integrations', () => {
             lastName: 'Doe',
             phone: '555-1234',
             email: 'john.doe@email.com',
-            address: '123 Main St, Anytown, ST 12345'
+            address: '123 Main St, Anytown, ST 12345',
           },
           vehicleInfo: {
             vin: '1HGBH41JXMN109186',
             year: 2021,
             make: 'Honda',
             model: 'Accord',
-            mileage: 25000
-          }
-        }
+            mileage: 25000,
+          },
+        },
       };
 
       // Mock the provider to avoid actual API calls
       jest.spyOn(insuranceService, 'submitClaim').mockResolvedValue({
         claimNumber: 'CLM-789012',
         status: 'submitted',
-        message: 'Claim submitted successfully'
+        message: 'Claim submitted successfully',
       });
 
       const response = await request(app)
@@ -200,33 +200,33 @@ describe('Third-Party Integrations', () => {
         provider: 'Mitchell Test',
         estimateData: {
           claimNumber: 'CLM-789012',
-          totalAmount: 5500.00,
-          laborTotal: 2800.00,
-          partsTotal: 2200.00,
+          totalAmount: 5500.0,
+          laborTotal: 2800.0,
+          partsTotal: 2200.0,
           repairItems: [
             {
               lineNumber: 1,
               description: 'Replace front bumper',
               laborHours: 3.5,
-              laborRate: 65.00,
-              partsAmount: 450.00
+              laborRate: 65.0,
+              partsAmount: 450.0,
             },
             {
               lineNumber: 2,
               description: 'Paint front bumper',
               laborHours: 2.0,
-              laborRate: 65.00,
-              partsAmount: 120.00
-            }
-          ]
-        }
+              laborRate: 65.0,
+              partsAmount: 120.0,
+            },
+          ],
+        },
       };
 
       // Mock the provider
       jest.spyOn(insuranceService, 'submitEstimate').mockResolvedValue({
         estimateId: 'EST-456789',
         status: 'submitted',
-        message: 'Estimate submitted for review'
+        message: 'Estimate submitted for review',
       });
 
       const response = await request(app)
@@ -247,7 +247,7 @@ describe('Third-Party Integrations', () => {
       jest.spyOn(insuranceService, 'getClaimStatus').mockResolvedValue({
         claimNumber,
         status: 'under_review',
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       });
 
       const response = await request(app)
@@ -277,8 +277,8 @@ describe('Third-Party Integrations', () => {
         name: 'LKQ Test',
         type: 'lkq',
         credentials: {
-          apiKey: 'test-lkq-api-key'
-        }
+          apiKey: 'test-lkq-api-key',
+        },
       };
 
       const response = await request(app)
@@ -298,8 +298,8 @@ describe('Third-Party Integrations', () => {
         credentials: {
           clientId: 'test-gpc-client-id',
           clientSecret: 'test-gpc-secret',
-          accessToken: 'test-gpc-token'
-        }
+          accessToken: 'test-gpc-token',
+        },
       };
 
       const response = await request(app)
@@ -319,11 +319,11 @@ describe('Third-Party Integrations', () => {
           vehicleInfo: {
             year: 2021,
             make: 'Honda',
-            model: 'Accord'
+            model: 'Accord',
           },
-          category: 'body'
+          category: 'body',
         },
-        providers: ['LKQ Test', 'GPC Test']
+        providers: ['LKQ Test', 'GPC Test'],
       };
 
       // Mock the parts supplier service
@@ -339,18 +339,18 @@ describe('Third-Party Integrations', () => {
                 {
                   partNumber: 'HO1000245',
                   description: '2021 Honda Accord Front Bumper Cover',
-                  price: 285.00,
+                  price: 285.0,
                   availability: true,
-                  partType: 'oem'
-                }
-              ]
-            }
-          }
+                  partType: 'oem',
+                },
+              ],
+            },
+          },
         ],
         aggregated: {
           totalParts: 5,
-          providerCount: { 'LKQ Test': 3, 'GPC Test': 2 }
-        }
+          providerCount: { 'LKQ Test': 3, 'GPC Test': 2 },
+        },
       });
 
       const response = await request(app)
@@ -367,29 +367,29 @@ describe('Third-Party Integrations', () => {
     test('should compare prices across suppliers', async () => {
       const priceData = {
         partNumbers: ['HO1000245', 'HO1000246'],
-        providers: ['LKQ Test', 'GPC Test']
+        providers: ['LKQ Test', 'GPC Test'],
       };
 
       // Mock the price comparison
       jest.spyOn(partsSupplierService, 'comparePrices').mockResolvedValue({
-        'HO1000245': {
+        HO1000245: {
           partNumber: 'HO1000245',
           providers: [
-            { provider: 'LKQ Test', price: 285.00, availability: true },
-            { provider: 'GPC Test', price: 295.00, availability: true }
+            { provider: 'LKQ Test', price: 285.0, availability: true },
+            { provider: 'GPC Test', price: 295.0, availability: true },
           ],
-          bestPrice: 285.00,
-          averagePrice: 290.00
+          bestPrice: 285.0,
+          averagePrice: 290.0,
         },
-        'HO1000246': {
+        HO1000246: {
           partNumber: 'HO1000246',
           providers: [
-            { provider: 'LKQ Test', price: 125.00, availability: false },
-            { provider: 'GPC Test', price: 135.00, availability: true }
+            { provider: 'LKQ Test', price: 125.0, availability: false },
+            { provider: 'GPC Test', price: 135.0, availability: true },
           ],
-          bestPrice: 125.00,
-          averagePrice: 130.00
-        }
+          bestPrice: 125.0,
+          averagePrice: 130.0,
+        },
       });
 
       const response = await request(app)
@@ -400,7 +400,7 @@ describe('Third-Party Integrations', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data['HO1000245']).toBeDefined();
-      expect(response.body.data['HO1000245'].bestPrice).toBe(285.00);
+      expect(response.body.data['HO1000245'].bestPrice).toBe(285.0);
     });
 
     test('should create order with best price strategy', async () => {
@@ -410,41 +410,43 @@ describe('Third-Party Integrations', () => {
             {
               partNumber: 'HO1000245',
               quantity: 1,
-              description: '2021 Honda Accord Front Bumper Cover'
-            }
+              description: '2021 Honda Accord Front Bumper Cover',
+            },
           ],
           shippingAddress: {
             name: 'Test Shop',
             address: '123 Business St',
             city: 'Anytown',
             state: 'ST',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
-        strategy: 'best_price'
+        strategy: 'best_price',
       };
 
       // Mock the order creation
-      jest.spyOn(partsSupplierService, 'createOrderWithBestPrice').mockResolvedValue({
-        strategy: 'best_price',
-        priceComparison: {
-          'HO1000245': {
-            partNumber: 'HO1000245',
-            providers: [
-              { provider: 'LKQ Test', price: 285.00, availability: true }
-            ],
-            bestPrice: 285.00
-          }
-        },
-        orderResults: [
-          {
-            provider: 'LKQ Test',
-            success: true,
-            orderNumber: 'ORD-123456',
-            items: 1
-          }
-        ]
-      });
+      jest
+        .spyOn(partsSupplierService, 'createOrderWithBestPrice')
+        .mockResolvedValue({
+          strategy: 'best_price',
+          priceComparison: {
+            HO1000245: {
+              partNumber: 'HO1000245',
+              providers: [
+                { provider: 'LKQ Test', price: 285.0, availability: true },
+              ],
+              bestPrice: 285.0,
+            },
+          },
+          orderResults: [
+            {
+              provider: 'LKQ Test',
+              success: true,
+              orderNumber: 'ORD-123456',
+              items: 1,
+            },
+          ],
+        });
 
       const response = await request(app)
         .post('/api/integrations/parts/orders')
@@ -460,7 +462,7 @@ describe('Third-Party Integrations', () => {
     test('should reject invalid part numbers for price comparison', async () => {
       const invalidData = {
         partNumbers: [], // Empty array
-        providers: ['LKQ Test']
+        providers: ['LKQ Test'],
       };
 
       const response = await request(app)
@@ -478,13 +480,17 @@ describe('Third-Party Integrations', () => {
       const webhookPayload = {
         claimNumber: 'CLM-789012',
         status: 'approved',
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       // Mock webhook handler
       jest.spyOn(integrationManager, 'handleWebhook').mockResolvedValue({
         status: 'processed',
-        result: { success: true, claimNumber: 'CLM-789012', status: 'approved' }
+        result: {
+          success: true,
+          claimNumber: 'CLM-789012',
+          status: 'approved',
+        },
       });
 
       const response = await request(app)
@@ -501,13 +507,13 @@ describe('Third-Party Integrations', () => {
         orderNumber: 'ORD-123456',
         status: 'shipped',
         trackingNumber: 'TRK-789012',
-        estimatedDelivery: '2024-01-20'
+        estimatedDelivery: '2024-01-20',
       };
 
       // Mock webhook handler
       jest.spyOn(integrationManager, 'handleWebhook').mockResolvedValue({
         status: 'processed',
-        result: { success: true, orderNumber: 'ORD-123456', status: 'shipped' }
+        result: { success: true, orderNumber: 'ORD-123456', status: 'shipped' },
       });
 
       const response = await request(app)
@@ -522,13 +528,13 @@ describe('Third-Party Integrations', () => {
     test('should reject webhook with invalid signature', async () => {
       const webhookPayload = {
         orderNumber: 'ORD-123456',
-        status: 'shipped'
+        status: 'shipped',
       };
 
       // Mock webhook handler to throw authentication error
       jest.spyOn(integrationManager, 'handleWebhook').mockResolvedValue({
         status: 'error',
-        error: 'Invalid webhook signature'
+        error: 'Invalid webhook signature',
       });
 
       const response = await request(app)
@@ -546,7 +552,7 @@ describe('Third-Party Integrations', () => {
       const invalidProvider = {
         name: 'Invalid Provider',
         type: 'invalid_type',
-        credentials: { apiKey: 'test' }
+        credentials: { apiKey: 'test' },
       };
 
       const response = await request(app)
@@ -559,9 +565,7 @@ describe('Third-Party Integrations', () => {
     });
 
     test('should handle missing authentication token', async () => {
-      const response = await request(app)
-        .get('/api/integrations')
-        .expect(401);
+      const response = await request(app).get('/api/integrations').expect(401);
 
       expect(response.body.success).toBe(false);
     });
@@ -569,7 +573,7 @@ describe('Third-Party Integrations', () => {
     test('should handle provider not found error', async () => {
       const claimData = {
         provider: 'NonExistent Provider',
-        claimData: { policyNumber: 'POL-123' }
+        claimData: { policyNumber: 'POL-123' },
       };
 
       const response = await request(app)

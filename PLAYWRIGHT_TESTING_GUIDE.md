@@ -57,7 +57,9 @@ tests/
 ## 🧪 Test Categories
 
 ### 1. Smoke Tests (`smoke-tests.spec.js`)
+
 **Purpose**: Quick validation of critical functionality
+
 - Login page loads correctly
 - Authentication works
 - Basic navigation functions
@@ -67,7 +69,9 @@ tests/
 **Run**: `npm run test:e2e:smoke`
 
 ### 2. Supabase Integration Tests (`supabase-integration.spec.js`)
+
 **Purpose**: Test Supabase-specific functionality
+
 - Data loading from Supabase
 - Real-time updates
 - API integration
@@ -78,7 +82,9 @@ tests/
 **Run**: `npm run test:e2e:supabase`
 
 ### 3. Complete Workflow Tests (`collisionos-workflows.spec.js`)
+
 **Purpose**: End-to-end user workflows
+
 - Authentication & login
 - Dashboard & navigation
 - Customer management (CRUD operations)
@@ -93,6 +99,7 @@ tests/
 ## 🔧 Test Configuration
 
 ### Playwright Config (`playwright.config.js`)
+
 ```javascript
 export default defineConfig({
   testDir: './tests',
@@ -119,7 +126,9 @@ export default defineConfig({
 ```
 
 ### Test Data
+
 Tests use seeded data from the Supabase database:
+
 - **Shop ID**: `550e8400-e29b-41d4-a716-446655440001`
 - **Customers**: John Doe, Acme Corp, State Farm Insurance, Sarah Wilson, Mike Johnson
 - **Jobs**: Front Bumper Repair, Side Panel Replacement, Full Paint Job
@@ -128,6 +137,7 @@ Tests use seeded data from the Supabase database:
 ## 🎯 Test Scenarios
 
 ### Authentication Tests
+
 - ✅ Login with valid credentials
 - ❌ Login with invalid credentials
 - ✅ Required field validation
@@ -135,12 +145,14 @@ Tests use seeded data from the Supabase database:
 - ✅ Authentication state persistence
 
 ### Dashboard Tests
+
 - ✅ KPI cards display correctly
 - ✅ Navigation menu works
 - ✅ Real-time data loading
 - ✅ Responsive design
 
 ### Customer Management Tests
+
 - ✅ Display seeded customers
 - ✅ Create new customer
 - ✅ View customer details
@@ -148,6 +160,7 @@ Tests use seeded data from the Supabase database:
 - ✅ Customer data validation
 
 ### Job Management Tests
+
 - ✅ Display production board
 - ✅ Create new job
 - ✅ Update job status
@@ -155,12 +168,14 @@ Tests use seeded data from the Supabase database:
 - ✅ Job-customer relationships
 
 ### Parts Management Tests
+
 - ✅ Display parts inventory
 - ✅ Add new part
 - ✅ Parts categorization
 - ✅ Parts-job relationships
 
 ### Supabase Integration Tests
+
 - ✅ Data loading from Supabase
 - ✅ Real-time updates
 - ✅ API error handling
@@ -210,13 +225,16 @@ npx playwright test --base-url=http://localhost:3001
 ## 📊 Test Reports
 
 ### HTML Report
+
 After running tests, view the HTML report:
+
 ```bash
 # Open the HTML report
 npx playwright show-report
 ```
 
 The report includes:
+
 - Test results and status
 - Screenshots on failure
 - Video recordings
@@ -224,7 +242,9 @@ The report includes:
 - Performance metrics
 
 ### Console Output
+
 The test runner provides colored console output:
+
 - ✅ Green: Success
 - ❌ Red: Errors
 - ⚠️ Yellow: Warnings
@@ -233,30 +253,37 @@ The test runner provides colored console output:
 ## 🔍 Debugging Tests
 
 ### Debug Mode
+
 ```bash
 # Run tests in debug mode
 npm run test:debug
 ```
 
 This opens the browser in headed mode and pauses execution, allowing you to:
+
 - Step through test execution
 - Inspect elements
 - Debug network requests
 - View console logs
 
 ### Trace Files
+
 Enable trace files for detailed debugging:
+
 ```bash
 npx playwright test --trace=on
 ```
 
 View trace files:
+
 ```bash
 npx playwright show-trace trace.zip
 ```
 
 ### Screenshots
+
 Tests automatically capture screenshots on failure. View them in:
+
 - `test-results/` directory
 - HTML report
 - Console output
@@ -266,9 +293,11 @@ Tests automatically capture screenshots on failure. View them in:
 ### Common Issues
 
 #### 1. Application Not Running
+
 **Error**: `Application is not running on http://localhost:3000`
 
 **Solution**:
+
 ```bash
 # Start the application
 npm start
@@ -278,9 +307,11 @@ npm run dev
 ```
 
 #### 2. Supabase Configuration Missing
+
 **Error**: `Supabase configuration not found`
 
 **Solution**:
+
 1. Copy `.env.example` to `.env`
 2. Add your Supabase credentials:
    ```
@@ -289,9 +320,11 @@ npm run dev
    ```
 
 #### 3. Tests Failing Due to Missing Data
+
 **Error**: `Expected element not found`
 
 **Solution**:
+
 1. Ensure Supabase is seeded with test data:
    ```bash
    cd supabase-migration
@@ -300,9 +333,11 @@ npm run dev
    ```
 
 #### 4. Network Timeouts
+
 **Error**: `Timeout waiting for element`
 
 **Solution**:
+
 1. Increase timeout in test:
    ```javascript
    await expect(element).toBeVisible({ timeout: 10000 });
@@ -311,9 +346,11 @@ npm run dev
 3. Verify API endpoints are responding
 
 #### 5. Element Not Found
+
 **Error**: `Element not found`
 
 **Solution**:
+
 1. Check if the element selector is correct
 2. Verify the element is visible and not hidden
 3. Add wait conditions:
@@ -324,6 +361,7 @@ npm run dev
 ### Performance Issues
 
 #### Slow Test Execution
+
 1. Run tests in parallel:
    ```bash
    npx playwright test --workers=4
@@ -332,6 +370,7 @@ npm run dev
 3. Optimize test data setup
 
 #### Memory Issues
+
 1. Reduce number of concurrent workers
 2. Close browser contexts between tests
 3. Clean up test data after each test
@@ -339,6 +378,7 @@ npm run dev
 ## 📈 Continuous Integration
 
 ### GitHub Actions Example
+
 ```yaml
 name: E2E Tests
 on: [push, pull_request]
@@ -362,6 +402,7 @@ jobs:
 ```
 
 ### Environment Variables for CI
+
 ```bash
 # Required for CI
 CI=true
@@ -372,20 +413,24 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 🎯 Best Practices
 
 ### Test Organization
+
 1. **Group related tests** using `test.describe()`
 2. **Use descriptive test names** that explain the scenario
 3. **Keep tests independent** - each test should be able to run alone
 4. **Use beforeEach/afterEach** for setup and cleanup
 
 ### Selectors
+
 1. **Prefer data attributes** over CSS classes:
+
    ```javascript
    // Good
    await page.click('[data-testid="add-customer"]');
-   
+
    // Avoid
    await page.click('.btn-primary');
    ```
+
 2. **Use text content** when appropriate:
    ```javascript
    await page.click('text=Add Customer');
@@ -393,25 +438,30 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 3. **Avoid fragile selectors** like nth-child or complex CSS
 
 ### Assertions
+
 1. **Use specific assertions**:
+
    ```javascript
    // Good
    await expect(page.locator('text=Customer created')).toBeVisible();
-   
+
    // Avoid
    await expect(page).toHaveText('Customer created');
    ```
+
 2. **Add meaningful error messages**:
    ```javascript
    await expect(element).toBeVisible({ timeout: 5000 });
    ```
 
 ### Data Management
+
 1. **Use seeded test data** for consistent results
 2. **Clean up test data** after tests that create new data
 3. **Use unique identifiers** for test data to avoid conflicts
 
 ### Performance
+
 1. **Minimize page loads** by reusing browser contexts
 2. **Use efficient selectors** to reduce wait times
 3. **Batch related operations** when possible
@@ -427,6 +477,7 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 🤝 Contributing
 
 When adding new tests:
+
 1. Follow the existing test structure
 2. Use descriptive test names
 3. Include appropriate assertions
@@ -436,6 +487,7 @@ When adding new tests:
 ## 📞 Support
 
 For issues with:
+
 - **Playwright setup**: Check the [Playwright documentation](https://playwright.dev/docs/intro)
 - **Supabase integration**: Refer to the [Supabase migration guide](./SUPABASE_EXECUTION_GUIDE.md)
 - **Test failures**: Check the troubleshooting section above

@@ -47,7 +47,7 @@ import {
   Tabs,
   Tab,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -91,7 +91,7 @@ import {
   BuildCircle,
   Engineering,
   Precision,
-  Scanner
+  Scanner,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -109,8 +109,8 @@ const QC_CATEGORIES = {
       'Structural adhesive application',
       'Dimensional accuracy check',
       'Safety cage integrity',
-      'Mounting points inspection'
-    ]
+      'Mounting points inspection',
+    ],
   },
   body: {
     title: 'Body Panel Quality',
@@ -122,8 +122,8 @@ const QC_CATEGORIES = {
       'Alignment accuracy',
       'Door fit and function',
       'Hood/trunk alignment',
-      'Trim attachment'
-    ]
+      'Trim attachment',
+    ],
   },
   paint: {
     title: 'Paint & Finish',
@@ -135,8 +135,8 @@ const QC_CATEGORIES = {
       'Coverage completeness',
       'Defect inspection',
       'Clear coat application',
-      'Blend line quality'
-    ]
+      'Blend line quality',
+    ],
   },
   mechanical: {
     title: 'Mechanical Systems',
@@ -148,8 +148,8 @@ const QC_CATEGORIES = {
       'Fluid levels check',
       'Belt/hose inspection',
       'Brake system test',
-      'Suspension operation'
-    ]
+      'Suspension operation',
+    ],
   },
   electrical: {
     title: 'Electrical Systems',
@@ -161,8 +161,8 @@ const QC_CATEGORIES = {
       'Wiring harness integrity',
       'Connector security',
       'Battery/charging system',
-      'Warning light status'
-    ]
+      'Warning light status',
+    ],
   },
   adas: {
     title: 'ADAS Calibration',
@@ -174,8 +174,8 @@ const QC_CATEGORIES = {
       'Sensor positioning',
       'System functionality',
       'Error code clearance',
-      'Road test validation'
-    ]
+      'Road test validation',
+    ],
   },
   interior: {
     title: 'Interior Systems',
@@ -187,8 +187,8 @@ const QC_CATEGORIES = {
       'Infotainment system',
       'Interior lighting',
       'Window operation',
-      'Door lock function'
-    ]
+      'Door lock function',
+    ],
   },
   final: {
     title: 'Final Inspection',
@@ -200,9 +200,9 @@ const QC_CATEGORIES = {
       'Customer items returned',
       'Documentation complete',
       'Warranty information',
-      'Customer walkthrough prep'
-    ]
-  }
+      'Customer walkthrough prep',
+    ],
+  },
 };
 
 // QC Standards and criteria
@@ -210,7 +210,7 @@ const QC_STANDARDS = {
   panel_gaps: { min: 3, max: 6, unit: 'mm', tolerance: 0.5 },
   paint_thickness: { min: 80, max: 200, unit: 'microns', tolerance: 10 },
   color_match: { deltaE: 1.5, tolerance: 0.3 },
-  surface_roughness: { max: 0.8, unit: 'Ra', tolerance: 0.1 }
+  surface_roughness: { max: 0.8, unit: 'Ra', tolerance: 0.1 },
 };
 
 // QC Issue severity levels
@@ -218,12 +218,17 @@ const SEVERITY_LEVELS = {
   critical: { label: 'Critical', color: '#d32f2f', icon: Error, priority: 1 },
   major: { label: 'Major', color: '#f57c00', icon: Warning, priority: 2 },
   minor: { label: 'Minor', color: '#1976d2', icon: Flag, priority: 3 },
-  cosmetic: { label: 'Cosmetic', color: '#388e3c', icon: Visibility, priority: 4 }
+  cosmetic: {
+    label: 'Cosmetic',
+    color: '#388e3c',
+    icon: Visibility,
+    priority: 4,
+  },
 };
 
 const QualityControlSystem = ({ jobId, onQCUpdate }) => {
   const theme = useTheme();
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [inspections, setInspections] = useState([]);
   const [issues, setIssues] = useState([]);
@@ -238,7 +243,7 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
     category: '',
     severity: '',
     status: '',
-    technician: ''
+    technician: '',
   });
 
   // Sample QC data
@@ -257,7 +262,8 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
       score: 95,
       issues: 1,
       photos: 8,
-      notes: 'Excellent paint quality overall. Minor buffing needed on rear panel.'
+      notes:
+        'Excellent paint quality overall. Minor buffing needed on rear panel.',
     },
     {
       id: '2',
@@ -273,8 +279,8 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
       score: null,
       issues: 0,
       photos: 12,
-      notes: null
-    }
+      notes: null,
+    },
   ];
 
   const sampleIssues = [
@@ -293,8 +299,8 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
       assignedTo: 'Tom Parker',
       estimatedRepairTime: 1.5,
       photos: ['qc_issue_1_1.jpg', 'qc_issue_1_2.jpg'],
-      resolution: null
-    }
+      resolution: null,
+    },
   ];
 
   useEffect(() => {
@@ -305,8 +311,12 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
   // QC Dashboard component
   const QCDashboard = () => {
     const totalInspections = inspections.length;
-    const completedInspections = inspections.filter(i => i.status === 'completed').length;
-    const avgScore = inspections.reduce((sum, i) => sum + (i.score || 0), 0) / completedInspections || 0;
+    const completedInspections = inspections.filter(
+      i => i.status === 'completed'
+    ).length;
+    const avgScore =
+      inspections.reduce((sum, i) => sum + (i.score || 0), 0) /
+        completedInspections || 0;
     const totalIssues = issues.length;
     const openIssues = issues.filter(i => i.status === 'open').length;
     const criticalIssues = issues.filter(i => i.severity === 'critical').length;
@@ -317,29 +327,29 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         value: totalInspections,
         subtitle: `${completedInspections} completed`,
         color: theme.palette.primary.main,
-        icon: <Assessment />
+        icon: <Assessment />,
       },
       {
         title: 'Average QC Score',
         value: `${avgScore.toFixed(1)}%`,
         subtitle: 'This month',
         color: theme.palette.success.main,
-        icon: <Star />
+        icon: <Star />,
       },
       {
         title: 'Open Issues',
         value: openIssues,
         subtitle: `${totalIssues} total`,
         color: theme.palette.warning.main,
-        icon: <Flag />
+        icon: <Flag />,
       },
       {
         title: 'Critical Issues',
         value: criticalIssues,
         subtitle: 'Requires immediate attention',
         color: theme.palette.error.main,
-        icon: <Error />
-      }
+        icon: <Error />,
+      },
     ];
 
     return (
@@ -348,26 +358,40 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {dashboardCards.map((card, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card 
-                sx={{ 
+              <Card
+                sx={{
                   cursor: 'pointer',
                   '&:hover': {
                     boxShadow: 4,
                     transform: 'translateY(-2px)',
-                    transition: 'all 0.2s ease-in-out'
-                  }
+                    transition: 'all 0.2s ease-in-out',
+                  },
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Box>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        gutterBottom
+                      >
                         {card.title}
                       </Typography>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      <Typography
+                        variant='h4'
+                        component='div'
+                        sx={{ fontWeight: 'bold', mb: 1 }}
+                      >
                         {card.value}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         {card.subtitle}
                       </Typography>
                     </Box>
@@ -376,7 +400,7 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
                         bgcolor: card.color,
                         color: 'white',
                         width: 48,
-                        height: 48
+                        height: 48,
                       }}
                     >
                       {card.icon}
@@ -391,10 +415,17 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         {/* Recent Inspections */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Recent Inspections</Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
+              <Typography variant='h6'>Recent Inspections</Typography>
               <Button
-                variant="contained"
+                variant='contained'
                 startIcon={<Add />}
                 onClick={() => setInspectionDialog(true)}
               >
@@ -417,77 +448,103 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {inspections.map((inspection) => {
+                  {inspections.map(inspection => {
                     const category = QC_CATEGORIES[inspection.category];
                     const CategoryIcon = category?.icon || Assessment;
 
                     return (
                       <TableRow key={inspection.id} hover>
                         <TableCell>
-                          <Typography variant="subtitle2" fontWeight="bold">
+                          <Typography variant='subtitle2' fontWeight='bold'>
                             {inspection.jobNumber}
                           </Typography>
                         </TableCell>
                         <TableCell>
                           <Box>
-                            <Typography variant="body2">{inspection.customer}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {inspection.vehicle.year} {inspection.vehicle.make} {inspection.vehicle.model}
+                            <Typography variant='body2'>
+                              {inspection.customer}
+                            </Typography>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              {inspection.vehicle.year}{' '}
+                              {inspection.vehicle.make}{' '}
+                              {inspection.vehicle.model}
                             </Typography>
                           </Box>
                         </TableCell>
                         <TableCell>
                           <Chip
-                            size="small"
+                            size='small'
                             icon={<CategoryIcon />}
                             label={category?.title}
                             sx={{
-                              backgroundColor: alpha(category?.color || '#666', 0.1),
-                              color: category?.color || '#666'
+                              backgroundColor: alpha(
+                                category?.color || '#666',
+                                0.1
+                              ),
+                              color: category?.color || '#666',
                             }}
                           />
                         </TableCell>
                         <TableCell>{inspection.inspector}</TableCell>
                         <TableCell>
                           <Chip
-                            size="small"
+                            size='small'
                             label={inspection.status.toUpperCase()}
-                            color={inspection.status === 'completed' ? 'success' : 'primary'}
+                            color={
+                              inspection.status === 'completed'
+                                ? 'success'
+                                : 'primary'
+                            }
                           />
                         </TableCell>
                         <TableCell>
                           {inspection.score ? (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography variant="body2" fontWeight="bold" sx={{ mr: 1 }}>
+                              <Typography
+                                variant='body2'
+                                fontWeight='bold'
+                                sx={{ mr: 1 }}
+                              >
                                 {inspection.score}%
                               </Typography>
                               <Star
                                 sx={{
                                   fontSize: 16,
-                                  color: inspection.score >= 95 ? '#4caf50' : 
-                                         inspection.score >= 85 ? '#ff9800' : '#f44336'
+                                  color:
+                                    inspection.score >= 95
+                                      ? '#4caf50'
+                                      : inspection.score >= 85
+                                        ? '#ff9800'
+                                        : '#f44336',
                                 }}
                               />
                             </Box>
                           ) : (
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant='body2' color='text.secondary'>
                               In Progress
                             </Typography>
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge badgeContent={inspection.issues} color="error">
-                            <Flag color={inspection.issues > 0 ? 'error' : 'disabled'} />
+                          <Badge badgeContent={inspection.issues} color='error'>
+                            <Flag
+                              color={
+                                inspection.issues > 0 ? 'error' : 'disabled'
+                              }
+                            />
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <IconButton size="small" onClick={() => {}}>
+                          <IconButton size='small' onClick={() => {}}>
                             <Visibility />
                           </IconButton>
-                          <IconButton size="small" onClick={() => {}}>
+                          <IconButton size='small' onClick={() => {}}>
                             <Edit />
                           </IconButton>
-                          <IconButton size="small" onClick={() => {}}>
+                          <IconButton size='small' onClick={() => {}}>
                             <Print />
                           </IconButton>
                         </TableCell>
@@ -515,12 +572,12 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         ...prev,
         [categoryId]: {
           ...prev[categoryId],
-          [checkpointIndex]: checked
-        }
+          [checkpointIndex]: checked,
+        },
       }));
     };
 
-    const getCategoryCompletion = (categoryId) => {
+    const getCategoryCompletion = categoryId => {
       const category = QC_CATEGORIES[categoryId];
       const categoryData = checklistData[categoryId] || {};
       const completed = Object.values(categoryData).filter(Boolean).length;
@@ -528,10 +585,16 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
     };
 
     const getTotalCompletion = () => {
-      const totalCheckpoints = Object.values(QC_CATEGORIES).reduce((sum, cat) => sum + cat.checkpoints.length, 0);
-      const completedCheckpoints = Object.values(checklistData).reduce((sum, categoryData) => {
-        return sum + Object.values(categoryData).filter(Boolean).length;
-      }, 0);
+      const totalCheckpoints = Object.values(QC_CATEGORIES).reduce(
+        (sum, cat) => sum + cat.checkpoints.length,
+        0
+      );
+      const completedCheckpoints = Object.values(checklistData).reduce(
+        (sum, categoryData) => {
+          return sum + Object.values(categoryData).filter(Boolean).length;
+        },
+        0
+      );
       return (completedCheckpoints / totalCheckpoints) * 100;
     };
 
@@ -540,57 +603,72 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         {/* Progress Overview */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Inspection Progress</Typography>
-              <Typography variant="h4" color="primary" fontWeight="bold">
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
+              <Typography variant='h6'>Inspection Progress</Typography>
+              <Typography variant='h4' color='primary' fontWeight='bold'>
                 {getTotalCompletion().toFixed(0)}%
               </Typography>
             </Box>
             <LinearProgress
-              variant="determinate"
+              variant='determinate'
               value={getTotalCompletion()}
               sx={{ height: 8, borderRadius: 4, mb: 2 }}
             />
-            
+
             {/* Category progress */}
             <Grid container spacing={1}>
               {Object.entries(QC_CATEGORIES).map(([categoryId, category]) => {
                 const completion = getCategoryCompletion(categoryId);
                 const CategoryIcon = category.icon;
-                
+
                 return (
                   <Grid item xs={12} sm={6} md={3} key={categoryId}>
                     <Box
                       sx={{
                         p: 1,
                         border: '1px solid',
-                        borderColor: selectedCategory === categoryId ? category.color : 'divider',
+                        borderColor:
+                          selectedCategory === categoryId
+                            ? category.color
+                            : 'divider',
                         borderRadius: 1,
                         cursor: 'pointer',
-                        backgroundColor: selectedCategory === categoryId ? alpha(category.color, 0.1) : 'transparent',
+                        backgroundColor:
+                          selectedCategory === categoryId
+                            ? alpha(category.color, 0.1)
+                            : 'transparent',
                         '&:hover': {
-                          backgroundColor: alpha(category.color, 0.05)
-                        }
+                          backgroundColor: alpha(category.color, 0.05),
+                        },
                       }}
                       onClick={() => setSelectedCategory(categoryId)}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         <Avatar
                           sx={{
                             bgcolor: category.color,
                             width: 24,
                             height: 24,
-                            mr: 1
+                            mr: 1,
                           }}
                         >
                           <CategoryIcon sx={{ fontSize: 14 }} />
                         </Avatar>
-                        <Typography variant="caption" noWrap>
+                        <Typography variant='caption' noWrap>
                           {category.title}
                         </Typography>
                       </Box>
                       <LinearProgress
-                        variant="determinate"
+                        variant='determinate'
                         value={completion}
                         sx={{
                           height: 4,
@@ -598,11 +676,11 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
                           backgroundColor: alpha(category.color, 0.2),
                           '& .MuiLinearProgress-bar': {
                             backgroundColor: category.color,
-                            borderRadius: 2
-                          }
+                            borderRadius: 2,
+                          },
                         }}
                       />
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         {completion.toFixed(0)}%
                       </Typography>
                     </Box>
@@ -620,43 +698,53 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
               <Avatar
                 sx={{
                   bgcolor: QC_CATEGORIES[selectedCategory].color,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 {React.createElement(QC_CATEGORIES[selectedCategory].icon)}
               </Avatar>
-              <Typography variant="h6">
+              <Typography variant='h6'>
                 {QC_CATEGORIES[selectedCategory].title}
               </Typography>
             </Box>
 
             <FormGroup>
-              {QC_CATEGORIES[selectedCategory].checkpoints.map((checkpoint, index) => (
-                <FormControlLabel
-                  key={index}
-                  control={
-                    <Checkbox
-                      checked={checklistData[selectedCategory]?.[index] || false}
-                      onChange={(e) => handleCheckpointChange(selectedCategory, index, e.target.checked)}
-                    />
-                  }
-                  label={checkpoint}
-                  sx={{ mb: 1 }}
-                />
-              ))}
+              {QC_CATEGORIES[selectedCategory].checkpoints.map(
+                (checkpoint, index) => (
+                  <FormControlLabel
+                    key={index}
+                    control={
+                      <Checkbox
+                        checked={
+                          checklistData[selectedCategory]?.[index] || false
+                        }
+                        onChange={e =>
+                          handleCheckpointChange(
+                            selectedCategory,
+                            index,
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label={checkpoint}
+                    sx={{ mb: 1 }}
+                  />
+                )
+              )}
             </FormGroup>
 
             <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
               <Button
                 startIcon={<PhotoCamera />}
-                variant="outlined"
+                variant='outlined'
                 onClick={() => {}}
               >
                 Add Photos ({photos.length})
               </Button>
               <Button
                 startIcon={<VideoCall />}
-                variant="outlined"
+                variant='outlined'
                 onClick={() => {}}
               >
                 Record Video
@@ -667,9 +755,9 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
               fullWidth
               multiline
               rows={4}
-              label="Inspector Notes"
+              label='Inspector Notes'
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={e => setNotes(e.target.value)}
               sx={{ mt: 2 }}
             />
           </CardContent>
@@ -681,10 +769,17 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
   // Issues tracking component
   const IssuesTracking = () => (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6">Quality Issues</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h6'>Quality Issues</Typography>
         <Button
-          variant="contained"
+          variant='contained'
           startIcon={<Add />}
           onClick={() => setIssueDialog(true)}
         >
@@ -697,27 +792,39 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         {Object.entries(SEVERITY_LEVELS).map(([severityId, severity]) => {
           const severityIssues = issues.filter(i => i.severity === severityId);
           const SeverityIcon = severity.icon;
-          
+
           return (
             <Grid item xs={12} sm={6} md={3} key={severityId}>
               <Card
                 sx={{
                   borderLeft: `4px solid ${severity.color}`,
                   cursor: 'pointer',
-                  '&:hover': { boxShadow: 2 }
+                  '&:hover': { boxShadow: 2 },
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Box>
-                      <Typography variant="h4" fontWeight="bold" sx={{ color: severity.color }}>
+                      <Typography
+                        variant='h4'
+                        fontWeight='bold'
+                        sx={{ color: severity.color }}
+                      >
                         {severityIssues.length}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant='body2' color='text.secondary'>
                         {severity.label} Issues
                       </Typography>
                     </Box>
-                    <SeverityIcon sx={{ fontSize: 32, color: severity.color }} />
+                    <SeverityIcon
+                      sx={{ fontSize: 32, color: severity.color }}
+                    />
                   </Box>
                 </CardContent>
               </Card>
@@ -728,76 +835,107 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
 
       {/* Issues list */}
       <Grid container spacing={2}>
-        {issues.map((issue) => {
+        {issues.map(issue => {
           const severity = SEVERITY_LEVELS[issue.severity];
           const SeverityIcon = severity.icon;
-          
+
           return (
             <Grid item xs={12} md={6} key={issue.id}>
               <Card
                 sx={{
                   borderLeft: `4px solid ${severity.color}`,
-                  '&:hover': { boxShadow: 2 }
+                  '&:hover': { boxShadow: 2 },
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      mb: 2,
+                    }}
+                  >
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
+                      <Typography variant='subtitle1' fontWeight='bold'>
                         {issue.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ mb: 1 }}
+                      >
                         {issue.description}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         {issue.location}
                       </Typography>
                     </Box>
                     <Chip
-                      size="small"
+                      size='small'
                       icon={<SeverityIcon />}
                       label={severity.label}
                       sx={{
                         backgroundColor: alpha(severity.color, 0.1),
-                        color: severity.color
+                        color: severity.color,
                       }}
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
                       Discovered by {issue.discoveredBy}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant='body2' color='text.secondary'>
                       {formatDate(issue.discoveredDate)}
                     </Typography>
                   </Box>
 
                   {issue.assignedTo && (
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ width: 24, height: 24, mr: 1, fontSize: '0.75rem' }}>
+                      <Avatar
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          mr: 1,
+                          fontSize: '0.75rem',
+                        }}
+                      >
                         {issue.assignedTo.charAt(0)}
                       </Avatar>
-                      <Typography variant="body2">
+                      <Typography variant='body2'>
                         Assigned to {issue.assignedTo}
                       </Typography>
                     </Box>
                   )}
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <Chip
-                      size="small"
+                      size='small'
                       label={issue.status.toUpperCase()}
                       color={issue.status === 'open' ? 'error' : 'success'}
                     />
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Edit />
                       </IconButton>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <PhotoCamera />
                       </IconButton>
-                      <IconButton size="small" onClick={() => {}}>
+                      <IconButton size='small' onClick={() => {}}>
                         <Comment />
                       </IconButton>
                     </Box>
@@ -819,27 +957,27 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         status: 'calibrated',
         lastCalibration: '2024-01-15',
         nextDue: '2024-07-15',
-        certified: true
+        certified: true,
       },
       {
         name: 'Lane Departure Warning',
         status: 'needs_calibration',
         lastCalibration: '2023-12-01',
         nextDue: '2024-01-20',
-        certified: true
+        certified: true,
       },
       {
         name: 'Adaptive Cruise Control',
         status: 'calibrated',
         lastCalibration: '2024-01-16',
         nextDue: '2024-07-16',
-        certified: true
-      }
+        certified: true,
+      },
     ];
 
     return (
       <Box>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           ADAS System Calibration
         </Typography>
 
@@ -848,43 +986,74 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
             <Grid item xs={12} md={4} key={index}>
               <Card>
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="subtitle1" fontWeight="bold">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant='subtitle1' fontWeight='bold'>
                       {system.name}
                     </Typography>
                     <Chip
-                      size="small"
-                      label={system.status === 'calibrated' ? 'Calibrated' : 'Needs Calibration'}
-                      color={system.status === 'calibrated' ? 'success' : 'error'}
+                      size='small'
+                      label={
+                        system.status === 'calibrated'
+                          ? 'Calibrated'
+                          : 'Needs Calibration'
+                      }
+                      color={
+                        system.status === 'calibrated' ? 'success' : 'error'
+                      }
                     />
                   </Box>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mb: 1 }}
+                  >
                     Last: {formatDate(system.lastCalibration)}
                   </Typography>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mb: 2 }}
+                  >
                     Next Due: {formatDate(system.nextDue)}
                   </Typography>
 
                   {system.certified && (
                     <Chip
-                      size="small"
+                      size='small'
                       icon={<VerifiedUser />}
-                      label="Certified"
-                      color="primary"
-                      variant="outlined"
+                      label='Certified'
+                      color='primary'
+                      variant='outlined'
                       sx={{ mb: 2 }}
                     />
                   )}
 
                   <Button
                     fullWidth
-                    variant={system.status === 'needs_calibration' ? 'contained' : 'outlined'}
-                    color={system.status === 'needs_calibration' ? 'error' : 'primary'}
+                    variant={
+                      system.status === 'needs_calibration'
+                        ? 'contained'
+                        : 'outlined'
+                    }
+                    color={
+                      system.status === 'needs_calibration'
+                        ? 'error'
+                        : 'primary'
+                    }
                     startIcon={<Tune />}
                   >
-                    {system.status === 'needs_calibration' ? 'Calibrate Now' : 'Re-calibrate'}
+                    {system.status === 'needs_calibration'
+                      ? 'Calibrate Now'
+                      : 'Re-calibrate'}
                   </Button>
                 </CardContent>
               </Card>
@@ -898,32 +1067,37 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">Quality Control</Typography>
-        
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant='h5'>Quality Control</Typography>
+
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            startIcon={<Search />}
-            variant="outlined"
-          >
+          <Button startIcon={<Search />} variant='outlined'>
             Search QC Records
           </Button>
-          <Button
-            startIcon={<Assessment />}
-            variant="outlined"
-          >
+          <Button startIcon={<Assessment />} variant='outlined'>
             QC Reports
           </Button>
         </Box>
       </Box>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
-        <Tab label="Dashboard" />
-        <Tab label="Inspections" />
-        <Tab label="Issues" />
-        <Tab label="ADAS Calibration" />
-        <Tab label="Standards" />
+      <Tabs
+        value={activeTab}
+        onChange={(e, newValue) => setActiveTab(newValue)}
+        sx={{ mb: 3 }}
+      >
+        <Tab label='Dashboard' />
+        <Tab label='Inspections' />
+        <Tab label='Issues' />
+        <Tab label='ADAS Calibration' />
+        <Tab label='Standards' />
       </Tabs>
 
       {/* Tab content */}
@@ -934,7 +1108,7 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
         {activeTab === 3 && <AdasCalibration />}
         {activeTab === 4 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant='h6' gutterBottom>
               QC Standards & Specifications
             </Typography>
             <Grid container spacing={2}>
@@ -942,13 +1116,17 @@ const QualityControlSystem = ({ jobId, onQCUpdate }) => {
                 <Grid item xs={12} sm={6} md={3} key={standard}>
                   <Card>
                     <CardContent>
-                      <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+                      <Typography
+                        variant='subtitle1'
+                        fontWeight='bold'
+                        sx={{ mb: 1 }}
+                      >
                         {standard.replace('_', ' ').toUpperCase()}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant='body2' color='text.secondary'>
                         Range: {specs.min} - {specs.max} {specs.unit}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant='body2' color='text.secondary'>
                         Tolerance: ±{specs.tolerance} {specs.unit}
                       </Typography>
                     </CardContent>

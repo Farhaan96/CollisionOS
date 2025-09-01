@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Box,
@@ -92,61 +98,77 @@ const VirtualizedDataTable = ({
   });
 
   // Handle column sorting
-  const handleSort = useCallback((columnId) => {
-    if (onSort) {
-      const newOrder = sortBy === columnId && sortOrder === 'asc' ? 'desc' : 'asc';
-      onSort(columnId, newOrder);
-    }
-  }, [sortBy, sortOrder, onSort]);
+  const handleSort = useCallback(
+    columnId => {
+      if (onSort) {
+        const newOrder =
+          sortBy === columnId && sortOrder === 'asc' ? 'desc' : 'asc';
+        onSort(columnId, newOrder);
+      }
+    },
+    [sortBy, sortOrder, onSort]
+  );
 
   // Handle row selection
-  const handleRowSelect = useCallback((rowId, checked) => {
-    if (onRowSelect) {
-      if (checked) {
-        onRowSelect([...selectedRows, rowId]);
-      } else {
-        onRowSelect(selectedRows.filter(id => id !== rowId));
+  const handleRowSelect = useCallback(
+    (rowId, checked) => {
+      if (onRowSelect) {
+        if (checked) {
+          onRowSelect([...selectedRows, rowId]);
+        } else {
+          onRowSelect(selectedRows.filter(id => id !== rowId));
+        }
       }
-    }
-  }, [selectedRows, onRowSelect]);
+    },
+    [selectedRows, onRowSelect]
+  );
 
   // Handle select all
-  const handleSelectAll = useCallback((checked) => {
-    if (onRowSelect) {
-      onRowSelect(checked ? data.map(row => row.id) : []);
-    }
-  }, [data, onRowSelect]);
+  const handleSelectAll = useCallback(
+    checked => {
+      if (onRowSelect) {
+        onRowSelect(checked ? data.map(row => row.id) : []);
+      }
+    },
+    [data, onRowSelect]
+  );
 
   // Handle column resizing
-  const handleColumnResize = useCallback((columnId, startX, startWidth) => {
-    setResizing({ columnId, startX, startWidth });
+  const handleColumnResize = useCallback(
+    (columnId, startX, startWidth) => {
+      setResizing({ columnId, startX, startWidth });
 
-    const handleMouseMove = (e) => {
-      const newWidth = Math.max(80, startWidth + (e.clientX - startX));
-      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
-    };
+      const handleMouseMove = e => {
+        const newWidth = Math.max(80, startWidth + (e.clientX - startX));
+        setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
+      };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      setResizing(null);
-      if (onColumnResize) {
-        onColumnResize(columnId, columnWidths[columnId]);
-      }
-    };
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        setResizing(null);
+        if (onColumnResize) {
+          onColumnResize(columnId, columnWidths[columnId]);
+        }
+      };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [columnWidths, onColumnResize]);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    },
+    [columnWidths, onColumnResize]
+  );
 
   // Handle inline editing
-  const handleCellEdit = useCallback((rowIndex, columnId, value) => {
-    if (onRowEdit) {
-      const row = data[rowIndex];
-      onRowEdit({ ...row, [columnId]: value });
-    }
-    setEditingCell(null);
-  }, [data, onRowEdit]);
+  const handleCellEdit = useCallback(
+    (rowIndex, columnId, value) => {
+      if (onRowEdit) {
+        const row = data[rowIndex];
+        onRowEdit({ ...row, [columnId]: value });
+      }
+      setEditingCell(null);
+    },
+    [data, onRowEdit]
+  );
 
   // Handle context menu
   const handleContextMenu = useCallback((e, rowIndex) => {
@@ -159,92 +181,123 @@ const VirtualizedDataTable = ({
   }, []);
 
   // Handle export
-  const handleExport = useCallback((format = 'csv') => {
-    if (onExport) {
-      onExport(format, selectedRows.length > 0 ? selectedRows : data.map(row => row.id));
-    }
-  }, [onExport, selectedRows, data]);
+  const handleExport = useCallback(
+    (format = 'csv') => {
+      if (onExport) {
+        onExport(
+          format,
+          selectedRows.length > 0 ? selectedRows : data.map(row => row.id)
+        );
+      }
+    },
+    [onExport, selectedRows, data]
+  );
 
   // Render cell content
-  const renderCellContent = useCallback((row, column, rowIndex) => {
-    const cellKey = `${rowIndex}-${column.id}`;
-    const isEditing = editingCell === cellKey;
-    const value = row[column.id];
+  const renderCellContent = useCallback(
+    (row, column, rowIndex) => {
+      const cellKey = `${rowIndex}-${column.id}`;
+      const isEditing = editingCell === cellKey;
+      const value = row[column.id];
 
-    if (isEditing && enableInlineEdit && column.editable !== false) {
-      return (
-        <TextField
-          value={value || ''}
-          onChange={(e) => handleCellEdit(rowIndex, column.id, e.target.value)}
-          onBlur={() => setEditingCell(null)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
-              handleCellEdit(rowIndex, column.id, e.target.value);
-            }
-          }}
-          size="small"
-          autoFocus
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              borderRadius: premiumDesignSystem.borderRadius.md,
-            }
-          }}
-        />
-      );
-    }
-
-    // Handle different cell types
-    switch (column.type) {
-      case 'status':
+      if (isEditing && enableInlineEdit && column.editable !== false) {
         return (
-          <Chip
-            label={value}
-            size="small"
-            color={column.statusColors?.[value] || 'default'}
+          <TextField
+            value={value || ''}
+            onChange={e => handleCellEdit(rowIndex, column.id, e.target.value)}
+            onBlur={() => setEditingCell(null)}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                handleCellEdit(rowIndex, column.id, e.target.value);
+              }
+            }}
+            size='small'
+            autoFocus
             sx={{
-              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                borderRadius: premiumDesignSystem.borderRadius.md,
+              },
             }}
           />
         );
-      case 'currency':
-        return (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
-            {column.format ? column.format(value) : `$${value?.toFixed(2) || '0.00'}`}
-          </Typography>
-        );
-      case 'date':
-        return (
-          <Typography variant="body2">
-            {column.format ? column.format(value) : new Date(value).toLocaleDateString()}
-          </Typography>
-        );
-      case 'custom':
-        return column.render ? column.render(value, row, rowIndex) : value;
-      default:
-        return (
-          <Typography 
-            variant="body2" 
-            onClick={() => enableInlineEdit && column.editable !== false && setEditingCell(cellKey)}
-            sx={{ cursor: enableInlineEdit && column.editable !== false ? 'pointer' : 'default' }}
-          >
-            {value}
-          </Typography>
-        );
-    }
-  }, [editingCell, enableInlineEdit, handleCellEdit, theme]);
+      }
+
+      // Handle different cell types
+      switch (column.type) {
+        case 'status':
+          return (
+            <Chip
+              label={value}
+              size='small'
+              color={column.statusColors?.[value] || 'default'}
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+              }}
+            />
+          );
+        case 'currency':
+          return (
+            <Typography
+              variant='body2'
+              sx={{ fontWeight: 600, color: theme.palette.success.main }}
+            >
+              {column.format
+                ? column.format(value)
+                : `$${value?.toFixed(2) || '0.00'}`}
+            </Typography>
+          );
+        case 'date':
+          return (
+            <Typography variant='body2'>
+              {column.format
+                ? column.format(value)
+                : new Date(value).toLocaleDateString()}
+            </Typography>
+          );
+        case 'custom':
+          return column.render ? column.render(value, row, rowIndex) : value;
+        default:
+          return (
+            <Typography
+              variant='body2'
+              onClick={() =>
+                enableInlineEdit &&
+                column.editable !== false &&
+                setEditingCell(cellKey)
+              }
+              sx={{
+                cursor:
+                  enableInlineEdit && column.editable !== false
+                    ? 'pointer'
+                    : 'default',
+              }}
+            >
+              {value}
+            </Typography>
+          );
+      }
+    },
+    [editingCell, enableInlineEdit, handleCellEdit, theme]
+  );
 
   // Reorder columns based on columnOrder state
   const orderedColumns = useMemo(() => {
-    return columnOrder.map(id => columns.find(col => col.id === id)).filter(Boolean);
+    return columnOrder
+      .map(id => columns.find(col => col.id === id))
+      .filter(Boolean);
   }, [columnOrder, columns]);
 
   // Calculate total width for horizontal scrolling
   const totalWidth = useMemo(() => {
-    return orderedColumns.reduce((sum, col) => sum + (columnWidths[col.id] || 150), 0) + 
-           (enableRowSelection ? 60 : 0);
+    return (
+      orderedColumns.reduce(
+        (sum, col) => sum + (columnWidths[col.id] || 150),
+        0
+      ) + (enableRowSelection ? 60 : 0)
+    );
   }, [orderedColumns, columnWidths, enableRowSelection]);
 
   // Glassmorphism styles
@@ -263,7 +316,7 @@ const VirtualizedDataTable = ({
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton
               key={index}
-              variant="rectangular"
+              variant='rectangular'
               height={rowHeight}
               sx={{
                 borderRadius: premiumDesignSystem.borderRadius.lg,
@@ -277,8 +330,8 @@ const VirtualizedDataTable = ({
   }
 
   return (
-    <Paper 
-      className={className} 
+    <Paper
+      className={className}
       sx={{ ...glassStyles, height, overflow: 'hidden', position: 'relative' }}
       {...props}
     >
@@ -323,9 +376,14 @@ const VirtualizedDataTable = ({
                     }}
                   >
                     <Checkbox
-                      indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
-                      checked={data.length > 0 && selectedRows.length === data.length}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      indeterminate={
+                        selectedRows.length > 0 &&
+                        selectedRows.length < data.length
+                      }
+                      checked={
+                        data.length > 0 && selectedRows.length === data.length
+                      }
+                      onChange={e => handleSelectAll(e.target.checked)}
                       sx={{
                         color: theme.palette.primary.main,
                         '&.Mui-checked': {
@@ -335,7 +393,7 @@ const VirtualizedDataTable = ({
                     />
                   </TableCell>
                 )}
-                {orderedColumns.map((column) => (
+                {orderedColumns.map(column => (
                   <TableCell
                     key={column.id}
                     sx={{
@@ -345,50 +403,78 @@ const VirtualizedDataTable = ({
                       background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.paper, 0.7)})`,
                       backdropFilter: 'blur(20px)',
                       border: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-                      position: stickyColumns.includes(column.id) ? 'sticky' : 'relative',
-                      left: stickyColumns.includes(column.id) ? (stickyColumns.indexOf(column.id) * 150) : 'auto',
-                      zIndex: stickyColumns.includes(column.id) ? theme.zIndex.sticky + 1 : theme.zIndex.sticky,
+                      position: stickyColumns.includes(column.id)
+                        ? 'sticky'
+                        : 'relative',
+                      left: stickyColumns.includes(column.id)
+                        ? stickyColumns.indexOf(column.id) * 150
+                        : 'auto',
+                      zIndex: stickyColumns.includes(column.id)
+                        ? theme.zIndex.sticky + 1
+                        : theme.zIndex.sticky,
                       userSelect: 'none',
                     }}
                   >
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between',
-                      position: 'relative'
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                      }}
+                    >
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {enableColumnReordering && (
-                          <IconButton size="small" sx={{ cursor: 'grab' }}>
-                            <DragIndicator fontSize="small" />
+                          <IconButton size='small' sx={{ cursor: 'grab' }}>
+                            <DragIndicator fontSize='small' />
                           </IconButton>
                         )}
-                        <Typography 
-                          variant="subtitle2" 
-                          sx={{ 
-                            fontWeight: 600, 
-                            cursor: column.sortable !== false ? 'pointer' : 'default',
-                            color: sortBy === column.id ? theme.palette.primary.main : 'inherit',
+                        <Typography
+                          variant='subtitle2'
+                          sx={{
+                            fontWeight: 600,
+                            cursor:
+                              column.sortable !== false ? 'pointer' : 'default',
+                            color:
+                              sortBy === column.id
+                                ? theme.palette.primary.main
+                                : 'inherit',
                           }}
-                          onClick={() => column.sortable !== false && handleSort(column.id)}
+                          onClick={() =>
+                            column.sortable !== false && handleSort(column.id)
+                          }
                         >
                           {column.label}
                         </Typography>
                         {column.sortable !== false && (
-                          <Box sx={{ display: 'flex', flexDirection: 'column', ml: 0.5 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              ml: 0.5,
+                            }}
+                          >
                             {sortBy === column.id ? (
                               sortOrder === 'asc' ? (
-                                <KeyboardArrowUp fontSize="small" color="primary" />
+                                <KeyboardArrowUp
+                                  fontSize='small'
+                                  color='primary'
+                                />
                               ) : (
-                                <KeyboardArrowDown fontSize="small" color="primary" />
+                                <KeyboardArrowDown
+                                  fontSize='small'
+                                  color='primary'
+                                />
                               )
                             ) : (
-                              <UnfoldMore fontSize="small" color="disabled" />
+                              <UnfoldMore fontSize='small' color='disabled' />
                             )}
                           </Box>
                         )}
                       </Box>
-                      
+
                       {/* Column Resize Handle */}
                       {enableColumnResizing && (
                         <Box
@@ -399,12 +485,24 @@ const VirtualizedDataTable = ({
                             bottom: 0,
                             width: 4,
                             cursor: 'col-resize',
-                            backgroundColor: resizing?.columnId === column.id ? theme.palette.primary.main : 'transparent',
+                            backgroundColor:
+                              resizing?.columnId === column.id
+                                ? theme.palette.primary.main
+                                : 'transparent',
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                              backgroundColor: alpha(
+                                theme.palette.primary.main,
+                                0.3
+                              ),
                             },
                           }}
-                          onMouseDown={(e) => handleColumnResize(column.id, e.clientX, columnWidths[column.id])}
+                          onMouseDown={e =>
+                            handleColumnResize(
+                              column.id,
+                              e.clientX,
+                              columnWidths[column.id]
+                            )
+                          }
                         />
                       )}
                     </Box>
@@ -423,7 +521,7 @@ const VirtualizedDataTable = ({
                   position: 'relative',
                 }}
               >
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                {rowVirtualizer.getVirtualItems().map(virtualRow => {
                   const row = data[virtualRow.index];
                   const isSelected = selectedRows.includes(row.id);
 
@@ -432,8 +530,12 @@ const VirtualizedDataTable = ({
                       key={row.id}
                       hover
                       selected={isSelected}
-                      onContextMenu={(e) => handleContextMenu(e, virtualRow.index)}
-                      onClick={() => onRowClick && onRowClick(row, virtualRow.index)}
+                      onContextMenu={e =>
+                        handleContextMenu(e, virtualRow.index)
+                      }
+                      onClick={() =>
+                        onRowClick && onRowClick(row, virtualRow.index)
+                      }
                       sx={{
                         position: 'absolute',
                         top: 0,
@@ -443,22 +545,29 @@ const VirtualizedDataTable = ({
                         height: `${virtualRow.size}px`,
                         cursor: onRowClick ? 'pointer' : 'default',
                         '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                          backgroundColor: alpha(
+                            theme.palette.primary.main,
+                            0.04
+                          ),
                           '& .row-actions': {
                             opacity: 1,
                           },
                         },
                         '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                          backgroundColor: alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          ),
                         },
-                        transition: premiumDesignSystem.animations.transitions.all,
+                        transition:
+                          premiumDesignSystem.animations.transitions.all,
                       }}
                     >
                       {enableRowSelection && (
                         <TableCell sx={{ width: 60 }}>
                           <Checkbox
                             checked={isSelected}
-                            onChange={(e) => {
+                            onChange={e => {
                               e.stopPropagation();
                               handleRowSelect(row.id, e.target.checked);
                             }}
@@ -471,37 +580,48 @@ const VirtualizedDataTable = ({
                           />
                         </TableCell>
                       )}
-                      {orderedColumns.map((column) => (
+                      {orderedColumns.map(column => (
                         <TableCell
                           key={column.id}
                           sx={{
                             width: columnWidths[column.id],
                             minWidth: columnWidths[column.id],
                             maxWidth: columnWidths[column.id],
-                            position: stickyColumns.includes(column.id) ? 'sticky' : 'relative',
-                            left: stickyColumns.includes(column.id) ? (stickyColumns.indexOf(column.id) * 150) : 'auto',
+                            position: stickyColumns.includes(column.id)
+                              ? 'sticky'
+                              : 'relative',
+                            left: stickyColumns.includes(column.id)
+                              ? stickyColumns.indexOf(column.id) * 150
+                              : 'auto',
                             zIndex: stickyColumns.includes(column.id) ? 1 : 0,
-                            background: stickyColumns.includes(column.id) ? 
-                              alpha(theme.palette.background.paper, 0.9) : 'transparent',
+                            background: stickyColumns.includes(column.id)
+                              ? alpha(theme.palette.background.paper, 0.9)
+                              : 'transparent',
                           }}
                         >
                           {renderCellContent(row, column, virtualRow.index)}
                         </TableCell>
                       ))}
                       <TableCell sx={{ width: 60 }}>
-                        <Box className="row-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
+                        <Box
+                          className='row-actions'
+                          sx={{ opacity: 0, transition: 'opacity 0.2s' }}
+                        >
                           <IconButton
-                            size="small"
-                            onClick={(e) => {
+                            size='small'
+                            onClick={e => {
                               e.stopPropagation();
                               setContextMenu({
-                                mouseX: e.currentTarget.getBoundingClientRect().left,
-                                mouseY: e.currentTarget.getBoundingClientRect().bottom,
+                                mouseX:
+                                  e.currentTarget.getBoundingClientRect().left,
+                                mouseY:
+                                  e.currentTarget.getBoundingClientRect()
+                                    .bottom,
                                 rowIndex: virtualRow.index,
                               });
                             }}
                           >
-                            <MoreVert fontSize="small" />
+                            <MoreVert fontSize='small' />
                           </IconButton>
                         </Box>
                       </TableCell>
@@ -518,7 +638,7 @@ const VirtualizedDataTable = ({
       <Menu
         open={contextMenu !== null}
         onClose={() => setContextMenu(null)}
-        anchorReference="anchorPosition"
+        anchorReference='anchorPosition'
         anchorPosition={
           contextMenu !== null
             ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
@@ -531,45 +651,53 @@ const VirtualizedDataTable = ({
           },
         }}
       >
-        <MenuItem onClick={() => {
-          const row = data[contextMenu.rowIndex];
-          onRowClick && onRowClick(row, contextMenu.rowIndex);
-          setContextMenu(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            const row = data[contextMenu.rowIndex];
+            onRowClick && onRowClick(row, contextMenu.rowIndex);
+            setContextMenu(null);
+          }}
+        >
           <ListItemIcon>
-            <Visibility fontSize="small" />
+            <Visibility fontSize='small' />
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
         </MenuItem>
         {enableInlineEdit && (
-          <MenuItem onClick={() => {
-            const row = data[contextMenu.rowIndex];
-            onRowEdit && onRowEdit(row);
-            setContextMenu(null);
-          }}>
+          <MenuItem
+            onClick={() => {
+              const row = data[contextMenu.rowIndex];
+              onRowEdit && onRowEdit(row);
+              setContextMenu(null);
+            }}
+          >
             <ListItemIcon>
-              <Edit fontSize="small" />
+              <Edit fontSize='small' />
             </ListItemIcon>
             <ListItemText>Edit</ListItemText>
           </MenuItem>
         )}
-        <MenuItem onClick={() => {
-          const row = data[contextMenu.rowIndex];
-          onRowDelete && onRowDelete(row);
-          setContextMenu(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            const row = data[contextMenu.rowIndex];
+            onRowDelete && onRowDelete(row);
+            setContextMenu(null);
+          }}
+        >
           <ListItemIcon>
-            <Delete fontSize="small" />
+            <Delete fontSize='small' />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>
         {enableExport && (
-          <MenuItem onClick={() => {
-            handleExport('csv');
-            setContextMenu(null);
-          }}>
+          <MenuItem
+            onClick={() => {
+              handleExport('csv');
+              setContextMenu(null);
+            }}
+          >
             <ListItemIcon>
-              <GetApp fontSize="small" />
+              <GetApp fontSize='small' />
             </ListItemIcon>
             <ListItemText>Export</ListItemText>
           </MenuItem>

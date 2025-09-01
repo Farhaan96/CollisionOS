@@ -8,7 +8,7 @@ async function checkDatabaseTables() {
     // Get list of all tables in the database
     const queryInterface = sequelize.getQueryInterface();
     const tables = await queryInterface.showAllTables();
-    
+
     console.log(`\n📊 Found ${tables.length} tables in the database:`);
     tables.forEach((table, index) => {
       console.log(`  ${index + 1}. ${table}`);
@@ -18,7 +18,7 @@ async function checkDatabaseTables() {
     const requiredTables = [
       'shops',
       'users',
-      'customers', 
+      'customers',
       'vehicles',
       'jobs',
       'labor_time_entries',
@@ -30,7 +30,7 @@ async function checkDatabaseTables() {
       'insurance_companies',
       'invoices',
       'vehicle_history',
-      'workflow_statuses'
+      'workflow_statuses',
     ];
 
     console.log(`\n🔍 Checking for required tables:`);
@@ -38,7 +38,6 @@ async function checkDatabaseTables() {
       const exists = tables.includes(table);
       console.log(`  ${exists ? '✅' : '❌'} ${table}`);
     }
-
   } catch (error) {
     console.error('❌ Error checking database tables:', error);
   } finally {

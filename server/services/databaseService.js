@@ -1,5 +1,13 @@
 const { getSupabaseClient, isSupabaseEnabled } = require('../config/supabase');
-const { sequelize, User, Job, Customer, Vehicle, Part, Vendor } = require('../database/models'); // Legacy models
+const {
+  sequelize,
+  User,
+  Job,
+  Customer,
+  Vehicle,
+  Part,
+  Vendor,
+} = require('../database/models'); // Legacy models
 
 /**
  * Universal database service that handles both Supabase and legacy database operations
@@ -63,7 +71,9 @@ class DatabaseService {
     // Apply ordering
     if (options.order) {
       options.order.forEach(([column, direction = 'asc']) => {
-        query = query.order(column, { ascending: direction.toLowerCase() === 'asc' });
+        query = query.order(column, {
+          ascending: direction.toLowerCase() === 'asc',
+        });
       });
     }
 
@@ -72,12 +82,15 @@ class DatabaseService {
       query = query.limit(options.limit);
     }
     if (options.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 1000) - 1);
+      query = query.range(
+        options.offset,
+        options.offset + (options.limit || 1000) - 1
+      );
     }
 
     // Execute query
     const { data, error } = await query;
-    
+
     if (error) {
       throw new Error(`Supabase query error: ${error.message}`);
     }
@@ -98,7 +111,7 @@ class DatabaseService {
       customers: Customer,
       vehicles: Vehicle,
       parts: Part,
-      vendors: Vendor
+      vendors: Vendor,
     };
 
     const Model = modelMap[table];
@@ -169,7 +182,7 @@ class DatabaseService {
       customers: Customer,
       vehicles: Vehicle,
       parts: Part,
-      vendors: Vendor
+      vendors: Vendor,
     };
 
     const Model = modelMap[table];
@@ -222,7 +235,7 @@ class DatabaseService {
       customers: Customer,
       vehicles: Vehicle,
       parts: Part,
-      vendors: Vendor
+      vendors: Vendor,
     };
 
     const Model = modelMap[table];
@@ -259,7 +272,7 @@ class DatabaseService {
     });
 
     const { error } = await query;
-    
+
     if (error) {
       throw new Error(`Supabase delete error: ${error.message}`);
     }
@@ -274,7 +287,7 @@ class DatabaseService {
       customers: Customer,
       vehicles: Vehicle,
       parts: Part,
-      vendors: Vendor
+      vendors: Vendor,
     };
 
     const Model = modelMap[table];
@@ -294,12 +307,14 @@ class DatabaseService {
    */
   async rawQuery(sql, replacements = []) {
     if (this.useSupabase) {
-      throw new Error('Raw SQL queries not supported with Supabase. Use RPC functions instead.');
+      throw new Error(
+        'Raw SQL queries not supported with Supabase. Use RPC functions instead.'
+      );
     }
 
     const [results] = await sequelize.query(sql, {
       replacements,
-      type: sequelize.QueryTypes.SELECT
+      type: sequelize.QueryTypes.SELECT,
     });
 
     return results;
@@ -350,13 +365,13 @@ class DatabaseService {
         return {
           connected: !error,
           type: 'supabase',
-          error: error?.message
+          error: error?.message,
         };
       } catch (err) {
         return {
           connected: false,
           type: 'supabase',
-          error: err.message
+          error: err.message,
         };
       }
     } else {
@@ -364,13 +379,13 @@ class DatabaseService {
         await sequelize.authenticate();
         return {
           connected: true,
-          type: 'sequelize'
+          type: 'sequelize',
         };
       } catch (err) {
         return {
           connected: false,
           type: 'sequelize',
-          error: err.message
+          error: err.message,
         };
       }
     }
@@ -382,5 +397,5 @@ const databaseService = new DatabaseService();
 
 module.exports = {
   DatabaseService,
-  databaseService
+  databaseService,
 };

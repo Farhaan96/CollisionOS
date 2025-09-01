@@ -4,7 +4,15 @@
 
 /* Global Typography and Base Styles */
 * {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -46,7 +54,8 @@ body.login-page html {
 
 /* Enhanced animations for login page */
 @keyframes subtlePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -57,7 +66,8 @@ body.login-page html {
 }
 
 @keyframes subtleFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
     opacity: 0.3;
   }
@@ -82,18 +92,31 @@ body.login-page html {
 /* Premium animations for high-class design */
 @keyframes premiumGradientShift {
   0% {
-    background-position: 0% 50%, 0% 0%, 0% 0%, 0% 0%;
+    background-position:
+      0% 50%,
+      0% 0%,
+      0% 0%,
+      0% 0%;
   }
   50% {
-    background-position: 100% 50%, 0% 0%, 0% 0%, 0% 0%;
+    background-position:
+      100% 50%,
+      0% 0%,
+      0% 0%,
+      0% 0%;
   }
   100% {
-    background-position: 0% 50%, 0% 0%, 0% 0%, 0% 0%;
+    background-position:
+      0% 50%,
+      0% 0%,
+      0% 0%,
+      0% 0%;
   }
 }
 
 @keyframes premiumFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
     opacity: 0.4;
   }
@@ -150,7 +173,12 @@ body.login-page html {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   transition: left 0.6s;
 }
 
@@ -178,7 +206,9 @@ body.login-page html {
   border-color: #3b82f6 !important;
 }
 
-.login-page .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
   border-width: 2px !important;
   border-color: #3b82f6 !important;
 }
@@ -200,17 +230,26 @@ body.login-page html {
   border: none !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root
+  .MuiOutlinedInput-notchedOutline {
   border: 1px solid rgba(0, 0, 0, 0.23) !important;
   border-width: 1px !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root:hover
+  .MuiOutlinedInput-notchedOutline {
   border: 2px solid #3b82f6 !important;
   border-width: 2px !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
   border: 2px solid #3b82f6 !important;
   border-width: 2px !important;
 }
@@ -221,7 +260,11 @@ body.login-page html {
   outline: none !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline * {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root
+  .MuiOutlinedInput-notchedOutline
+  * {
   border: none !important;
   outline: none !important;
 }
@@ -273,14 +316,14 @@ div[data-rht-toaster] * {
 }
 
 /* But allow clicks on actual toast content */
-[data-rht-toaster] [role="alert"],
-[data-rht-toaster] [role="status"] {
+[data-rht-toaster] [role='alert'],
+[data-rht-toaster] [role='status'] {
   pointer-events: auto !important;
 }
 
 /* Universal interactive element fixes - MUI v6 compatible */
 /* Ensure all buttons are clickable */
-.MuiButton-root, 
+.MuiButton-root,
 .MuiIconButton-root,
 .MuiButtonBase-root {
   position: relative !important;
@@ -288,8 +331,8 @@ div[data-rht-toaster] * {
 }
 
 /* Ensure all links are clickable */
-a, 
-a[role="button"],
+a,
+a[role='button'],
 .MuiLink-root {
   position: relative !important;
   z-index: 10 !important;
@@ -353,8 +396,8 @@ a,
 input,
 textarea,
 select,
-[role="button"],
-[tabindex]:not([tabindex="-1"]) {
+[role='button'],
+[tabindex]:not([tabindex='-1']) {
   position: relative !important;
   z-index: 1 !important;
 }
@@ -370,14 +413,14 @@ select,
 }
 
 /* Prevent overlay interference */
-[class*="css-"]:empty {
+[class*='css-']:empty {
   pointer-events: none !important;
 }
 
 /* Force all background and overlay elements to not intercept clicks */
-.MuiBox-root[style*="position: fixed"],
-.MuiBox-root[style*="position: absolute"],
-[class*="css-"][style*="z-index: -"] {
+.MuiBox-root[style*='position: fixed'],
+.MuiBox-root[style*='position: absolute'],
+[class*='css-'][style*='z-index: -'] {
   pointer-events: none !important;
 }
 
@@ -399,19 +442,26 @@ select,
 }
 
 /* Basic interactive element styles - Enhanced for better UX */
-button, a, input, select, textarea, [role="button"], [tabindex] {
+button,
+a,
+input,
+select,
+textarea,
+[role='button'],
+[tabindex] {
   cursor: pointer;
   user-select: auto;
 }
 
-input, textarea {
+input,
+textarea {
   cursor: text;
   user-select: text;
 }
 
 /* Ensure all clickable elements work */
-[role="button"], 
-.MuiButton-root, 
+[role='button'],
+.MuiButton-root,
 .MuiIconButton-root,
 .MuiListItemButton-root,
 .MuiMenuItem-root,
@@ -467,7 +517,9 @@ input, textarea {
 
 .MuiCard-root:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(30, 64, 175, 0.15), 0 10px 10px -5px rgba(30, 64, 175, 0.08);
+  box-shadow:
+    0 20px 25px -5px rgba(30, 64, 175, 0.15),
+    0 10px 10px -5px rgba(30, 64, 175, 0.08);
 }
 
 .MuiButton-root {
@@ -478,16 +530,21 @@ input, textarea {
 
 .MuiButton-root:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 64, 175, 0.2), 0 4px 6px -2px rgba(30, 64, 175, 0.1);
+  box-shadow:
+    0 10px 15px -3px rgba(30, 64, 175, 0.2),
+    0 4px 6px -2px rgba(30, 64, 175, 0.1);
 }
 
 /* Improved spacing and readability */
-.MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3 {
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3 {
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-.MuiTypography-body1, .MuiTypography-body2 {
+.MuiTypography-body1,
+.MuiTypography-body2 {
   line-height: 1.6;
 }
 
@@ -543,11 +600,11 @@ html {
     margin: 20px !important;
     padding: 32px !important;
   }
-  
+
   .login-page .MuiTypography-h3 {
     font-size: 2rem !important;
   }
-  
+
   .login-page .MuiButton-root {
     padding: 12px 24px !important;
   }
@@ -581,19 +638,28 @@ html {
   outline: none !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root
+  .MuiOutlinedInput-notchedOutline {
   border: 1px solid rgba(0, 0, 0, 0.23) !important;
   border-width: 1px !important;
   outline: none !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root:hover
+  .MuiOutlinedInput-notchedOutline {
   border: 2px solid #3b82f6 !important;
   border-width: 2px !important;
   outline: none !important;
 }
 
-.login-page .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
   border: 2px solid #3b82f6 !important;
   border-width: 2px !important;
   outline: none !important;
@@ -605,7 +671,11 @@ html {
 }
 
 /* Remove any legend elements */
-.login-page .MuiTextField-root .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline legend {
+.login-page
+  .MuiTextField-root
+  .MuiOutlinedInput-root
+  .MuiOutlinedInput-notchedOutline
+  legend {
   display: none !important;
   width: 0 !important;
   height: 0 !important;

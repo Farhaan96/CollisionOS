@@ -15,10 +15,10 @@ const uploadLimiter = rateLimit({
   max: 50, // 50 uploads per window
   message: {
     error: 'Too many upload attempts. Please wait before uploading more files.',
-    retryAfter: '15 minutes'
+    retryAfter: '15 minutes',
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 // Multer configuration for file uploads
@@ -28,60 +28,127 @@ const upload = multer({
   storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
-    files: 10 // Maximum 10 files per request
+    files: 10, // Maximum 10 files per request
   },
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
       'image/jpeg',
       'image/png',
-      'image/webp', 
+      'image/webp',
       'image/gif',
       'image/heic',
       'image/heif',
-      'image/tiff'
+      'image/tiff',
     ];
 
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error(`Invalid file type: ${file.mimetype}. Only image files are allowed.`));
+      cb(
+        new Error(
+          `Invalid file type: ${file.mimetype}. Only image files are allowed.`
+        )
+      );
     }
-  }
+  },
 });
 
 // Validation middleware
 const validateUpload = [
   body('jobId').optional().isUUID().withMessage('Invalid job ID format'),
-  body('estimateId').optional().isUUID().withMessage('Invalid estimate ID format'), 
-  body('customerId').optional().isUUID().withMessage('Invalid customer ID format'),
-  body('vehicleId').optional().isUUID().withMessage('Invalid vehicle ID format'),
-  body('category').optional().isIn([
-    'damage_assessment', 'before_damage', 'during_repair', 'after_repair', 
-    'supplement', 'parts_received', 'quality_check', 'delivery',
-    'customer_signature', 'insurance_doc', 'invoice', 'estimate', 
-    'blueprint', 'warranty', 'other'
-  ]).withMessage('Invalid category'),
-  body('description').optional().isLength({ max: 500 }).withMessage('Description too long'),
+  body('estimateId')
+    .optional()
+    .isUUID()
+    .withMessage('Invalid estimate ID format'),
+  body('customerId')
+    .optional()
+    .isUUID()
+    .withMessage('Invalid customer ID format'),
+  body('vehicleId')
+    .optional()
+    .isUUID()
+    .withMessage('Invalid vehicle ID format'),
+  body('category')
+    .optional()
+    .isIn([
+      'damage_assessment',
+      'before_damage',
+      'during_repair',
+      'after_repair',
+      'supplement',
+      'parts_received',
+      'quality_check',
+      'delivery',
+      'customer_signature',
+      'insurance_doc',
+      'invoice',
+      'estimate',
+      'blueprint',
+      'warranty',
+      'other',
+    ])
+    .withMessage('Invalid category'),
+  body('description')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Description too long'),
   body('title').optional().isLength({ max: 255 }).withMessage('Title too long'),
-  body('vehiclePart').optional().isLength({ max: 100 }).withMessage('Vehicle part description too long'),
-  body('damageType').optional().isLength({ max: 100 }).withMessage('Damage type description too long'),
-  body('location').optional().isLength({ max: 100 }).withMessage('Location description too long'),
-  body('visibleToCustomer').optional().isBoolean().withMessage('visibleToCustomer must be boolean'),
-  body('visibleToInsurance').optional().isBoolean().withMessage('visibleToInsurance must be boolean'),
-  body('accessLevel').optional().isIn(['public', 'internal', 'restricted', 'confidential'])
-    .withMessage('Invalid access level')
+  body('vehiclePart')
+    .optional()
+    .isLength({ max: 100 })
+    .withMessage('Vehicle part description too long'),
+  body('damageType')
+    .optional()
+    .isLength({ max: 100 })
+    .withMessage('Damage type description too long'),
+  body('location')
+    .optional()
+    .isLength({ max: 100 })
+    .withMessage('Location description too long'),
+  body('visibleToCustomer')
+    .optional()
+    .isBoolean()
+    .withMessage('visibleToCustomer must be boolean'),
+  body('visibleToInsurance')
+    .optional()
+    .isBoolean()
+    .withMessage('visibleToInsurance must be boolean'),
+  body('accessLevel')
+    .optional()
+    .isIn(['public', 'internal', 'restricted', 'confidential'])
+    .withMessage('Invalid access level'),
 ];
 
 const validateGetAttachments = [
   param('jobId').isUUID().withMessage('Invalid job ID format'),
-  query('category').optional().isIn([
-    'damage_assessment', 'before_damage', 'during_repair', 'after_repair',
-    'supplement', 'parts_received', 'quality_check', 'delivery',
-    'customer_signature', 'insurance_doc', 'invoice', 'estimate',
-    'blueprint', 'warranty', 'other'
-  ]).withMessage('Invalid category'),
-  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-  query('offset').optional().isInt({ min: 0 }).withMessage('Offset must be non-negative')
+  query('category')
+    .optional()
+    .isIn([
+      'damage_assessment',
+      'before_damage',
+      'during_repair',
+      'after_repair',
+      'supplement',
+      'parts_received',
+      'quality_check',
+      'delivery',
+      'customer_signature',
+      'insurance_doc',
+      'invoice',
+      'estimate',
+      'blueprint',
+      'warranty',
+      'other',
+    ])
+    .withMessage('Invalid category'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Limit must be between 1 and 100'),
+  query('offset')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Offset must be non-negative'),
 ];
 
 // Helper function to handle validation errors
@@ -91,7 +158,7 @@ const handleValidationErrors = (req, res, next) => {
     return res.status(400).json({
       success: false,
       error: 'Validation failed',
-      details: errors.array()
+      details: errors.array(),
     });
   }
   next();
@@ -149,7 +216,8 @@ const handleValidationErrors = (req, res, next) => {
  *       429:
  *         description: Rate limit exceeded
  */
-router.post('/upload', 
+router.post(
+  '/upload',
   uploadLimiter,
   upload.array('files', 10),
   validateUpload,
@@ -159,7 +227,7 @@ router.post('/upload',
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({
           success: false,
-          error: 'No files provided'
+          error: 'No files provided',
         });
       }
 
@@ -176,13 +244,17 @@ router.post('/upload',
         vehiclePart: req.body.vehiclePart,
         damageType: req.body.damageType,
         location: req.body.location,
-        visibleToCustomer: req.body.visibleToCustomer !== undefined ? 
-          req.body.visibleToCustomer === 'true' : true,
-        visibleToInsurance: req.body.visibleToInsurance !== undefined ? 
-          req.body.visibleToInsurance === 'true' : false,
+        visibleToCustomer:
+          req.body.visibleToCustomer !== undefined
+            ? req.body.visibleToCustomer === 'true'
+            : true,
+        visibleToInsurance:
+          req.body.visibleToInsurance !== undefined
+            ? req.body.visibleToInsurance === 'true'
+            : false,
         accessLevel: req.body.accessLevel || 'internal',
         uploadedBy: req.user.id,
-        shopId: req.user.shopId
+        shopId: req.user.shopId,
       };
 
       let result;
@@ -192,39 +264,42 @@ router.post('/upload',
         result = await photoUploadService.uploadPhoto(req.files[0], metadata);
         result.type = 'single';
       } else {
-        result = await photoUploadService.uploadMultiplePhotos(req.files, metadata);
+        result = await photoUploadService.uploadMultiplePhotos(
+          req.files,
+          metadata
+        );
         result.type = 'multiple';
       }
 
       res.json({
         success: true,
         data: result,
-        message: req.files.length === 1 ? 
-          'Photo uploaded successfully' : 
-          `${req.files.length} photos processed (${result.summary.successful} successful, ${result.summary.failed} failed)`
+        message:
+          req.files.length === 1
+            ? 'Photo uploaded successfully'
+            : `${req.files.length} photos processed (${result.summary.successful} successful, ${result.summary.failed} failed)`,
       });
-
     } catch (error) {
       console.error('Upload error:', error);
-      
+
       if (error.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({
           success: false,
-          error: 'File too large. Maximum size is 10MB per file.'
+          error: 'File too large. Maximum size is 10MB per file.',
         });
       }
 
       if (error.code === 'LIMIT_FILE_COUNT') {
         return res.status(400).json({
           success: false,
-          error: 'Too many files. Maximum 10 files per request.'
+          error: 'Too many files. Maximum 10 files per request.',
         });
       }
 
       res.status(500).json({
         success: false,
         error: 'Upload failed',
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -244,7 +319,7 @@ router.get('/categories', (req, res) => {
   const categories = photoUploadService.getSupportedCategories();
   res.json({
     success: true,
-    data: categories
+    data: categories,
   });
 });
 
@@ -285,7 +360,8 @@ router.get('/categories', (req, res) => {
  *       404:
  *         description: Job not found
  */
-router.get('/:jobId',
+router.get(
+  '/:jobId',
   validateGetAttachments,
   handleValidationErrors,
   async (req, res) => {
@@ -296,22 +372,21 @@ router.get('/:jobId',
       const options = {
         category,
         limit: limit ? parseInt(limit) : undefined,
-        offset: offset ? parseInt(offset) : 0
+        offset: offset ? parseInt(offset) : 0,
       };
 
       const result = await photoUploadService.getJobAttachments(jobId, options);
 
       res.json({
         success: true,
-        data: result
+        data: result,
       });
-
     } catch (error) {
       console.error('Get attachments error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve attachments',
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -350,7 +425,8 @@ router.get('/:jobId',
  *       403:
  *         description: Access denied
  */
-router.get('/file/:id',
+router.get(
+  '/file/:id',
   param('id').isUUID().withMessage('Invalid attachment ID'),
   handleValidationErrors,
   async (req, res) => {
@@ -361,24 +437,31 @@ router.get('/file/:id',
       const attachment = await photoUploadService.getAttachment(id);
 
       // Check access permissions
-      if (attachment.accessLevel === 'restricted' && req.user.role === 'technician') {
+      if (
+        attachment.accessLevel === 'restricted' &&
+        req.user.role === 'technician'
+      ) {
         return res.status(403).json({
           success: false,
-          error: 'Access denied'
+          error: 'Access denied',
         });
       }
 
-      if (attachment.accessLevel === 'confidential' && !['admin', 'manager'].includes(req.user.role)) {
+      if (
+        attachment.accessLevel === 'confidential' &&
+        !['admin', 'manager'].includes(req.user.role)
+      ) {
         return res.status(403).json({
           success: false,
-          error: 'Access denied'
+          error: 'Access denied',
         });
       }
 
       // Determine which file to serve
-      const filePath = thumbnail && attachment.thumbnailPath ? 
-        path.join(process.cwd(), attachment.thumbnailPath) :
-        path.join(process.cwd(), attachment.filePath);
+      const filePath =
+        thumbnail && attachment.thumbnailPath
+          ? path.join(process.cwd(), attachment.thumbnailPath)
+          : path.join(process.cwd(), attachment.filePath);
 
       // Check if file exists
       try {
@@ -386,32 +469,34 @@ router.get('/file/:id',
       } catch (error) {
         return res.status(404).json({
           success: false,
-          error: 'File not found on disk'
+          error: 'File not found on disk',
         });
       }
 
       // Set appropriate headers
       res.setHeader('Content-Type', attachment.mimeType);
-      res.setHeader('Content-Disposition', `inline; filename="${attachment.originalFileName}"`);
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${attachment.originalFileName}"`
+      );
       res.setHeader('Cache-Control', 'private, max-age=3600');
 
       // Stream the file
       res.sendFile(filePath);
-
     } catch (error) {
       console.error('File serve error:', error);
-      
+
       if (error.message.includes('not found')) {
         return res.status(404).json({
           success: false,
-          error: 'Attachment not found'
+          error: 'Attachment not found',
         });
       }
 
       res.status(500).json({
         success: false,
         error: 'Failed to serve file',
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -440,7 +525,8 @@ router.get('/file/:id',
  *       403:
  *         description: Access denied
  */
-router.delete('/:id',
+router.delete(
+  '/:id',
   param('id').isUUID().withMessage('Invalid attachment ID'),
   handleValidationErrors,
   async (req, res) => {
@@ -451,10 +537,13 @@ router.delete('/:id',
       const attachment = await photoUploadService.getAttachment(id);
 
       // Only allow deletion by uploader, managers, or admins
-      if (attachment.uploadedBy !== req.user.id && !['admin', 'manager'].includes(req.user.role)) {
+      if (
+        attachment.uploadedBy !== req.user.id &&
+        !['admin', 'manager'].includes(req.user.role)
+      ) {
         return res.status(403).json({
           success: false,
-          error: 'Access denied. You can only delete your own attachments.'
+          error: 'Access denied. You can only delete your own attachments.',
         });
       }
 
@@ -462,23 +551,22 @@ router.delete('/:id',
 
       res.json({
         success: true,
-        message: 'Attachment deleted successfully'
+        message: 'Attachment deleted successfully',
       });
-
     } catch (error) {
       console.error('Delete attachment error:', error);
-      
+
       if (error.message.includes('not found')) {
         return res.status(404).json({
           success: false,
-          error: 'Attachment not found'
+          error: 'Attachment not found',
         });
       }
 
       res.status(500).json({
         success: false,
         error: 'Failed to delete attachment',
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -519,7 +607,8 @@ router.delete('/:id',
  *       429:
  *         description: Rate limit exceeded
  */
-router.post('/bulk-upload',
+router.post(
+  '/bulk-upload',
   uploadLimiter,
   upload.array('files', 10),
   validateUpload,
@@ -529,7 +618,7 @@ router.post('/bulk-upload',
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({
           success: false,
-          error: 'No files provided for bulk upload'
+          error: 'No files provided for bulk upload',
         });
       }
 
@@ -540,25 +629,29 @@ router.post('/bulk-upload',
         description: req.body.bulkDescription,
         uploadedBy: req.user.id,
         shopId: req.user.shopId,
-        visibleToCustomer: req.body.visibleToCustomer !== undefined ? 
-          req.body.visibleToCustomer === 'true' : true,
-        accessLevel: req.body.accessLevel || 'internal'
+        visibleToCustomer:
+          req.body.visibleToCustomer !== undefined
+            ? req.body.visibleToCustomer === 'true'
+            : true,
+        accessLevel: req.body.accessLevel || 'internal',
       };
 
-      const result = await photoUploadService.uploadMultiplePhotos(req.files, metadata);
+      const result = await photoUploadService.uploadMultiplePhotos(
+        req.files,
+        metadata
+      );
 
       res.json({
         success: true,
         data: result,
-        message: `Bulk upload completed: ${result.summary.successful} successful, ${result.summary.failed} failed`
+        message: `Bulk upload completed: ${result.summary.successful} successful, ${result.summary.failed} failed`,
       });
-
     } catch (error) {
       console.error('Bulk upload error:', error);
       res.status(500).json({
         success: false,
         error: 'Bulk upload failed',
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -571,23 +664,23 @@ router.use((error, req, res, next) => {
       return res.status(413).json({
         success: false,
         error: 'File too large',
-        details: 'Maximum file size is 10MB'
+        details: 'Maximum file size is 10MB',
       });
     }
-    
+
     if (error.code === 'LIMIT_FILE_COUNT') {
       return res.status(400).json({
         success: false,
         error: 'Too many files',
-        details: 'Maximum 10 files per request'
+        details: 'Maximum 10 files per request',
       });
     }
-    
+
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
       return res.status(400).json({
         success: false,
         error: 'Unexpected file field',
-        details: 'Use "files" as the field name'
+        details: 'Use "files" as the field name',
       });
     }
   }
@@ -596,7 +689,7 @@ router.use((error, req, res, next) => {
     return res.status(400).json({
       success: false,
       error: 'Invalid file type',
-      details: 'Only image files are allowed'
+      details: 'Only image files are allowed',
     });
   }
 

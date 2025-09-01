@@ -1,4 +1,6 @@
-const { EnhancedBMSParser } = require('../../../server/services/import/bms_parser.ts');
+const {
+  EnhancedBMSParser,
+} = require('../../../server/services/import/bms_parser.ts');
 
 describe('EnhancedBMSParser', () => {
   let parser;
@@ -7,7 +9,7 @@ describe('EnhancedBMSParser', () => {
 
   beforeEach(() => {
     parser = new EnhancedBMSParser();
-    
+
     sampleBMSXML = `<?xml version="1.0" encoding="UTF-8"?>
     <VehicleDamageEstimateAddRq>
       <DocumentInfo>
@@ -182,19 +184,19 @@ describe('EnhancedBMSParser', () => {
   describe('parseBMS', () => {
     it('should successfully parse a valid BMS XML file', async () => {
       const result = await parser.parseBMS(sampleBMSXML);
-      
+
       expect(result).toHaveProperty('identities');
       expect(result).toHaveProperty('customer');
       expect(result).toHaveProperty('vehicle');
       expect(result).toHaveProperty('lines');
       expect(result).toHaveProperty('parts');
       expect(result).toHaveProperty('meta');
-      
+
       // Check identities
       expect(result.identities.ro_number).toBe('EST123456');
       expect(result.identities.claim_number).toBe('CLM789012');
       expect(result.identities.vin).toBe('1HGCM82633A123456');
-      
+
       // Check customer data
       expect(result.customer.firstName).toBe('John');
       expect(result.customer.lastName).toBe('Doe');
@@ -202,7 +204,7 @@ describe('EnhancedBMSParser', () => {
       expect(result.customer.phone).toBe('555-123-4567');
       expect(result.customer.type).toBe('person');
       expect(result.customer.gst_payable).toBe(true);
-      
+
       // Check vehicle data
       expect(result.vehicle.year).toBe(2020);
       expect(result.vehicle.make).toBe('Honda');
@@ -210,19 +212,19 @@ describe('EnhancedBMSParser', () => {
       expect(result.vehicle.vin).toBe('1HGCM82633A123456');
       expect(result.vehicle.odometer).toBe(35000);
       expect(result.vehicle.drivable).toBe(true);
-      
+
       // Check estimate lines
       expect(result.lines).toHaveLength(2);
       expect(result.lines[0].lineNum).toBe(1);
       expect(result.lines[0].lineDesc).toBe('Front Bumper Cover');
       expect(result.lines[0].partInfo).toBeDefined();
       expect(result.lines[1].laborInfo).toBeDefined();
-      
+
       // Check parts data
       expect(result.parts).toHaveLength(1);
       expect(result.parts[0].partNumber).toBe('04711-TBA-A90ZZ');
       expect(result.parts[0].description).toBe('Front Bumper Cover');
-      
+
       // Check metadata
       expect(result.meta.source_system).toBe('Mitchell');
       expect(result.meta.import_timestamp).toBeInstanceOf(Date);
@@ -231,8 +233,10 @@ describe('EnhancedBMSParser', () => {
 
     it('should handle malformed XML gracefully', async () => {
       const invalidXML = '<invalid><xml>not closed';
-      
-      await expect(parser.parseBMS(invalidXML)).rejects.toThrow('BMS parsing failed');
+
+      await expect(parser.parseBMS(invalidXML)).rejects.toThrow(
+        'BMS parsing failed'
+      );
     });
 
     it('should handle missing customer data with defaults', async () => {
@@ -249,9 +253,9 @@ describe('EnhancedBMSParser', () => {
           </VINInfo>
         </VehicleInfo>
       </VehicleDamageEstimateAddRq>`;
-      
+
       const result = await parser.parseBMS(minimalBMS);
-      
+
       expect(result.customer.firstName).toBe('Unknown');
       expect(result.customer.lastName).toBe('Customer');
       expect(result.customer.type).toBe('person');
@@ -281,19 +285,22 @@ describe('EnhancedBMSParser', () => {
           </VINInfo>
         </VehicleInfo>
       </VehicleDamageEstimateAddRq>`;
-      
+
       const result = await parser.parseBMS(businessBMS);
-      
+
       expect(result.customer.type).toBe('organization');
       expect(result.customer.companyName).toBe('ABC Corp');
       expect(result.customer.gst_payable).toBe(true);
     });
 
     it('should handle alternative root element names', async () => {
-      const alternativeRootBMS = sampleBMSXML.replace('VehicleDamageEstimateAddRq', 'VehicleDamageEstimate');
-      
+      const alternativeRootBMS = sampleBMSXML.replace(
+        'VehicleDamageEstimateAddRq',
+        'VehicleDamageEstimate'
+      );
+
       const result = await parser.parseBMS(alternativeRootBMS);
-      
+
       expect(result.identities.ro_number).toBe('EST123456');
       expect(result.customer.firstName).toBe('John');
     });
@@ -305,16 +312,18 @@ describe('EnhancedBMSParser', () => {
           <DocumentID>EST123456</DocumentID>
         </DocumentInfo>
       </UnknownRootElement>`;
-      
+
       const result = await parser.parseBMS(bmsWithUnknownTags);
-      
+
       expect(result.meta.unknown_tags.length).toBeGreaterThan(0);
-      expect(result.meta.unknown_tags.some(tag => tag.includes('UnknownRootElement'))).toBe(true);
+      expect(
+        result.meta.unknown_tags.some(tag => tag.includes('UnknownRootElement'))
+      ).toBe(true);
     });
 
     it('should handle decimal amounts correctly', async () => {
       const result = await parser.parseBMS(sampleBMSXML);
-      
+
       expect(result.lines[0].partInfo.price.toString()).toBe('450');
       expect(result.lines[1].laborInfo.hours.toString()).toBe('3.5');
       expect(result.lines[1].laborInfo.rate.toString()).toBe('75');
@@ -323,12 +332,12 @@ describe('EnhancedBMSParser', () => {
 
     it('should extract GST exemption from custom elements', async () => {
       const gstExemptBMS = sampleBMSXML.replace(
-        '<CustomElementText>N</CustomElementText>', 
+        '<CustomElementText>N</CustomElementText>',
         '<CustomElementText>Y</CustomElementText>'
       );
-      
+
       const result = await parser.parseBMS(gstExemptBMS);
-      
+
       expect(result.customer.gst_payable).toBe(false);
     });
 
@@ -346,9 +355,9 @@ describe('EnhancedBMSParser', () => {
           </VINInfo>
         </VehicleInfo>
       </VehicleDamageEstimateAddRq>`;
-      
+
       const result = await parser.parseBMS(noDamageLinesBMS);
-      
+
       expect(result.lines).toHaveLength(0);
       expect(result.parts).toHaveLength(0);
     });
@@ -358,7 +367,7 @@ describe('EnhancedBMSParser', () => {
     it('should return array of unknown tags encountered during parsing', async () => {
       await parser.parseBMS(sampleBMSXML);
       const unknownTags = parser.getUnknownTags();
-      
+
       expect(Array.isArray(unknownTags)).toBe(true);
     });
   });
@@ -368,12 +377,12 @@ describe('EnhancedBMSParser', () => {
       const partInfo = {
         PartNum: 'TEST-PART-123',
         PartPrice: '100.00',
-        Quantity: '2'
+        Quantity: '2',
       };
-      
+
       // Use private method through reflection or create public test method
       const result = parser.extractPartInfo(partInfo);
-      
+
       expect(result.partNumber).toBe('TEST-PART-123');
       expect(result.price.toString()).toBe('100');
       expect(result.quantity).toBe(2);
@@ -386,10 +395,14 @@ describe('EnhancedBMSParser', () => {
       // Test different value types that might come from XML parser
       expect(parser.safeText('simple string')).toBe('simple string');
       expect(parser.safeText(123)).toBe('123');
-      expect(parser.safeText({ '#text': 'xml text node' })).toBe('xml text node');
+      expect(parser.safeText({ '#text': 'xml text node' })).toBe(
+        'xml text node'
+      );
       expect(parser.safeText(null)).toBe('');
       expect(parser.safeText(undefined)).toBe('');
-      expect(parser.safeText({ complex: 'object' })).toBe('{"complex":"object"}');
+      expect(parser.safeText({ complex: 'object' })).toBe(
+        '{"complex":"object"}'
+      );
     });
   });
 
@@ -407,14 +420,18 @@ describe('EnhancedBMSParser', () => {
   describe('error handling', () => {
     it('should provide meaningful error messages', async () => {
       const emptyString = '';
-      
-      await expect(parser.parseBMS(emptyString)).rejects.toThrow('BMS parsing failed');
+
+      await expect(parser.parseBMS(emptyString)).rejects.toThrow(
+        'BMS parsing failed'
+      );
     });
 
     it('should handle non-XML content', async () => {
       const nonXmlContent = 'This is not XML content';
-      
-      await expect(parser.parseBMS(nonXmlContent)).rejects.toThrow('BMS parsing failed');
+
+      await expect(parser.parseBMS(nonXmlContent)).rejects.toThrow(
+        'BMS parsing failed'
+      );
     });
   });
 });

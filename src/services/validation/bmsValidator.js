@@ -8,11 +8,11 @@ class BMSValidator {
   constructor() {
     this.parser = new XMLParser({
       ignoreAttributes: false,
-      attributeNamePrefix: "@_",
-      textNodeName: "#text",
+      attributeNamePrefix: '@_',
+      textNodeName: '#text',
       parseAttributeValue: true,
       parseTagValue: true,
-      trimValues: true
+      trimValues: true,
     });
 
     this.validationRules = {
@@ -20,7 +20,7 @@ class BMSValidator {
         documentInfo: ['BMSVer', 'DocumentType', 'DocumentID'],
         adminInfo: ['PolicyHolder'],
         vehicleInfo: ['VINInfo'],
-        claimInfo: ['ClaimNum']
+        claimInfo: ['ClaimNum'],
       },
       formats: {
         vin: /^[A-HJ-NPR-Z0-9]{17}$/,
@@ -29,16 +29,16 @@ class BMSValidator {
         postalCode: {
           US: /^\d{5}(-\d{4})?$/,
           CA: /^[A-Z]\d[A-Z] \d[A-Z]\d$/,
-          default: /^.{3,10}$/
+          default: /^.{3,10}$/,
         },
         currency: /^[A-Z]{3}$/,
-        date: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+        date: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
       },
       ranges: {
         year: { min: 1900, max: new Date().getFullYear() + 2 },
         mileage: { min: 0, max: 999999 },
-        amount: { min: 0, max: 999999.99 }
-      }
+        amount: { min: 0, max: 999999.99 },
+      },
     };
 
     this.validationErrors = [];
@@ -53,14 +53,17 @@ class BMSValidator {
    */
   async validateBMSFile(xmlContent) {
     this.reset();
-    
+
     try {
       // Parse XML
       const parsed = this.parser.parse(xmlContent);
       const bmsData = parsed.VehicleDamageEstimateAddRq;
 
       if (!bmsData) {
-        this.addError('structure', 'Invalid BMS file structure - missing VehicleDamageEstimateAddRq root element');
+        this.addError(
+          'structure',
+          'Invalid BMS file structure - missing VehicleDamageEstimateAddRq root element'
+        );
         return this.getValidationResult();
       }
 
@@ -73,7 +76,6 @@ class BMSValidator {
       await this.validateTotals(bmsData.RepairTotalsInfo);
 
       return this.getValidationResult();
-
     } catch (error) {
       this.addError('parsing', `Failed to parse BMS XML: ${error.message}`);
       return this.getValidationResult();
@@ -90,13 +92,20 @@ class BMSValidator {
     }
 
     // Required fields
-    this.validateRequired(docInfo, this.validationRules.required.documentInfo, 'DocumentInfo');
+    this.validateRequired(
+      docInfo,
+      this.validationRules.required.documentInfo,
+      'DocumentInfo'
+    );
 
     // BMS Version validation
     if (docInfo.BMSVer) {
       const version = parseFloat(docInfo.BMSVer);
       if (version < 5.0) {
-        this.addWarning('documentInfo.version', `BMS version ${docInfo.BMSVer} is outdated. Consider upgrading to 5.2+`);
+        this.addWarning(
+          'documentInfo.version',
+          `BMS version ${docInfo.BMSVer} is outdated. Consider upgrading to 5.2+`
+        );
       }
       this.setFieldValidation('DocumentInfo.BMSVer', true, 'Valid BMS version');
     }
@@ -105,27 +114,60 @@ class BMSValidator {
     if (docInfo.DocumentType) {
       const validTypes = ['E', 'S', 'R', 'A']; // Estimate, Supplement, Reinspection, Appraisal
       if (!validTypes.includes(docInfo.DocumentType)) {
-        this.addError('documentInfo.type', `Invalid document type: ${docInfo.DocumentType}`);
-        this.setFieldValidation('DocumentInfo.DocumentType', false, 'Invalid document type');
+        this.addError(
+          'documentInfo.type',
+          `Invalid document type: ${docInfo.DocumentType}`
+        );
+        this.setFieldValidation(
+          'DocumentInfo.DocumentType',
+          false,
+          'Invalid document type'
+        );
       } else {
-        this.setFieldValidation('DocumentInfo.DocumentType', true, 'Valid document type');
+        this.setFieldValidation(
+          'DocumentInfo.DocumentType',
+          true,
+          'Valid document type'
+        );
       }
     }
 
     // Currency validation
     if (docInfo.CurrencyInfo?.CurCode) {
-      if (!this.validationRules.formats.currency.test(docInfo.CurrencyInfo.CurCode)) {
-        this.addError('documentInfo.currency', `Invalid currency code: ${docInfo.CurrencyInfo.CurCode}`);
-        this.setFieldValidation('DocumentInfo.CurrencyInfo.CurCode', false, 'Invalid currency format');
+      if (
+        !this.validationRules.formats.currency.test(
+          docInfo.CurrencyInfo.CurCode
+        )
+      ) {
+        this.addError(
+          'documentInfo.currency',
+          `Invalid currency code: ${docInfo.CurrencyInfo.CurCode}`
+        );
+        this.setFieldValidation(
+          'DocumentInfo.CurrencyInfo.CurCode',
+          false,
+          'Invalid currency format'
+        );
       } else {
-        this.setFieldValidation('DocumentInfo.CurrencyInfo.CurCode', true, 'Valid currency code');
+        this.setFieldValidation(
+          'DocumentInfo.CurrencyInfo.CurCode',
+          true,
+          'Valid currency code'
+        );
       }
     }
 
     // Date validation
-    if (docInfo.CreateDateTime && !this.validationRules.formats.date.test(docInfo.CreateDateTime)) {
+    if (
+      docInfo.CreateDateTime &&
+      !this.validationRules.formats.date.test(docInfo.CreateDateTime)
+    ) {
       this.addError('documentInfo.date', 'Invalid CreateDateTime format');
-      this.setFieldValidation('DocumentInfo.CreateDateTime', false, 'Invalid date format');
+      this.setFieldValidation(
+        'DocumentInfo.CreateDateTime',
+        false,
+        'Invalid date format'
+      );
     }
   }
 
@@ -140,14 +182,20 @@ class BMSValidator {
 
     // Policy holder validation (required)
     if (!adminInfo.PolicyHolder) {
-      this.addError('adminInfo.policyHolder', 'Missing PolicyHolder information');
+      this.addError(
+        'adminInfo.policyHolder',
+        'Missing PolicyHolder information'
+      );
     } else {
       await this.validateParty(adminInfo.PolicyHolder.Party, 'PolicyHolder');
     }
 
     // Insurance company validation
     if (adminInfo.InsuranceCompany) {
-      await this.validateParty(adminInfo.InsuranceCompany.Party, 'InsuranceCompany');
+      await this.validateParty(
+        adminInfo.InsuranceCompany.Party,
+        'InsuranceCompany'
+      );
     }
 
     // Estimator validation
@@ -166,7 +214,10 @@ class BMSValidator {
    */
   async validateParty(party, context) {
     if (!party) {
-      this.addError(`${context.toLowerCase()}`, `Missing ${context} party information`);
+      this.addError(
+        `${context.toLowerCase()}`,
+        `Missing ${context} party information`
+      );
       return;
     }
 
@@ -174,7 +225,10 @@ class BMSValidator {
     const isOrgInfo = party.OrgInfo;
 
     if (!isPersonInfo && !isOrgInfo) {
-      this.addError(`${context.toLowerCase()}.type`, `${context} must have either PersonInfo or OrgInfo`);
+      this.addError(
+        `${context.toLowerCase()}.type`,
+        `${context} must have either PersonInfo or OrgInfo`
+      );
       return;
     }
 
@@ -188,7 +242,10 @@ class BMSValidator {
 
     // Validate contact information
     if (party.ContactInfo?.Communications) {
-      await this.validateCommunications(party.ContactInfo.Communications, context);
+      await this.validateCommunications(
+        party.ContactInfo.Communications,
+        context
+      );
     }
   }
 
@@ -197,10 +254,21 @@ class BMSValidator {
    */
   async validatePersonInfo(personInfo, context) {
     if (!personInfo.PersonName?.FirstName && !personInfo.PersonName?.LastName) {
-      this.addError(`${context.toLowerCase()}.name`, `${context} person must have at least first or last name`);
-      this.setFieldValidation(`${context}.PersonName`, false, 'Missing required name fields');
+      this.addError(
+        `${context.toLowerCase()}.name`,
+        `${context} person must have at least first or last name`
+      );
+      this.setFieldValidation(
+        `${context}.PersonName`,
+        false,
+        'Missing required name fields'
+      );
     } else {
-      this.setFieldValidation(`${context}.PersonName`, true, 'Valid person name');
+      this.setFieldValidation(
+        `${context}.PersonName`,
+        true,
+        'Valid person name'
+      );
     }
 
     // Validate address if present
@@ -214,10 +282,21 @@ class BMSValidator {
    */
   async validateOrgInfo(orgInfo, context) {
     if (!orgInfo.CompanyName) {
-      this.addError(`${context.toLowerCase()}.company`, `${context} organization must have company name`);
-      this.setFieldValidation(`${context}.CompanyName`, false, 'Missing company name');
+      this.addError(
+        `${context.toLowerCase()}.company`,
+        `${context} organization must have company name`
+      );
+      this.setFieldValidation(
+        `${context}.CompanyName`,
+        false,
+        'Missing company name'
+      );
     } else {
-      this.setFieldValidation(`${context}.CompanyName`, true, 'Valid company name');
+      this.setFieldValidation(
+        `${context}.CompanyName`,
+        true,
+        'Valid company name'
+      );
     }
   }
 
@@ -225,19 +304,21 @@ class BMSValidator {
    * Validate communications (address, phone, email)
    */
   async validateCommunications(communications, context) {
-    const commArray = Array.isArray(communications) ? communications : [communications];
-    
+    const commArray = Array.isArray(communications)
+      ? communications
+      : [communications];
+
     commArray.forEach((comm, index) => {
       const commContext = `${context}.Communications[${index}]`;
-      
+
       if (comm.CommQualifier === 'AL' && comm.Address) {
         this.validateAddress(comm.Address, commContext);
       }
-      
+
       if (comm.CommPhone) {
         this.validatePhone(comm.CommPhone, commContext);
       }
-      
+
       if (comm.CommEmail) {
         this.validateEmail(comm.CommEmail, commContext);
       }
@@ -254,7 +335,10 @@ class BMSValidator {
     requiredFields.forEach(field => {
       if (!address[field]) {
         hasRequiredFields = false;
-        this.addWarning(`${context.toLowerCase()}.address`, `Missing ${field} in address`);
+        this.addWarning(
+          `${context.toLowerCase()}.address`,
+          `Missing ${field} in address`
+        );
       }
     });
 
@@ -265,25 +349,45 @@ class BMSValidator {
 
       if (stateProvince && stateProvince.length === 2) {
         // US state
-        postalValid = this.validationRules.formats.postalCode.US.test(address.PostalCode);
+        postalValid = this.validationRules.formats.postalCode.US.test(
+          address.PostalCode
+        );
       } else if (stateProvince && stateProvince.length <= 3) {
         // Canadian province
-        postalValid = this.validationRules.formats.postalCode.CA.test(address.PostalCode);
+        postalValid = this.validationRules.formats.postalCode.CA.test(
+          address.PostalCode
+        );
       } else {
         // Default validation
-        postalValid = this.validationRules.formats.postalCode.default.test(address.PostalCode);
+        postalValid = this.validationRules.formats.postalCode.default.test(
+          address.PostalCode
+        );
       }
 
       if (!postalValid) {
-        this.addWarning(`${context.toLowerCase()}.postalCode`, 'Invalid postal code format');
-        this.setFieldValidation(`${context}.PostalCode`, false, 'Invalid postal code format');
+        this.addWarning(
+          `${context.toLowerCase()}.postalCode`,
+          'Invalid postal code format'
+        );
+        this.setFieldValidation(
+          `${context}.PostalCode`,
+          false,
+          'Invalid postal code format'
+        );
       } else {
-        this.setFieldValidation(`${context}.PostalCode`, true, 'Valid postal code');
+        this.setFieldValidation(
+          `${context}.PostalCode`,
+          true,
+          'Valid postal code'
+        );
       }
     }
 
-    this.setFieldValidation(`${context}.Address`, hasRequiredFields, 
-      hasRequiredFields ? 'Complete address' : 'Incomplete address');
+    this.setFieldValidation(
+      `${context}.Address`,
+      hasRequiredFields,
+      hasRequiredFields ? 'Complete address' : 'Incomplete address'
+    );
   }
 
   /**
@@ -292,10 +396,17 @@ class BMSValidator {
   validatePhone(phone, context) {
     // Clean phone number
     const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
-    
+
     if (!this.validationRules.formats.phone.test(cleanPhone)) {
-      this.addWarning(`${context.toLowerCase()}.phone`, `Invalid phone number format: ${phone}`);
-      this.setFieldValidation(`${context}.Phone`, false, 'Invalid phone format');
+      this.addWarning(
+        `${context.toLowerCase()}.phone`,
+        `Invalid phone number format: ${phone}`
+      );
+      this.setFieldValidation(
+        `${context}.Phone`,
+        false,
+        'Invalid phone format'
+      );
     } else {
       this.setFieldValidation(`${context}.Phone`, true, 'Valid phone number');
     }
@@ -306,8 +417,15 @@ class BMSValidator {
    */
   validateEmail(email, context) {
     if (!this.validationRules.formats.email.test(email)) {
-      this.addWarning(`${context.toLowerCase()}.email`, `Invalid email format: ${email}`);
-      this.setFieldValidation(`${context}.Email`, false, 'Invalid email format');
+      this.addWarning(
+        `${context.toLowerCase()}.email`,
+        `Invalid email format: ${email}`
+      );
+      this.setFieldValidation(
+        `${context}.Email`,
+        false,
+        'Invalid email format'
+      );
     } else {
       this.setFieldValidation(`${context}.Email`, true, 'Valid email address');
     }
@@ -339,11 +457,22 @@ class BMSValidator {
     // Year validation
     if (vehicleInfo.VehicleDesc?.ModelYear) {
       const year = parseInt(vehicleInfo.VehicleDesc.ModelYear);
-      if (year < this.validationRules.ranges.year.min || year > this.validationRules.ranges.year.max) {
+      if (
+        year < this.validationRules.ranges.year.min ||
+        year > this.validationRules.ranges.year.max
+      ) {
         this.addError('vehicleInfo.year', `Invalid model year: ${year}`);
-        this.setFieldValidation('VehicleInfo.ModelYear', false, 'Invalid year range');
+        this.setFieldValidation(
+          'VehicleInfo.ModelYear',
+          false,
+          'Invalid year range'
+        );
       } else {
-        this.setFieldValidation('VehicleInfo.ModelYear', true, 'Valid model year');
+        this.setFieldValidation(
+          'VehicleInfo.ModelYear',
+          true,
+          'Valid model year'
+        );
       }
     }
 
@@ -364,12 +493,25 @@ class BMSValidator {
 
     // Odometer validation
     if (vehicleInfo.VehicleDesc?.OdometerInfo?.OdometerReading) {
-      const mileage = parseInt(vehicleInfo.VehicleDesc.OdometerInfo.OdometerReading);
+      const mileage = parseInt(
+        vehicleInfo.VehicleDesc.OdometerInfo.OdometerReading
+      );
       if (mileage < 0 || mileage > this.validationRules.ranges.mileage.max) {
-        this.addError('vehicleInfo.mileage', `Invalid odometer reading: ${mileage}`);
-        this.setFieldValidation('VehicleInfo.Odometer', false, 'Invalid odometer reading');
+        this.addError(
+          'vehicleInfo.mileage',
+          `Invalid odometer reading: ${mileage}`
+        );
+        this.setFieldValidation(
+          'VehicleInfo.Odometer',
+          false,
+          'Invalid odometer reading'
+        );
       } else {
-        this.setFieldValidation('VehicleInfo.Odometer', true, 'Valid odometer reading');
+        this.setFieldValidation(
+          'VehicleInfo.Odometer',
+          true,
+          'Valid odometer reading'
+        );
       }
     }
   }
@@ -386,27 +528,55 @@ class BMSValidator {
     // Claim number validation (required)
     if (!claimInfo.ClaimNum) {
       this.addError('claimInfo.number', 'Missing claim number');
-      this.setFieldValidation('ClaimInfo.ClaimNum', false, 'Missing claim number');
+      this.setFieldValidation(
+        'ClaimInfo.ClaimNum',
+        false,
+        'Missing claim number'
+      );
     } else {
       this.setFieldValidation('ClaimInfo.ClaimNum', true, 'Valid claim number');
     }
 
     // Policy number validation
     if (claimInfo.PolicyInfo?.PolicyNum) {
-      this.setFieldValidation('ClaimInfo.PolicyNum', true, 'Policy number present');
+      this.setFieldValidation(
+        'ClaimInfo.PolicyNum',
+        true,
+        'Policy number present'
+      );
     } else {
       this.addWarning('claimInfo.policy', 'Missing policy number');
-      this.setFieldValidation('ClaimInfo.PolicyNum', false, 'Missing policy number');
+      this.setFieldValidation(
+        'ClaimInfo.PolicyNum',
+        false,
+        'Missing policy number'
+      );
     }
 
     // Deductible validation
-    if (claimInfo.PolicyInfo?.CoverageInfo?.Coverage?.DeductibleInfo?.DeductibleAmt) {
-      const deductible = parseFloat(claimInfo.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo.DeductibleAmt);
+    if (
+      claimInfo.PolicyInfo?.CoverageInfo?.Coverage?.DeductibleInfo
+        ?.DeductibleAmt
+    ) {
+      const deductible = parseFloat(
+        claimInfo.PolicyInfo.CoverageInfo.Coverage.DeductibleInfo.DeductibleAmt
+      );
       if (deductible < 0 || deductible > 10000) {
-        this.addWarning('claimInfo.deductible', `Unusual deductible amount: ${deductible}`);
-        this.setFieldValidation('ClaimInfo.Deductible', false, 'Unusual deductible amount');
+        this.addWarning(
+          'claimInfo.deductible',
+          `Unusual deductible amount: ${deductible}`
+        );
+        this.setFieldValidation(
+          'ClaimInfo.Deductible',
+          false,
+          'Unusual deductible amount'
+        );
       } else {
-        this.setFieldValidation('ClaimInfo.Deductible', true, 'Valid deductible');
+        this.setFieldValidation(
+          'ClaimInfo.Deductible',
+          true,
+          'Valid deductible'
+        );
       }
     }
   }
@@ -421,7 +591,7 @@ class BMSValidator {
     }
 
     const lines = Array.isArray(damageLines) ? damageLines : [damageLines];
-    
+
     if (lines.length === 0) {
       this.addWarning('damageLines.count', 'No damage lines in estimate');
       return;
@@ -431,7 +601,11 @@ class BMSValidator {
       this.validateDamageLine(line, index);
     });
 
-    this.setFieldValidation('DamageLines.Count', true, `${lines.length} damage lines validated`);
+    this.setFieldValidation(
+      'DamageLines.Count',
+      true,
+      `${lines.length} damage lines validated`
+    );
   }
 
   /**
@@ -442,12 +616,18 @@ class BMSValidator {
 
     // Line number validation
     if (!line.LineNum) {
-      this.addError(`${context.toLowerCase()}.number`, `Missing line number for damage line ${index + 1}`);
+      this.addError(
+        `${context.toLowerCase()}.number`,
+        `Missing line number for damage line ${index + 1}`
+      );
     }
 
     // Description validation
     if (!line.LineDesc) {
-      this.addWarning(`${context.toLowerCase()}.description`, `Missing description for damage line ${index + 1}`);
+      this.addWarning(
+        `${context.toLowerCase()}.description`,
+        `Missing description for damage line ${index + 1}`
+      );
     }
 
     // Part information validation
@@ -462,7 +642,10 @@ class BMSValidator {
 
     // Material information validation
     if (line.OtherChargesInfo) {
-      this.validateOtherChargesInfo(line.OtherChargesInfo, `${context}.OtherCharges`);
+      this.validateOtherChargesInfo(
+        line.OtherChargesInfo,
+        `${context}.OtherCharges`
+      );
     }
   }
 
@@ -473,17 +656,32 @@ class BMSValidator {
     // Part number validation
     if (!partInfo.PartNum && !partInfo.OEMPartNum) {
       this.addWarning(`${context.toLowerCase()}.number`, 'Missing part number');
-      this.setFieldValidation(`${context}.PartNum`, false, 'Missing part number');
+      this.setFieldValidation(
+        `${context}.PartNum`,
+        false,
+        'Missing part number'
+      );
     } else {
-      this.setFieldValidation(`${context}.PartNum`, true, 'Part number present');
+      this.setFieldValidation(
+        `${context}.PartNum`,
+        true,
+        'Part number present'
+      );
     }
 
     // Price validation
     if (partInfo.PartPrice !== undefined) {
       const price = parseFloat(partInfo.PartPrice);
       if (price < 0 || price > this.validationRules.ranges.amount.max) {
-        this.addError(`${context.toLowerCase()}.price`, `Invalid part price: ${price}`);
-        this.setFieldValidation(`${context}.Price`, false, 'Invalid part price');
+        this.addError(
+          `${context.toLowerCase()}.price`,
+          `Invalid part price: ${price}`
+        );
+        this.setFieldValidation(
+          `${context}.Price`,
+          false,
+          'Invalid part price'
+        );
       } else {
         this.setFieldValidation(`${context}.Price`, true, 'Valid part price');
       }
@@ -493,8 +691,15 @@ class BMSValidator {
     if (partInfo.Quantity !== undefined) {
       const quantity = parseInt(partInfo.Quantity);
       if (quantity <= 0 || quantity > 999) {
-        this.addError(`${context.toLowerCase()}.quantity`, `Invalid quantity: ${quantity}`);
-        this.setFieldValidation(`${context}.Quantity`, false, 'Invalid quantity');
+        this.addError(
+          `${context.toLowerCase()}.quantity`,
+          `Invalid quantity: ${quantity}`
+        );
+        this.setFieldValidation(
+          `${context}.Quantity`,
+          false,
+          'Invalid quantity'
+        );
       } else {
         this.setFieldValidation(`${context}.Quantity`, true, 'Valid quantity');
       }
@@ -509,8 +714,15 @@ class BMSValidator {
     if (laborInfo.LaborHours !== undefined) {
       const hours = parseFloat(laborInfo.LaborHours);
       if (hours < 0 || hours > 999) {
-        this.addError(`${context.toLowerCase()}.hours`, `Invalid labor hours: ${hours}`);
-        this.setFieldValidation(`${context}.Hours`, false, 'Invalid labor hours');
+        this.addError(
+          `${context.toLowerCase()}.hours`,
+          `Invalid labor hours: ${hours}`
+        );
+        this.setFieldValidation(
+          `${context}.Hours`,
+          false,
+          'Invalid labor hours'
+        );
       } else {
         this.setFieldValidation(`${context}.Hours`, true, 'Valid labor hours');
       }
@@ -518,10 +730,21 @@ class BMSValidator {
 
     // Labor operation validation
     if (!laborInfo.LaborOperation) {
-      this.addWarning(`${context.toLowerCase()}.operation`, 'Missing labor operation');
-      this.setFieldValidation(`${context}.Operation`, false, 'Missing operation');
+      this.addWarning(
+        `${context.toLowerCase()}.operation`,
+        'Missing labor operation'
+      );
+      this.setFieldValidation(
+        `${context}.Operation`,
+        false,
+        'Missing operation'
+      );
     } else {
-      this.setFieldValidation(`${context}.Operation`, true, 'Labor operation present');
+      this.setFieldValidation(
+        `${context}.Operation`,
+        true,
+        'Labor operation present'
+      );
     }
   }
 
@@ -533,7 +756,10 @@ class BMSValidator {
     if (otherCharges.Price !== undefined) {
       const price = parseFloat(otherCharges.Price);
       if (price < 0 || price > this.validationRules.ranges.amount.max) {
-        this.addError(`${context.toLowerCase()}.price`, `Invalid other charges price: ${price}`);
+        this.addError(
+          `${context.toLowerCase()}.price`,
+          `Invalid other charges price: ${price}`
+        );
         this.setFieldValidation(`${context}.Price`, false, 'Invalid price');
       } else {
         this.setFieldValidation(`${context}.Price`, true, 'Valid price');
@@ -562,10 +788,10 @@ class BMSValidator {
 
     // Summary totals validation
     if (totals.SummaryTotalsInfo) {
-      const summaryTotals = Array.isArray(totals.SummaryTotalsInfo) 
-        ? totals.SummaryTotalsInfo 
+      const summaryTotals = Array.isArray(totals.SummaryTotalsInfo)
+        ? totals.SummaryTotalsInfo
         : [totals.SummaryTotalsInfo];
-      
+
       summaryTotals.forEach((total, index) => {
         this.validateSummaryTotal(total, index);
       });
@@ -581,10 +807,21 @@ class BMSValidator {
     if (totalInfo.TotalAmt !== undefined) {
       const amount = parseFloat(totalInfo.TotalAmt);
       if (amount < 0 || amount > 999999) {
-        this.addError(`${context.toLowerCase()}.amount`, `Invalid ${type.toLowerCase()} total: ${amount}`);
-        this.setFieldValidation(`${context}.Amount`, false, 'Invalid total amount');
+        this.addError(
+          `${context.toLowerCase()}.amount`,
+          `Invalid ${type.toLowerCase()} total: ${amount}`
+        );
+        this.setFieldValidation(
+          `${context}.Amount`,
+          false,
+          'Invalid total amount'
+        );
       } else {
-        this.setFieldValidation(`${context}.Amount`, true, 'Valid total amount');
+        this.setFieldValidation(
+          `${context}.Amount`,
+          true,
+          'Valid total amount'
+        );
       }
     }
   }
@@ -598,10 +835,17 @@ class BMSValidator {
     if (total.TotalAmt !== undefined) {
       const amount = parseFloat(total.TotalAmt);
       if (amount < 0) {
-        this.addError(`${context.toLowerCase()}.amount`, `Negative summary total: ${amount}`);
+        this.addError(
+          `${context.toLowerCase()}.amount`,
+          `Negative summary total: ${amount}`
+        );
         this.setFieldValidation(`${context}.Amount`, false, 'Negative total');
       } else {
-        this.setFieldValidation(`${context}.Amount`, true, 'Valid summary total');
+        this.setFieldValidation(
+          `${context}.Amount`,
+          true,
+          'Valid summary total'
+        );
       }
     }
   }
@@ -612,10 +856,21 @@ class BMSValidator {
   validateRequired(data, requiredFields, section) {
     requiredFields.forEach(field => {
       if (!data[field]) {
-        this.addError(`${section.toLowerCase()}.${field.toLowerCase()}`, `Missing required field: ${field}`);
-        this.setFieldValidation(`${section}.${field}`, false, 'Missing required field');
+        this.addError(
+          `${section.toLowerCase()}.${field.toLowerCase()}`,
+          `Missing required field: ${field}`
+        );
+        this.setFieldValidation(
+          `${section}.${field}`,
+          false,
+          'Missing required field'
+        );
       } else {
-        this.setFieldValidation(`${section}.${field}`, true, 'Required field present');
+        this.setFieldValidation(
+          `${section}.${field}`,
+          true,
+          'Required field present'
+        );
       }
     });
   }
@@ -654,9 +909,10 @@ class BMSValidator {
    * Get validation result
    */
   getValidationResult() {
-    const totalIssues = this.validationErrors.length + this.validationWarnings.length;
+    const totalIssues =
+      this.validationErrors.length + this.validationWarnings.length;
     const isValid = this.validationErrors.length === 0;
-    
+
     return {
       isValid,
       hasWarnings: this.validationWarnings.length > 0,
@@ -667,9 +923,13 @@ class BMSValidator {
       warnings: this.validationWarnings,
       fieldValidations: Object.fromEntries(this.fieldValidations),
       summary: {
-        status: isValid ? (this.validationWarnings.length > 0 ? 'valid_with_warnings' : 'valid') : 'invalid',
-        message: this.getValidationSummaryMessage()
-      }
+        status: isValid
+          ? this.validationWarnings.length > 0
+            ? 'valid_with_warnings'
+            : 'valid'
+          : 'invalid',
+        message: this.getValidationSummaryMessage(),
+      },
     };
   }
 
@@ -677,7 +937,10 @@ class BMSValidator {
    * Get validation summary message
    */
   getValidationSummaryMessage() {
-    if (this.validationErrors.length === 0 && this.validationWarnings.length === 0) {
+    if (
+      this.validationErrors.length === 0 &&
+      this.validationWarnings.length === 0
+    ) {
       return 'BMS file is valid with no issues detected';
     } else if (this.validationErrors.length === 0) {
       return `BMS file is valid but has ${this.validationWarnings.length} warning(s)`;

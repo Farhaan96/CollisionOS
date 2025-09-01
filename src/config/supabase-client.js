@@ -1,6 +1,6 @@
 /**
  * Secure Client-Side Supabase Configuration
- * 
+ *
  * IMPORTANT SECURITY NOTES:
  * - Only uses the ANON key (public key)
  * - NEVER includes the service role key
@@ -11,15 +11,20 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Environment variables for client-side (these are safe to expose)
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  process.env.REACT_APP_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  process.env.REACT_APP_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Validate that we have the required environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Missing Supabase environment variables for client-side');
   console.error('Please set:');
   console.error('  REACT_APP_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL');
-  console.error('  REACT_APP_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  console.error(
+    '  REACT_APP_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  );
   throw new Error('Supabase client configuration missing');
 }
 
@@ -29,13 +34,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
   },
   realtime: {
     params: {
-      eventsPerSecond: 10
-    }
-  }
+      eventsPerSecond: 10,
+    },
+  },
 });
 
 // Security helper functions
@@ -44,7 +49,10 @@ export const supabaseHelpers = {
    * Get the current user (if authenticated)
    */
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
     if (error) {
       console.error('Error getting current user:', error);
       return null;
@@ -77,10 +85,10 @@ export const supabaseHelpers = {
   async getUserShopId() {
     const user = await this.getCurrentUser();
     if (!user) return null;
-    
+
     // This assumes you store shop_id in user metadata
     return user.user_metadata?.shop_id || null;
-  }
+  },
 };
 
 // Export for use in components

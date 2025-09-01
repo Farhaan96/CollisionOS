@@ -5,6 +5,7 @@ This guide will help you set up Supabase integration for CollisionOS.
 ## Overview
 
 The Supabase integration provides:
+
 - **Modern Authentication**: Replace JWT with Supabase Auth
 - **Real-time Updates**: Replace Socket.io with Supabase Realtime
 - **Scalable Database**: Replace SQLite/PostgreSQL with Supabase
@@ -172,8 +173,8 @@ CREATE POLICY "Users can access their shop parts" ON public.parts
 
 CREATE POLICY "Users can access their shop job history" ON public.job_status_history
   FOR ALL USING (EXISTS (
-    SELECT 1 FROM public.jobs 
-    WHERE jobs.id = job_status_history.job_id 
+    SELECT 1 FROM public.jobs
+    WHERE jobs.id = job_status_history.job_id
     AND jobs.shop_id = (auth.jwt() ->> 'shop_id')::uuid
   ));
 
@@ -254,16 +255,19 @@ If you prefer to keep your current auth system, you can disable Supabase Auth an
 ## Step 7: Test the Integration
 
 1. **Start the server**:
+
 ```bash
 npm run server
 ```
 
 2. **Check health endpoint**:
+
 ```bash
 curl http://localhost:4000/health
 ```
 
 You should see output like:
+
 ```json
 {
   "status": "OK",
@@ -283,6 +287,7 @@ You should see output like:
 ```
 
 3. **Test the API**:
+
 ```bash
 # Get jobs (should work with either auth system)
 curl http://localhost:4000/api/jobs
@@ -291,18 +296,21 @@ curl http://localhost:4000/api/jobs
 ## Migration Modes
 
 ### Legacy Mode (Default)
+
 - `ENABLE_SUPABASE=false`
 - Uses existing SQLite/PostgreSQL database
 - Uses Socket.io for real-time
 - Uses JWT authentication
 
 ### Supabase Mode
+
 - `ENABLE_SUPABASE=true`
 - Uses Supabase for all operations
 - Uses Supabase Realtime
 - Can use Supabase Auth or hybrid auth
 
 ### Hybrid Mode (For Migration)
+
 - `ENABLE_SUPABASE=true`
 - `MIGRATION_MODE=hybrid`
 - Reads from Supabase, falls back to legacy

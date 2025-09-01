@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<estimate>
+    <customer>
+        <firstName>John</firstName>
+        <lastName>Smith</lastName>
+        <email>john.smith@test.com</email>
+        <phone>555-1234</phone>
+        <address>123 Main St</address>
+        <city>Anytown</city>
+        <state>CA</state>
+        <zip>12345</zip>
+    </customer>
+    <vehicle>
+        <year>2017</year>
+        <make>Chevrolet</make>
+        <model>Malibu</model>
+        <vin>1G1BC5SM5H7123456</vin>
+        <license>ABC123</license>
+        <mileage>50000</mileage>
+        <color>Blue</color>
+    </vehicle>
+    <estimate>
+        <estimateNumber>EST-2024-001</estimateNumber>
+        <totalAmount>1250.00</totalAmount>
+    </estimate>
+    <parts>
+        <part>
+            <description>Front Bumper</description>
+            <price>450.00</price>
+            <quantity>1</quantity>
+        </part>
+        <part>
+            <description>Headlight Assembly</description>
+            <price>300.00</price>
+            <quantity>1</quantity>
+        </part>
+    </parts>
+    <labor>
+        <operation>
+            <description>Remove and Install Bumper</description>
+            <hours>3.5</hours>
+            <rate>100.00</rate>
+            <amount>350.00</amount>
+        </operation>
+        <operation>
+            <description>Paint Bumper</description>
+            <hours>1.5</hours>
+            <rate>100.00</rate>
+            <amount>150.00</amount>
+        </operation>
+    </labor>
+</estimate>

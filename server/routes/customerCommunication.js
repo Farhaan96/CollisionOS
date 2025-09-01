@@ -1,7 +1,7 @@
 /**
  * CollisionOS Customer Communication APIs
  * Phase 2 Backend Development
- * 
+ *
  * Multi-channel communication with automation triggers
  * Features:
  * - SMS and Email automation for 13 communication types
@@ -16,14 +16,14 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
-const { 
-  ContactTimeline, 
+const {
+  ContactTimeline,
   CommunicationTemplate,
   CommunicationLog,
   Customer,
   RepairOrderManagement,
   User,
-  ProductionWorkflow
+  ProductionWorkflow,
 } = require('../database/models');
 const { realtimeService } = require('../services/realtimeService');
 const rateLimit = require('express-rate-limit');
@@ -32,19 +32,19 @@ const rateLimit = require('express-rate-limit');
 const communicationRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 communications per 15 minutes
-  message: 'Too many communication requests, please try again later.'
+  message: 'Too many communication requests, please try again later.',
 });
 
 // Bulk communication rate limiting
 const bulkCommunicationRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 bulk communications per hour
-  message: 'Too many bulk communications, please try again later.'
+  message: 'Too many bulk communications, please try again later.',
 });
 
 /**
  * POST /api/communication/send - Send communications with multi-channel support
- * 
+ *
  * Body: {
  *   customer_id: string,
  *   template_id?: string,
@@ -67,19 +67,19 @@ router.post('/send', communicationRateLimit, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
 
-    const { 
-      customer_id, 
-      template_id, 
-      channels = ['email'], 
-      message, 
+    const {
+      customer_id,
+      template_id,
+      channels = ['email'],
+      message,
       priority = 'normal',
       scheduled_send,
       ro_id,
-      communication_type = 'general'
+      communication_type = 'general',
     } = req.body;
     const { shopId, userId } = req.user;
 
@@ -88,7 +88,7 @@ router.post('/send', communicationRateLimit, async (req, res) => {
     if (!customer) {
       return res.status(404).json({
         success: false,
-        message: 'Customer not found'
+        message: 'Customer not found',
       });
     }
 
@@ -96,27 +96,30 @@ router.post('/send', communicationRateLimit, async (req, res) => {
     let template = null;
     if (template_id) {
       template = await CommunicationTemplate.findOne({
-        where: { id: template_id, shopId }
+        where: { id: template_id, shopId },
       });
     }
 
     // Prepare message content with variable substitution
     const processed_message = await processMessageContent(
-      message, 
-      template, 
-      customer, 
-      ro_id, 
+      message,
+      template,
+      customer,
+      ro_id,
       shopId
     );
 
     // Validate channels and customer contact info
-    const delivery_channels = await validateDeliveryChannels(channels, customer);
-    
+    const delivery_channels = await validateDeliveryChannels(
+      channels,
+      customer
+    );
+
     if (delivery_channels.valid_channels.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'No valid delivery channels available for customer',
-        details: delivery_channels.channel_issues
+        details: delivery_channels.channel_issues,
       });
     }
 
@@ -134,12 +137,12 @@ router.post('/send', communicationRateLimit, async (req, res) => {
       scheduled_send_date: scheduled_send ? new Date(scheduled_send) : null,
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Send messages through each channel
     const delivery_results = [];
-    
+
     if (!scheduled_send) {
       for (const channel of delivery_channels.valid_channels) {
         const delivery_result = await sendThroughChannel(
@@ -155,16 +158,21 @@ router.post('/send', communicationRateLimit, async (req, res) => {
       const successful_deliveries = delivery_results.filter(r => r.success);
       const failed_deliveries = delivery_results.filter(r => !r.success);
 
-      await CommunicationLog.update({
-        status: successful_deliveries.length > 0 ? 'sent' : 'failed',
-        sent_date: successful_deliveries.length > 0 ? new Date() : null,
-        delivery_results: JSON.stringify(delivery_results),
-        failure_reason: failed_deliveries.length > 0 ? 
-          failed_deliveries.map(f => f.error).join('; ') : null,
-        updatedBy: userId
-      }, {
-        where: { id: communication_log.id }
-      });
+      await CommunicationLog.update(
+        {
+          status: successful_deliveries.length > 0 ? 'sent' : 'failed',
+          sent_date: successful_deliveries.length > 0 ? new Date() : null,
+          delivery_results: JSON.stringify(delivery_results),
+          failure_reason:
+            failed_deliveries.length > 0
+              ? failed_deliveries.map(f => f.error).join('; ')
+              : null,
+          updatedBy: userId,
+        },
+        {
+          where: { id: communication_log.id },
+        }
+      );
     }
 
     // Create contact timeline entry
@@ -177,57 +185,65 @@ router.post('/send', communicationRateLimit, async (req, res) => {
       communication_channel: delivery_channels.valid_channels.join(', '),
       interaction_summary: processed_message.subject || 'Communication sent',
       interaction_details: processed_message.content.substring(0, 500),
-      interaction_outcome: delivery_results.some(r => r.success) ? 'delivered' : 'failed',
+      interaction_outcome: delivery_results.some(r => r.success)
+        ? 'delivered'
+        : 'failed',
       follow_up_required: priority === 'urgent',
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Broadcast real-time notification
-    realtimeService.broadcastCommunicationUpdate({
-      communication_id: communication_log.id,
-      customer_name: `${customer.firstName} ${customer.lastName}`,
-      communication_type,
-      channels: delivery_channels.valid_channels,
-      status: scheduled_send ? 'scheduled' : 'sent',
-      priority
-    }, 'sent');
+    realtimeService.broadcastCommunicationUpdate(
+      {
+        communication_id: communication_log.id,
+        customer_name: `${customer.firstName} ${customer.lastName}`,
+        communication_type,
+        channels: delivery_channels.valid_channels,
+        status: scheduled_send ? 'scheduled' : 'sent',
+        priority,
+      },
+      'sent'
+    );
 
     res.json({
       success: true,
-      message: scheduled_send ? 'Communication scheduled successfully' : 'Communication sent successfully',
+      message: scheduled_send
+        ? 'Communication scheduled successfully'
+        : 'Communication sent successfully',
       data: {
         communication_id: communication_log.id,
         delivery_summary: {
           channels_attempted: delivery_channels.valid_channels,
           successful_deliveries: delivery_results.filter(r => r.success).length,
           failed_deliveries: delivery_results.filter(r => !r.success).length,
-          delivery_results: scheduled_send ? null : delivery_results
+          delivery_results: scheduled_send ? null : delivery_results,
         },
-        scheduling: scheduled_send ? {
-          scheduled_for: scheduled_send,
-          status: 'scheduled'
-        } : null,
-        next_steps: delivery_results.some(r => !r.success) ? 
-          ['Review failed deliveries', 'Consider alternative channels'] :
-          ['Monitor delivery confirmation', 'Track customer response']
-      }
+        scheduling: scheduled_send
+          ? {
+              scheduled_for: scheduled_send,
+              status: 'scheduled',
+            }
+          : null,
+        next_steps: delivery_results.some(r => !r.success)
+          ? ['Review failed deliveries', 'Consider alternative channels']
+          : ['Monitor delivery confirmation', 'Track customer response'],
+      },
     });
-
   } catch (error) {
     console.error('Communication send error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send communication',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/communication/auto-trigger - Automated communication triggers
- * 
+ *
  * Body: {
  *   trigger_event: string,
  *   ro_id: string,
@@ -237,7 +253,12 @@ router.post('/send', communicationRateLimit, async (req, res) => {
  */
 router.post('/auto-trigger', async (req, res) => {
   try {
-    const { trigger_event, ro_id, event_data, override_settings = {} } = req.body;
+    const {
+      trigger_event,
+      ro_id,
+      event_data,
+      override_settings = {},
+    } = req.body;
     const { shopId, userId } = req.user;
 
     // Get repair order with customer
@@ -246,26 +267,29 @@ router.post('/auto-trigger', async (req, res) => {
       include: [
         {
           model: Customer,
-          as: 'customer'
-        }
-      ]
+          as: 'customer',
+        },
+      ],
     });
 
     if (!repair_order || !repair_order.customer) {
       return res.status(404).json({
         success: false,
-        message: 'Repair order or customer not found'
+        message: 'Repair order or customer not found',
       });
     }
 
     // Get automation template for this trigger event
-    const automation_template = await getAutomationTemplate(trigger_event, shopId);
-    
+    const automation_template = await getAutomationTemplate(
+      trigger_event,
+      shopId
+    );
+
     if (!automation_template || !automation_template.enabled) {
       return res.json({
         success: true,
         message: 'Automation template not found or disabled for this event',
-        data: { trigger_processed: false }
+        data: { trigger_processed: false },
       });
     }
 
@@ -280,10 +304,10 @@ router.post('/auto-trigger', async (req, res) => {
       return res.json({
         success: true,
         message: 'Automation conditions not met',
-        data: { 
+        data: {
           trigger_processed: false,
-          reason: automation_check.reason
-        }
+          reason: automation_check.reason,
+        },
       });
     }
 
@@ -293,17 +317,27 @@ router.post('/auto-trigger', async (req, res) => {
       customer_name: `${repair_order.customer.firstName} ${repair_order.customer.lastName}`,
       ro_number: repair_order.ro_number,
       shop_name: 'Auto Body Shop', // Would come from shop settings
-      ...override_settings.variables
+      ...override_settings.variables,
     };
 
     const processed_message = {
-      subject: substituteVariables(automation_template.subject, template_variables),
-      content: substituteVariables(automation_template.message_content, template_variables)
+      subject: substituteVariables(
+        automation_template.subject,
+        template_variables
+      ),
+      content: substituteVariables(
+        automation_template.message_content,
+        template_variables
+      ),
     };
 
     // Determine delivery channels
-    const channels = override_settings.channels || automation_template.default_channels || ['email'];
-    const delivery_channels = await validateDeliveryChannels(channels, repair_order.customer);
+    const channels = override_settings.channels ||
+      automation_template.default_channels || ['email'];
+    const delivery_channels = await validateDeliveryChannels(
+      channels,
+      repair_order.customer
+    );
 
     // Create automated communication log
     const communication_log = await CommunicationLog.create({
@@ -321,7 +355,7 @@ router.post('/auto-trigger', async (req, res) => {
       trigger_data: JSON.stringify(event_data),
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Send automated messages
@@ -337,14 +371,17 @@ router.post('/auto-trigger', async (req, res) => {
     }
 
     // Update log with results
-    await CommunicationLog.update({
-      status: delivery_results.some(r => r.success) ? 'sent' : 'failed',
-      sent_date: new Date(),
-      delivery_results: JSON.stringify(delivery_results),
-      updatedBy: userId
-    }, {
-      where: { id: communication_log.id }
-    });
+    await CommunicationLog.update(
+      {
+        status: delivery_results.some(r => r.success) ? 'sent' : 'failed',
+        sent_date: new Date(),
+        delivery_results: JSON.stringify(delivery_results),
+        updatedBy: userId,
+      },
+      {
+        where: { id: communication_log.id },
+      }
+    );
 
     // Create timeline entry
     await ContactTimeline.create({
@@ -356,22 +393,27 @@ router.post('/auto-trigger', async (req, res) => {
       communication_channel: delivery_channels.valid_channels.join(', '),
       interaction_summary: `Auto: ${trigger_event} - ${processed_message.subject}`,
       interaction_details: processed_message.content.substring(0, 500),
-      interaction_outcome: delivery_results.some(r => r.success) ? 'delivered' : 'failed',
+      interaction_outcome: delivery_results.some(r => r.success)
+        ? 'delivered'
+        : 'failed',
       automated: true,
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Broadcast real-time notification
-    realtimeService.broadcastCommunicationUpdate({
-      communication_id: communication_log.id,
-      customer_name: `${repair_order.customer.firstName} ${repair_order.customer.lastName}`,
-      ro_number: repair_order.ro_number,
-      trigger_event,
-      channels: delivery_channels.valid_channels,
-      automated: true
-    }, 'auto_sent');
+    realtimeService.broadcastCommunicationUpdate(
+      {
+        communication_id: communication_log.id,
+        customer_name: `${repair_order.customer.firstName} ${repair_order.customer.lastName}`,
+        ro_number: repair_order.ro_number,
+        trigger_event,
+        channels: delivery_channels.valid_channels,
+        automated: true,
+      },
+      'auto_sent'
+    );
 
     res.json({
       success: true,
@@ -383,17 +425,16 @@ router.post('/auto-trigger', async (req, res) => {
         delivery_summary: {
           channels_used: delivery_channels.valid_channels,
           successful_deliveries: delivery_results.filter(r => r.success).length,
-          delivery_results
-        }
-      }
+          delivery_results,
+        },
+      },
     });
-
   } catch (error) {
     console.error('Auto-trigger communication error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to trigger automated communication',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -405,21 +446,22 @@ router.get('/history/:customerId', async (req, res) => {
   try {
     const { customerId } = req.params;
     const { shopId } = req.user;
-    const { 
-      limit = 50, 
-      offset = 0, 
-      channel, 
-      communication_type, 
+    const {
+      limit = 50,
+      offset = 0,
+      channel,
+      communication_type,
       date_from,
       date_to,
-      include_timeline = true 
+      include_timeline = true,
     } = req.query;
 
     // Build filters
     const where_clause = { customerId, shopId };
     if (channel) where_clause.channels = { [Op.like]: `%${channel}%` };
-    if (communication_type) where_clause.communication_type = communication_type;
-    
+    if (communication_type)
+      where_clause.communication_type = communication_type;
+
     if (date_from || date_to) {
       where_clause.created_at = {};
       if (date_from) where_clause.created_at[Op.gte] = new Date(date_from);
@@ -427,30 +469,31 @@ router.get('/history/:customerId', async (req, res) => {
     }
 
     // Get communication logs
-    const { count, rows: communications } = await CommunicationLog.findAndCountAll({
-      where: where_clause,
-      include: [
-        {
-          model: CommunicationTemplate,
-          as: 'template',
-          attributes: ['name', 'category', 'communication_type']
-        },
-        {
-          model: RepairOrderManagement,
-          as: 'repairOrder',
-          attributes: ['ro_number', 'status'],
-          required: false
-        },
-        {
-          model: User,
-          as: 'creator',
-          attributes: ['firstName', 'lastName']
-        }
-      ],
-      order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
-    });
+    const { count, rows: communications } =
+      await CommunicationLog.findAndCountAll({
+        where: where_clause,
+        include: [
+          {
+            model: CommunicationTemplate,
+            as: 'template',
+            attributes: ['name', 'category', 'communication_type'],
+          },
+          {
+            model: RepairOrderManagement,
+            as: 'repairOrder',
+            attributes: ['ro_number', 'status'],
+            required: false,
+          },
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['firstName', 'lastName'],
+          },
+        ],
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+      });
 
     // Get contact timeline if requested
     let timeline_entries = [];
@@ -461,11 +504,11 @@ router.get('/history/:customerId', async (req, res) => {
           {
             model: User,
             as: 'user',
-            attributes: ['firstName', 'lastName']
-          }
+            attributes: ['firstName', 'lastName'],
+          },
         ],
         order: [['created_at', 'DESC']],
-        limit: 20
+        limit: 20,
       });
     }
 
@@ -483,29 +526,28 @@ router.get('/history/:customerId', async (req, res) => {
           total_communications: count,
           current_page: Math.floor(parseInt(offset) / parseInt(limit)) + 1,
           per_page: parseInt(limit),
-          total_pages: Math.ceil(count / parseInt(limit))
+          total_pages: Math.ceil(count / parseInt(limit)),
         },
         filters_applied: {
           channel: channel || 'all',
           communication_type: communication_type || 'all',
-          date_range: { from: date_from, to: date_to }
-        }
-      }
+          date_range: { from: date_from, to: date_to },
+        },
+      },
     });
-
   } catch (error) {
     console.error('Communication history error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get communication history',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/communication/templates - Manage communication templates
- * 
+ *
  * Body: {
  *   name: string,
  *   category: string,
@@ -521,17 +563,17 @@ router.get('/history/:customerId', async (req, res) => {
  */
 router.post('/templates', async (req, res) => {
   try {
-    const { 
-      name, 
-      category, 
-      communication_type, 
-      subject, 
+    const {
+      name,
+      category,
+      communication_type,
+      subject,
       message_content,
       default_channels = ['email'],
       automated = false,
       trigger_events = [],
       automation_rules = {},
-      variables = []
+      variables = [],
     } = req.body;
     const { shopId, userId } = req.user;
 
@@ -550,7 +592,7 @@ router.post('/templates', async (req, res) => {
       enabled: true,
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     res.json({
@@ -561,16 +603,15 @@ router.post('/templates', async (req, res) => {
         name: template.name,
         category: template.category,
         automated: template.automated,
-        trigger_events: JSON.parse(template.trigger_events)
-      }
+        trigger_events: JSON.parse(template.trigger_events),
+      },
     });
-
   } catch (error) {
     console.error('Template creation error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create template',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -586,11 +627,15 @@ router.get('/templates', async (req, res) => {
     const where_clause = { shopId };
     if (category) where_clause.category = category;
     if (automated !== undefined) where_clause.automated = automated === 'true';
-    if (communication_type) where_clause.communication_type = communication_type;
+    if (communication_type)
+      where_clause.communication_type = communication_type;
 
     const templates = await CommunicationTemplate.findAll({
       where: where_clause,
-      order: [['category', 'ASC'], ['name', 'ASC']]
+      order: [
+        ['category', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
 
     // Group templates by category
@@ -607,7 +652,7 @@ router.get('/templates', async (req, res) => {
         automated: template.automated,
         enabled: template.enabled,
         usage_count: template.usage_count || 0,
-        variables: JSON.parse(template.available_variables || '[]')
+        variables: JSON.parse(template.available_variables || '[]'),
       };
 
       // Group by category
@@ -621,7 +666,7 @@ router.get('/templates', async (req, res) => {
         automation_templates.push({
           ...template_data,
           trigger_events: JSON.parse(template.trigger_events || '[]'),
-          automation_rules: JSON.parse(template.automation_rules || '{}')
+          automation_rules: JSON.parse(template.automation_rules || '{}'),
         });
       }
     });
@@ -633,23 +678,22 @@ router.get('/templates', async (req, res) => {
         automation_templates,
         template_categories: Object.keys(templates_by_category),
         total_templates: templates.length,
-        automated_templates: automation_templates.length
-      }
+        automated_templates: automation_templates.length,
+      },
     });
-
   } catch (error) {
     console.error('Templates fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get templates',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/communication/bulk-send - Bulk communications
- * 
+ *
  * Body: {
  *   recipient_type: 'customers' | 'active_jobs' | 'custom_list',
  *   recipients: string[] | object,
@@ -665,31 +709,35 @@ router.get('/templates', async (req, res) => {
  */
 router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
   try {
-    const { 
-      recipient_type, 
-      recipients, 
-      template_id, 
-      message, 
-      channels = ['email'], 
+    const {
+      recipient_type,
+      recipients,
+      template_id,
+      message,
+      channels = ['email'],
       priority = 'normal',
-      scheduled_send
+      scheduled_send,
     } = req.body;
     const { shopId, userId } = req.user;
 
     // Validate bulk send limits
-    const recipient_list = await buildRecipientList(recipient_type, recipients, shopId);
-    
+    const recipient_list = await buildRecipientList(
+      recipient_type,
+      recipients,
+      shopId
+    );
+
     if (recipient_list.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No valid recipients found'
+        message: 'No valid recipients found',
       });
     }
 
     if (recipient_list.length > 100) {
       return res.status(400).json({
         success: false,
-        message: 'Bulk communication limited to 100 recipients per batch'
+        message: 'Bulk communication limited to 100 recipients per batch',
       });
     }
 
@@ -697,7 +745,7 @@ router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
     let template = null;
     if (template_id) {
       template = await CommunicationTemplate.findOne({
-        where: { id: template_id, shopId }
+        where: { id: template_id, shopId },
       });
     }
 
@@ -732,12 +780,15 @@ router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
           bulk_job_id,
           shopId,
           createdBy: userId,
-          updatedBy: userId
+          updatedBy: userId,
         });
 
         // Send if not scheduled
         if (!scheduled_send) {
-          const delivery_channels = await validateDeliveryChannels(channels, recipient.customer);
+          const delivery_channels = await validateDeliveryChannels(
+            channels,
+            recipient.customer
+          );
           const channel_results = [];
 
           for (const channel of delivery_channels.valid_channels) {
@@ -751,31 +802,33 @@ router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
           }
 
           // Update communication log
-          await CommunicationLog.update({
-            status: channel_results.some(r => r.success) ? 'sent' : 'failed',
-            sent_date: new Date(),
-            delivery_results: JSON.stringify(channel_results),
-            updatedBy: userId
-          }, {
-            where: { id: comm_log.id }
-          });
+          await CommunicationLog.update(
+            {
+              status: channel_results.some(r => r.success) ? 'sent' : 'failed',
+              sent_date: new Date(),
+              delivery_results: JSON.stringify(channel_results),
+              updatedBy: userId,
+            },
+            {
+              where: { id: comm_log.id },
+            }
+          );
 
           delivery_results.push({
             customer_id: recipient.customer.id,
             customer_name: `${recipient.customer.firstName} ${recipient.customer.lastName}`,
             channels_attempted: delivery_channels.valid_channels,
             success: channel_results.some(r => r.success),
-            results: channel_results
+            results: channel_results,
           });
         }
-
       } catch (error) {
         console.error(`Failed to send to ${recipient.customer.id}:`, error);
         delivery_results.push({
           customer_id: recipient.customer.id,
           customer_name: `${recipient.customer.firstName} ${recipient.customer.lastName}`,
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -785,43 +838,49 @@ router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
     const failed_sends = delivery_results.filter(r => !r.success).length;
 
     // Broadcast bulk communication update
-    realtimeService.broadcastCommunicationUpdate({
-      bulk_job_id,
-      recipient_count: recipient_list.length,
-      successful_sends,
-      failed_sends,
-      status: scheduled_send ? 'scheduled' : 'completed',
-      channels
-    }, 'bulk_sent');
+    realtimeService.broadcastCommunicationUpdate(
+      {
+        bulk_job_id,
+        recipient_count: recipient_list.length,
+        successful_sends,
+        failed_sends,
+        status: scheduled_send ? 'scheduled' : 'completed',
+        channels,
+      },
+      'bulk_sent'
+    );
 
     res.json({
       success: true,
-      message: scheduled_send ? 
-        `Bulk communication scheduled for ${recipient_list.length} recipients` :
-        `Bulk communication completed: ${successful_sends} sent, ${failed_sends} failed`,
+      message: scheduled_send
+        ? `Bulk communication scheduled for ${recipient_list.length} recipients`
+        : `Bulk communication completed: ${successful_sends} sent, ${failed_sends} failed`,
       data: {
         bulk_job_id,
         summary: {
           total_recipients: recipient_list.length,
           successful_sends,
           failed_sends,
-          success_rate: recipient_list.length > 0 ? 
-            ((successful_sends / recipient_list.length) * 100).toFixed(1) : '0.0'
+          success_rate:
+            recipient_list.length > 0
+              ? ((successful_sends / recipient_list.length) * 100).toFixed(1)
+              : '0.0',
         },
         delivery_results: scheduled_send ? null : delivery_results,
-        scheduled_details: scheduled_send ? {
-          scheduled_for: scheduled_send,
-          estimated_completion: 'Within 1 hour of scheduled time'
-        } : null
-      }
+        scheduled_details: scheduled_send
+          ? {
+              scheduled_for: scheduled_send,
+              estimated_completion: 'Within 1 hour of scheduled time',
+            }
+          : null,
+      },
     });
-
   } catch (error) {
     console.error('Bulk communication error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send bulk communication',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -830,9 +889,16 @@ router.post('/bulk-send', bulkCommunicationRateLimit, async (req, res) => {
  * Helper Functions
  */
 
-async function processMessageContent(message, template, customer, ro_id, shopId) {
+async function processMessageContent(
+  message,
+  template,
+  customer,
+  ro_id,
+  shopId
+) {
   // Use template content if available, otherwise use provided message
-  const base_subject = template?.subject || message.subject || 'Update from Auto Body Shop';
+  const base_subject =
+    template?.subject || message.subject || 'Update from Auto Body Shop';
   const base_content = template?.message_content || message.content;
 
   // Build variable context
@@ -843,7 +909,7 @@ async function processMessageContent(message, template, customer, ro_id, shopId)
     shop_name: 'Auto Body Shop', // Would come from shop settings
     current_date: new Date().toLocaleDateString(),
     current_time: new Date().toLocaleTimeString(),
-    ...message.variables
+    ...message.variables,
   };
 
   // Add RO-specific variables if applicable
@@ -858,19 +924,19 @@ async function processMessageContent(message, template, customer, ro_id, shopId)
 
   return {
     subject: substituteVariables(base_subject, variables),
-    content: substituteVariables(base_content, variables)
+    content: substituteVariables(base_content, variables),
   };
 }
 
 function substituteVariables(text, variables) {
   if (!text) return '';
-  
+
   let result = text;
   Object.keys(variables).forEach(key => {
     const pattern = new RegExp(`{{${key}}}`, 'g');
     result = result.replace(pattern, variables[key] || '');
   });
-  
+
   return result;
 }
 
@@ -887,7 +953,7 @@ async function validateDeliveryChannels(channels, customer) {
           channel_issues.push('SMS: No phone number or opted out');
         }
         break;
-        
+
       case 'email':
         if (customer.email && customer.email_opt_in !== false) {
           valid_channels.push('email');
@@ -895,7 +961,7 @@ async function validateDeliveryChannels(channels, customer) {
           channel_issues.push('Email: No email address or opted out');
         }
         break;
-        
+
       case 'portal':
         if (customer.portal_enabled) {
           valid_channels.push('portal');
@@ -903,7 +969,7 @@ async function validateDeliveryChannels(channels, customer) {
           channel_issues.push('Portal: Customer portal not enabled');
         }
         break;
-        
+
       default:
         channel_issues.push(`${channel}: Unsupported channel`);
     }
@@ -912,20 +978,27 @@ async function validateDeliveryChannels(channels, customer) {
   return { valid_channels, channel_issues };
 }
 
-async function sendThroughChannel(channel, customer, message, communication_log_id) {
+async function sendThroughChannel(
+  channel,
+  customer,
+  message,
+  communication_log_id
+) {
   // Mock implementation - in real system would integrate with actual services
   try {
     switch (channel) {
       case 'sms':
         // Integration with SMS service (Twilio, etc.)
-        console.log(`SMS to ${customer.phone}: ${message.content.substring(0, 50)}...`);
+        console.log(
+          `SMS to ${customer.phone}: ${message.content.substring(0, 50)}...`
+        );
         return {
           channel: 'sms',
           success: true,
           delivery_id: `SMS-${Date.now()}`,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         };
-        
+
       case 'email':
         // Integration with email service (SendGrid, etc.)
         console.log(`Email to ${customer.email}: ${message.subject}`);
@@ -933,9 +1006,9 @@ async function sendThroughChannel(channel, customer, message, communication_log_
           channel: 'email',
           success: true,
           delivery_id: `EMAIL-${Date.now()}`,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         };
-        
+
       case 'portal':
         // Create portal notification
         console.log(`Portal notification for customer ${customer.id}`);
@@ -943,9 +1016,9 @@ async function sendThroughChannel(channel, customer, message, communication_log_
           channel: 'portal',
           success: true,
           delivery_id: `PORTAL-${Date.now()}`,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         };
-        
+
       default:
         throw new Error(`Unsupported channel: ${channel}`);
     }
@@ -954,7 +1027,7 @@ async function sendThroughChannel(channel, customer, message, communication_log_
       channel,
       success: false,
       error: error.message,
-      attempted_at: new Date().toISOString()
+      attempted_at: new Date().toISOString(),
     };
   }
 }
@@ -965,24 +1038,24 @@ async function getAutomationTemplate(trigger_event, shopId) {
       shopId,
       automated: true,
       enabled: true,
-      trigger_events: { [Op.like]: `%${trigger_event}%` }
-    }
+      trigger_events: { [Op.like]: `%${trigger_event}%` },
+    },
   });
 }
 
 async function evaluateAutomationRules(template, repair_order, event_data) {
   // Simple rule evaluation - in real implementation would be more sophisticated
   const rules = JSON.parse(template.automation_rules || '{}');
-  
+
   // Example rules evaluation
   if (rules.only_business_hours && !isBusinessHours()) {
     return { should_trigger: false, reason: 'Outside business hours' };
   }
-  
+
   if (rules.min_job_value && repair_order.total_amount < rules.min_job_value) {
     return { should_trigger: false, reason: 'Job value below threshold' };
   }
-  
+
   return { should_trigger: true, reason: 'All conditions met' };
 }
 
@@ -990,7 +1063,7 @@ function isBusinessHours() {
   const now = new Date();
   const hour = now.getHours();
   const day = now.getDay(); // 0 = Sunday, 6 = Saturday
-  
+
   return day >= 1 && day <= 5 && hour >= 8 && hour < 18; // Mon-Fri 8AM-6PM
 }
 
@@ -1007,9 +1080,12 @@ function formatCommunicationLog(log) {
     sent_date: log.sent_date,
     template_name: log.template?.name,
     ro_number: log.repairOrder?.ro_number,
-    created_by: log.creator ? `${log.creator.firstName} ${log.creator.lastName}` : null,
-    delivery_success: log.delivery_results ? 
-      JSON.parse(log.delivery_results).some(r => r.success) : null
+    created_by: log.creator
+      ? `${log.creator.firstName} ${log.creator.lastName}`
+      : null,
+    delivery_success: log.delivery_results
+      ? JSON.parse(log.delivery_results).some(r => r.success)
+      : null,
   };
 }
 
@@ -1023,21 +1099,21 @@ function formatTimelineEntry(entry) {
     outcome: entry.interaction_outcome,
     automated: entry.automated || false,
     user: entry.user ? `${entry.user.firstName} ${entry.user.lastName}` : null,
-    follow_up_required: entry.follow_up_required
+    follow_up_required: entry.follow_up_required,
   };
 }
 
 async function calculateCommunicationAnalytics(customerId, shopId) {
   const total_communications = await CommunicationLog.count({
-    where: { customerId, shopId }
+    where: { customerId, shopId },
   });
 
   const successful_communications = await CommunicationLog.count({
-    where: { customerId, shopId, status: 'sent' }
+    where: { customerId, shopId, status: 'sent' },
   });
 
   const automated_communications = await CommunicationLog.count({
-    where: { customerId, shopId, automated: true }
+    where: { customerId, shopId, automated: true },
   });
 
   // Get channel preferences
@@ -1045,23 +1121,27 @@ async function calculateCommunicationAnalytics(customerId, shopId) {
     where: { customerId, shopId },
     attributes: [
       'channels',
-      [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
     ],
-    group: ['channels']
+    group: ['channels'],
   });
 
   return {
     total_communications,
     successful_communications,
     automated_communications,
-    success_rate: total_communications > 0 ? 
-      ((successful_communications / total_communications) * 100).toFixed(1) : '0.0',
-    automation_rate: total_communications > 0 ?
-      ((automated_communications / total_communications) * 100).toFixed(1) : '0.0',
+    success_rate:
+      total_communications > 0
+        ? ((successful_communications / total_communications) * 100).toFixed(1)
+        : '0.0',
+    automation_rate:
+      total_communications > 0
+        ? ((automated_communications / total_communications) * 100).toFixed(1)
+        : '0.0',
     preferred_channels: channel_usage.map(usage => ({
       channels: JSON.parse(usage.channels || '[]'),
-      usage_count: parseInt(usage.dataValues.count)
-    }))
+      usage_count: parseInt(usage.dataValues.count),
+    })),
   };
 }
 
@@ -1070,30 +1150,32 @@ async function buildRecipientList(recipient_type, recipients, shopId) {
     case 'customers':
       // Get all active customers
       const customers = await Customer.findAll({
-        where: { shopId, status: 'active' }
+        where: { shopId, status: 'active' },
       });
       return customers.map(customer => ({ customer, ro_id: null }));
 
     case 'active_jobs':
       // Get customers with active repair orders
       const active_ros = await RepairOrderManagement.findAll({
-        where: { 
-          shopId, 
-          status: { [Op.in]: ['in_progress', 'waiting_parts', 'ready_for_pickup'] }
+        where: {
+          shopId,
+          status: {
+            [Op.in]: ['in_progress', 'waiting_parts', 'ready_for_pickup'],
+          },
         },
         include: [
           {
             model: Customer,
-            as: 'customer'
-          }
-        ]
+            as: 'customer',
+          },
+        ],
       });
       return active_ros.map(ro => ({ customer: ro.customer, ro_id: ro.id }));
 
     case 'custom_list':
       // Recipients provided as list of customer IDs
       const custom_customers = await Customer.findAll({
-        where: { id: recipients, shopId }
+        where: { id: recipients, shopId },
       });
       return custom_customers.map(customer => ({ customer, ro_id: null }));
 

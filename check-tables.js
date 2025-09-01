@@ -9,17 +9,20 @@ async function checkTables() {
     return;
   }
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_JWT_SECRET);
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_JWT_SECRET
+  );
 
   // List of expected tables
   const expectedTables = [
     'shops',
-    'users', 
+    'users',
     'customers',
     'vehicles',
     'vendors',
     'parts',
-    'audit_trail'
+    'audit_trail',
   ];
 
   console.log('📋 Expected Tables:');
@@ -40,17 +43,23 @@ async function checkTables() {
     }
 
     const existingTables = data.map(row => row.table_name);
-    
+
     console.log('✅ Found Tables:');
     existingTables.forEach(table => console.log(`   - ${table}`));
     console.log('');
 
     // Check which expected tables are missing
-    const missingTables = expectedTables.filter(table => !existingTables.includes(table));
-    const foundTables = expectedTables.filter(table => existingTables.includes(table));
+    const missingTables = expectedTables.filter(
+      table => !existingTables.includes(table)
+    );
+    const foundTables = expectedTables.filter(table =>
+      existingTables.includes(table)
+    );
 
     console.log(`📊 Summary:`);
-    console.log(`   ✅ Found: ${foundTables.length}/${expectedTables.length} tables`);
+    console.log(
+      `   ✅ Found: ${foundTables.length}/${expectedTables.length} tables`
+    );
     console.log(`   ❌ Missing: ${missingTables.length} tables`);
 
     if (missingTables.length > 0) {
@@ -61,12 +70,13 @@ async function checkTables() {
     }
 
     // Check for any extra tables
-    const extraTables = existingTables.filter(table => !expectedTables.includes(table));
+    const extraTables = existingTables.filter(
+      table => !expectedTables.includes(table)
+    );
     if (extraTables.length > 0) {
       console.log('\n📝 Extra Tables (not part of CollisionOS):');
       extraTables.forEach(table => console.log(`   - ${table}`));
     }
-
   } catch (err) {
     console.log('❌ Error:', err.message);
   }

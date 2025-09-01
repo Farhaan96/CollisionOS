@@ -9,7 +9,7 @@ export { default as TablePagination } from './TablePagination';
 // Re-export commonly used types and utilities
 export const TABLE_DENSITIES = {
   COMPACT: 'compact',
-  STANDARD: 'standard', 
+  STANDARD: 'standard',
   COMFORTABLE: 'comfortable',
 };
 
@@ -83,28 +83,33 @@ export const createColumn = (id, label, options = {}) => ({
   ...options,
 });
 
-export const createStatusColumn = (id, label, statusColors = {}, options = {}) => ({
-  ...createColumn(id, label, { 
+export const createStatusColumn = (
+  id,
+  label,
+  statusColors = {},
+  options = {}
+) => ({
+  ...createColumn(id, label, {
     type: 'status',
     editable: false,
     statusColors,
-    ...options 
+    ...options,
   }),
 });
 
 export const createCurrencyColumn = (id, label, options = {}) => ({
   ...createColumn(id, label, {
     type: 'currency',
-    format: (value) => `$${value?.toFixed(2) || '0.00'}`,
-    ...options
+    format: value => `$${value?.toFixed(2) || '0.00'}`,
+    ...options,
   }),
 });
 
 export const createDateColumn = (id, label, options = {}) => ({
   ...createColumn(id, label, {
     type: 'date',
-    format: (value) => value ? new Date(value).toLocaleDateString() : '',
-    ...options
+    format: value => (value ? new Date(value).toLocaleDateString() : ''),
+    ...options,
   }),
 });
 
@@ -113,7 +118,7 @@ export const createCustomColumn = (id, label, renderFn, options = {}) => ({
     type: 'custom',
     render: renderFn,
     editable: false,
-    ...options
+    ...options,
   }),
 });
 
@@ -144,7 +149,7 @@ export const DEFAULT_BULK_ACTIONS = [
   },
   {
     id: 'export',
-    label: 'Export Selected', 
+    label: 'Export Selected',
     icon: 'GetApp',
     description: 'Export selected items to file',
     color: 'primary',

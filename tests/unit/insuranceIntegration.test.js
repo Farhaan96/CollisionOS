@@ -8,24 +8,27 @@ const {
   MitchellProvider,
   CCCProvider,
   AudatexProvider,
-  InsuranceIntegrationService
+  InsuranceIntegrationService,
 } = require('../../server/services/insuranceIntegration');
-const { ValidationError, APIError } = require('../../server/utils/errorHandler');
+const {
+  ValidationError,
+  APIError,
+} = require('../../server/utils/errorHandler');
 const { Job } = require('../../server/database/models');
 
 // Mock database models
 jest.mock('../../server/database/models', () => ({
   Job: {
-    update: jest.fn()
-  }
+    update: jest.fn(),
+  },
 }));
 
 // Mock real-time service
 jest.mock('../../server/services/realtimeService', () => ({
   realtimeService: {
     broadcastInsuranceUpdate: jest.fn(),
-    broadcastJobUpdate: jest.fn()
-  }
+    broadcastJobUpdate: jest.fn(),
+  },
 }));
 
 describe('Insurance Integration', () => {
@@ -37,25 +40,25 @@ describe('Insurance Integration', () => {
         name: 'Test Insurance',
         baseURL: 'https://api.testinsurance.com',
         authType: 'apikey',
-        credentials: { apiKey: 'test-key' }
+        credentials: { apiKey: 'test-key' },
       });
-      
+
       // Mock HTTP methods
       provider.post = jest.fn();
       provider.get = jest.fn();
-      
+
       jest.clearAllMocks();
     });
 
     describe('Claim Data Validation', () => {
       test('should validate required claim fields', () => {
         const invalidClaimData = {
-          customerInfo: { firstName: 'John' }
+          customerInfo: { firstName: 'John' },
           // Missing required fields
         };
 
         const validation = provider.validateClaimData(invalidClaimData);
-        
+
         expect(validation.isValid).toBe(false);
         expect(validation.errors).toContain('Policy number is required');
         expect(validation.errors).toContain('Date of loss is required');
@@ -69,11 +72,11 @@ describe('Insurance Integration', () => {
           dateOfLoss: '2024-01-15',
           customerInfo: { firstName: 'John', lastName: 'Doe' },
           vehicleInfo: { vin: '1HGBH41JXMN109186', year: 2021 },
-          damageDescription: 'Front end damage'
+          damageDescription: 'Front end damage',
         };
 
         const validation = provider.validateClaimData(validClaimData);
-        
+
         expect(validation.isValid).toBe(true);
         expect(validation.errors).toHaveLength(0);
       });
@@ -86,7 +89,7 @@ describe('Insurance Integration', () => {
         };
 
         const validation = provider.validateEstimateData(invalidEstimateData);
-        
+
         expect(validation.isValid).toBe(false);
         expect(validation.errors).toContain('Claim number is required');
         expect(validation.errors).toContain('Repair items are required');
@@ -97,11 +100,11 @@ describe('Insurance Integration', () => {
         const validEstimateData = {
           claimNumber: 'CLM-123456',
           repairItems: [{ description: 'Replace bumper', amount: 500 }],
-          totalAmount: 500
+          totalAmount: 500,
         };
 
         const validation = provider.validateEstimateData(validEstimateData);
-        
+
         expect(validation.isValid).toBe(true);
         expect(validation.errors).toHaveLength(0);
       });
@@ -115,12 +118,12 @@ describe('Insurance Integration', () => {
           customerInfo: { firstName: 'John', lastName: 'Doe' },
           vehicleInfo: { vin: '1HGBH41JXMN109186', year: 2021 },
           damageDescription: 'Front end damage',
-          jobId: 'job-123'
+          jobId: 'job-123',
         };
 
         const mockResponse = {
           claimNumber: 'CLM-789012',
-          status: 'submitted'
+          status: 'submitted',
         };
 
         provider.post.mockResolvedValue(mockResponse);
@@ -130,9 +133,9 @@ describe('Insurance Integration', () => {
 
         expect(provider.post).toHaveBeenCalledWith('/claims', claimData);
         expect(Job.update).toHaveBeenCalledWith(
-          { 
+          {
             insuranceClaimNumber: 'CLM-789012',
-            claimStatus: 'submitted'
+            claimStatus: 'submitted',
           },
           { where: { id: 'job-123' } }
         );
@@ -141,12 +144,13 @@ describe('Insurance Integration', () => {
 
       test('should throw validation error for invalid claim data', async () => {
         const invalidClaimData = {
-          customerInfo: { firstName: 'John' }
+          customerInfo: { firstName: 'John' },
           // Missing required fields
         };
 
-        await expect(provider.submitClaim(invalidClaimData))
-          .rejects.toThrow(ValidationError);
+        await expect(provider.submitClaim(invalidClaimData)).rejects.toThrow(
+          ValidationError
+        );
       });
     });
 
@@ -156,12 +160,12 @@ describe('Insurance Integration', () => {
           claimNumber: 'CLM-123456',
           repairItems: [{ description: 'Replace bumper', amount: 500 }],
           totalAmount: 500,
-          jobId: 'job-123'
+          jobId: 'job-123',
         };
 
         const mockResponse = {
           estimateId: 'EST-456789',
-          status: 'submitted'
+          status: 'submitted',
         };
 
         provider.post.mockResolvedValue(mockResponse);
@@ -171,9 +175,9 @@ describe('Insurance Integration', () => {
 
         expect(provider.post).toHaveBeenCalledWith('/estimates', estimateData);
         expect(Job.update).toHaveBeenCalledWith(
-          { 
+          {
             estimateStatus: 'submitted',
-            estimateSubmittedAt: expect.any(Date)
+            estimateSubmittedAt: expect.any(Date),
           },
           { where: { id: 'job-123' } }
         );
@@ -183,8 +187,9 @@ describe('Insurance Integration', () => {
       test('should throw validation error for invalid estimate data', async () => {
         const invalidEstimateData = {};
 
-        await expect(provider.submitEstimate(invalidEstimateData))
-          .rejects.toThrow(ValidationError);
+        await expect(
+          provider.submitEstimate(invalidEstimateData)
+        ).rejects.toThrow(ValidationError);
       });
     });
 
@@ -192,7 +197,7 @@ describe('Insurance Integration', () => {
       test('should get claim status', async () => {
         const mockResponse = {
           claimNumber: 'CLM-123456',
-          status: 'under_review'
+          status: 'under_review',
         };
 
         provider.get.mockResolvedValue(mockResponse);
@@ -206,7 +211,7 @@ describe('Insurance Integration', () => {
       test('should get estimate status', async () => {
         const mockResponse = {
           estimateId: 'EST-456789',
-          status: 'approved'
+          status: 'approved',
         };
 
         provider.get.mockResolvedValue(mockResponse);
@@ -226,7 +231,7 @@ describe('Insurance Integration', () => {
       provider = new MitchellProvider({
         accessToken: 'test-token',
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
       });
     });
 
@@ -243,15 +248,15 @@ describe('Insurance Integration', () => {
           year: 2021,
           make: 'Honda',
           model: 'Accord',
-          mileage: 25000
+          mileage: 25000,
         },
         customerInfo: {
           firstName: 'John',
           lastName: 'Doe',
           phone: '555-1234',
           email: 'john@example.com',
-          address: '123 Main St, Anytown, ST 12345'
-        }
+          address: '123 Main St, Anytown, ST 12345',
+        },
       };
 
       const formatted = provider.formatClaimData(claimData);
@@ -269,24 +274,24 @@ describe('Insurance Integration', () => {
     test('should format estimate data for Mitchell API', () => {
       const estimateData = {
         claimNumber: 'CLM-123456',
-        totalAmount: 2500.00,
-        laborTotal: 1500.00,
-        partsTotal: 1000.00,
+        totalAmount: 2500.0,
+        laborTotal: 1500.0,
+        partsTotal: 1000.0,
         repairItems: [
           {
             lineNumber: 1,
             description: 'Replace front bumper',
             laborHours: 3.5,
-            laborRate: 85.00,
-            partsAmount: 450.00
-          }
-        ]
+            laborRate: 85.0,
+            partsAmount: 450.0,
+          },
+        ],
       };
 
       const formatted = provider.formatEstimateData(estimateData);
 
       expect(formatted.ClaimNumber).toBe('CLM-123456');
-      expect(formatted.EstimateTotal).toBe(2500.00);
+      expect(formatted.EstimateTotal).toBe(2500.0);
       expect(formatted.RepairItems).toHaveLength(1);
       expect(formatted.RepairItems[0].LineNumber).toBe(1);
     });
@@ -297,7 +302,7 @@ describe('Insurance Integration', () => {
 
     beforeEach(() => {
       provider = new CCCProvider({
-        apiKey: 'test-api-key'
+        apiKey: 'test-api-key',
       });
     });
 
@@ -310,14 +315,14 @@ describe('Insurance Integration', () => {
           vin: '1HGBH41JXMN109186',
           year: 2021,
           make: 'Honda',
-          model: 'Accord'
+          model: 'Accord',
         },
         customerInfo: {
           firstName: 'John',
           lastName: 'Doe',
           phone: '555-1234',
-          email: 'john@example.com'
-        }
+          email: 'john@example.com',
+        },
       };
 
       const formatted = provider.formatClaimData(claimData);
@@ -327,7 +332,9 @@ describe('Insurance Integration', () => {
       expect(formatted.claim.loss_date).toBe('2024-06-15');
       expect(formatted.claim.vehicle.vin).toBe('1HGBH41JXMN109186');
       expect(formatted.claim.customer.first_name).toBe('John');
-      expect(formatted.claim.customer.contact_info.email).toBe('john@example.com');
+      expect(formatted.claim.customer.contact_info.email).toBe(
+        'john@example.com'
+      );
     });
   });
 
@@ -337,18 +344,18 @@ describe('Insurance Integration', () => {
     beforeEach(() => {
       provider = new AudatexProvider({
         username: 'test-user',
-        password: 'test-pass'
+        password: 'test-pass',
       });
     });
 
     test('should convert estimate data to XML format', () => {
       const estimateData = {
         claimNumber: 'CLM-123456',
-        totalAmount: 2500.00,
+        totalAmount: 2500.0,
         repairItems: [
           { description: 'Replace bumper', amount: 500 },
-          { description: 'Paint repair', amount: 200 }
-        ]
+          { description: 'Paint repair', amount: 200 },
+        ],
       };
 
       const xml = provider.convertToXML(estimateData);
@@ -363,12 +370,18 @@ describe('Insurance Integration', () => {
     test('should submit estimate with XML content type', async () => {
       const estimateData = {
         claimNumber: 'CLM-123456',
-        totalAmount: 2500.00,
-        repairItems: []
+        totalAmount: 2500.0,
+        repairItems: [],
       };
 
-      provider.post = jest.fn().mockResolvedValue('<?xml version="1.0"?><response><status>submitted</status></response>');
-      provider.parseXMLResponse = jest.fn().mockReturnValue({ status: 'submitted', estimateId: 'AUD-123' });
+      provider.post = jest
+        .fn()
+        .mockResolvedValue(
+          '<?xml version="1.0"?><response><status>submitted</status></response>'
+        );
+      provider.parseXMLResponse = jest
+        .fn()
+        .mockReturnValue({ status: 'submitted', estimateId: 'AUD-123' });
 
       const result = await provider.submitEstimate(estimateData);
 
@@ -392,26 +405,28 @@ describe('Insurance Integration', () => {
         submitEstimate: jest.fn(),
         getClaimStatus: jest.fn(),
         getEstimateStatus: jest.fn(),
-        healthCheck: jest.fn()
+        healthCheck: jest.fn(),
       };
-      
+
       jest.clearAllMocks();
     });
 
     test('should register provider successfully', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       service.registerProvider('test-provider', mockProvider);
-      
+
       expect(service.providers.has('test-provider')).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith('✅ Insurance provider registered: test-provider');
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '✅ Insurance provider registered: test-provider'
+      );
+
       consoleSpy.mockRestore();
     });
 
     test('should get provider', () => {
       service.registerProvider('test-provider', mockProvider);
-      
+
       const provider = service.getProvider('test-provider');
       expect(provider).toBe(mockProvider);
     });
@@ -425,12 +440,12 @@ describe('Insurance Integration', () => {
     test('should submit claim via provider', async () => {
       const claimData = { policyNumber: 'POL-123' };
       const expectedResponse = { claimNumber: 'CLM-456' };
-      
+
       mockProvider.submitClaim.mockResolvedValue(expectedResponse);
       service.registerProvider('test-provider', mockProvider);
-      
+
       const result = await service.submitClaim('test-provider', claimData);
-      
+
       expect(mockProvider.submitClaim).toHaveBeenCalledWith(claimData);
       expect(result).toEqual(expectedResponse);
     });
@@ -438,24 +453,27 @@ describe('Insurance Integration', () => {
     test('should submit estimate via provider', async () => {
       const estimateData = { claimNumber: 'CLM-123' };
       const expectedResponse = { estimateId: 'EST-789' };
-      
+
       mockProvider.submitEstimate.mockResolvedValue(expectedResponse);
       service.registerProvider('test-provider', mockProvider);
-      
-      const result = await service.submitEstimate('test-provider', estimateData);
-      
+
+      const result = await service.submitEstimate(
+        'test-provider',
+        estimateData
+      );
+
       expect(mockProvider.submitEstimate).toHaveBeenCalledWith(estimateData);
       expect(result).toEqual(expectedResponse);
     });
 
     test('should get claim status via provider', async () => {
       const expectedResponse = { claimNumber: 'CLM-123', status: 'approved' };
-      
+
       mockProvider.getClaimStatus.mockResolvedValue(expectedResponse);
       service.registerProvider('test-provider', mockProvider);
-      
+
       const result = await service.getClaimStatus('test-provider', 'CLM-123');
-      
+
       expect(mockProvider.getClaimStatus).toHaveBeenCalledWith('CLM-123');
       expect(result).toEqual(expectedResponse);
     });
@@ -463,17 +481,17 @@ describe('Insurance Integration', () => {
     test('should get all providers', () => {
       service.registerProvider('provider1', mockProvider);
       service.registerProvider('provider2', mockProvider);
-      
+
       const providers = service.getProviders();
-      
+
       expect(providers).toEqual(['provider1', 'provider2']);
     });
 
     test('should set default provider', () => {
       service.registerProvider('test-provider', mockProvider);
-      
+
       service.setDefaultProvider('test-provider');
-      
+
       expect(service.defaultProvider).toBe('test-provider');
     });
 
@@ -484,27 +502,33 @@ describe('Insurance Integration', () => {
     });
 
     test('should health check all providers', async () => {
-      const provider1 = { healthCheck: jest.fn().mockResolvedValue({ status: 'healthy' }) };
-      const provider2 = { healthCheck: jest.fn().mockResolvedValue({ status: 'healthy' }) };
-      
+      const provider1 = {
+        healthCheck: jest.fn().mockResolvedValue({ status: 'healthy' }),
+      };
+      const provider2 = {
+        healthCheck: jest.fn().mockResolvedValue({ status: 'healthy' }),
+      };
+
       service.registerProvider('provider1', provider1);
       service.registerProvider('provider2', provider2);
-      
+
       const results = await service.healthCheck();
-      
+
       expect(results.provider1.status).toBe('healthy');
       expect(results.provider2.status).toBe('healthy');
     });
 
     test('should handle health check errors', async () => {
-      const failingProvider = { 
-        healthCheck: jest.fn().mockRejectedValue(new Error('Connection failed'))
+      const failingProvider = {
+        healthCheck: jest
+          .fn()
+          .mockRejectedValue(new Error('Connection failed')),
       };
-      
+
       service.registerProvider('failing-provider', failingProvider);
-      
+
       const results = await service.healthCheck();
-      
+
       expect(results['failing-provider'].status).toBe('error');
       expect(results['failing-provider'].error).toBe('Connection failed');
     });
@@ -513,9 +537,9 @@ describe('Insurance Integration', () => {
       service.registerProvider('provider1', mockProvider);
       service.registerProvider('provider2', mockProvider);
       service.setDefaultProvider('provider1');
-      
+
       const stats = service.getStatistics();
-      
+
       expect(stats.totalProviders).toBe(2);
       expect(stats.defaultProvider).toBe('provider1');
       expect(stats.providers).toEqual(['provider1', 'provider2']);
@@ -526,20 +550,23 @@ describe('Insurance Integration', () => {
         const payload = {
           claimNumber: 'CLM-123456',
           status: 'approved',
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
 
         Job.update.mockResolvedValue([1]);
 
-        const result = await service.handleClaimStatusUpdate('test-provider', payload);
+        const result = await service.handleClaimStatusUpdate(
+          'test-provider',
+          payload
+        );
 
         expect(Job.update).toHaveBeenCalledWith(
           {
             claimStatus: 'approved',
-            claimUpdatedAt: expect.any(Date)
+            claimUpdatedAt: expect.any(Date),
           },
           {
-            where: { insuranceClaimNumber: 'CLM-123456' }
+            where: { insuranceClaimNumber: 'CLM-123456' },
           }
         );
         expect(result.success).toBe(true);
@@ -549,25 +576,28 @@ describe('Insurance Integration', () => {
         const payload = {
           estimateId: 'EST-789012',
           status: 'approved',
-          approvedAmount: 2500.00,
-          notes: 'Approved with conditions'
+          approvedAmount: 2500.0,
+          notes: 'Approved with conditions',
         };
 
         const mockJob = {
           id: 'job-123',
-          update: jest.fn().mockResolvedValue()
+          update: jest.fn().mockResolvedValue(),
         };
 
         const Job = require('../../server/database/models').Job;
         Job.findOne = jest.fn().mockResolvedValue(mockJob);
 
-        const result = await service.handleEstimateApproval('test-provider', payload);
+        const result = await service.handleEstimateApproval(
+          'test-provider',
+          payload
+        );
 
         expect(mockJob.update).toHaveBeenCalledWith({
           estimateStatus: 'approved',
-          approvedAmount: 2500.00,
+          approvedAmount: 2500.0,
           approvalNotes: 'Approved with conditions',
-          estimateApprovedAt: expect.any(Date)
+          estimateApprovedAt: expect.any(Date),
         });
         expect(result.success).toBe(true);
       });

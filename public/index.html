@@ -1,37 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="CollisionOS Desktop App" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws://localhost:3006 http://localhost:3006 http://localhost:3001 http://localhost:3002; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws://localhost:3006 http://localhost:3006 http://localhost:3001 http://localhost:3002; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+    />
     <title>CollisionOS</title>
     <script>
       // Disable webpack dev server overlay that interferes with clicks
       if (typeof window !== 'undefined') {
         // Immediate fix for webpack overlay
-        const removeOverlays = function() {
+        const removeOverlays = function () {
           // Remove webpack dev server overlay
-          const overlay = document.getElementById('webpack-dev-server-client-overlay');
+          const overlay = document.getElementById(
+            'webpack-dev-server-client-overlay'
+          );
           if (overlay) {
             overlay.remove();
           }
-          
+
           // Also remove any error overlay
-          const errorOverlay = document.querySelector('[data-testid="webpack-dev-server-client-overlay-div"]');
+          const errorOverlay = document.querySelector(
+            '[data-testid="webpack-dev-server-client-overlay-div"]'
+          );
           if (errorOverlay) {
             errorOverlay.remove();
           }
-          
+
           // Remove any iframe overlays
-          const iframeOverlays = document.querySelectorAll('iframe[src="about:blank"]');
+          const iframeOverlays = document.querySelectorAll(
+            'iframe[src="about:blank"]'
+          );
           iframeOverlays.forEach(iframe => {
             if (iframe.id && iframe.id.includes('webpack')) {
               iframe.remove();
             }
           });
-          
+
           // CRITICAL FIX: Force root element to allow pointer events
           const root = document.getElementById('root');
           if (root) {
@@ -39,21 +48,23 @@
             root.style.position = 'relative';
             root.style.zIndex = '1';
           }
-          
+
           // Force all interactive elements to be clickable
-          const interactiveElements = document.querySelectorAll('button, input, textarea, select, [role="button"], .MuiButton-root, .MuiTextField-root');
+          const interactiveElements = document.querySelectorAll(
+            'button, input, textarea, select, [role="button"], .MuiButton-root, .MuiTextField-root'
+          );
           interactiveElements.forEach(el => {
             el.style.pointerEvents = 'auto';
             el.style.position = 'relative';
             el.style.zIndex = '10';
           });
         };
-        
+
         // Run immediately and on DOM ready
         removeOverlays();
         window.addEventListener('load', removeOverlays);
         document.addEventListener('DOMContentLoaded', removeOverlays);
-        
+
         // Also run periodically to catch dynamic overlays
         setInterval(removeOverlays, 1000);
       }

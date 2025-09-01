@@ -1,0 +1,30 @@
+{
+  "watch": [
+    "server/**/*"
+  ],
+  "ignore": [
+    "node_modules/**/*",
+    "uploads/**/*",
+    "*.log",
+    "*.json",
+    ".claude/loop-state.json",
+    ".claude/agent-queue.json",
+    "test-*.js",
+    "debug-*.js",
+    "**/*.test.js",
+    "**/*.spec.js"
+  ],
+  "delay": 2500,
+  "restartable": "rs",
+  "colours": true,
+  "legacyWatch": false,
+  "pollingInterval": 100,
+  "runOnChangeOnly": false,
+  "verbose": true,
+  "exec": "node -r ts-node/register server/index.js",
+  "ext": "js,json",
+  "env": {
+    "NODE_ENV": "development",
+    "DEBUG": "false"
+  }
+}

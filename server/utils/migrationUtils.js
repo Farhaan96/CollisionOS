@@ -22,9 +22,9 @@ class MigrationUtils {
       timestamp: new Date().toISOString(),
       level,
       message,
-      data
+      data,
     };
-    
+
     this.migrationLog.push(logEntry);
     console.log(`[MIGRATION ${level.toUpperCase()}] ${message}`, data || '');
   }
@@ -39,7 +39,7 @@ class MigrationUtils {
       supabaseConnected: false,
       legacyConnected: false,
       tables: {},
-      recommendations: []
+      recommendations: [],
     };
 
     // Test Supabase connection
@@ -47,7 +47,8 @@ class MigrationUtils {
       try {
         const supabase = getSupabaseClient();
         const { data, error } = await supabase.auth.getSession();
-        status.supabaseConnected = !error || error.message === 'No session found';
+        status.supabaseConnected =
+          !error || error.message === 'No session found';
       } catch (error) {
         this.log('error', 'Supabase connection test failed', error.message);
       }
@@ -58,7 +59,11 @@ class MigrationUtils {
       await sequelize.authenticate();
       status.legacyConnected = true;
     } catch (error) {
-      this.log('error', 'Legacy database connection test failed', error.message);
+      this.log(
+        'error',
+        'Legacy database connection test failed',
+        error.message
+      );
     }
 
     // Analyze tables
@@ -83,7 +88,7 @@ class MigrationUtils {
    */
   async analyzeLegacyTables() {
     const tables = {};
-    
+
     try {
       // Get table information from Sequelize
       const queryInterface = sequelize.getQueryInterface();
@@ -91,7 +96,9 @@ class MigrationUtils {
 
       for (const tableName of tableNames) {
         try {
-          const [results] = await sequelize.query(`SELECT COUNT(*) as count FROM ${tableName}`);
+          const [results] = await sequelize.query(
+            `SELECT COUNT(*) as count FROM ${tableName}`
+          );
           const count = results[0]?.count || 0;
 
           // Get column information
@@ -102,21 +109,23 @@ class MigrationUtils {
             recordCount: parseInt(count),
             columns: Object.keys(columns).length,
             structure: columns,
-            migrationReady: this.isTableMigrationReady(tableName, columns)
+            migrationReady: this.isTableMigrationReady(tableName, columns),
           };
-
         } catch (tableError) {
-          this.log('warn', `Failed to analyze table ${tableName}`, tableError.message);
+          this.log(
+            'warn',
+            `Failed to analyze table ${tableName}`,
+            tableError.message
+          );
           tables[tableName] = {
             name: tableName,
             recordCount: 0,
             columns: 0,
             error: tableError.message,
-            migrationReady: false
+            migrationReady: false,
           };
         }
       }
-
     } catch (error) {
       this.log('error', 'Failed to get table names', error.message);
     }
@@ -132,8 +141,15 @@ class MigrationUtils {
    */
   isTableMigrationReady(tableName, columns) {
     // Tables that are safe to migrate
-    const migratableTables = ['users', 'jobs', 'customers', 'vehicles', 'parts', 'vendors'];
-    
+    const migratableTables = [
+      'users',
+      'jobs',
+      'customers',
+      'vehicles',
+      'parts',
+      'vendors',
+    ];
+
     if (!migratableTables.includes(tableName.toLowerCase())) {
       return false;
     }
@@ -141,7 +157,8 @@ class MigrationUtils {
     // Check for required columns
     const columnNames = Object.keys(columns).map(col => col.toLowerCase());
     const hasId = columnNames.includes('id');
-    const hasTimestamps = columnNames.includes('created_at') || columnNames.includes('createdat');
+    const hasTimestamps =
+      columnNames.includes('created_at') || columnNames.includes('createdat');
 
     return hasId && hasTimestamps;
   }
@@ -159,7 +176,8 @@ class MigrationUtils {
         type: 'setup',
         priority: 'high',
         message: 'Configure Supabase credentials in .env file',
-        action: 'Add SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY to .env'
+        action:
+          'Add SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY to .env',
       });
     }
 
@@ -168,7 +186,7 @@ class MigrationUtils {
         type: 'connection',
         priority: 'high',
         message: 'Fix Supabase connection issues',
-        action: 'Verify Supabase credentials and project status'
+        action: 'Verify Supabase credentials and project status',
       });
     }
 
@@ -177,20 +195,21 @@ class MigrationUtils {
         type: 'legacy',
         priority: 'medium',
         message: 'Legacy database connection issues',
-        action: 'Check legacy database configuration'
+        action: 'Check legacy database configuration',
       });
     }
 
     if (status.supabaseConnected && status.legacyConnected) {
-      const migratableTables = Object.values(status.tables || {})
-        .filter(table => table.migrationReady && table.recordCount > 0);
+      const migratableTables = Object.values(status.tables || {}).filter(
+        table => table.migrationReady && table.recordCount > 0
+      );
 
       if (migratableTables.length > 0) {
         recommendations.push({
           type: 'migration',
           priority: 'medium',
           message: `${migratableTables.length} tables ready for migration`,
-          action: 'Consider running data migration process'
+          action: 'Consider running data migration process',
         });
       }
     }
@@ -219,7 +238,7 @@ class MigrationUtils {
         table: tableName,
         exportedAt: new Date().toISOString(),
         recordCount: results.length,
-        data: results
+        data: results,
       };
 
       // Create exports directory
@@ -236,19 +255,24 @@ class MigrationUtils {
         // Simple CSV export
         if (results.length > 0) {
           const headers = Object.keys(results[0]).join(',');
-          const rows = results.map(row => 
-            Object.values(row).map(val => 
-              typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val
-            ).join(',')
-          ).join('\n');
-          
+          const rows = results
+            .map(row =>
+              Object.values(row)
+                .map(val =>
+                  typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val
+                )
+                .join(',')
+            )
+            .join('\n');
+
           await fs.writeFile(filePath, `${headers}\n${rows}`);
         }
       }
 
-      this.log('info', `Exported ${results.length} records from ${tableName}`, { filePath });
+      this.log('info', `Exported ${results.length} records from ${tableName}`, {
+        filePath,
+      });
       return filePath;
-
     } catch (error) {
       this.log('error', `Failed to export ${tableName}`, error.message);
       throw error;
@@ -266,9 +290,9 @@ class MigrationUtils {
       const columns = await queryInterface.describeTable(tableName);
 
       let sql = `-- Supabase schema for ${tableName}\nCREATE TABLE public.${tableName} (\n`;
-      
+
       const columnDefs = [];
-      
+
       Object.entries(columns).forEach(([columnName, columnDef]) => {
         let sqlType = this.mapSequelizeTypeToPostgres(columnDef.type);
         const constraints = [];
@@ -280,7 +304,10 @@ class MigrationUtils {
           constraints.push('NOT NULL');
         }
 
-        if (columnDef.defaultValue !== undefined && columnDef.defaultValue !== null) {
+        if (
+          columnDef.defaultValue !== undefined &&
+          columnDef.defaultValue !== null
+        ) {
           if (typeof columnDef.defaultValue === 'string') {
             constraints.push(`DEFAULT '${columnDef.defaultValue}'`);
           } else {
@@ -288,16 +315,18 @@ class MigrationUtils {
           }
         }
 
-        columnDefs.push(`  ${columnName} ${sqlType}${constraints.length ? ' ' + constraints.join(' ') : ''}`);
+        columnDefs.push(
+          `  ${columnName} ${sqlType}${constraints.length ? ' ' + constraints.join(' ') : ''}`
+        );
       });
 
       sql += columnDefs.join(',\n') + '\n);\n\n';
-      
+
       // Add RLS policy
       sql += `-- Enable Row Level Security\nALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;\n\n`;
       sql += `-- Create policy for shop isolation\nCREATE POLICY "Users can only access their shop's data" ON public.${tableName}\n`;
       sql += `  FOR ALL USING (shop_id = auth.jwt() ->> 'shop_id');\n\n`;
-      
+
       // Add indexes
       sql += `-- Add indexes\nCREATE INDEX idx_${tableName}_shop_id ON public.${tableName}(shop_id);\n`;
       if (columns.created_at || columns.createdAt) {
@@ -305,9 +334,12 @@ class MigrationUtils {
       }
 
       return sql;
-
     } catch (error) {
-      this.log('error', `Failed to generate schema for ${tableName}`, error.message);
+      this.log(
+        'error',
+        `Failed to generate schema for ${tableName}`,
+        error.message
+      );
       throw error;
     }
   }
@@ -319,19 +351,19 @@ class MigrationUtils {
    */
   mapSequelizeTypeToPostgres(sequelizeType) {
     const typeMap = {
-      'STRING': 'VARCHAR',
-      'TEXT': 'TEXT',
-      'INTEGER': 'INTEGER',
-      'BIGINT': 'BIGINT',
-      'FLOAT': 'REAL',
-      'DOUBLE': 'DOUBLE PRECISION',
-      'DECIMAL': 'DECIMAL',
-      'DATE': 'TIMESTAMP WITH TIME ZONE',
-      'DATEONLY': 'DATE',
-      'BOOLEAN': 'BOOLEAN',
-      'JSON': 'JSONB',
-      'JSONB': 'JSONB',
-      'UUID': 'UUID'
+      STRING: 'VARCHAR',
+      TEXT: 'TEXT',
+      INTEGER: 'INTEGER',
+      BIGINT: 'BIGINT',
+      FLOAT: 'REAL',
+      DOUBLE: 'DOUBLE PRECISION',
+      DECIMAL: 'DECIMAL',
+      DATE: 'TIMESTAMP WITH TIME ZONE',
+      DATEONLY: 'DATE',
+      BOOLEAN: 'BOOLEAN',
+      JSON: 'JSONB',
+      JSONB: 'JSONB',
+      UUID: 'UUID',
     };
 
     // Extract base type from complex types like "VARCHAR(255)"
@@ -352,7 +384,7 @@ class MigrationUtils {
 
     const logData = {
       timestamp: new Date().toISOString(),
-      entries: this.migrationLog
+      entries: this.migrationLog,
     };
 
     await fs.writeFile(filePath, JSON.stringify(logData, null, 2));
@@ -372,5 +404,5 @@ const migrationUtils = new MigrationUtils();
 
 module.exports = {
   MigrationUtils,
-  migrationUtils
+  migrationUtils,
 };

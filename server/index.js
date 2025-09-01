@@ -8,7 +8,11 @@ const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Initialize Supabase configuration
-const { testSupabaseConnection, isSupabaseEnabled, closeSupabaseConnections } = require('./config/supabase');
+const {
+  testSupabaseConnection,
+  isSupabaseEnabled,
+  closeSupabaseConnections,
+} = require('./config/supabase');
 
 const { sequelize, Shop, User } = require('./database/models');
 const authRoutes = require('./routes/auth');
@@ -45,9 +49,17 @@ const customerCommunicationRoutes = require('./routes/customerCommunication');
 const qualityControlRoutes = require('./routes/qualityControl');
 const aiRoutes = require('./routes/ai');
 
-const { authenticateToken, optionalAuth } = require('./middleware/authEnhanced'); // Use enhanced auth with proper token handling
+const {
+  authenticateToken,
+  optionalAuth,
+} = require('./middleware/authEnhanced'); // Use enhanced auth with proper token handling
 const { errorHandler, notFoundHandler } = require('./utils/errorHandler');
-const { securityHeaders, sanitizeInput, auditLogger, httpsOnly } = require('./middleware/security');
+const {
+  securityHeaders,
+  sanitizeInput,
+  auditLogger,
+  httpsOnly,
+} = require('./middleware/security');
 const { swaggerUi, specs } = require('./docs/swagger');
 const { realtimeService } = require('./services/realtimeService');
 
@@ -62,31 +74,38 @@ console.log('SERVER_PORT:', process.env.SERVER_PORT || 'undefined');
 console.log('SUPABASE_ENABLED:', isSupabaseEnabled ? 'YES' : 'NO');
 if (isSupabaseEnabled) {
   console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
-  console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+  console.log(
+    'SUPABASE_ANON_KEY:',
+    process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'
+  );
 }
 
 // Create HTTP server for Socket.io
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://collisionos.com', 'https://app.collisionos.com']
-      : ['http://localhost:3000'],
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://collisionos.com', 'https://app.collisionos.com']
+        : ['http://localhost:3000'],
     methods: ['GET', 'POST'],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 // Security middleware
 app.use(httpsOnly);
 app.use(securityHeaders());
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://collisionos.com', 'https://app.collisionos.com']
-    : ['http://localhost:3000'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://collisionos.com', 'https://app.collisionos.com']
+        : ['http://localhost:3000'],
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -114,56 +133,60 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   // In development, serve a simple landing page for API status
   app.get('/', (req, res) => {
-    res.json({ 
-      message: 'CollisionOS API Server', 
+    res.json({
+      message: 'CollisionOS API Server',
       status: 'Running',
       environment: 'Development',
       api_docs: '/api',
-      health_check: '/health'
+      health_check: '/health',
     });
   });
 }
 
 // API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
-  explorer: true,
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'CollisionOS API Documentation'
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'CollisionOS API Documentation',
+  })
+);
 
 // Health check with enhanced database status
 app.get('/health', async (req, res) => {
   const { databaseService } = require('./services/databaseService');
   const { realtimeService } = require('./services/realtimeService');
-  
+
   try {
     const dbStatus = await databaseService.getConnectionStatus();
     const realtimeStatus = realtimeService.getStatus();
-    
-    res.json({ 
-      status: 'OK', 
+
+    res.json({
+      status: 'OK',
       timestamp: new Date().toISOString(),
       version: process.env.npm_package_version || '1.0.0',
       environment: process.env.NODE_ENV || 'development',
       database: {
         type: dbStatus.type,
         connected: dbStatus.connected,
-        error: dbStatus.error || null
+        error: dbStatus.error || null,
       },
       realtime: {
         backend: realtimeStatus.backend,
-        subscriptions: realtimeStatus.activeSubscriptions
+        subscriptions: realtimeStatus.activeSubscriptions,
       },
       supabase: {
         enabled: isSupabaseEnabled,
-        configured: process.env.SUPABASE_URL ? true : false
-      }
+        configured: process.env.SUPABASE_URL ? true : false,
+      },
     });
   } catch (error) {
     res.status(500).json({
       status: 'ERROR',
       timestamp: new Date().toISOString(),
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -171,17 +194,17 @@ app.get('/health', async (req, res) => {
 // Migration status endpoint
 app.get('/api/migration/status', async (req, res) => {
   const { migrationUtils } = require('./utils/migrationUtils');
-  
+
   try {
     const status = await migrationUtils.getMigrationStatus();
     res.json({
       success: true,
-      data: status
+      data: status,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -192,7 +215,11 @@ app.use('/api/v1/users', authenticateToken(), userRoutes);
 app.use('/api/v1/customers', authenticateToken(), customerRoutes);
 app.use('/api/v1/vehicles', authenticateToken(), vehicleRoutes);
 app.use('/api/v1/technicians', authenticateToken(), technicianRoutes);
-app.use('/api/v1/jobs', authenticateToken(), isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes);
+app.use(
+  '/api/v1/jobs',
+  authenticateToken(),
+  isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes
+);
 app.use('/api/v1/estimates', authenticateToken(), estimateRoutes);
 app.use('/api/v1/parts', authenticateToken(), partsRoutes);
 app.use('/api/v1/inventory', authenticateToken(), inventoryRoutes);
@@ -218,7 +245,11 @@ app.use('/api/v1/parts-workflow', authenticateToken(), partsWorkflowRoutes);
 app.use('/api/v1/scheduling', authenticateToken(), schedulingRoutes);
 app.use('/api/v1/loaner-fleet', authenticateToken(), loanerFleetRoutes);
 app.use('/api/v1/loaners', authenticateToken(), loanerFleetRoutes); // Shorter alias
-app.use('/api/v1/customer-communication', authenticateToken(), customerCommunicationRoutes);
+app.use(
+  '/api/v1/customer-communication',
+  authenticateToken(),
+  customerCommunicationRoutes
+);
 app.use('/api/v1/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/v1/quality-control', authenticateToken(), qualityControlRoutes); // Full name alias
 app.use('/api/v1/ai', authenticateToken(), aiRoutes);
@@ -229,7 +260,11 @@ app.use('/api/users', authenticateToken(), userRoutes);
 app.use('/api/customers', authenticateToken(), customerRoutes);
 app.use('/api/vehicles', authenticateToken(), vehicleRoutes);
 app.use('/api/technicians', authenticateToken(), technicianRoutes);
-app.use('/api/jobs', authenticateToken(), isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes);
+app.use(
+  '/api/jobs',
+  authenticateToken(),
+  isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes
+);
 app.use('/api/estimates', authenticateToken(), estimateRoutes);
 app.use('/api/parts', authenticateToken(), partsRoutes);
 app.use('/api/inventory', authenticateToken(), inventoryRoutes);
@@ -255,7 +290,11 @@ app.use('/api/parts-workflow', authenticateToken(), partsWorkflowRoutes);
 app.use('/api/scheduling', authenticateToken(), schedulingRoutes);
 app.use('/api/loaner-fleet', authenticateToken(), loanerFleetRoutes);
 app.use('/api/loaners', authenticateToken(), loanerFleetRoutes);
-app.use('/api/customer-communication', authenticateToken(), customerCommunicationRoutes);
+app.use(
+  '/api/customer-communication',
+  authenticateToken(),
+  customerCommunicationRoutes
+);
 app.use('/api/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/quality-control', authenticateToken(), qualityControlRoutes);
 app.use('/api/ai', aiRoutes);
@@ -269,60 +308,60 @@ realtimeService.setSocketServer(io);
 
 io.use(socketAuth);
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log(`User connected: ${socket.userId} (Shop: ${socket.shopId})`);
-  
+
   // Join user to their shop's room
   socket.join(`shop_${socket.shopId}`);
-  
+
   // Handle job updates (legacy and new)
-  socket.on('job_update', (data) => {
+  socket.on('job_update', data => {
     handleJobUpdates(socket, data);
     // Also broadcast through real-time service for consistency
     realtimeService.broadcastJobUpdate(data, 'updated');
   });
-  
+
   // Handle real-time notifications
-  socket.on('notification', (data) => {
+  socket.on('notification', data => {
     socket.to(`shop_${socket.shopId}`).emit('notification', data);
     realtimeService.broadcastNotification(data, socket.shopId);
   });
-  
+
   // Handle chat messages
-  socket.on('chat_message', (data) => {
+  socket.on('chat_message', data => {
     socket.to(`shop_${socket.shopId}`).emit('chat_message', data);
   });
-  
+
   // Handle production board updates
-  socket.on('production_update', (data) => {
+  socket.on('production_update', data => {
     socket.to(`shop_${socket.shopId}`).emit('production_update', data);
     realtimeService.broadcastProductionUpdate(data, socket.shopId);
   });
-  
+
   // Handle parts status updates
-  socket.on('parts_update', (data) => {
+  socket.on('parts_update', data => {
     socket.to(`shop_${socket.shopId}`).emit('parts_update', data);
     realtimeService.broadcastPartsUpdate(data, 'updated');
   });
-  
+
   // Handle quality control updates
-  socket.on('quality_update', (data) => {
+  socket.on('quality_update', data => {
     socket.to(`shop_${socket.shopId}`).emit('quality_update', data);
     realtimeService.broadcastQualityUpdate(data, 'updated');
   });
-  
+
   // Handle financial updates
-  socket.on('financial_update', (data) => {
+  socket.on('financial_update', data => {
     socket.to(`shop_${socket.shopId}`).emit('financial_update', data);
     realtimeService.broadcastFinancialUpdate(data, 'updated');
   });
-  
+
   // Handle customer updates
-  socket.on('customer_update', (data) => {
+  socket.on('customer_update', data => {
     socket.to(`shop_${socket.shopId}`).emit('customer_update', data);
     realtimeService.broadcastCustomerUpdate(data, 'updated');
   });
-  
+
   // Handle disconnect
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.userId}`);
@@ -346,28 +385,38 @@ async function startServer() {
       const supabaseConnected = await testSupabaseConnection();
       if (supabaseConnected) {
         console.log('✅ Supabase connection established successfully');
-        
+
         // Set up real-time subscriptions for key tables
         try {
           await realtimeService.subscribe('jobs_subscription', 'jobs', {
-            callback: (payload) => {
+            callback: payload => {
               console.log('📡 Job real-time update:', payload.eventType);
-            }
+            },
           });
           console.log('📡 Real-time subscriptions initialized');
         } catch (realtimeError) {
-          console.warn('⚠️  Real-time subscriptions failed:', realtimeError.message);
+          console.warn(
+            '⚠️  Real-time subscriptions failed:',
+            realtimeError.message
+          );
         }
       } else {
-        console.warn('⚠️  Supabase connection failed, falling back to legacy database');
+        console.warn(
+          '⚠️  Supabase connection failed, falling back to legacy database'
+        );
       }
     }
 
     // Legacy database initialization (always maintain as fallback)
     if (!isSupabaseEnabled || process.env.MIGRATION_MODE === 'hybrid') {
       // Ensure SQLite data directory exists in development
-      if (process.env.DB_HOST === 'sqlite' || process.env.NODE_ENV === 'development') {
-        const sqlitePath = process.env.SQLITE_PATH || path.join(__dirname, '../data/collisionos.db');
+      if (
+        process.env.DB_HOST === 'sqlite' ||
+        process.env.NODE_ENV === 'development'
+      ) {
+        const sqlitePath =
+          process.env.SQLITE_PATH ||
+          path.join(__dirname, '../data/collisionos.db');
         const dataDir = path.dirname(sqlitePath);
         if (!fs.existsSync(dataDir)) {
           fs.mkdirSync(dataDir, { recursive: true });
@@ -377,7 +426,7 @@ async function startServer() {
       // Test legacy database connection
       await sequelize.authenticate();
       console.log('✅ Legacy database connection established successfully');
-      
+
       // Sync database models (in development)
       if (process.env.NODE_ENV === 'development') {
         await Shop.sync({ force: false });
@@ -385,7 +434,7 @@ async function startServer() {
         console.log('📊 Legacy database models synchronized');
       }
     }
-    
+
     // Start server
     server.listen(PORT, () => {
       console.log('\n🎉 CollisionOS Server Started Successfully!');
@@ -394,11 +443,14 @@ async function startServer() {
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
       console.log(`📚 API docs: http://localhost:${PORT}/api-docs`);
-      console.log(`🔧 Database: ${isSupabaseEnabled ? 'Supabase' : 'Legacy SQLite/PostgreSQL'}`);
-      console.log(`📡 Real-time: ${isSupabaseEnabled ? 'Supabase Realtime' : 'Socket.io'}`);
+      console.log(
+        `🔧 Database: ${isSupabaseEnabled ? 'Supabase' : 'Legacy SQLite/PostgreSQL'}`
+      );
+      console.log(
+        `📡 Real-time: ${isSupabaseEnabled ? 'Supabase Realtime' : 'Socket.io'}`
+      );
       console.log('=====================================\n');
     });
-    
   } catch (error) {
     console.error('❌ Unable to start server:', error);
     process.exit(1);
@@ -406,38 +458,39 @@ async function startServer() {
 }
 
 // Graceful shutdown
-const gracefulShutdown = async (signal) => {
+const gracefulShutdown = async signal => {
   console.log(`\n${signal} received, shutting down gracefully...`);
-  
+
   try {
     // Clean up real-time subscriptions
     await realtimeService.cleanup();
-    
+
     // Close Supabase connections
     if (isSupabaseEnabled) {
       closeSupabaseConnections();
     }
-    
+
     // Close server
     server.close(async () => {
       console.log('✅ HTTP server closed');
-      
+
       // Close legacy database connection
       if (sequelize) {
         await sequelize.close();
         console.log('✅ Database connections closed');
       }
-      
+
       console.log('✅ Graceful shutdown completed');
       process.exit(0);
     });
-    
+
     // Force exit after 10 seconds
     setTimeout(() => {
-      console.error('❌ Could not close connections in time, forcefully shutting down');
+      console.error(
+        '❌ Could not close connections in time, forcefully shutting down'
+      );
       process.exit(1);
     }, 10000);
-    
   } catch (error) {
     console.error('❌ Error during shutdown:', error);
     process.exit(1);
@@ -448,7 +501,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   console.error('Uncaught Exception:', error);
   process.exit(1);
 });

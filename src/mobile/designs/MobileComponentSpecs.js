@@ -8,7 +8,6 @@
 // =============================================
 
 export const CustomerMobileComponents = {
-
   // Job Status Tracking Screen
   JobStatusScreen: {
     component: `
@@ -47,14 +46,14 @@ export const CustomerMobileComponents = {
         />
       </Screen>
     `,
-    
+
     styles: `
       container: {
         flex: 1,
         backgroundColor: '#0F172A',
         paddingTop: StatusBar.currentHeight,
       },
-    `
+    `,
   },
 
   // Status Header Component
@@ -87,7 +86,7 @@ export const CustomerMobileComponents = {
         />
       </GlassCard>
     `,
-    
+
     styles: `
       headerCard: {
         margin: 16,
@@ -128,7 +127,7 @@ export const CustomerMobileComponents = {
         height: 8,
         borderRadius: 4,
       },
-    `
+    `,
   },
 
   // Progress Timeline Component
@@ -192,7 +191,7 @@ export const CustomerMobileComponents = {
         </ScrollView>
       </GlassCard>
     `,
-    
+
     styles: `
       timelineCard: {
         margin: 16,
@@ -234,7 +233,7 @@ export const CustomerMobileComponents = {
         width: 24,
         height: 2,
       },
-    `
+    `,
   },
 
   // Photo Gallery Component
@@ -292,7 +291,7 @@ export const CustomerMobileComponents = {
         </ScrollView>
       </GlassCard>
     `,
-    
+
     styles: `
       galleryCard: {
         margin: 16,
@@ -357,8 +356,8 @@ export const CustomerMobileComponents = {
         color: '#6B7280',
         fontSize: 14,
       },
-    `
-  }
+    `,
+  },
 };
 
 // =============================================
@@ -366,7 +365,6 @@ export const CustomerMobileComponents = {
 // =============================================
 
 export const TechnicianMobileComponents = {
-
   // Task Dashboard Screen
   TaskDashboard: {
     component: `
@@ -390,7 +388,7 @@ export const TechnicianMobileComponents = {
         />
       </Screen>
     `,
-    
+
     styles: `
       container: {
         flex: 1,
@@ -404,7 +402,7 @@ export const TechnicianMobileComponents = {
         backgroundColor: '#6366F1',
         elevation: 8,
       },
-    `
+    `,
   },
 
   // Task Card Component
@@ -452,7 +450,7 @@ export const TechnicianMobileComponents = {
         </GlassCard>
       </TouchableOpacity>
     `,
-    
+
     styles: `
       taskCard: {
         margin: 8,
@@ -510,7 +508,7 @@ export const TechnicianMobileComponents = {
         height: 6,
         borderRadius: 3,
       },
-    `
+    `,
   },
 
   // QR Scanner Screen
@@ -566,7 +564,7 @@ export const TechnicianMobileComponents = {
         </View>
       </Screen>
     `,
-    
+
     styles: `
       container: {
         flex: 1,
@@ -632,8 +630,8 @@ export const TechnicianMobileComponents = {
         color: '#6366F1',
         fontWeight: '500',
       },
-    `
-  }
+    `,
+  },
 };
 
 // =============================================
@@ -641,7 +639,6 @@ export const TechnicianMobileComponents = {
 // =============================================
 
 export const SharedMobileComponents = {
-
   // Glass Card with Mobile Optimizations
   GlassCard: {
     component: `
@@ -649,7 +646,7 @@ export const SharedMobileComponents = {
         {children}
       </View>
     `,
-    
+
     styles: `
       glassCard: {
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -662,7 +659,7 @@ export const SharedMobileComponents = {
         shadowRadius: 32,
         elevation: 8,
       },
-    `
+    `,
   },
 
   // Status Badge
@@ -673,7 +670,7 @@ export const SharedMobileComponents = {
         <Text style={[styles.text, { color }]}>{status}</Text>
       </View>
     `,
-    
+
     styles: `
       badge: {
         flexDirection: 'row',
@@ -695,7 +692,7 @@ export const SharedMobileComponents = {
         fontWeight: '600',
         textTransform: 'capitalize',
       },
-    `
+    `,
   },
 
   // Linear Progress with Glass Effect
@@ -718,7 +715,7 @@ export const SharedMobileComponents = {
         </View>
       </View>
     `,
-    
+
     styles: `
       progressContainer: {
         height: 8,
@@ -739,7 +736,7 @@ export const SharedMobileComponents = {
         shadowRadius: 4,
         elevation: 2,
       },
-    `
+    `,
   },
 
   // Mobile Navigation Tab Bar
@@ -776,7 +773,7 @@ export const SharedMobileComponents = {
         ))}
       </View>
     `,
-    
+
     styles: `
       tabBar: {
         flexDirection: 'row',
@@ -819,7 +816,7 @@ export const SharedMobileComponents = {
         fontWeight: 'bold',
         color: '#FFFFFF',
       },
-    `
+    `,
   },
 
   // Floating Action Button
@@ -833,7 +830,7 @@ export const SharedMobileComponents = {
         <Icon name={icon} size={24} color="#FFFFFF" />
       </TouchableOpacity>
     `,
-    
+
     styles: `
       fab: {
         width: 56,
@@ -848,8 +845,8 @@ export const SharedMobileComponents = {
         shadowRadius: 8,
         elevation: 8,
       },
-    `
-  }
+    `,
+  },
 };
 
 // =============================================
@@ -866,7 +863,7 @@ export const MobileStyles = {
     xl: 32,
     xxl: 48,
   },
-  
+
   // Typography
   typography: {
     h1: { fontSize: 28, fontWeight: '800', lineHeight: 32 },
@@ -878,9 +875,14 @@ export const MobileStyles = {
     body1: { fontSize: 16, fontWeight: '400', lineHeight: 24 },
     body2: { fontSize: 14, fontWeight: '400', lineHeight: 20 },
     caption: { fontSize: 12, fontWeight: '400', lineHeight: 16 },
-    overline: { fontSize: 10, fontWeight: '600', lineHeight: 16, textTransform: 'uppercase' },
+    overline: {
+      fontSize: 10,
+      fontWeight: '600',
+      lineHeight: 16,
+      textTransform: 'uppercase',
+    },
   },
-  
+
   // Colors
   colors: {
     primary: '#6366F1',
@@ -894,7 +896,7 @@ export const MobileStyles = {
     onBackground: '#FFFFFF',
     onSurface: '#FFFFFF',
   },
-  
+
   // Border radius
   borderRadius: {
     small: 8,
@@ -903,7 +905,7 @@ export const MobileStyles = {
     xlarge: 20,
     round: 9999,
   },
-  
+
   // Shadows
   shadows: {
     small: {

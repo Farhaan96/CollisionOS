@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "BMS Upload Comprehensive Testing Report",
+    "generated": "2025-09-01T04:10:36.411Z",
+    "duration": 318171,
+    "version": "1.0.0"
+  },
+  "summary": {
+    "totalSuites": 4,
+    "passed": 0,
+    "failed": 6,
+    "successRate": 0,
+    "overallStatus": "FAIL"
+  },
+  "validation": {
+    "bmsUploadWorks": false,
+    "customerApiWorks": false,
+    "uiIntegrationWorks": false,
+    "authenticationWorks": false,
+    "errorHandlingWorks": true,
+    "overallSuccess": false
+  },
+  "testSuites": {
+    "Unit Tests": {
+      "name": "Unit Tests",
+      "command": "npm test -- tests/unit/bms-upload-workflow.test.js",
+      "exitCode": -1,
+      "duration": 60000,
+      "timeout": true,
+      "passed": false,
+      "required": false
+    },
+    "API Integration Tests": {
+      "name": "API Integration Tests",
+      "command": "npm test -- tests/integration/bms-customer-api.test.js",
+      "exitCode": -1,
+      "duration": 120000,
+      "timeout": true,
+      "passed": false,
+      "required": true
+    },
+    "End-to-End Tests": {
+      "name": "End-to-End Tests",
+      "command": "npx playwright test tests/e2e/bms-upload-comprehensive.spec.js",
+      "exitCode": -1,
+      "duration": 300000,
+      "timeout": true,
+      "passed": false,
+      "required": true
+    },
+    "Existing BMS Tests": {
+      "name": "Existing BMS Tests",
+      "command": "npx playwright test tests/e2e/bms-upload-verification.spec.js",
+      "exitCode": 3221225794,
+      "duration": 17,
+      "stdout": "",
+      "stderr": "",
+      "passed": false,
+      "required": false
+    }
+  },
+  "errors": [
+    {
+      "suite": "API Integration Tests",
+      "message": "Required test suite failed with exit code 1"
+    }
+  ],
+  "warnings": [],
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "errors",
+      "message": "Fix 1 critical errors in required test suites"
+    },
+    {
+      "priority": "high",
+      "category": "required_tests",
+      "message": "2 required test suites are failing"
+    },
+    {
+      "priority": "medium",
+      "category": "test_coverage",
+      "message": "Some test suites are failing - review individual results"
+    }
+  ]
+}

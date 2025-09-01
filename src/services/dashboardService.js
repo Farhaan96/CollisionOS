@@ -1,12 +1,13 @@
 // API base URL - adjust based on environment
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Simple in-memory cache for dashboard data
 const dashboardCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const getCacheKey = (method, params) => `${method}-${JSON.stringify(params)}`;
-const isCacheValid = (timestamp) => Date.now() - timestamp < CACHE_DURATION;
+const isCacheValid = timestamp => Date.now() - timestamp < CACHE_DURATION;
 
 // Helper function to make API calls
 const apiCall = async (endpoint, options = {}) => {
@@ -15,17 +16,19 @@ const apiCall = async (endpoint, options = {}) => {
     const headers = {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers
+      ...options.headers,
     };
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers,
-      ...options
+      ...options,
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `API call failed: ${response.status} ${response.statusText}`
+      );
     }
 
     return await response.json();
@@ -40,18 +43,18 @@ export const dashboardService = {
   async getKPIs(timeframe = 'month') {
     const cacheKey = getCacheKey('getKPIs', { timeframe });
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
       const data = await apiCall(`/dashboard/kpis?timeframe=${timeframe}`);
-      
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
@@ -66,18 +69,18 @@ export const dashboardService = {
   async getProductionData() {
     const cacheKey = getCacheKey('getProductionData', {});
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
       const data = await apiCall('/dashboard/production');
-      
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
@@ -91,23 +94,28 @@ export const dashboardService = {
   async getRevenueTrend(timeframe = 'month') {
     const cacheKey = getCacheKey('getRevenueTrend', { timeframe });
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
-      const data = await apiCall(`/dashboard/revenue-trend?timeframe=${timeframe}`);
-      
+      const data = await apiCall(
+        `/dashboard/revenue-trend?timeframe=${timeframe}`
+      );
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
     } catch (error) {
-      console.warn('Revenue trend API call failed, using fallback data:', error);
+      console.warn(
+        'Revenue trend API call failed, using fallback data:',
+        error
+      );
       return this.getFallbackRevenueTrend();
     }
   },
@@ -116,18 +124,18 @@ export const dashboardService = {
   async getRecentJobs(limit = 5) {
     const cacheKey = getCacheKey('getRecentJobs', { limit });
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
       const data = await apiCall(`/dashboard/recent-jobs?limit=${limit}`);
-      
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
@@ -141,23 +149,28 @@ export const dashboardService = {
   async getTechnicianPerformance(timeframe = 'month') {
     const cacheKey = getCacheKey('getTechnicianPerformance', { timeframe });
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
-      const data = await apiCall(`/dashboard/technician-performance?timeframe=${timeframe}`);
-      
+      const data = await apiCall(
+        `/dashboard/technician-performance?timeframe=${timeframe}`
+      );
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
     } catch (error) {
-      console.warn('Technician performance API call failed, using fallback data:', error);
+      console.warn(
+        'Technician performance API call failed, using fallback data:',
+        error
+      );
       return this.getFallbackTechnicianData();
     }
   },
@@ -166,18 +179,18 @@ export const dashboardService = {
   async getAlerts() {
     const cacheKey = getCacheKey('getAlerts', {});
     const cached = dashboardCache.get(cacheKey);
-    
+
     if (cached && isCacheValid(cached.timestamp)) {
       return cached.data;
     }
 
     try {
       const data = await apiCall('/dashboard/alerts');
-      
+
       // Cache the result
       dashboardCache.set(cacheKey, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return data;
@@ -190,32 +203,33 @@ export const dashboardService = {
   // Combined dashboard data method (legacy support)
   async getDashboardData(timeframe = 'month') {
     try {
-      const [kpis, productionStats, revenueTrend, efficiencyStats] = await Promise.all([
-        this.getKPIs(timeframe),
-        this.getProductionData(),
-        this.getRevenueTrend(timeframe),
-        this.getTechnicianPerformance(timeframe)
-      ]);
+      const [kpis, productionStats, revenueTrend, efficiencyStats] =
+        await Promise.all([
+          this.getKPIs(timeframe),
+          this.getProductionData(),
+          this.getRevenueTrend(timeframe),
+          this.getTechnicianPerformance(timeframe),
+        ]);
 
       return {
         kpis: {
           revenue: kpis.revenue?.current || 0,
           jobsInProgress: kpis.totalJobs?.inProgress || 0,
           avgCycleTime: kpis.cycleTime?.current || 0,
-          customerSatisfaction: kpis.customerSatisfaction?.current || 0
+          customerSatisfaction: kpis.customerSatisfaction?.current || 0,
         },
         productionStats: {
           total: productionStats.reduce((sum, item) => sum + item.count, 0),
-          statusDistribution: productionStats
+          statusDistribution: productionStats,
         },
-        financialStats: { 
-          revenueTrend 
+        financialStats: {
+          revenueTrend,
         },
-        efficiencyStats: { 
+        efficiencyStats: {
           laborEfficiency: kpis.laborEfficiency?.current || 0,
           partsEfficiency: 92, // Placeholder
-          bayUtilization: 73 // Placeholder
-        }
+          bayUtilization: 73, // Placeholder
+        },
       };
     } catch (error) {
       console.error('Error fetching combined dashboard data:', error);
@@ -245,7 +259,7 @@ export const dashboardService = {
   getCacheStatus() {
     return {
       size: dashboardCache.size,
-      keys: Array.from(dashboardCache.keys())
+      keys: Array.from(dashboardCache.keys()),
     };
   },
 
@@ -263,8 +277,8 @@ export const dashboardService = {
         { name: 'Mike Johnson', efficiency: 156, revenue: 12500 },
         { name: 'Sarah Davis', efficiency: 145, revenue: 11800 },
         { name: 'Tom Wilson', efficiency: 138, revenue: 10900 },
-        { name: 'Lisa Brown', efficiency: 132, revenue: 9800 }
-      ]
+        { name: 'Lisa Brown', efficiency: 132, revenue: 9800 },
+      ],
     };
   },
 
@@ -277,7 +291,7 @@ export const dashboardService = {
       { status: 'Paint Booth', count: 4, color: '#EF4444' },
       { status: 'Assembly', count: 9, color: '#10B981' },
       { status: 'QC', count: 3, color: '#6366F1' },
-      { status: 'Ready', count: 5, color: '#22C55E' }
+      { status: 'Ready', count: 5, color: '#22C55E' },
     ];
   },
 
@@ -288,17 +302,52 @@ export const dashboardService = {
       { month: 'Mar', labor: 88000, parts: 52000, total: 140000 },
       { month: 'Apr', labor: 95000, parts: 55000, total: 150000 },
       { month: 'May', labor: 102000, parts: 58000, total: 160000 },
-      { month: 'Jun', labor: 108000, parts: 62000, total: 170000 }
+      { month: 'Jun', labor: 108000, parts: 62000, total: 170000 },
     ];
   },
 
   getFallbackRecentJobs() {
     return [
-      { id: '2457', customer: 'John Smith', vehicle: '2020 Honda Civic', status: 'Body Work', value: 2847.50, days: 3 },
-      { id: '2458', customer: 'Sarah Johnson', vehicle: '2019 Toyota Camry', status: 'Paint Prep', value: 1956.75, days: 1 },
-      { id: '2459', customer: 'Mike Wilson', vehicle: '2021 Ford F-150', status: 'Estimate', value: 3420.00, days: 0 },
-      { id: '2460', customer: 'Lisa Brown', vehicle: '2018 BMW 3-Series', status: 'Assembly', value: 4120.25, days: 5 },
-      { id: '2461', customer: 'Tom Davis', vehicle: '2022 Chevrolet Silverado', status: 'QC', value: 2875.50, days: 6 }
+      {
+        id: '2457',
+        customer: 'John Smith',
+        vehicle: '2020 Honda Civic',
+        status: 'Body Work',
+        value: 2847.5,
+        days: 3,
+      },
+      {
+        id: '2458',
+        customer: 'Sarah Johnson',
+        vehicle: '2019 Toyota Camry',
+        status: 'Paint Prep',
+        value: 1956.75,
+        days: 1,
+      },
+      {
+        id: '2459',
+        customer: 'Mike Wilson',
+        vehicle: '2021 Ford F-150',
+        status: 'Estimate',
+        value: 3420.0,
+        days: 0,
+      },
+      {
+        id: '2460',
+        customer: 'Lisa Brown',
+        vehicle: '2018 BMW 3-Series',
+        status: 'Assembly',
+        value: 4120.25,
+        days: 5,
+      },
+      {
+        id: '2461',
+        customer: 'Tom Davis',
+        vehicle: '2022 Chevrolet Silverado',
+        status: 'QC',
+        value: 2875.5,
+        days: 6,
+      },
     ];
   },
 
@@ -307,38 +356,56 @@ export const dashboardService = {
       { name: 'Mike Johnson', efficiency: 156, revenue: 12500 },
       { name: 'Sarah Davis', efficiency: 145, revenue: 11800 },
       { name: 'Tom Wilson', efficiency: 138, revenue: 10900 },
-      { name: 'Lisa Brown', efficiency: 132, revenue: 9800 }
+      { name: 'Lisa Brown', efficiency: 132, revenue: 9800 },
     ];
   },
 
   getFallbackAlerts() {
     return [
-      { id: 1, type: 'error', title: 'Parts Overdue', message: 'BMW 3-Series front bumper 3 days overdue', priority: 'high' },
-      { id: 2, type: 'warning', title: 'Cycle Time Alert', message: 'Job #2457 exceeding target by 2 days', priority: 'medium' },
-      { id: 3, type: 'info', title: 'Insurance Approval', message: 'Supplement approved for $1,245', priority: 'low' }
+      {
+        id: 1,
+        type: 'error',
+        title: 'Parts Overdue',
+        message: 'BMW 3-Series front bumper 3 days overdue',
+        priority: 'high',
+      },
+      {
+        id: 2,
+        type: 'warning',
+        title: 'Cycle Time Alert',
+        message: 'Job #2457 exceeding target by 2 days',
+        priority: 'medium',
+      },
+      {
+        id: 3,
+        type: 'info',
+        title: 'Insurance Approval',
+        message: 'Supplement approved for $1,245',
+        priority: 'low',
+      },
     ];
   },
 
   getFallbackDashboardData() {
     return {
-      kpis: { 
-        revenue: 123456, 
-        jobsInProgress: 12, 
-        avgCycleTime: 6.2, 
-        customerSatisfaction: 95 
+      kpis: {
+        revenue: 123456,
+        jobsInProgress: 12,
+        avgCycleTime: 6.2,
+        customerSatisfaction: 95,
       },
-      productionStats: { 
-        total: 24, 
-        statusDistribution: this.getFallbackProductionData()
+      productionStats: {
+        total: 24,
+        statusDistribution: this.getFallbackProductionData(),
       },
-      financialStats: { 
-        revenueTrend: this.getFallbackRevenueTrend()
+      financialStats: {
+        revenueTrend: this.getFallbackRevenueTrend(),
       },
-      efficiencyStats: { 
-        laborEfficiency: 88, 
-        partsEfficiency: 92, 
-        bayUtilization: 73 
-      }
+      efficiencyStats: {
+        laborEfficiency: 88,
+        partsEfficiency: 92,
+        bayUtilization: 73,
+      },
     };
-  }
+  },
 };

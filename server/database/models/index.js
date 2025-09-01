@@ -97,7 +97,10 @@ Shop.hasMany(Estimate, { foreignKey: 'shopId', as: 'estimates' });
 // Shop.hasMany(PartsOrder, { foreignKey: 'shopId', as: 'partsOrders' });  // Commented for testing
 Shop.hasMany(LaborTimeEntry, { foreignKey: 'shopId', as: 'laborTimeEntries' });
 // Shop.hasMany(Attachment, { foreignKey: 'shopId', as: 'attachments' });  // Commented for testing
-Shop.hasMany(InsuranceCompany, { foreignKey: 'shopId', as: 'insuranceCompanies' });
+Shop.hasMany(InsuranceCompany, {
+  foreignKey: 'shopId',
+  as: 'insuranceCompanies',
+});
 Shop.hasMany(Invoice, { foreignKey: 'shopId', as: 'invoices' });
 Shop.hasMany(VehicleHistory, { foreignKey: 'shopId', as: 'vehicleHistory' });
 Shop.hasMany(WorkflowStatus, { foreignKey: 'shopId', as: 'workflowStatuses' });
@@ -105,22 +108,55 @@ Shop.hasMany(WorkflowStatus, { foreignKey: 'shopId', as: 'workflowStatuses' });
 // IMEX-level model associations
 Shop.hasMany(ProductionStage, { foreignKey: 'shopId', as: 'productionStages' });
 Shop.hasMany(JobStageHistory, { foreignKey: 'shopId', as: 'jobStageHistory' });
-Shop.hasMany(TechnicianPerformance, { foreignKey: 'shopId', as: 'technicianPerformance' });
-Shop.hasMany(CommunicationTemplate, { foreignKey: 'shopId', as: 'communicationTemplates' });
-Shop.hasMany(CommunicationLog, { foreignKey: 'shopId', as: 'communicationLogs' });
-Shop.hasMany(FinancialTransaction, { foreignKey: 'shopId', as: 'financialTransactions' });
+Shop.hasMany(TechnicianPerformance, {
+  foreignKey: 'shopId',
+  as: 'technicianPerformance',
+});
+Shop.hasMany(CommunicationTemplate, {
+  foreignKey: 'shopId',
+  as: 'communicationTemplates',
+});
+Shop.hasMany(CommunicationLog, {
+  foreignKey: 'shopId',
+  as: 'communicationLogs',
+});
+Shop.hasMany(FinancialTransaction, {
+  foreignKey: 'shopId',
+  as: 'financialTransactions',
+});
 
 // Phase 1 Comprehensive Collision Repair Associations
 Shop.hasMany(ContactTimeline, { foreignKey: 'shopId', as: 'contactTimeline' });
 Shop.hasMany(VehicleProfile, { foreignKey: 'shopId', as: 'vehicleProfiles' });
 Shop.hasMany(ClaimManagement, { foreignKey: 'shopId', as: 'claimManagement' });
-Shop.hasMany(RepairOrderManagement, { foreignKey: 'shopId', as: 'repairOrderManagement' });
-Shop.hasMany(ProductionWorkflow, { foreignKey: 'shopId', as: 'productionWorkflow' });
-Shop.hasMany(SchedulingCapacity, { foreignKey: 'shopId', as: 'schedulingCapacity' });
-Shop.hasMany(LoanerFleetManagement, { foreignKey: 'shopId', as: 'loanerFleet' });
-Shop.hasMany(LoanerReservation, { foreignKey: 'shopId', as: 'loanerReservations' });
-Shop.hasMany(AdvancedPartsManagement, { foreignKey: 'shopId', as: 'advancedPartsManagement' });
-Shop.hasMany(PurchaseOrderSystem, { foreignKey: 'shopId', as: 'purchaseOrders' });
+Shop.hasMany(RepairOrderManagement, {
+  foreignKey: 'shopId',
+  as: 'repairOrderManagement',
+});
+Shop.hasMany(ProductionWorkflow, {
+  foreignKey: 'shopId',
+  as: 'productionWorkflow',
+});
+Shop.hasMany(SchedulingCapacity, {
+  foreignKey: 'shopId',
+  as: 'schedulingCapacity',
+});
+Shop.hasMany(LoanerFleetManagement, {
+  foreignKey: 'shopId',
+  as: 'loanerFleet',
+});
+Shop.hasMany(LoanerReservation, {
+  foreignKey: 'shopId',
+  as: 'loanerReservations',
+});
+Shop.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'shopId',
+  as: 'advancedPartsManagement',
+});
+Shop.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'shopId',
+  as: 'purchaseOrders',
+});
 
 User.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
 Customer.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
@@ -196,16 +232,28 @@ WorkflowStatus.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
 Estimate.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
 
 // Estimate associations
-Estimate.hasMany(EstimateLineItem, { foreignKey: 'estimateId', as: 'lineItems' });
-Estimate.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
+Estimate.hasMany(EstimateLineItem, {
+  foreignKey: 'estimateId',
+  as: 'lineItems',
+});
+Estimate.belongsTo(InsuranceCompany, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'insuranceCompany',
+});
 Estimate.hasMany(BmsImport, { foreignKey: 'estimateId', as: 'bmsImports' });
 Estimate.hasMany(Attachment, { foreignKey: 'estimateId', as: 'attachments' });
 // Estimate.hasMany(PartsOrder, { foreignKey: 'estimateId', as: 'partsOrders' });  // Commented for testing
 
-EstimateLineItem.belongsTo(Estimate, { foreignKey: 'estimateId', as: 'estimate' });
+EstimateLineItem.belongsTo(Estimate, {
+  foreignKey: 'estimateId',
+  as: 'estimate',
+});
 EstimateLineItem.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
 // EstimateLineItem.hasMany(PartsOrderItem, { foreignKey: 'estimateLineItemId', as: 'partsOrderItems' });  // Commented for testing
-EstimateLineItem.hasMany(LaborTimeEntry, { foreignKey: 'estimateLineItemId', as: 'laborTimeEntries' });
+EstimateLineItem.hasMany(LaborTimeEntry, {
+  foreignKey: 'estimateLineItemId',
+  as: 'laborTimeEntries',
+});
 
 BmsImport.belongsTo(Estimate, { foreignKey: 'estimateId', as: 'estimate' });
 BmsImport.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
@@ -218,50 +266,104 @@ Attachment.belongsTo(Estimate, { foreignKey: 'estimateId', as: 'estimate' });
 // PartsOrder.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
 // PartsOrder.hasMany(PartsOrderItem, { foreignKey: 'partsOrderId', as: 'items' });
 // PartsOrder.hasMany(Attachment, { foreignKey: 'partsOrderId', as: 'attachments' });
-// 
+//
 // PartsOrderItem.belongsTo(PartsOrder, { foreignKey: 'partsOrderId', as: 'partsOrder' });
 // PartsOrderItem.belongsTo(Part, { foreignKey: 'partId', as: 'part' });
 // PartsOrderItem.belongsTo(EstimateLineItem, { foreignKey: 'estimateLineItemId', as: 'estimateLineItem' });
-// 
+//
 // Vendor.hasMany(PartsOrder, { foreignKey: 'vendorId', as: 'partsOrders' });
 // Part.hasMany(PartsOrderItem, { foreignKey: 'partId', as: 'partsOrderItems' });
 
 // Labor time entry associations
-LaborTimeEntry.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
-LaborTimeEntry.belongsTo(EstimateLineItem, { foreignKey: 'estimateLineItemId', as: 'estimateLineItem' });
-LaborTimeEntry.belongsTo(LaborTimeEntry, { foreignKey: 'originalTimeEntryId', as: 'originalTimeEntry' });
-LaborTimeEntry.hasMany(LaborTimeEntry, { foreignKey: 'originalTimeEntryId', as: 'reworkEntries' });
+LaborTimeEntry.belongsTo(User, {
+  foreignKey: 'technicianId',
+  as: 'technician',
+});
+LaborTimeEntry.belongsTo(EstimateLineItem, {
+  foreignKey: 'estimateLineItemId',
+  as: 'estimateLineItem',
+});
+LaborTimeEntry.belongsTo(LaborTimeEntry, {
+  foreignKey: 'originalTimeEntryId',
+  as: 'originalTimeEntry',
+});
+LaborTimeEntry.hasMany(LaborTimeEntry, {
+  foreignKey: 'originalTimeEntryId',
+  as: 'reworkEntries',
+});
 
-User.hasMany(LaborTimeEntry, { foreignKey: 'technicianId', as: 'laborTimeEntries' });
+User.hasMany(LaborTimeEntry, {
+  foreignKey: 'technicianId',
+  as: 'laborTimeEntries',
+});
 
 // Part and vendor associations
 Part.belongsTo(Vendor, { foreignKey: 'primaryVendorId', as: 'primaryVendor' });
 Vendor.hasMany(Part, { foreignKey: 'primaryVendorId', as: 'parts' });
-Vendor.hasMany(EstimateLineItem, { foreignKey: 'vendorId', as: 'estimateLineItems' });
+Vendor.hasMany(EstimateLineItem, {
+  foreignKey: 'vendorId',
+  as: 'estimateLineItems',
+});
 
 // Insurance company associations
-InsuranceCompany.hasMany(Estimate, { foreignKey: 'insuranceCompanyId', as: 'estimates' });
-InsuranceCompany.hasMany(Invoice, { foreignKey: 'insuranceCompanyId', as: 'invoices' });
-InsuranceCompany.hasMany(VehicleHistory, { foreignKey: 'insuranceCompanyId', as: 'vehicleHistory' });
+InsuranceCompany.hasMany(Estimate, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'estimates',
+});
+InsuranceCompany.hasMany(Invoice, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'invoices',
+});
+InsuranceCompany.hasMany(VehicleHistory, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'vehicleHistory',
+});
 
-Invoice.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
-VehicleHistory.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
+Invoice.belongsTo(InsuranceCompany, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'insuranceCompany',
+});
+VehicleHistory.belongsTo(InsuranceCompany, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'insuranceCompany',
+});
 
 // Invoice associations
-Invoice.belongsTo(Invoice, { foreignKey: 'originalInvoiceId', as: 'originalInvoice' });
+Invoice.belongsTo(Invoice, {
+  foreignKey: 'originalInvoiceId',
+  as: 'originalInvoice',
+});
 Invoice.hasMany(Invoice, { foreignKey: 'originalInvoiceId', as: 'revisions' });
 
 // Vehicle history associations
-VehicleHistory.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
-VehicleHistory.belongsTo(VehicleHistory, { foreignKey: 'originalServiceId', as: 'originalService' });
-VehicleHistory.hasMany(VehicleHistory, { foreignKey: 'originalServiceId', as: 'returnVisits' });
+VehicleHistory.belongsTo(User, {
+  foreignKey: 'technicianId',
+  as: 'technician',
+});
+VehicleHistory.belongsTo(VehicleHistory, {
+  foreignKey: 'originalServiceId',
+  as: 'originalService',
+});
+VehicleHistory.hasMany(VehicleHistory, {
+  foreignKey: 'originalServiceId',
+  as: 'returnVisits',
+});
 
 // Workflow status associations
-WorkflowStatus.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
+WorkflowStatus.belongsTo(User, {
+  foreignKey: 'technicianId',
+  as: 'technician',
+});
 WorkflowStatus.belongsTo(User, { foreignKey: 'assignedBy', as: 'assignor' });
 WorkflowStatus.belongsTo(User, { foreignKey: 'inspectedBy', as: 'inspector' });
-WorkflowStatus.belongsTo(WorkflowStatus, { foreignKey: 'originalWorkflowId', as: 'originalWorkflow' });
-WorkflowStatus.hasMany(WorkflowStatus, { foreignKey: 'originalWorkflowId', as: 'reworkWorkflows' });
+WorkflowStatus.belongsTo(WorkflowStatus, {
+  foreignKey: 'originalWorkflowId',
+  as: 'originalWorkflow',
+});
+WorkflowStatus.hasMany(WorkflowStatus, {
+  foreignKey: 'originalWorkflowId',
+  as: 'reworkWorkflows',
+});
 
 // User creation/update tracking
 User.hasMany(BmsImport, { foreignKey: 'createdBy', as: 'createdBmsImports' });
@@ -271,7 +373,10 @@ User.hasMany(Estimate, { foreignKey: 'approvedBy', as: 'approvedEstimates' });
 // User.hasMany(PartsOrder, { foreignKey: 'createdBy', as: 'createdPartsOrders' });  // Commented for testing
 // User.hasMany(Attachment, { foreignKey: 'uploadedBy', as: 'uploadedAttachments' });  // Commented for testing
 User.hasMany(Invoice, { foreignKey: 'createdBy', as: 'createdInvoices' });
-User.hasMany(VehicleHistory, { foreignKey: 'technicianId', as: 'vehicleHistoryEntries' });
+User.hasMany(VehicleHistory, {
+  foreignKey: 'technicianId',
+  as: 'vehicleHistoryEntries',
+});
 
 // Additional IMEX-level associations
 // Job associations with new models
@@ -280,23 +385,59 @@ Job.hasMany(CommunicationLog, { foreignKey: 'jobId', as: 'communications' });
 Job.hasMany(FinancialTransaction, { foreignKey: 'jobId', as: 'transactions' });
 
 JobStageHistory.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
-JobStageHistory.belongsTo(WorkflowStatus, { foreignKey: 'workflowStatusId', as: 'workflowStatus' });
-JobStageHistory.belongsTo(ProductionStage, { foreignKey: 'productionStageId', as: 'productionStage' });
-JobStageHistory.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
+JobStageHistory.belongsTo(WorkflowStatus, {
+  foreignKey: 'workflowStatusId',
+  as: 'workflowStatus',
+});
+JobStageHistory.belongsTo(ProductionStage, {
+  foreignKey: 'productionStageId',
+  as: 'productionStage',
+});
+JobStageHistory.belongsTo(User, {
+  foreignKey: 'technicianId',
+  as: 'technician',
+});
 
 CommunicationLog.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
-CommunicationLog.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-CommunicationLog.belongsTo(CommunicationTemplate, { foreignKey: 'templateId', as: 'template' });
-CommunicationLog.belongsTo(WorkflowStatus, { foreignKey: 'workflowStatusId', as: 'workflowStatus' });
+CommunicationLog.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
+CommunicationLog.belongsTo(CommunicationTemplate, {
+  foreignKey: 'templateId',
+  as: 'template',
+});
+CommunicationLog.belongsTo(WorkflowStatus, {
+  foreignKey: 'workflowStatusId',
+  as: 'workflowStatus',
+});
 
 FinancialTransaction.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
-FinancialTransaction.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-FinancialTransaction.belongsTo(Invoice, { foreignKey: 'invoiceId', as: 'invoice' });
-FinancialTransaction.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
-FinancialTransaction.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
+FinancialTransaction.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
+FinancialTransaction.belongsTo(Invoice, {
+  foreignKey: 'invoiceId',
+  as: 'invoice',
+});
+FinancialTransaction.belongsTo(Vendor, {
+  foreignKey: 'vendorId',
+  as: 'vendor',
+});
+FinancialTransaction.belongsTo(InsuranceCompany, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'insuranceCompany',
+});
 
-TechnicianPerformance.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
-User.hasMany(TechnicianPerformance, { foreignKey: 'technicianId', as: 'performanceRecords' });
+TechnicianPerformance.belongsTo(User, {
+  foreignKey: 'technicianId',
+  as: 'technician',
+});
+User.hasMany(TechnicianPerformance, {
+  foreignKey: 'technicianId',
+  as: 'performanceRecords',
+});
 
 // =====================================================================
 // PHASE 1 COMPREHENSIVE COLLISION REPAIR MODEL ASSOCIATIONS
@@ -315,165 +456,501 @@ AdvancedPartsManagement.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
 PurchaseOrderSystem.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
 
 // Contact Timeline Associations
-ContactTimeline.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+ContactTimeline.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
 ContactTimeline.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
 ContactTimeline.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-ContactTimeline.belongsTo(CommunicationTemplate, { foreignKey: 'templateId', as: 'template' });
+ContactTimeline.belongsTo(CommunicationTemplate, {
+  foreignKey: 'templateId',
+  as: 'template',
+});
 
-Customer.hasMany(ContactTimeline, { foreignKey: 'customerId', as: 'contactTimeline' });
+Customer.hasMany(ContactTimeline, {
+  foreignKey: 'customerId',
+  as: 'contactTimeline',
+});
 Job.hasMany(ContactTimeline, { foreignKey: 'jobId', as: 'contactTimeline' });
 User.hasMany(ContactTimeline, { foreignKey: 'userId', as: 'contactTimeline' });
-CommunicationTemplate.hasMany(ContactTimeline, { foreignKey: 'templateId', as: 'contactTimeline' });
+CommunicationTemplate.hasMany(ContactTimeline, {
+  foreignKey: 'templateId',
+  as: 'contactTimeline',
+});
 
 // Vehicle Profile Associations
-VehicleProfile.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+VehicleProfile.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
 VehicleProfile.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 VehicleProfile.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 
-Customer.hasMany(VehicleProfile, { foreignKey: 'customerId', as: 'vehicleProfiles' });
-User.hasMany(VehicleProfile, { foreignKey: 'createdBy', as: 'createdVehicleProfiles' });
-User.hasMany(VehicleProfile, { foreignKey: 'updatedBy', as: 'updatedVehicleProfiles' });
+Customer.hasMany(VehicleProfile, {
+  foreignKey: 'customerId',
+  as: 'vehicleProfiles',
+});
+User.hasMany(VehicleProfile, {
+  foreignKey: 'createdBy',
+  as: 'createdVehicleProfiles',
+});
+User.hasMany(VehicleProfile, {
+  foreignKey: 'updatedBy',
+  as: 'updatedVehicleProfiles',
+});
 
 // Claim Management Associations
-ClaimManagement.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-ClaimManagement.belongsTo(VehicleProfile, { foreignKey: 'vehicleProfileId', as: 'vehicleProfile' });
-ClaimManagement.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
+ClaimManagement.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
+ClaimManagement.belongsTo(VehicleProfile, {
+  foreignKey: 'vehicleProfileId',
+  as: 'vehicleProfile',
+});
+ClaimManagement.belongsTo(InsuranceCompany, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'insuranceCompany',
+});
 ClaimManagement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 ClaimManagement.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 ClaimManagement.belongsTo(User, { foreignKey: 'reviewedBy', as: 'reviewer' });
 
-Customer.hasMany(ClaimManagement, { foreignKey: 'customerId', as: 'claimManagement' });
-VehicleProfile.hasMany(ClaimManagement, { foreignKey: 'vehicleProfileId', as: 'claimManagement' });
-InsuranceCompany.hasMany(ClaimManagement, { foreignKey: 'insuranceCompanyId', as: 'claimManagement' });
-User.hasMany(ClaimManagement, { foreignKey: 'createdBy', as: 'createdClaimManagement' });
-User.hasMany(ClaimManagement, { foreignKey: 'updatedBy', as: 'updatedClaimManagement' });
-User.hasMany(ClaimManagement, { foreignKey: 'reviewedBy', as: 'reviewedClaimManagement' });
+Customer.hasMany(ClaimManagement, {
+  foreignKey: 'customerId',
+  as: 'claimManagement',
+});
+VehicleProfile.hasMany(ClaimManagement, {
+  foreignKey: 'vehicleProfileId',
+  as: 'claimManagement',
+});
+InsuranceCompany.hasMany(ClaimManagement, {
+  foreignKey: 'insuranceCompanyId',
+  as: 'claimManagement',
+});
+User.hasMany(ClaimManagement, {
+  foreignKey: 'createdBy',
+  as: 'createdClaimManagement',
+});
+User.hasMany(ClaimManagement, {
+  foreignKey: 'updatedBy',
+  as: 'updatedClaimManagement',
+});
+User.hasMany(ClaimManagement, {
+  foreignKey: 'reviewedBy',
+  as: 'reviewedClaimManagement',
+});
 
 // Repair Order Management Associations
-RepairOrderManagement.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-RepairOrderManagement.belongsTo(VehicleProfile, { foreignKey: 'vehicleProfileId', as: 'vehicleProfile' });
-RepairOrderManagement.belongsTo(ClaimManagement, { foreignKey: 'claimManagementId', as: 'claimManagement' });
-RepairOrderManagement.belongsTo(Estimate, { foreignKey: 'estimateId', as: 'estimate' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'primaryTechnician', as: 'primaryTechnicianUser' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'assignedEstimator', as: 'estimatorUser' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'assignedSalesRep', as: 'salesRepUser' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'qcInspector', as: 'qcInspectorUser' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'statusChangedBy', as: 'statusChanger' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
-RepairOrderManagement.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+RepairOrderManagement.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
+RepairOrderManagement.belongsTo(VehicleProfile, {
+  foreignKey: 'vehicleProfileId',
+  as: 'vehicleProfile',
+});
+RepairOrderManagement.belongsTo(ClaimManagement, {
+  foreignKey: 'claimManagementId',
+  as: 'claimManagement',
+});
+RepairOrderManagement.belongsTo(Estimate, {
+  foreignKey: 'estimateId',
+  as: 'estimate',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'primaryTechnician',
+  as: 'primaryTechnicianUser',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'assignedEstimator',
+  as: 'estimatorUser',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'assignedSalesRep',
+  as: 'salesRepUser',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'qcInspector',
+  as: 'qcInspectorUser',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'statusChangedBy',
+  as: 'statusChanger',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'createdBy',
+  as: 'creator',
+});
+RepairOrderManagement.belongsTo(User, {
+  foreignKey: 'updatedBy',
+  as: 'updater',
+});
 
-Customer.hasMany(RepairOrderManagement, { foreignKey: 'customerId', as: 'repairOrderManagement' });
-VehicleProfile.hasMany(RepairOrderManagement, { foreignKey: 'vehicleProfileId', as: 'repairOrderManagement' });
-ClaimManagement.hasMany(RepairOrderManagement, { foreignKey: 'claimManagementId', as: 'repairOrderManagement' });
-Estimate.hasMany(RepairOrderManagement, { foreignKey: 'estimateId', as: 'repairOrderManagement' });
-User.hasMany(RepairOrderManagement, { foreignKey: 'primaryTechnician', as: 'primaryTechnicianRepairOrders' });
-User.hasMany(RepairOrderManagement, { foreignKey: 'assignedEstimator', as: 'estimatorRepairOrders' });
-User.hasMany(RepairOrderManagement, { foreignKey: 'assignedSalesRep', as: 'salesRepRepairOrders' });
-User.hasMany(RepairOrderManagement, { foreignKey: 'qcInspector', as: 'qcInspectorRepairOrders' });
+Customer.hasMany(RepairOrderManagement, {
+  foreignKey: 'customerId',
+  as: 'repairOrderManagement',
+});
+VehicleProfile.hasMany(RepairOrderManagement, {
+  foreignKey: 'vehicleProfileId',
+  as: 'repairOrderManagement',
+});
+ClaimManagement.hasMany(RepairOrderManagement, {
+  foreignKey: 'claimManagementId',
+  as: 'repairOrderManagement',
+});
+Estimate.hasMany(RepairOrderManagement, {
+  foreignKey: 'estimateId',
+  as: 'repairOrderManagement',
+});
+User.hasMany(RepairOrderManagement, {
+  foreignKey: 'primaryTechnician',
+  as: 'primaryTechnicianRepairOrders',
+});
+User.hasMany(RepairOrderManagement, {
+  foreignKey: 'assignedEstimator',
+  as: 'estimatorRepairOrders',
+});
+User.hasMany(RepairOrderManagement, {
+  foreignKey: 'assignedSalesRep',
+  as: 'salesRepRepairOrders',
+});
+User.hasMany(RepairOrderManagement, {
+  foreignKey: 'qcInspector',
+  as: 'qcInspectorRepairOrders',
+});
 
 // Production Workflow Associations
-ProductionWorkflow.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
-ProductionWorkflow.belongsTo(ProductionStage, { foreignKey: 'productionStageId', as: 'productionStage' });
-ProductionWorkflow.belongsTo(User, { foreignKey: 'assignedTechnician', as: 'assignedTechnicianUser' });
-ProductionWorkflow.belongsTo(User, { foreignKey: 'backupTechnician', as: 'backupTechnicianUser' });
-ProductionWorkflow.belongsTo(User, { foreignKey: 'qcInspector', as: 'qcInspectorUser' });
-ProductionWorkflow.belongsTo(User, { foreignKey: 'completedBy', as: 'completedByUser' });
+ProductionWorkflow.belongsTo(RepairOrderManagement, {
+  foreignKey: 'repairOrderId',
+  as: 'repairOrder',
+});
+ProductionWorkflow.belongsTo(ProductionStage, {
+  foreignKey: 'productionStageId',
+  as: 'productionStage',
+});
+ProductionWorkflow.belongsTo(User, {
+  foreignKey: 'assignedTechnician',
+  as: 'assignedTechnicianUser',
+});
+ProductionWorkflow.belongsTo(User, {
+  foreignKey: 'backupTechnician',
+  as: 'backupTechnicianUser',
+});
+ProductionWorkflow.belongsTo(User, {
+  foreignKey: 'qcInspector',
+  as: 'qcInspectorUser',
+});
+ProductionWorkflow.belongsTo(User, {
+  foreignKey: 'completedBy',
+  as: 'completedByUser',
+});
 ProductionWorkflow.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 ProductionWorkflow.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
-ProductionWorkflow.belongsTo(ProductionWorkflow, { foreignKey: 'originalWorkOrderId', as: 'originalWorkOrder' });
+ProductionWorkflow.belongsTo(ProductionWorkflow, {
+  foreignKey: 'originalWorkOrderId',
+  as: 'originalWorkOrder',
+});
 
-RepairOrderManagement.hasMany(ProductionWorkflow, { foreignKey: 'repairOrderId', as: 'productionWorkflow' });
-ProductionStage.hasMany(ProductionWorkflow, { foreignKey: 'productionStageId', as: 'productionWorkflow' });
-User.hasMany(ProductionWorkflow, { foreignKey: 'assignedTechnician', as: 'assignedProductionWorkflow' });
-User.hasMany(ProductionWorkflow, { foreignKey: 'backupTechnician', as: 'backupProductionWorkflow' });
-User.hasMany(ProductionWorkflow, { foreignKey: 'qcInspector', as: 'qcInspectorProductionWorkflow' });
-User.hasMany(ProductionWorkflow, { foreignKey: 'completedBy', as: 'completedProductionWorkflow' });
-ProductionWorkflow.hasMany(ProductionWorkflow, { foreignKey: 'originalWorkOrderId', as: 'reworkWorkflow' });
+RepairOrderManagement.hasMany(ProductionWorkflow, {
+  foreignKey: 'repairOrderId',
+  as: 'productionWorkflow',
+});
+ProductionStage.hasMany(ProductionWorkflow, {
+  foreignKey: 'productionStageId',
+  as: 'productionWorkflow',
+});
+User.hasMany(ProductionWorkflow, {
+  foreignKey: 'assignedTechnician',
+  as: 'assignedProductionWorkflow',
+});
+User.hasMany(ProductionWorkflow, {
+  foreignKey: 'backupTechnician',
+  as: 'backupProductionWorkflow',
+});
+User.hasMany(ProductionWorkflow, {
+  foreignKey: 'qcInspector',
+  as: 'qcInspectorProductionWorkflow',
+});
+User.hasMany(ProductionWorkflow, {
+  foreignKey: 'completedBy',
+  as: 'completedProductionWorkflow',
+});
+ProductionWorkflow.hasMany(ProductionWorkflow, {
+  foreignKey: 'originalWorkOrderId',
+  as: 'reworkWorkflow',
+});
 
 // Scheduling Capacity Associations
 SchedulingCapacity.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 SchedulingCapacity.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 
-User.hasMany(SchedulingCapacity, { foreignKey: 'createdBy', as: 'createdSchedulingCapacity' });
-User.hasMany(SchedulingCapacity, { foreignKey: 'updatedBy', as: 'updatedSchedulingCapacity' });
+User.hasMany(SchedulingCapacity, {
+  foreignKey: 'createdBy',
+  as: 'createdSchedulingCapacity',
+});
+User.hasMany(SchedulingCapacity, {
+  foreignKey: 'updatedBy',
+  as: 'updatedSchedulingCapacity',
+});
 
 // Loaner Fleet Management Associations
-LoanerFleetManagement.belongsTo(Customer, { foreignKey: 'currentRenterId', as: 'currentRenter' });
-LoanerFleetManagement.belongsTo(User, { foreignKey: 'damageReportedBy', as: 'damageReporter' });
-LoanerFleetManagement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
-LoanerFleetManagement.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+LoanerFleetManagement.belongsTo(Customer, {
+  foreignKey: 'currentRenterId',
+  as: 'currentRenter',
+});
+LoanerFleetManagement.belongsTo(User, {
+  foreignKey: 'damageReportedBy',
+  as: 'damageReporter',
+});
+LoanerFleetManagement.belongsTo(User, {
+  foreignKey: 'createdBy',
+  as: 'creator',
+});
+LoanerFleetManagement.belongsTo(User, {
+  foreignKey: 'updatedBy',
+  as: 'updater',
+});
 
-Customer.hasMany(LoanerFleetManagement, { foreignKey: 'currentRenterId', as: 'currentLoanerVehicles' });
-User.hasMany(LoanerFleetManagement, { foreignKey: 'damageReportedBy', as: 'reportedDamageLoaners' });
-User.hasMany(LoanerFleetManagement, { foreignKey: 'createdBy', as: 'createdLoanerFleet' });
-User.hasMany(LoanerFleetManagement, { foreignKey: 'updatedBy', as: 'updatedLoanerFleet' });
+Customer.hasMany(LoanerFleetManagement, {
+  foreignKey: 'currentRenterId',
+  as: 'currentLoanerVehicles',
+});
+User.hasMany(LoanerFleetManagement, {
+  foreignKey: 'damageReportedBy',
+  as: 'reportedDamageLoaners',
+});
+User.hasMany(LoanerFleetManagement, {
+  foreignKey: 'createdBy',
+  as: 'createdLoanerFleet',
+});
+User.hasMany(LoanerFleetManagement, {
+  foreignKey: 'updatedBy',
+  as: 'updatedLoanerFleet',
+});
 
 // Loaner Reservation Associations
-LoanerReservation.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-LoanerReservation.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
-LoanerReservation.belongsTo(LoanerFleetManagement, { foreignKey: 'loanerVehicleId', as: 'loanerVehicle' });
-LoanerReservation.belongsTo(ClaimManagement, { foreignKey: 'claimManagementId', as: 'claimManagement' });
-LoanerReservation.belongsTo(User, { foreignKey: 'statusChangedBy', as: 'statusChanger' });
-LoanerReservation.belongsTo(User, { foreignKey: 'pickupInspectedBy', as: 'pickupInspector' });
-LoanerReservation.belongsTo(User, { foreignKey: 'returnInspectedBy', as: 'returnInspector' });
+LoanerReservation.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
+LoanerReservation.belongsTo(RepairOrderManagement, {
+  foreignKey: 'repairOrderId',
+  as: 'repairOrder',
+});
+LoanerReservation.belongsTo(LoanerFleetManagement, {
+  foreignKey: 'loanerVehicleId',
+  as: 'loanerVehicle',
+});
+LoanerReservation.belongsTo(ClaimManagement, {
+  foreignKey: 'claimManagementId',
+  as: 'claimManagement',
+});
+LoanerReservation.belongsTo(User, {
+  foreignKey: 'statusChangedBy',
+  as: 'statusChanger',
+});
+LoanerReservation.belongsTo(User, {
+  foreignKey: 'pickupInspectedBy',
+  as: 'pickupInspector',
+});
+LoanerReservation.belongsTo(User, {
+  foreignKey: 'returnInspectedBy',
+  as: 'returnInspector',
+});
 LoanerReservation.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 LoanerReservation.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 
-Customer.hasMany(LoanerReservation, { foreignKey: 'customerId', as: 'loanerReservations' });
-RepairOrderManagement.hasMany(LoanerReservation, { foreignKey: 'repairOrderId', as: 'loanerReservations' });
-LoanerFleetManagement.hasMany(LoanerReservation, { foreignKey: 'loanerVehicleId', as: 'reservations' });
-ClaimManagement.hasMany(LoanerReservation, { foreignKey: 'claimManagementId', as: 'loanerReservations' });
-User.hasMany(LoanerReservation, { foreignKey: 'pickupInspectedBy', as: 'pickupInspectedReservations' });
-User.hasMany(LoanerReservation, { foreignKey: 'returnInspectedBy', as: 'returnInspectedReservations' });
+Customer.hasMany(LoanerReservation, {
+  foreignKey: 'customerId',
+  as: 'loanerReservations',
+});
+RepairOrderManagement.hasMany(LoanerReservation, {
+  foreignKey: 'repairOrderId',
+  as: 'loanerReservations',
+});
+LoanerFleetManagement.hasMany(LoanerReservation, {
+  foreignKey: 'loanerVehicleId',
+  as: 'reservations',
+});
+ClaimManagement.hasMany(LoanerReservation, {
+  foreignKey: 'claimManagementId',
+  as: 'loanerReservations',
+});
+User.hasMany(LoanerReservation, {
+  foreignKey: 'pickupInspectedBy',
+  as: 'pickupInspectedReservations',
+});
+User.hasMany(LoanerReservation, {
+  foreignKey: 'returnInspectedBy',
+  as: 'returnInspectedReservations',
+});
 
 // Advanced Parts Management Associations
-AdvancedPartsManagement.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
-AdvancedPartsManagement.belongsTo(EstimateLineItem, { foreignKey: 'estimateLineItemId', as: 'estimateLineItem' });
-AdvancedPartsManagement.belongsTo(PartsOrder, { foreignKey: 'partsOrderId', as: 'partsOrder' });
-AdvancedPartsManagement.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'statusChangedBy', as: 'statusChanger' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'sourcedBy', as: 'sourcer' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'orderedBy', as: 'orderer' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'receivedBy', as: 'receiver' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'inspectedBy', as: 'inspector' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'installedBy', as: 'installer' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'returnedBy', as: 'returner' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
-AdvancedPartsManagement.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+AdvancedPartsManagement.belongsTo(RepairOrderManagement, {
+  foreignKey: 'repairOrderId',
+  as: 'repairOrder',
+});
+AdvancedPartsManagement.belongsTo(EstimateLineItem, {
+  foreignKey: 'estimateLineItemId',
+  as: 'estimateLineItem',
+});
+AdvancedPartsManagement.belongsTo(PartsOrder, {
+  foreignKey: 'partsOrderId',
+  as: 'partsOrder',
+});
+AdvancedPartsManagement.belongsTo(Vendor, {
+  foreignKey: 'vendorId',
+  as: 'vendor',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'statusChangedBy',
+  as: 'statusChanger',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'sourcedBy',
+  as: 'sourcer',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'orderedBy',
+  as: 'orderer',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'receivedBy',
+  as: 'receiver',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'inspectedBy',
+  as: 'inspector',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'installedBy',
+  as: 'installer',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'returnedBy',
+  as: 'returner',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'createdBy',
+  as: 'creator',
+});
+AdvancedPartsManagement.belongsTo(User, {
+  foreignKey: 'updatedBy',
+  as: 'updater',
+});
 
-RepairOrderManagement.hasMany(AdvancedPartsManagement, { foreignKey: 'repairOrderId', as: 'advancedPartsManagement' });
-EstimateLineItem.hasMany(AdvancedPartsManagement, { foreignKey: 'estimateLineItemId', as: 'advancedPartsManagement' });
-PartsOrder.hasMany(AdvancedPartsManagement, { foreignKey: 'partsOrderId', as: 'advancedPartsManagement' });
-Vendor.hasMany(AdvancedPartsManagement, { foreignKey: 'vendorId', as: 'advancedPartsManagement' });
-User.hasMany(AdvancedPartsManagement, { foreignKey: 'sourcedBy', as: 'sourcedAdvancedParts' });
-User.hasMany(AdvancedPartsManagement, { foreignKey: 'orderedBy', as: 'orderedAdvancedParts' });
-User.hasMany(AdvancedPartsManagement, { foreignKey: 'receivedBy', as: 'receivedAdvancedParts' });
-User.hasMany(AdvancedPartsManagement, { foreignKey: 'inspectedBy', as: 'inspectedAdvancedParts' });
-User.hasMany(AdvancedPartsManagement, { foreignKey: 'installedBy', as: 'installedAdvancedParts' });
+RepairOrderManagement.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'repairOrderId',
+  as: 'advancedPartsManagement',
+});
+EstimateLineItem.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'estimateLineItemId',
+  as: 'advancedPartsManagement',
+});
+PartsOrder.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'partsOrderId',
+  as: 'advancedPartsManagement',
+});
+Vendor.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'vendorId',
+  as: 'advancedPartsManagement',
+});
+User.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'sourcedBy',
+  as: 'sourcedAdvancedParts',
+});
+User.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'orderedBy',
+  as: 'orderedAdvancedParts',
+});
+User.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'receivedBy',
+  as: 'receivedAdvancedParts',
+});
+User.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'inspectedBy',
+  as: 'inspectedAdvancedParts',
+});
+User.hasMany(AdvancedPartsManagement, {
+  foreignKey: 'installedBy',
+  as: 'installedAdvancedParts',
+});
 
 // Purchase Order System Associations
-PurchaseOrderSystem.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+PurchaseOrderSystem.belongsTo(RepairOrderManagement, {
+  foreignKey: 'repairOrderId',
+  as: 'repairOrder',
+});
 PurchaseOrderSystem.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'statusChangedBy', as: 'statusChanger' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'rejectedBy', as: 'rejecter' });
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'statusChangedBy',
+  as: 'statusChanger',
+});
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'approvedBy',
+  as: 'approver',
+});
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'rejectedBy',
+  as: 'rejecter',
+});
 PurchaseOrderSystem.belongsTo(User, { foreignKey: 'sentBy', as: 'sender' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'inspectedBy', as: 'inspector' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'requestedBy', as: 'requester' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'authorizedBy', as: 'authorizer' });
-PurchaseOrderSystem.belongsTo(User, { foreignKey: 'buyerAssigned', as: 'buyer' });
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'inspectedBy',
+  as: 'inspector',
+});
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'requestedBy',
+  as: 'requester',
+});
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'authorizedBy',
+  as: 'authorizer',
+});
+PurchaseOrderSystem.belongsTo(User, {
+  foreignKey: 'buyerAssigned',
+  as: 'buyer',
+});
 PurchaseOrderSystem.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 PurchaseOrderSystem.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
-PurchaseOrderSystem.belongsTo(PurchaseOrderSystem, { foreignKey: 'parentOrderId', as: 'parentOrder' });
+PurchaseOrderSystem.belongsTo(PurchaseOrderSystem, {
+  foreignKey: 'parentOrderId',
+  as: 'parentOrder',
+});
 
-RepairOrderManagement.hasMany(PurchaseOrderSystem, { foreignKey: 'repairOrderId', as: 'purchaseOrders' });
-Vendor.hasMany(PurchaseOrderSystem, { foreignKey: 'vendorId', as: 'purchaseOrders' });
-User.hasMany(PurchaseOrderSystem, { foreignKey: 'approvedBy', as: 'approvedPurchaseOrders' });
-User.hasMany(PurchaseOrderSystem, { foreignKey: 'sentBy', as: 'sentPurchaseOrders' });
-User.hasMany(PurchaseOrderSystem, { foreignKey: 'inspectedBy', as: 'inspectedPurchaseOrders' });
-User.hasMany(PurchaseOrderSystem, { foreignKey: 'requestedBy', as: 'requestedPurchaseOrders' });
-User.hasMany(PurchaseOrderSystem, { foreignKey: 'buyerAssigned', as: 'assignedPurchaseOrders' });
-PurchaseOrderSystem.hasMany(PurchaseOrderSystem, { foreignKey: 'parentOrderId', as: 'childOrders' });
+RepairOrderManagement.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'repairOrderId',
+  as: 'purchaseOrders',
+});
+Vendor.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'vendorId',
+  as: 'purchaseOrders',
+});
+User.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'approvedBy',
+  as: 'approvedPurchaseOrders',
+});
+User.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'sentBy',
+  as: 'sentPurchaseOrders',
+});
+User.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'inspectedBy',
+  as: 'inspectedPurchaseOrders',
+});
+User.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'requestedBy',
+  as: 'requestedPurchaseOrders',
+});
+User.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'buyerAssigned',
+  as: 'assignedPurchaseOrders',
+});
+PurchaseOrderSystem.hasMany(PurchaseOrderSystem, {
+  foreignKey: 'parentOrderId',
+  as: 'childOrders',
+});
 
 module.exports = {
   sequelize,
@@ -512,7 +989,5 @@ module.exports = {
   LoanerFleetManagement,
   LoanerReservation,
   AdvancedPartsManagement,
-  PurchaseOrderSystem
+  PurchaseOrderSystem,
 };
-
-

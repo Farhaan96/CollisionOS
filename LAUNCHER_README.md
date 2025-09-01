@@ -5,8 +5,9 @@ This folder contains several ways to launch your CollisionOS desktop application
 ## 📋 Available Launchers
 
 ### 1. **Launch CollisionOS.bat** (Recommended)
+
 - **Double-click to run**: Simple Windows batch file
-- **Features**: 
+- **Features**:
   - Automatically installs dependencies if missing
   - Initializes database on first run
   - Shows progress and error messages
@@ -14,28 +15,32 @@ This folder contains several ways to launch your CollisionOS desktop application
 - **Best for**: Most users who want a simple double-click solution
 
 ### 2. **Launch-CollisionOS.ps1** (Advanced)
+
 - **PowerShell script** with additional options
 - **Features**:
   - Color-coded output and progress indicators
   - Command-line options for different launch modes
   - Better error handling and troubleshooting tips
 - **Usage Options**:
+
   ```powershell
   # Standard launch (desktop app)
   .\Launch-CollisionOS.ps1
-  
+
   # Web-only mode (no desktop window)
   .\Launch-CollisionOS.ps1 -WebOnly
-  
+
   # Debug mode (with developer tools)
   .\Launch-CollisionOS.ps1 -DebugMode
-  
+
   # Skip dependency check (faster startup)
   .\Launch-CollisionOS.ps1 -SkipDependencies
   ```
+
 - **Best for**: Power users who want more control
 
 ### 3. **Create-Desktop-Shortcut.ps1**
+
 - **Right-click → Run with PowerShell** to create a desktop shortcut
 - Creates a shortcut on your desktop that launches CollisionOS
 - **Best for**: Users who want easy desktop access
@@ -59,6 +64,7 @@ Once launched, you can access CollisionOS in two ways:
 - **Password**: `admin123`
 
 Or use any of these test accounts:
+
 - `manager` / `manager123` (Manager)
 - `estimator` / `estimator123` (Estimator)
 - `technician` / `technician123` (Technician)
@@ -66,15 +72,18 @@ Or use any of these test accounts:
 ## ❓ Troubleshooting
 
 ### App won't start?
+
 1. Make sure Node.js is installed
 2. Check that ports 3003 and 3005 are available
 3. Try the PowerShell launcher for better error messages
 
 ### Missing dependencies?
+
 1. Delete the `node_modules` folder
 2. Run the launcher again (it will reinstall automatically)
 
 ### Database issues?
+
 1. Delete the `data/collisionos.db` file
 2. Run the launcher again (it will recreate the database)
 
@@ -103,7 +112,7 @@ npm run dev:debug
 ## 📁 File Structure
 
 - `Launch CollisionOS.bat` - Simple batch launcher
-- `Launch-CollisionOS.ps1` - Advanced PowerShell launcher  
+- `Launch-CollisionOS.ps1` - Advanced PowerShell launcher
 - `Create-Desktop-Shortcut.ps1` - Creates desktop shortcut
 - `CollisionOS.url` - Web shortcut file
 - `LAUNCHER_README.md` - This documentation

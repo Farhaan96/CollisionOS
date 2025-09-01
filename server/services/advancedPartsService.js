@@ -9,68 +9,68 @@ const VENDOR_INTEGRATIONS = {
     apiUrl: 'https://api.partsauthority.com/v1',
     apiKey: process.env.PARTS_AUTHORITY_API_KEY,
     enabled: true,
-    supportedFeatures: ['pricing', 'availability', 'ordering', 'tracking']
+    supportedFeatures: ['pricing', 'availability', 'ordering', 'tracking'],
   },
   'auto-parts-bridge': {
     name: 'Auto Parts Bridge',
     apiUrl: 'https://api.autopartsbridge.com/v2',
     apiKey: process.env.AUTO_PARTS_BRIDGE_API_KEY,
     enabled: true,
-    supportedFeatures: ['pricing', 'availability', 'catalog']
+    supportedFeatures: ['pricing', 'availability', 'catalog'],
   },
   'oe-connection': {
     name: 'OE Connection',
     apiUrl: 'https://api.oeconnection.com/v1',
     apiKey: process.env.OE_CONNECTION_API_KEY,
     enabled: true,
-    supportedFeatures: ['pricing', 'availability', 'ordering', 'oem_catalog']
+    supportedFeatures: ['pricing', 'availability', 'ordering', 'oem_catalog'],
   },
-  'lkq': {
+  lkq: {
     name: 'LKQ Corporation',
     apiUrl: 'https://api.lkqcorp.com/v1',
     apiKey: process.env.LKQ_API_KEY,
     enabled: true,
-    supportedFeatures: ['used_parts', 'recycled', 'pricing', 'availability']
-  }
+    supportedFeatures: ['used_parts', 'recycled', 'pricing', 'availability'],
+  },
 };
 
 // Part categories with auto-ordering rules
 const PART_CATEGORIES = {
-  'body_panels': {
+  body_panels: {
     name: 'Body Panels',
     autoOrderThreshold: 2,
     leadTime: 3, // days
     averageCost: 150,
-    suppliers: ['parts-authority', 'oe-connection']
+    suppliers: ['parts-authority', 'oe-connection'],
   },
-  'mechanical': {
+  mechanical: {
     name: 'Mechanical Parts',
     autoOrderThreshold: 5,
     leadTime: 2,
     averageCost: 75,
-    suppliers: ['auto-parts-bridge', 'parts-authority']
+    suppliers: ['auto-parts-bridge', 'parts-authority'],
   },
-  'electrical': {
+  electrical: {
     name: 'Electrical Components',
     autoOrderThreshold: 3,
     leadTime: 5,
     averageCost: 200,
-    suppliers: ['oe-connection', 'parts-authority']
+    suppliers: ['oe-connection', 'parts-authority'],
   },
-  'paint_supplies': {
+  paint_supplies: {
     name: 'Paint & Supplies',
     autoOrderThreshold: 10,
     leadTime: 1,
     averageCost: 25,
-    suppliers: ['parts-authority']
+    suppliers: ['parts-authority'],
   },
-  'consumables': {
+  consumables: {
     name: 'Consumables',
     autoOrderThreshold: 20,
     leadTime: 1,
     averageCost: 10,
-    suppliers: ['parts-authority', 'auto-parts-bridge']
-  }
+    suppliers: ['parts-authority', 'auto-parts-bridge'],
+  },
 };
 
 class AdvancedPartsService {
@@ -99,8 +99,8 @@ class AdvancedPartsService {
         const pendingOrder = await PartOrder.findOne({
           where: {
             partId: part.id,
-            status: { [require('sequelize').Op.in]: ['pending', 'ordered'] }
-          }
+            status: { [require('sequelize').Op.in]: ['pending', 'ordered'] },
+          },
         });
 
         if (pendingOrder) {
@@ -109,7 +109,7 @@ class AdvancedPartsService {
 
         // Calculate optimal order quantity
         const orderQuantity = await this.calculateOptimalOrderQuantity(part);
-        
+
         // Get best vendor pricing
         const vendorQuotes = await this.getVendorPricing(part, orderQuantity);
         const bestQuote = this.selectBestVendor(vendorQuotes);
@@ -123,14 +123,17 @@ class AdvancedPartsService {
             unitPrice: bestQuote.unitPrice,
             totalCost: bestQuote.totalCost,
             estimatedDelivery: bestQuote.estimatedDelivery,
-            orderType: 'automatic'
+            orderType: 'automatic',
           });
 
           orderResults.push({
             part: part,
             order: autoOrder,
             vendor: bestQuote.vendor,
-            savings: vendorQuotes.length > 1 ? this.calculateSavings(vendorQuotes, bestQuote) : 0
+            savings:
+              vendorQuotes.length > 1
+                ? this.calculateSavings(vendorQuotes, bestQuote)
+                : 0,
           });
 
           notifications.push({
@@ -138,14 +141,14 @@ class AdvancedPartsService {
             message: `Auto-ordered ${orderQuantity}x ${part.partNumber} from ${bestQuote.vendor.name}`,
             priority: 'medium',
             partId: part.id,
-            orderId: autoOrder.id
+            orderId: autoOrder.id,
           });
         } else {
           notifications.push({
             type: 'auto_order_failed',
             message: `Could not auto-order ${part.partNumber} - no vendors available`,
             priority: 'high',
-            partId: part.id
+            partId: part.id,
           });
         }
       }
@@ -157,14 +160,19 @@ class AdvancedPartsService {
         summary: {
           partsChecked: lowStockParts.length,
           ordersPlaced: orderResults.length,
-          totalCost: orderResults.reduce((sum, result) => sum + result.order.totalCost, 0)
-        }
+          totalCost: orderResults.reduce(
+            (sum, result) => sum + result.order.totalCost,
+            0
+          ),
+        },
       });
 
       return { orderResults, notifications };
-
     } catch (error) {
-      auditLogger.error('Auto-ordering failed', { shopId, error: error.message });
+      auditLogger.error('Auto-ordering failed', {
+        shopId,
+        error: error.message,
+      });
       throw error;
     }
   }
@@ -173,14 +181,14 @@ class AdvancedPartsService {
   async getVendorPricing(part, quantity = 1) {
     const cacheKey = `pricing_${part.partNumber}_${quantity}`;
     const cached = this.pricingCache.get(cacheKey);
-    
+
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       return cached.data;
     }
 
     const quotes = [];
     const category = PART_CATEGORIES[part.category];
-    
+
     if (!category) {
       return quotes;
     }
@@ -196,10 +204,10 @@ class AdvancedPartsService {
           quotes.push(quote);
         }
       } catch (error) {
-        auditLogger.warn('Vendor quote failed', { 
-          vendor: vendorIntegration, 
+        auditLogger.warn('Vendor quote failed', {
+          vendor: vendorIntegration,
           partNumber: part.partNumber,
-          error: error.message 
+          error: error.message,
         });
       }
     }
@@ -207,7 +215,7 @@ class AdvancedPartsService {
     // Cache results
     this.pricingCache.set(cacheKey, {
       data: quotes,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     return quotes;
@@ -224,7 +232,8 @@ class AdvancedPartsService {
     const priceVariation = (Math.random() - 0.5) * 0.4; // ±20% variation
     const unitPrice = Math.round(basePrice * (1 + priceVariation) * 100) / 100;
     const quantityDiscount = quantity > 5 ? 0.1 : quantity > 2 ? 0.05 : 0;
-    const finalUnitPrice = Math.round(unitPrice * (1 - quantityDiscount) * 100) / 100;
+    const finalUnitPrice =
+      Math.round(unitPrice * (1 - quantityDiscount) * 100) / 100;
 
     const availability = Math.random() > 0.2; // 80% availability
     if (!availability) return null;
@@ -234,19 +243,21 @@ class AdvancedPartsService {
       vendor: {
         name: integration.name,
         rating: Math.random() * 1 + 4, // 4-5 star rating
-        reliabilityScore: Math.random() * 20 + 80 // 80-100%
+        reliabilityScore: Math.random() * 20 + 80, // 80-100%
       },
       partNumber: part.partNumber,
       availability: 'in_stock',
       unitPrice: finalUnitPrice,
       totalCost: finalUnitPrice * quantity,
       quantity: quantity,
-      estimatedDelivery: new Date(Date.now() + (Math.random() * 5 + 1) * 24 * 60 * 60 * 1000), // 1-6 days
-      shipping: quantity * 2.50, // $2.50 per item shipping
+      estimatedDelivery: new Date(
+        Date.now() + (Math.random() * 5 + 1) * 24 * 60 * 60 * 1000
+      ), // 1-6 days
+      shipping: quantity * 2.5, // $2.50 per item shipping
       leadTime: Math.floor(Math.random() * 5) + 1, // 1-5 days
       warranty: '12 months',
       restrictions: [],
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
   }
 
@@ -260,17 +271,21 @@ class AdvancedPartsService {
       const prices = quotes.map(q => q.totalCost);
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
-      
-      const priceScore = maxPrice === minPrice ? 1 : (maxPrice - quote.totalCost) / (maxPrice - minPrice);
+
+      const priceScore =
+        maxPrice === minPrice
+          ? 1
+          : (maxPrice - quote.totalCost) / (maxPrice - minPrice);
       const reliabilityScore = quote.vendor.reliabilityScore / 100;
       const deliveryScore = 1 - (quote.leadTime - 1) / 5; // Normalize delivery time
-      
-      const totalScore = (priceScore * 0.4) + (reliabilityScore * 0.3) + (deliveryScore * 0.3);
-      
+
+      const totalScore =
+        priceScore * 0.4 + reliabilityScore * 0.3 + deliveryScore * 0.3;
+
       return { ...quote, score: totalScore };
     });
 
-    return scoredQuotes.reduce((best, current) => 
+    return scoredQuotes.reduce((best, current) =>
       current.score > best.score ? current : best
     );
   }
@@ -283,20 +298,22 @@ class AdvancedPartsService {
     // Get usage data for the part
     const monthlyUsage = await this.getPartMonthlyUsage(part.id);
     const annualUsage = monthlyUsage * 12;
-    
+
     if (annualUsage === 0) return category.autoOrderThreshold * 2; // Safety stock
 
     // EOQ calculation
     const orderingCost = 25; // Fixed cost per order
     const holdingCostRate = 0.2; // 20% of part value per year
     const unitCost = category.averageCost;
-    
-    const eoq = Math.sqrt((2 * annualUsage * orderingCost) / (unitCost * holdingCostRate));
-    
+
+    const eoq = Math.sqrt(
+      (2 * annualUsage * orderingCost) / (unitCost * holdingCostRate)
+    );
+
     // Ensure minimum order quantity
     const minOrder = category.autoOrderThreshold * 2;
     const maxOrder = Math.min(eoq, annualUsage / 4); // Don't order more than 3 months supply
-    
+
     return Math.max(minOrder, Math.round(maxOrder));
   }
 
@@ -311,14 +328,16 @@ class AdvancedPartsService {
       metadata: {
         autoOrderReason: 'low_stock_threshold',
         calculationMethod: 'eoq',
-        vendorSelectionCriteria: 'price_reliability_delivery'
-      }
+        vendorSelectionCriteria: 'price_reliability_delivery',
+      },
     });
 
     // Update part expected quantity
     await Part.update(
-      { 
-        expectedQuantity: require('sequelize').literal(`expectedQuantity + ${orderData.quantity}`)
+      {
+        expectedQuantity: require('sequelize').literal(
+          `expectedQuantity + ${orderData.quantity}`
+        ),
       },
       { where: { id: orderData.partId } }
     );
@@ -328,7 +347,7 @@ class AdvancedPartsService {
       partId: orderData.partId,
       quantity: orderData.quantity,
       vendor: orderData.vendorId,
-      cost: orderData.totalCost
+      cost: orderData.totalCost,
     });
 
     return order;
@@ -337,11 +356,11 @@ class AdvancedPartsService {
   // Parts queue management with priority
   async getPartsQueue(shopId, filters = {}) {
     const whereClause = { shopId };
-    
+
     if (filters.priority) {
       whereClause.priority = filters.priority;
     }
-    
+
     if (filters.status) {
       whereClause.status = filters.status;
     }
@@ -352,30 +371,33 @@ class AdvancedPartsService {
         {
           model: Part,
           as: 'part',
-          attributes: ['id', 'partNumber', 'description', 'category']
+          attributes: ['id', 'partNumber', 'description', 'category'],
         },
         {
           model: Job,
           as: 'job',
           attributes: ['id', 'jobNumber', 'priority', 'status'],
-          required: false
-        }
+          required: false,
+        },
       ],
       order: [
         ['priority', 'DESC'],
-        ['orderDate', 'ASC']
-      ]
+        ['orderDate', 'ASC'],
+      ],
     });
 
     // Calculate queue metrics
     const metrics = {
       totalOrders: orders.length,
       pendingOrders: orders.filter(o => o.status === 'pending').length,
-      overdueOrders: orders.filter(o => 
-        o.estimatedDelivery && new Date(o.estimatedDelivery) < new Date()
+      overdueOrders: orders.filter(
+        o => o.estimatedDelivery && new Date(o.estimatedDelivery) < new Date()
       ).length,
-      totalValue: orders.reduce((sum, order) => sum + (order.totalCost || 0), 0),
-      averageLeadTime: this.calculateAverageLeadTime(orders)
+      totalValue: orders.reduce(
+        (sum, order) => sum + (order.totalCost || 0),
+        0
+      ),
+      averageLeadTime: this.calculateAverageLeadTime(orders),
     };
 
     return {
@@ -383,10 +405,10 @@ class AdvancedPartsService {
         ...order.toJSON(),
         daysOverdue: this.calculateDaysOverdue(order.estimatedDelivery),
         urgencyScore: this.calculateUrgencyScore(order),
-        recommendations: this.generateOrderRecommendations(order)
+        recommendations: this.generateOrderRecommendations(order),
       })),
       metrics,
-      queueAnalytics: await this.analyzePartsQueue(orders)
+      queueAnalytics: await this.analyzePartsQueue(orders),
     };
   }
 
@@ -396,19 +418,20 @@ class AdvancedPartsService {
       where: {
         shopId,
         quantity: {
-          [require('sequelize').Op.lte]: require('sequelize').col('minimumQuantity')
-        }
+          [require('sequelize').Op.lte]:
+            require('sequelize').col('minimumQuantity'),
+        },
       },
       order: [
-        [require('sequelize').literal('quantity - minimumQuantity'), 'ASC']
-      ]
+        [require('sequelize').literal('quantity - minimumQuantity'), 'ASC'],
+      ],
     });
 
     return parts.map(part => ({
       ...part.toJSON(),
       stockLevel: this.calculateStockLevel(part.quantity, part.minimumQuantity),
       urgency: this.calculateStockUrgency(part),
-      recommendations: this.generateStockRecommendations(part)
+      recommendations: this.generateStockRecommendations(part),
     }));
   }
 
@@ -417,8 +440,8 @@ class AdvancedPartsService {
     const order = await PartOrder.findByPk(orderId, {
       include: [
         { model: Part, as: 'part' },
-        { model: Job, as: 'job' }
-      ]
+        { model: Job, as: 'job' },
+      ],
     });
 
     if (!order) {
@@ -430,7 +453,7 @@ class AdvancedPartsService {
       status: 'received',
       receivedDate: new Date(),
       receivedQuantity: arrivedQuantity,
-      condition
+      condition,
     });
 
     // Update part inventory
@@ -438,22 +461,22 @@ class AdvancedPartsService {
     await part.update({
       quantity: part.quantity + arrivedQuantity,
       expectedQuantity: Math.max(0, part.expectedQuantity - arrivedQuantity),
-      lastRestocked: new Date()
+      lastRestocked: new Date(),
     });
 
     // Check for job matching
     const waitingJobs = await this.findJobsWaitingForPart(part.id);
-    
+
     // Generate notifications
     const notifications = [];
-    
+
     // Stock level notification
     notifications.push({
       type: 'part_arrived',
       message: `${part.partNumber} has arrived (${arrivedQuantity} units)`,
       priority: 'medium',
       partId: part.id,
-      orderId: order.id
+      orderId: order.id,
     });
 
     // Job matching notifications
@@ -463,19 +486,19 @@ class AdvancedPartsService {
         message: `Parts ready for Job ${job.jobNumber}`,
         priority: 'high',
         jobId: job.id,
-        partId: part.id
+        partId: part.id,
       });
 
       // Update job status if all parts are now available
       const allPartsAvailable = await this.checkJobPartsAvailability(job.id);
       if (allPartsAvailable) {
         await job.update({ partsStatus: 'available' });
-        
+
         notifications.push({
           type: 'job_ready_production',
           message: `Job ${job.jobNumber} is ready for production - all parts available`,
           priority: 'high',
-          jobId: job.id
+          jobId: job.id,
         });
       }
     }
@@ -487,7 +510,7 @@ class AdvancedPartsService {
       arrivedQuantity,
       condition,
       waitingJobs,
-      notifications
+      notifications,
     });
 
     auditLogger.info('Part arrival processed', {
@@ -495,7 +518,7 @@ class AdvancedPartsService {
       partId: part.id,
       arrivedQuantity,
       condition,
-      matchedJobs: waitingJobs.length
+      matchedJobs: waitingJobs.length,
     });
 
     return { order, part, waitingJobs, notifications };
@@ -503,7 +526,13 @@ class AdvancedPartsService {
 
   // Helper methods
   generateOrderNumber() {
-    return 'PO' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return (
+      'PO' +
+      Date.now().toString().slice(-8) +
+      Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, '0')
+    );
   }
 
   calculateSavings(quotes, selectedQuote) {
@@ -518,25 +547,27 @@ class AdvancedPartsService {
 
   calculateDaysOverdue(estimatedDelivery) {
     if (!estimatedDelivery) return 0;
-    const overdue = Math.floor((new Date() - new Date(estimatedDelivery)) / (1000 * 60 * 60 * 24));
+    const overdue = Math.floor(
+      (new Date() - new Date(estimatedDelivery)) / (1000 * 60 * 60 * 24)
+    );
     return Math.max(0, overdue);
   }
 
   calculateUrgencyScore(order) {
     let score = 0;
-    
+
     // Job priority influence
     if (order.job?.priority === 'rush') score += 30;
     else if (order.job?.priority === 'high') score += 20;
-    
+
     // Overdue influence
     const daysOverdue = this.calculateDaysOverdue(order.estimatedDelivery);
     score += Math.min(daysOverdue * 5, 25);
-    
+
     // Stock level influence
     if (order.part?.quantity <= 0) score += 25;
     else if (order.part?.quantity <= order.part?.minimumQuantity) score += 15;
-    
+
     return Math.min(score, 100);
   }
 
@@ -549,9 +580,12 @@ class AdvancedPartsService {
   }
 
   calculateStockUrgency(part) {
-    const stockLevel = this.calculateStockLevel(part.quantity, part.minimumQuantity);
+    const stockLevel = this.calculateStockLevel(
+      part.quantity,
+      part.minimumQuantity
+    );
     const category = PART_CATEGORIES[part.category];
-    
+
     if (stockLevel === 'out_of_stock') return 'critical';
     if (stockLevel === 'critical') return 'high';
     if (stockLevel === 'low' && category?.leadTime > 3) return 'high';
@@ -562,57 +596,65 @@ class AdvancedPartsService {
   generateOrderRecommendations(order) {
     const recommendations = [];
     const urgencyScore = this.calculateUrgencyScore(order);
-    
+
     if (urgencyScore > 75) {
       recommendations.push({
         type: 'expedite',
         message: 'Consider expediting this order',
-        action: 'Contact vendor for rush delivery'
+        action: 'Contact vendor for rush delivery',
       });
     }
-    
+
     const daysOverdue = this.calculateDaysOverdue(order.estimatedDelivery);
     if (daysOverdue > 3) {
       recommendations.push({
         type: 'vendor_follow_up',
         message: `Order is ${daysOverdue} days overdue`,
-        action: 'Contact vendor for delivery update'
+        action: 'Contact vendor for delivery update',
       });
     }
-    
+
     return recommendations;
   }
 
   generateStockRecommendations(part) {
     const recommendations = [];
-    const stockLevel = this.calculateStockLevel(part.quantity, part.minimumQuantity);
-    
+    const stockLevel = this.calculateStockLevel(
+      part.quantity,
+      part.minimumQuantity
+    );
+
     if (stockLevel === 'out_of_stock') {
       recommendations.push({
         type: 'emergency_order',
         message: 'Part is out of stock',
-        action: 'Place emergency order immediately'
+        action: 'Place emergency order immediately',
       });
     } else if (stockLevel === 'critical') {
       recommendations.push({
         type: 'urgent_order',
         message: 'Stock level critical',
-        action: 'Place order within 24 hours'
+        action: 'Place order within 24 hours',
       });
     }
-    
+
     return recommendations;
   }
 
   calculateAverageLeadTime(orders) {
-    const ordersWithLeadTime = orders.filter(o => o.estimatedDelivery && o.orderDate);
+    const ordersWithLeadTime = orders.filter(
+      o => o.estimatedDelivery && o.orderDate
+    );
     if (ordersWithLeadTime.length === 0) return 0;
-    
+
     const totalLeadTime = ordersWithLeadTime.reduce((sum, order) => {
-      const leadTime = Math.floor((new Date(order.estimatedDelivery) - new Date(order.orderDate)) / (1000 * 60 * 60 * 24));
+      const leadTime = Math.floor(
+        (new Date(order.estimatedDelivery) - new Date(order.orderDate)) /
+          (1000 * 60 * 60 * 24)
+      );
       return sum + leadTime;
     }, 0);
-    
+
     return Math.round(totalLeadTime / ordersWithLeadTime.length);
   }
 
@@ -621,7 +663,7 @@ class AdvancedPartsService {
       bottlenecks: [],
       vendorPerformance: {},
       categoryBreakdown: {},
-      trendAnalysis: {}
+      trendAnalysis: {},
     };
 
     // Vendor performance analysis
@@ -635,14 +677,19 @@ class AdvancedPartsService {
     }, {});
 
     Object.entries(vendorGroups).forEach(([vendorId, vendorOrders]) => {
-      const overdueCount = vendorOrders.filter(o => this.calculateDaysOverdue(o.estimatedDelivery) > 0).length;
-      const onTimeRate = ((vendorOrders.length - overdueCount) / vendorOrders.length) * 100;
-      
+      const overdueCount = vendorOrders.filter(
+        o => this.calculateDaysOverdue(o.estimatedDelivery) > 0
+      ).length;
+      const onTimeRate =
+        ((vendorOrders.length - overdueCount) / vendorOrders.length) * 100;
+
       analysis.vendorPerformance[vendorId] = {
         totalOrders: vendorOrders.length,
         overdueOrders: overdueCount,
         onTimeRate,
-        averageValue: vendorOrders.reduce((sum, o) => sum + (o.totalCost || 0), 0) / vendorOrders.length
+        averageValue:
+          vendorOrders.reduce((sum, o) => sum + (o.totalCost || 0), 0) /
+          vendorOrders.length,
       };
     });
 
@@ -654,9 +701,9 @@ class AdvancedPartsService {
     const jobs = await Job.findAll({
       where: {
         partsStatus: 'waiting',
-        status: { [require('sequelize').Op.notIn]: ['delivered', 'cancelled'] }
+        status: { [require('sequelize').Op.notIn]: ['delivered', 'cancelled'] },
       },
-      limit: 5 // Mock limit
+      limit: 5, // Mock limit
     });
 
     return jobs;

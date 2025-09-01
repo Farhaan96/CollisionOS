@@ -49,7 +49,7 @@ class ImportWatcher {
     totalProcessed: 0,
     successCount: 0,
     errorCount: 0,
-    startTime: Date.now()
+    startTime: Date.now(),
   };
 
   async run(): Promise<void> {
@@ -61,16 +61,36 @@ class ImportWatcher {
       .version('1.0.0');
 
     program
-      .option('-w, --watch-dir <dir>', 'Directory to watch for import files', './imports')
+      .option(
+        '-w, --watch-dir <dir>',
+        'Directory to watch for import files',
+        './imports'
+      )
       .option('-p, --processed-dir <dir>', 'Directory to move processed files')
       .option('-e, --error-dir <dir>', 'Directory to move failed files')
       .option('-f, --format <format>', 'File format (auto|bms|ems)', 'auto')
       .option('-r, --recursive', 'Watch subdirectories recursively', false)
-      .option('-d, --debounce <ms>', 'Debounce time for file changes (ms)', '2000')
-      .option('--retry-attempts <count>', 'Number of retry attempts for failed imports', '3')
+      .option(
+        '-d, --debounce <ms>',
+        'Debounce time for file changes (ms)',
+        '2000'
+      )
+      .option(
+        '--retry-attempts <count>',
+        'Number of retry attempts for failed imports',
+        '3'
+      )
       .option('--retry-delay <ms>', 'Delay between retry attempts (ms)', '5000')
-      .option('--max-file-size <bytes>', 'Maximum file size to process (bytes)', '10485760')
-      .option('--log-level <level>', 'Logging level (error|warn|info|debug)', 'info')
+      .option(
+        '--max-file-size <bytes>',
+        'Maximum file size to process (bytes)',
+        '10485760'
+      )
+      .option(
+        '--log-level <level>',
+        'Logging level (error|warn|info|debug)',
+        'info'
+      )
       .action(async (options: WatcherOptions) => {
         await this.startWatching(options);
       });
@@ -99,13 +119,18 @@ class ImportWatcher {
       this.log('info', `🔍 Watching ${options.watchDir} for BMS/EMS files...`);
       this.log('info', `📊 Configuration:`);
       this.log('info', `  Watch Directory: ${options.watchDir}`);
-      this.log('info', `  Processed Directory: ${options.processedDir || 'none'}`);
+      this.log(
+        'info',
+        `  Processed Directory: ${options.processedDir || 'none'}`
+      );
       this.log('info', `  Error Directory: ${options.errorDir || 'none'}`);
       this.log('info', `  Format: ${options.format}`);
       this.log('info', `  Recursive: ${options.recursive}`);
       this.log('info', `  Debounce: ${options.debounceMs}ms`);
-      this.log('info', `  Max File Size: ${this.formatBytes(options.maxFileSize || 10485760)}`);
-
+      this.log(
+        'info',
+        `  Max File Size: ${this.formatBytes(options.maxFileSize || 10485760)}`
+      );
     } catch (error) {
       this.log('error', `Failed to start watcher: ${error.message}`);
       process.exit(1);
@@ -116,7 +141,7 @@ class ImportWatcher {
    * Initialize file system watcher
    */
   private async initializeWatcher(options: WatcherOptions): Promise<void> {
-    const watchPattern = options.recursive 
+    const watchPattern = options.recursive
       ? join(options.watchDir, '**', '*.{xml,bms,ems,txt}')
       : join(options.watchDir, '*.{xml,bms,ems,txt}');
 
@@ -126,23 +151,28 @@ class ImportWatcher {
       ignoreInitial: false,
       awaitWriteFinish: {
         stabilityThreshold: parseInt(options.debounceMs?.toString() || '2000'),
-        pollInterval: 100
+        pollInterval: 100,
       },
-      depth: options.recursive ? undefined : 1
+      depth: options.recursive ? undefined : 1,
     });
 
     // Handle file events
     this.watcher
-      .on('add', (filePath) => this.handleFileAdded(filePath, options))
-      .on('change', (filePath) => this.handleFileChanged(filePath, options))
-      .on('error', (error) => this.log('error', `Watcher error: ${error.message}`))
+      .on('add', filePath => this.handleFileAdded(filePath, options))
+      .on('change', filePath => this.handleFileChanged(filePath, options))
+      .on('error', error =>
+        this.log('error', `Watcher error: ${error.message}`)
+      )
       .on('ready', () => this.log('info', '✅ File watcher is ready'));
   }
 
   /**
    * Handle new file added to watch directory
    */
-  private async handleFileAdded(filePath: string, options: WatcherOptions): Promise<void> {
+  private async handleFileAdded(
+    filePath: string,
+    options: WatcherOptions
+  ): Promise<void> {
     this.log('debug', `File added: ${basename(filePath)}`);
     await this.queueFileForProcessing(filePath, options);
   }
@@ -150,7 +180,10 @@ class ImportWatcher {
   /**
    * Handle file changed in watch directory
    */
-  private async handleFileChanged(filePath: string, options: WatcherOptions): Promise<void> {
+  private async handleFileChanged(
+    filePath: string,
+    options: WatcherOptions
+  ): Promise<void> {
     this.log('debug', `File changed: ${basename(filePath)}`);
     await this.queueFileForProcessing(filePath, options);
   }
@@ -158,7 +191,10 @@ class ImportWatcher {
   /**
    * Queue file for processing with debouncing
    */
-  private async queueFileForProcessing(filePath: string, options: WatcherOptions): Promise<void> {
+  private async queueFileForProcessing(
+    filePath: string,
+    options: WatcherOptions
+  ): Promise<void> {
     // Cancel existing timer for this file
     const existingTimer = this.processingQueue.get(filePath);
     if (existingTimer) {
@@ -177,10 +213,13 @@ class ImportWatcher {
     }
 
     // Set new timer
-    const timer = setTimeout(async () => {
-      this.processingQueue.delete(filePath);
-      await this.processFile(filePath, options);
-    }, parseInt(options.debounceMs?.toString() || '2000'));
+    const timer = setTimeout(
+      async () => {
+        this.processingQueue.delete(filePath);
+        await this.processFile(filePath, options);
+      },
+      parseInt(options.debounceMs?.toString() || '2000')
+    );
 
     this.processingQueue.set(filePath, timer);
   }
@@ -188,9 +227,13 @@ class ImportWatcher {
   /**
    * Process a single file
    */
-  private async processFile(filePath: string, options: WatcherOptions, attempt: number = 1): Promise<void> {
+  private async processFile(
+    filePath: string,
+    options: WatcherOptions,
+    attempt: number = 1
+  ): Promise<void> {
     const filename = basename(filePath);
-    
+
     // Skip if file doesn't exist anymore
     if (!existsSync(filePath)) {
       this.log('debug', `File no longer exists: ${filename}`);
@@ -219,11 +262,9 @@ class ImportWatcher {
         if (options.processedDir) {
           await this.moveFile(filePath, options.processedDir);
         }
-
       } else {
         throw new Error(result.error || 'Unknown import error');
       }
-
     } catch (error) {
       this.log('error', `❌ Failed to process ${filename}: ${error.message}`);
 
@@ -231,12 +272,15 @@ class ImportWatcher {
       const maxRetries = parseInt(options.retryAttempts?.toString() || '3');
       if (attempt < maxRetries) {
         const retryDelay = parseInt(options.retryDelay?.toString() || '5000');
-        this.log('info', `⏳ Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-        
+        this.log(
+          'info',
+          `⏳ Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`
+        );
+
         setTimeout(() => {
           this.processFile(filePath, options, attempt + 1);
         }, retryDelay);
-        
+
         return; // Don't mark as complete yet
       }
 
@@ -244,7 +288,11 @@ class ImportWatcher {
 
       // Move to error directory
       if (options.errorDir) {
-        await this.moveFile(filePath, options.errorDir, `${Date.now()}-${filename}`);
+        await this.moveFile(
+          filePath,
+          options.errorDir,
+          `${Date.now()}-${filename}`
+        );
       }
     } finally {
       this.activeProcessing.delete(filePath);
@@ -256,16 +304,19 @@ class ImportWatcher {
   /**
    * Import a file and return result
    */
-  private async importFile(filePath: string, options: WatcherOptions): Promise<ProcessResult> {
+  private async importFile(
+    filePath: string,
+    options: WatcherOptions
+  ): Promise<ProcessResult> {
     const startTime = Date.now();
 
     try {
       // Read file
       const fileContent = await readFile(filePath, 'utf-8');
-      
+
       // Detect format
       const format = this.detectFormat(filePath, fileContent, options.format);
-      
+
       // Parse file
       let payload;
       switch (format) {
@@ -287,14 +338,13 @@ class ImportWatcher {
         jobId: job.id,
         jobNumber: job.jobNumber,
         processingTime: Date.now() - startTime,
-        unknownTags: payload.meta.unknown_tags
+        unknownTags: payload.meta.unknown_tags,
       };
-
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       };
     }
   }
@@ -302,11 +352,14 @@ class ImportWatcher {
   /**
    * Validate if file should be processed
    */
-  private isValidImportFile(filePath: string, options: WatcherOptions): boolean {
+  private isValidImportFile(
+    filePath: string,
+    options: WatcherOptions
+  ): boolean {
     try {
       const filename = basename(filePath);
       const extension = extname(filePath).toLowerCase();
-      
+
       // Check file extension
       const validExtensions = ['.xml', '.bms', '.ems', '.txt'];
       if (!validExtensions.includes(extension)) {
@@ -317,9 +370,12 @@ class ImportWatcher {
       // Check file size
       const stats = require('fs').statSync(filePath);
       const maxSize = options.maxFileSize || 10485760; // 10MB default
-      
+
       if (stats.size > maxSize) {
-        this.log('warn', `Skipping large file (${this.formatBytes(stats.size)}): ${filename}`);
+        this.log(
+          'warn',
+          `Skipping large file (${this.formatBytes(stats.size)}): ${filename}`
+        );
         return false;
       }
 
@@ -329,9 +385,11 @@ class ImportWatcher {
       }
 
       return true;
-
     } catch (error) {
-      this.log('warn', `Error validating file ${basename(filePath)}: ${error.message}`);
+      this.log(
+        'warn',
+        `Error validating file ${basename(filePath)}: ${error.message}`
+      );
       return false;
     }
   }
@@ -339,30 +397,37 @@ class ImportWatcher {
   /**
    * Detect file format
    */
-  private detectFormat(filePath: string, content: string, userFormat?: string): string {
+  private detectFormat(
+    filePath: string,
+    content: string,
+    userFormat?: string
+  ): string {
     if (userFormat && userFormat !== 'auto') {
       return userFormat;
     }
 
     const extension = extname(filePath).toLowerCase();
-    
+
     // Check file extension first
     if (['.xml', '.bms'].includes(extension)) {
       return 'bms';
     }
-    
+
     if (['.ems', '.txt'].includes(extension)) {
       return 'ems';
     }
 
     // Check content patterns
     const firstLine = content.split('\n')[0]?.trim();
-    
+
     // XML content indicates BMS
-    if (content.trim().startsWith('<?xml') || content.includes('<VehicleDamageEstimateAddRq')) {
+    if (
+      content.trim().startsWith('<?xml') ||
+      content.includes('<VehicleDamageEstimateAddRq')
+    ) {
       return 'bms';
     }
-    
+
     // Pipe-delimited content indicates EMS
     if (firstLine?.includes('|') && firstLine?.includes('HDR|')) {
       return 'ems';
@@ -375,16 +440,22 @@ class ImportWatcher {
   /**
    * Move file to destination directory
    */
-  private async moveFile(sourcePath: string, destDir: string, newName?: string): Promise<void> {
+  private async moveFile(
+    sourcePath: string,
+    destDir: string,
+    newName?: string
+  ): Promise<void> {
     try {
       const filename = newName || basename(sourcePath);
       const destPath = join(destDir, filename);
-      
+
       await rename(sourcePath, destPath);
       this.log('debug', `Moved ${basename(sourcePath)} to ${destDir}`);
-      
     } catch (error) {
-      this.log('warn', `Failed to move file ${basename(sourcePath)}: ${error.message}`);
+      this.log(
+        'warn',
+        `Failed to move file ${basename(sourcePath)}: ${error.message}`
+      );
     }
   }
 
@@ -395,7 +466,7 @@ class ImportWatcher {
     const directories = [
       options.watchDir,
       options.processedDir,
-      options.errorDir
+      options.errorDir,
     ].filter(Boolean);
 
     for (const dir of directories) {
@@ -411,7 +482,7 @@ class ImportWatcher {
    */
   private setupGracefulShutdown(): void {
     const signals = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
-    
+
     signals.forEach(signal => {
       process.on(signal, async () => {
         this.log('info', `\n📊 Shutdown signal received (${signal})`);
@@ -434,8 +505,11 @@ class ImportWatcher {
 
     // Wait for active processing to complete
     if (this.activeProcessing.size > 0) {
-      this.log('info', `⏳ Waiting for ${this.activeProcessing.size} active imports to complete...`);
-      
+      this.log(
+        'info',
+        `⏳ Waiting for ${this.activeProcessing.size} active imports to complete...`
+      );
+
       while (this.activeProcessing.size > 0) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -447,7 +521,7 @@ class ImportWatcher {
 
     this.logFinalStats();
     this.log('info', '👋 File watcher stopped gracefully');
-    
+
     process.exit(0);
   }
 
@@ -456,9 +530,15 @@ class ImportWatcher {
    */
   private logStats(): void {
     const uptime = Math.floor((Date.now() - this.stats.startTime) / 1000);
-    const rate = this.stats.totalProcessed > 0 ? (this.stats.totalProcessed / (uptime / 60)).toFixed(1) : '0.0';
-    
-    this.log('info', `📈 Stats: ${this.stats.successCount}/${this.stats.totalProcessed} successful | ${rate}/min | ${uptime}s uptime`);
+    const rate =
+      this.stats.totalProcessed > 0
+        ? (this.stats.totalProcessed / (uptime / 60)).toFixed(1)
+        : '0.0';
+
+    this.log(
+      'info',
+      `📈 Stats: ${this.stats.successCount}/${this.stats.totalProcessed} successful | ${rate}/min | ${uptime}s uptime`
+    );
   }
 
   /**
@@ -475,7 +555,7 @@ class ImportWatcher {
     console.log(chalk.green(`  Successful: ${this.stats.successCount}`));
     console.log(chalk.red(`  Failed: ${this.stats.errorCount}`));
     console.log(`  Uptime: ${hours}h ${minutes}m ${seconds}s`);
-    
+
     if (this.stats.totalProcessed > 0) {
       const rate = (this.stats.totalProcessed / (uptime / 60)).toFixed(1);
       console.log(`  Average Rate: ${rate} files/minute`);
@@ -498,18 +578,20 @@ class ImportWatcher {
   private log(level: string, message: string): void {
     const levels = ['error', 'warn', 'info', 'debug'];
     const currentLevel = process.env.LOG_LEVEL || 'info';
-    
+
     if (levels.indexOf(level) <= levels.indexOf(currentLevel)) {
       const timestamp = new Date().toISOString();
       const colors: { [key: string]: any } = {
         error: chalk.red,
         warn: chalk.yellow,
         info: chalk.blue,
-        debug: chalk.gray
+        debug: chalk.gray,
       };
-      
+
       const colorFn = colors[level] || chalk.white;
-      console.log(`${timestamp} ${colorFn(level.toUpperCase().padEnd(5))} ${message}`);
+      console.log(
+        `${timestamp} ${colorFn(level.toUpperCase().padEnd(5))} ${message}`
+      );
     }
   }
 }

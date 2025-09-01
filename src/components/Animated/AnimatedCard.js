@@ -3,16 +3,32 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardActions, Box, useTheme } from '@mui/material';
-import { premiumColors, premiumShadows, premiumEffects, premiumBorderRadius } from '../../theme/premiumDesignSystem';
-import { 
-  microInteractions, 
-  containerAnimations, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardActions,
+  Box,
+  useTheme,
+} from '@mui/material';
+import {
+  premiumColors,
+  premiumShadows,
+  premiumEffects,
+  premiumBorderRadius,
+} from '../../theme/premiumDesignSystem';
+import {
+  microInteractions,
+  containerAnimations,
   scrollAnimations,
   advancedSpringConfigs,
-  premiumEasings 
+  premiumEasings,
 } from '../../utils/animations/index';
-import { useMouseTracking, useScrollAnimation, useAccessibleAnimation } from '../../hooks/useAnimation';
+import {
+  useMouseTracking,
+  useScrollAnimation,
+  useAccessibleAnimation,
+} from '../../hooks/useAnimation';
 
 const AnimatedCard = ({
   children,
@@ -36,18 +52,15 @@ const AnimatedCard = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Mouse tracking for 3D tilt effect
-  const { 
-    ref: mouseRef, 
-    style: mouseStyle 
-  } = useMouseTracking(0.5, advancedSpringConfigs.responsive);
+  const { ref: mouseRef, style: mouseStyle } = useMouseTracking(
+    0.5,
+    advancedSpringConfigs.responsive
+  );
 
   // Scroll animation
-  const { 
-    ref: scrollRef, 
-    controls: scrollControls 
-  } = useScrollAnimation({
+  const { ref: scrollRef, controls: scrollControls } = useScrollAnimation({
     threshold: 0.2,
-    delay: delay * 1000
+    delay: delay * 1000,
   });
 
   // Card variants based on style
@@ -62,7 +75,7 @@ const AnimatedCard = ({
         border: `1px solid ${premiumColors.glass.white[15]}`,
         boxShadow: premiumShadows.md,
         scale: 1,
-        y: 0
+        y: 0,
       },
       hover: {
         background: `linear-gradient(135deg, 
@@ -73,8 +86,8 @@ const AnimatedCard = ({
         boxShadow: premiumShadows.lg,
         scale: interactive ? 1.02 : 1,
         y: interactive ? -4 : 0,
-        transition: advancedSpringConfigs.premium
-      }
+        transition: advancedSpringConfigs.premium,
+      },
     },
 
     glass: {
@@ -84,7 +97,7 @@ const AnimatedCard = ({
         borderRadius: premiumBorderRadius['3xl'],
         border: `1px solid ${premiumColors.glass.white[20]}`,
         boxShadow: premiumShadows.glass.soft,
-        scale: 1
+        scale: 1,
       },
       hover: {
         background: premiumColors.glass.white[12],
@@ -92,8 +105,8 @@ const AnimatedCard = ({
         border: `1px solid ${premiumColors.glass.white[30]}`,
         boxShadow: premiumShadows.glass.elevated,
         scale: interactive ? 1.01 : 1,
-        transition: advancedSpringConfigs.buttery
-      }
+        transition: advancedSpringConfigs.buttery,
+      },
     },
 
     minimal: {
@@ -102,15 +115,15 @@ const AnimatedCard = ({
         borderRadius: premiumBorderRadius.xl,
         border: `1px solid ${premiumColors.neutral[200]}`,
         boxShadow: premiumShadows.sm,
-        scale: 1
+        scale: 1,
       },
       hover: {
         background: premiumColors.neutral[100],
         border: `1px solid ${premiumColors.neutral[300]}`,
         boxShadow: premiumShadows.md,
         scale: interactive ? 1.01 : 1,
-        transition: advancedSpringConfigs.gentle
-      }
+        transition: advancedSpringConfigs.gentle,
+      },
     },
 
     executive: {
@@ -121,7 +134,7 @@ const AnimatedCard = ({
         borderRadius: premiumBorderRadius['2xl'],
         border: `1px solid ${premiumColors.neutral[700]}`,
         boxShadow: premiumShadows.glass.elevated,
-        scale: 1
+        scale: 1,
       },
       hover: {
         background: `linear-gradient(135deg, 
@@ -130,9 +143,9 @@ const AnimatedCard = ({
         border: `1px solid ${premiumColors.neutral[600]}`,
         boxShadow: premiumShadows.xl,
         scale: interactive ? 1.01 : 1,
-        transition: advancedSpringConfigs.executive
-      }
-    }
+        transition: advancedSpringConfigs.executive,
+      },
+    },
   };
 
   // Animation variants
@@ -141,8 +154,8 @@ const AnimatedCard = ({
       ...cardVariants[variant],
       hover: {
         ...cardVariants[variant].hover,
-        ...mouseStyle
-      }
+        ...mouseStyle,
+      },
     },
 
     scale: microInteractions.cardTilt,
@@ -151,10 +164,10 @@ const AnimatedCard = ({
       ...cardVariants[variant],
       hover: {
         ...cardVariants[variant].hover,
-        boxShadow: glowColor 
+        boxShadow: glowColor
           ? `0 8px 32px ${glowColor}40, ${premiumShadows.lg}`
-          : premiumShadows.glow.primary
-      }
+          : premiumShadows.glow.primary,
+      },
     },
 
     float: {
@@ -164,21 +177,21 @@ const AnimatedCard = ({
         transition: {
           duration: 4,
           ease: 'easeInOut',
-          repeat: Infinity
-        }
-      }
+          repeat: Infinity,
+        },
+      },
     },
 
     flip: {
       front: {
         rotateY: 0,
-        transformPerspective: 1000
+        transformPerspective: 1000,
       },
       back: {
         rotateY: 180,
-        transformPerspective: 1000
-      }
-    }
+        transformPerspective: 1000,
+      },
+    },
   };
 
   // Elevation configurations
@@ -186,7 +199,7 @@ const AnimatedCard = ({
     low: premiumShadows.sm,
     medium: premiumShadows.md,
     high: premiumShadows.lg,
-    dynamic: isHovered ? premiumShadows.xl : premiumShadows.md
+    dynamic: isHovered ? premiumShadows.xl : premiumShadows.md,
   };
 
   // Entrance animations
@@ -195,7 +208,7 @@ const AnimatedCard = ({
       opacity: 0,
       y: 50,
       scale: 0.95,
-      rotateX: 10
+      rotateX: 10,
     },
     visible: {
       opacity: 1,
@@ -204,9 +217,9 @@ const AnimatedCard = ({
       rotateX: 0,
       transition: {
         ...advancedSpringConfigs.executive,
-        delay
-      }
-    }
+        delay,
+      },
+    },
   };
 
   // Handle card interactions
@@ -226,31 +239,34 @@ const AnimatedCard = ({
   };
 
   // Get current variants
-  const currentVariants = animation === 'flip' 
-    ? animationVariants.flip 
-    : animationVariants[animation] || animationVariants.tilt;
+  const currentVariants =
+    animation === 'flip'
+      ? animationVariants.flip
+      : animationVariants[animation] || animationVariants.tilt;
 
   // Accessible variants
-  const { variants: accessibleVariants } = useAccessibleAnimation(currentVariants);
-  const { variants: accessibleEntranceVariants } = useAccessibleAnimation(entranceVariants);
+  const { variants: accessibleVariants } =
+    useAccessibleAnimation(currentVariants);
+  const { variants: accessibleEntranceVariants } =
+    useAccessibleAnimation(entranceVariants);
 
   // Flip card variants
   const flipVariants = {
     front: {
       rotateY: 0,
       transformPerspective: 1000,
-      backfaceVisibility: 'hidden'
+      backfaceVisibility: 'hidden',
     },
     back: {
       rotateY: 180,
       transformPerspective: 1000,
-      backfaceVisibility: 'hidden'
-    }
+      backfaceVisibility: 'hidden',
+    },
   };
 
   return (
     <motion.div
-      ref={(node) => {
+      ref={node => {
         cardRef.current = node;
         scrollRef.current = node;
         if (animation === 'tilt') {
@@ -258,53 +274,54 @@ const AnimatedCard = ({
         }
       }}
       variants={accessibleEntranceVariants}
-      initial="hidden"
+      initial='hidden'
       animate={scrollControls}
       style={{
         perspective: 1000,
-        transformStyle: 'preserve-3d'
+        transformStyle: 'preserve-3d',
       }}
     >
       <motion.div
         variants={accessibleVariants}
-        initial="rest"
+        initial='rest'
         animate={animation === 'float' ? 'animate' : 'rest'}
-        whileHover={interactive ? "hover" : "rest"}
+        whileHover={interactive ? 'hover' : 'rest'}
         onClick={handleCardClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{
           cursor: interactive || flippable ? 'pointer' : 'default',
           transformStyle: 'preserve-3d',
-          position: 'relative'
+          position: 'relative',
         }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           {!flippable || !isFlipped ? (
             // Front of card
             <motion.div
-              key="front"
+              key='front'
               variants={flippable ? flipVariants : {}}
-              initial="front"
-              animate="front"
-              exit="back"
+              initial='front'
+              animate='front'
+              exit='back'
               transition={advancedSpringConfigs.premium}
               style={{
                 backfaceVisibility: 'hidden',
-                transformStyle: 'preserve-3d'
+                transformStyle: 'preserve-3d',
               }}
             >
               <Card
                 elevation={0}
                 sx={{
                   background: 'transparent',
-                  boxShadow: elevation === 'dynamic' 
-                    ? elevationConfig.dynamic 
-                    : elevationConfig[elevation],
+                  boxShadow:
+                    elevation === 'dynamic'
+                      ? elevationConfig.dynamic
+                      : elevationConfig[elevation],
                   borderRadius: 'inherit',
                   overflow: 'hidden',
                   position: 'relative',
-                  ...sx
+                  ...sx,
                 }}
                 {...props}
               >
@@ -325,9 +342,7 @@ const AnimatedCard = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: delay + 0.2 }}
                 >
-                  <CardContent>
-                    {children}
-                  </CardContent>
+                  <CardContent>{children}</CardContent>
                 </motion.div>
 
                 {/* Actions */}
@@ -337,16 +352,18 @@ const AnimatedCard = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: delay + 0.3 }}
                   >
-                    <CardActions>
-                      {actions}
-                    </CardActions>
+                    <CardActions>{actions}</CardActions>
                   </motion.div>
                 )}
 
                 {/* Shine effect on hover */}
                 <motion.div
                   initial={{ x: '-100%', opacity: 0 }}
-                  animate={isHovered ? { x: '100%', opacity: 1 } : { x: '-100%', opacity: 0 }}
+                  animate={
+                    isHovered
+                      ? { x: '100%', opacity: 1 }
+                      : { x: '-100%', opacity: 0 }
+                  }
                   transition={{ duration: 0.6, ease: 'easeInOut' }}
                   style={{
                     position: 'absolute',
@@ -361,7 +378,7 @@ const AnimatedCard = ({
                       transparent
                     )`,
                     pointerEvents: 'none',
-                    zIndex: 1
+                    zIndex: 1,
                   }}
                 />
               </Card>
@@ -369,11 +386,11 @@ const AnimatedCard = ({
           ) : (
             // Back of card
             <motion.div
-              key="back"
+              key='back'
               variants={flipVariants}
-              initial="front"
-              animate="back"
-              exit="front"
+              initial='front'
+              animate='back'
+              exit='front'
               transition={advancedSpringConfigs.premium}
               style={{
                 backfaceVisibility: 'hidden',
@@ -382,7 +399,7 @@ const AnimatedCard = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0
+                bottom: 0,
               }}
             >
               <Card
@@ -394,10 +411,17 @@ const AnimatedCard = ({
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  ...sx
+                  ...sx,
                 }}
               >
-                <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   {backContent}
                 </CardContent>
               </Card>
@@ -410,46 +434,44 @@ const AnimatedCard = ({
 };
 
 // Pre-configured card variants
-export const PremiumCard = (props) => (
-  <AnimatedCard variant="premium" animation="tilt" {...props} />
+export const PremiumCard = props => (
+  <AnimatedCard variant='premium' animation='tilt' {...props} />
 );
 
-export const GlassCard = (props) => (
-  <AnimatedCard variant="glass" animation="scale" {...props} />
+export const GlassCard = props => (
+  <AnimatedCard variant='glass' animation='scale' {...props} />
 );
 
-export const ExecutiveCard = (props) => (
-  <AnimatedCard variant="executive" animation="glow" {...props} />
+export const ExecutiveCard = props => (
+  <AnimatedCard variant='executive' animation='glow' {...props} />
 );
 
-export const MinimalCard = (props) => (
-  <AnimatedCard variant="minimal" animation="scale" {...props} />
+export const MinimalCard = props => (
+  <AnimatedCard variant='minimal' animation='scale' {...props} />
 );
 
-export const FloatingCard = (props) => (
-  <AnimatedCard animation="float" {...props} />
+export const FloatingCard = props => (
+  <AnimatedCard animation='float' {...props} />
 );
 
-export const FlipCard = (props) => (
-  <AnimatedCard flippable animation="flip" {...props} />
+export const FlipCard = props => (
+  <AnimatedCard flippable animation='flip' {...props} />
 );
 
-export const TiltCard = (props) => (
-  <AnimatedCard animation="tilt" {...props} />
-);
+export const TiltCard = props => <AnimatedCard animation='tilt' {...props} />;
 
 // Container for staggered card animations
 export const CardGrid = ({ children, staggerDelay = 0.1, ...props }) => {
   return (
     <motion.div
       variants={containerAnimations.executiveStagger}
-      initial="hidden"
-      animate="visible"
+      initial='hidden'
+      animate='visible'
       style={{
         display: 'grid',
         gap: 24,
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        ...props.style
+        ...props.style,
       }}
       {...props}
     >

@@ -1,7 +1,7 @@
 /**
  * CollisionOS Purchase Order Workflow APIs
  * Phase 2 Backend Development
- * 
+ *
  * Advanced PO System with structured numbering and vendor management
  * Features:
  * - Structured PO numbering: ${ro_number}-${YYMM}-${vendorCode}-${seq}
@@ -16,7 +16,13 @@
 const express = require('express');
 const router = express.Router();
 const { validationResult } = require('express-validator');
-const { PurchaseOrderSystem, AdvancedPartsManagement, RepairOrderManagement, Vendor, User } = require('../database/models');
+const {
+  PurchaseOrderSystem,
+  AdvancedPartsManagement,
+  RepairOrderManagement,
+  Vendor,
+  User,
+} = require('../database/models');
 const { realtimeService } = require('../services/realtimeService');
 const rateLimit = require('express-rate-limit');
 
@@ -24,12 +30,12 @@ const rateLimit = require('express-rate-limit');
 const poRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 PO operations per 15 minutes
-  message: 'Too many PO operations, please try again later.'
+  message: 'Too many PO operations, please try again later.',
 });
 
 /**
  * POST /api/pos - Create PO from selected part lines
- * 
+ *
  * Body: {
  *   part_line_ids: string[],
  *   vendor_id: string,
@@ -46,11 +52,18 @@ router.post('/', poRateLimit, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
 
-    const { part_line_ids, vendor_id, ro_number, delivery_date, notes, expedite } = req.body;
+    const {
+      part_line_ids,
+      vendor_id,
+      ro_number,
+      delivery_date,
+      notes,
+      expedite,
+    } = req.body;
     const { shopId, userId } = req.user;
 
     // Validate vendor exists
@@ -58,7 +71,7 @@ router.post('/', poRateLimit, async (req, res) => {
     if (!vendor) {
       return res.status(404).json({
         success: false,
-        message: 'Vendor not found'
+        message: 'Vendor not found',
       });
     }
 
@@ -68,21 +81,22 @@ router.post('/', poRateLimit, async (req, res) => {
         id: part_line_ids,
         shopId,
         status: 'needed',
-        vendorId: vendor_id
+        vendorId: vendor_id,
       },
       include: [
         {
           model: RepairOrderManagement,
           as: 'repairOrder',
-          attributes: ['ro_number']
-        }
-      ]
+          attributes: ['ro_number'],
+        },
+      ],
     });
 
     if (partLines.length !== part_line_ids.length) {
       return res.status(400).json({
         success: false,
-        message: 'Some part lines are not available for ordering or belong to different vendor'
+        message:
+          'Some part lines are not available for ordering or belong to different vendor',
       });
     }
 
@@ -92,10 +106,10 @@ router.post('/', poRateLimit, async (req, res) => {
     // Calculate totals and margin validation
     let subtotal = 0;
     let estimated_margin = 0;
-    
+
     for (const partLine of partLines) {
       subtotal += partLine.quantity * partLine.unit_cost;
-      
+
       // Calculate margin against vendor agreement
       const agreementDiscount = vendor.discount_percentage || 0;
       const cost = partLine.unit_cost * (1 - agreementDiscount / 100);
@@ -118,7 +132,7 @@ router.post('/', poRateLimit, async (req, res) => {
       expedite,
       shopId,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Update part lines to reference this PO and change status to ordered
@@ -128,21 +142,24 @@ router.post('/', poRateLimit, async (req, res) => {
         status: 'ordered',
         orderedBy: userId,
         order_date: new Date(),
-        updatedBy: userId
+        updatedBy: userId,
       },
       {
-        where: { id: part_line_ids }
+        where: { id: part_line_ids },
       }
     );
 
     // Broadcast real-time update
-    realtimeService.broadcastPOUpdate({
-      po_id: purchaseOrder.id,
-      po_number: poNumber,
-      status: 'draft',
-      vendor_name: vendor.name,
-      total_amount: purchaseOrder.total_amount
-    }, 'created');
+    realtimeService.broadcastPOUpdate(
+      {
+        po_id: purchaseOrder.id,
+        po_number: poNumber,
+        status: 'draft',
+        vendor_name: vendor.name,
+        total_amount: purchaseOrder.total_amount,
+      },
+      'created'
+    );
 
     res.json({
       success: true,
@@ -152,23 +169,22 @@ router.post('/', poRateLimit, async (req, res) => {
         po_number: poNumber,
         status: 'draft',
         total_amount: purchaseOrder.total_amount,
-        part_count: partLines.length
-      }
+        part_count: partLines.length,
+      },
     });
-
   } catch (error) {
     console.error('Create PO error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create purchase order',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/pos/:id/receive - Partial receiving with quantity tracking
- * 
+ *
  * Body: {
  *   received_items: [{
  *     part_line_id: string,
@@ -191,20 +207,20 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
         {
           model: AdvancedPartsManagement,
           as: 'advancedPartsManagement',
-          where: { status: ['ordered', 'backordered'] }
+          where: { status: ['ordered', 'backordered'] },
         },
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['name', 'contact_email']
-        }
-      ]
+          attributes: ['name', 'contact_email'],
+        },
+      ],
     });
 
     if (!purchaseOrder) {
       return res.status(404).json({
         success: false,
-        message: 'Purchase order not found'
+        message: 'Purchase order not found',
       });
     }
 
@@ -222,7 +238,7 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
         processing_results.push({
           part_line_id: item.part_line_id,
           status: 'error',
-          message: 'Part line not found in this PO'
+          message: 'Part line not found in this PO',
         });
         continue;
       }
@@ -248,7 +264,7 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
           part_line_id: item.part_line_id,
           part_number: partLine.part_number,
           return_quantity: quantity_variance,
-          reason: 'over_delivery'
+          reason: 'over_delivery',
         });
       }
 
@@ -258,36 +274,42 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
       }
 
       // Update part line
-      await AdvancedPartsManagement.update({
-        status: new_status,
-        received_quantity: received_qty,
-        received_date: new Date(),
-        receivedBy: userId,
-        receiving_notes: item.notes,
-        updatedBy: userId
-      }, {
-        where: { id: item.part_line_id }
-      });
+      await AdvancedPartsManagement.update(
+        {
+          status: new_status,
+          received_quantity: received_qty,
+          received_date: new Date(),
+          receivedBy: userId,
+          receiving_notes: item.notes,
+          updatedBy: userId,
+        },
+        {
+          where: { id: item.part_line_id },
+        }
+      );
 
       processing_results.push({
         part_line_id: item.part_line_id,
         status: 'processed',
         new_status,
         quantity_variance,
-        message: `Received ${received_qty} of ${ordered_qty} ordered`
+        message: `Received ${received_qty} of ${ordered_qty} ordered`,
       });
     }
 
     // Update PO status based on receiving results
     let po_status = all_received ? 'received' : 'partial';
-    await PurchaseOrderSystem.update({
-      status: po_status,
-      received_date: all_received ? new Date() : null,
-      receiving_notes: `Partial receiving by ${userId}`,
-      updatedBy: userId
-    }, {
-      where: { id }
-    });
+    await PurchaseOrderSystem.update(
+      {
+        status: po_status,
+        received_date: all_received ? new Date() : null,
+        receiving_notes: `Partial receiving by ${userId}`,
+        updatedBy: userId,
+      },
+      {
+        where: { id },
+      }
+    );
 
     // Create return orders if needed
     if (return_items.length > 0) {
@@ -295,13 +317,16 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
     }
 
     // Broadcast real-time update
-    realtimeService.broadcastPOUpdate({
-      po_id: id,
-      po_number: purchaseOrder.po_number,
-      status: po_status,
-      received_items: received_items.length,
-      returns_created: return_items.length
-    }, 'received');
+    realtimeService.broadcastPOUpdate(
+      {
+        po_id: id,
+        po_number: purchaseOrder.po_number,
+        status: po_status,
+        received_items: received_items.length,
+        returns_created: return_items.length,
+      },
+      'received'
+    );
 
     res.json({
       success: true,
@@ -310,16 +335,15 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
         po_status,
         processing_results,
         return_items: return_items.length,
-        all_received
-      }
+        all_received,
+      },
     });
-
   } catch (error) {
     console.error('PO receiving error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to process receiving',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -334,36 +358,43 @@ router.post('/part-lines/:id/install', async (req, res) => {
     const { shopId, userId } = req.user;
 
     const partLine = await AdvancedPartsManagement.findOne({
-      where: { id, shopId, status: 'received' }
+      where: { id, shopId, status: 'received' },
     });
 
     if (!partLine) {
       return res.status(404).json({
         success: false,
-        message: 'Part line not found or not ready for installation'
+        message: 'Part line not found or not ready for installation',
       });
     }
 
-    const install_qty = parseInt(installed_quantity) || partLine.received_quantity;
+    const install_qty =
+      parseInt(installed_quantity) || partLine.received_quantity;
 
-    await AdvancedPartsManagement.update({
-      status: 'installed',
-      installed_quantity: install_qty,
-      installation_date: new Date(),
-      installedBy: technician_id || userId,
-      installation_notes,
-      updatedBy: userId
-    }, {
-      where: { id }
-    });
+    await AdvancedPartsManagement.update(
+      {
+        status: 'installed',
+        installed_quantity: install_qty,
+        installation_date: new Date(),
+        installedBy: technician_id || userId,
+        installation_notes,
+        updatedBy: userId,
+      },
+      {
+        where: { id },
+      }
+    );
 
     // Broadcast real-time update
-    realtimeService.broadcastPartsUpdate({
-      part_line_id: id,
-      part_number: partLine.part_number,
-      status: 'installed',
-      installed_by: technician_id || userId
-    }, 'installed');
+    realtimeService.broadcastPartsUpdate(
+      {
+        part_line_id: id,
+        part_number: partLine.part_number,
+        status: 'installed',
+        installed_by: technician_id || userId,
+      },
+      'installed'
+    );
 
     res.json({
       success: true,
@@ -371,16 +402,15 @@ router.post('/part-lines/:id/install', async (req, res) => {
       data: {
         part_line_id: id,
         status: 'installed',
-        installed_quantity: install_qty
-      }
+        installed_quantity: install_qty,
+      },
     });
-
   } catch (error) {
     console.error('Part installation error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to install part',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -408,15 +438,15 @@ router.get('/vendor/:vendorId', async (req, res) => {
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['name', 'vendor_code', 'contact_email']
+          attributes: ['name', 'vendor_code', 'contact_email'],
         },
         {
           model: RepairOrderManagement,
           as: 'repairOrder',
-          attributes: ['ro_number', 'status']
-        }
+          attributes: ['ro_number', 'status'],
+        },
       ],
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
     });
 
     // Calculate vendor performance metrics
@@ -427,16 +457,15 @@ router.get('/vendor/:vendorId', async (req, res) => {
       data: {
         purchase_orders: purchaseOrders,
         vendor_metrics: metrics,
-        total_pos: purchaseOrders.length
-      }
+        total_pos: purchaseOrders.length,
+      },
     });
-
   } catch (error) {
     console.error('Vendor PO view error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get vendor POs',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -455,15 +484,15 @@ router.post('/:id/split', async (req, res) => {
       include: [
         {
           model: AdvancedPartsManagement,
-          as: 'advancedPartsManagement'
-        }
-      ]
+          as: 'advancedPartsManagement',
+        },
+      ],
     });
 
     if (!originalPO) {
       return res.status(404).json({
         success: false,
-        message: 'PO not found or cannot be split (must be in draft status)'
+        message: 'PO not found or cannot be split (must be in draft status)',
       });
     }
 
@@ -471,31 +500,36 @@ router.post('/:id/split', async (req, res) => {
 
     // Create new POs for each split group
     for (const group of split_groups) {
-      const group_parts = originalPO.advancedPartsManagement.filter(
-        p => group.part_line_ids.includes(p.id)
+      const group_parts = originalPO.advancedPartsManagement.filter(p =>
+        group.part_line_ids.includes(p.id)
       );
 
       if (group_parts.length === 0) continue;
 
       const group_subtotal = group_parts.reduce(
-        (sum, part) => sum + (part.quantity * part.unit_cost), 0
+        (sum, part) => sum + part.quantity * part.unit_cost,
+        0
       );
 
       const newPO = await PurchaseOrderSystem.create({
-        po_number: await generatePONumber(originalPO.repairOrder?.ro_number, { vendor_code: group.vendor_code }),
+        po_number: await generatePONumber(originalPO.repairOrder?.ro_number, {
+          vendor_code: group.vendor_code,
+        }),
         repairOrderId: originalPO.repairOrderId,
         vendorId: group.vendor_id,
         status: 'draft',
         subtotal: group_subtotal,
         tax_amount: group_subtotal * 0.08,
         total_amount: group_subtotal * 1.08,
-        estimated_margin: originalPO.estimated_margin * (group_subtotal / originalPO.subtotal),
-        requested_delivery_date: group.delivery_date || originalPO.requested_delivery_date,
+        estimated_margin:
+          originalPO.estimated_margin * (group_subtotal / originalPO.subtotal),
+        requested_delivery_date:
+          group.delivery_date || originalPO.requested_delivery_date,
         po_notes: `Split from PO ${originalPO.po_number}`,
         parentOrderId: originalPO.id,
         shopId,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
       });
 
       // Update part lines to reference new PO
@@ -509,33 +543,35 @@ router.post('/:id/split', async (req, res) => {
         po_number: newPO.po_number,
         vendor_id: group.vendor_id,
         part_count: group_parts.length,
-        total_amount: newPO.total_amount
+        total_amount: newPO.total_amount,
       });
     }
 
     // Mark original PO as split
-    await PurchaseOrderSystem.update({
-      status: 'split',
-      updatedBy: userId
-    }, {
-      where: { id }
-    });
+    await PurchaseOrderSystem.update(
+      {
+        status: 'split',
+        updatedBy: userId,
+      },
+      {
+        where: { id },
+      }
+    );
 
     res.json({
       success: true,
       message: `PO split into ${split_pos.length} orders`,
       data: {
         original_po_id: id,
-        split_pos
-      }
+        split_pos,
+      },
     });
-
   } catch (error) {
     console.error('PO split error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to split PO',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -547,13 +583,13 @@ async function generatePONumber(ro_number, vendor) {
   const now = new Date();
   const yy = now.getFullYear().toString().substr(2);
   const mm = (now.getMonth() + 1).toString().padStart(2, '0');
-  
+
   // Generate vendor code (4 chars uppercase from supplier name)
   const vendorCode = vendor.vendor_code || generateVendorCode(vendor.name);
-  
+
   // Get sequence number for this vendor/month
   const seq = await getNextSequence(vendorCode, `${yy}${mm}`);
-  
+
   return `${ro_number}-${yy}${mm}-${vendorCode}-${seq.toString().padStart(3, '0')}`;
 }
 
@@ -572,9 +608,9 @@ async function getNextSequence(vendorCode, yearMonth) {
   const count = await PurchaseOrderSystem.count({
     where: {
       po_number: {
-        [Op.like]: `%-${yearMonth}-${vendorCode}-%`
-      }
-    }
+        [Op.like]: `%-${yearMonth}-${vendorCode}-%`,
+      },
+    },
   });
   return count + 1;
 }
@@ -586,21 +622,28 @@ function calculateVendorMetrics(purchaseOrders) {
   const total = purchaseOrders.length;
   if (total === 0) return null;
 
-  const on_time = purchaseOrders.filter(po => 
-    po.status === 'received' && 
-    new Date(po.received_date) <= new Date(po.requested_delivery_date)
+  const on_time = purchaseOrders.filter(
+    po =>
+      po.status === 'received' &&
+      new Date(po.received_date) <= new Date(po.requested_delivery_date)
   ).length;
 
-  const avg_delivery_days = purchaseOrders
-    .filter(po => po.status === 'received')
-    .reduce((sum, po) => {
-      const days = Math.ceil(
-        (new Date(po.received_date) - new Date(po.created_at)) / (1000 * 60 * 60 * 24)
-      );
-      return sum + days;
-    }, 0) / Math.max(1, purchaseOrders.filter(po => po.status === 'received').length);
+  const avg_delivery_days =
+    purchaseOrders
+      .filter(po => po.status === 'received')
+      .reduce((sum, po) => {
+        const days = Math.ceil(
+          (new Date(po.received_date) - new Date(po.created_at)) /
+            (1000 * 60 * 60 * 24)
+        );
+        return sum + days;
+      }, 0) /
+    Math.max(1, purchaseOrders.filter(po => po.status === 'received').length);
 
-  const total_value = purchaseOrders.reduce((sum, po) => sum + po.total_amount, 0);
+  const total_value = purchaseOrders.reduce(
+    (sum, po) => sum + po.total_amount,
+    0
+  );
 
   return {
     total_pos: total,
@@ -610,7 +653,7 @@ function calculateVendorMetrics(purchaseOrders) {
     status_breakdown: purchaseOrders.reduce((acc, po) => {
       acc[po.status] = (acc[po.status] || 0) + 1;
       return acc;
-    }, {})
+    }, {}),
   };
 }
 
@@ -620,15 +663,21 @@ function calculateVendorMetrics(purchaseOrders) {
 async function createReturnOrder(purchaseOrder, return_items, userId) {
   // Implementation for return order creation
   // This would create entries in a returns table and notify the vendor
-  console.log(`Creating return order for PO ${purchaseOrder.po_number}:`, return_items);
-  
+  console.log(
+    `Creating return order for PO ${purchaseOrder.po_number}:`,
+    return_items
+  );
+
   // Broadcast return notification
-  realtimeService.broadcastPOUpdate({
-    po_id: purchaseOrder.id,
-    po_number: purchaseOrder.po_number,
-    return_items: return_items.length,
-    action: 'returns_created'
-  }, 'returns');
+  realtimeService.broadcastPOUpdate(
+    {
+      po_id: purchaseOrder.id,
+      po_number: purchaseOrder.po_number,
+      return_items: return_items.length,
+      action: 'returns_created',
+    },
+    'returns'
+  );
 }
 
 module.exports = router;

@@ -2,14 +2,24 @@
  * Enhanced BMS Integration Tests
  * Comprehensive testing for BMS import system including validation, batch processing, and error handling
  */
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import fs from 'fs/promises';
 import path from 'path';
 import request from 'supertest';
 
 // Import test utilities
 import { createTestApp } from '../../utils/testApp';
-import { createMockBMSFile, createInvalidBMSFile } from '../../utils/bmsTestData';
+import {
+  createMockBMSFile,
+  createInvalidBMSFile,
+} from '../../utils/bmsTestData';
 import { generateTestToken } from '../../utils/authUtils';
 
 // Import services to test
@@ -30,7 +40,12 @@ describe('Enhanced BMS Integration Tests', () => {
     app = createTestApp();
     testToken = generateTestToken({
       id: 'test-user-id',
-      permissions: ['bms:upload', 'bms:batch_upload', 'bms:view_errors', 'bms:resolve_errors']
+      permissions: [
+        'bms:upload',
+        'bms:batch_upload',
+        'bms:view_errors',
+        'bms:resolve_errors',
+      ],
     });
 
     // Initialize services
@@ -46,7 +61,7 @@ describe('Enhanced BMS Integration Tests', () => {
     // Cleanup test files
     await cleanupTestFiles(testFiles);
     testFiles = [];
-    
+
     // Reset services
     errorReporter.clearErrorLog();
   });
@@ -55,7 +70,7 @@ describe('Enhanced BMS Integration Tests', () => {
     test('should validate valid BMS file successfully', async () => {
       const validBMSContent = await createMockBMSFile({
         includeAllSections: true,
-        validData: true
+        validData: true,
       });
 
       const validation = await bmsValidator.validateBMSFile(validBMSContent);
@@ -70,7 +85,7 @@ describe('Enhanced BMS Integration Tests', () => {
       const invalidBMSContent = await createInvalidBMSFile({
         missingVIN: true,
         invalidEmail: true,
-        missingRequiredFields: ['DocumentID', 'ClaimNum']
+        missingRequiredFields: ['DocumentID', 'ClaimNum'],
       });
 
       const validation = await bmsValidator.validateBMSFile(invalidBMSContent);
@@ -80,28 +95,31 @@ describe('Enhanced BMS Integration Tests', () => {
       expect(validation.errors).toContainEqual(
         expect.objectContaining({
           field: expect.stringContaining('vin'),
-          severity: 'error'
+          severity: 'error',
         })
       );
     });
 
     test('should provide detailed field-level validation results', async () => {
       const bmsContent = await createMockBMSFile({
-        includeWarnings: true
+        includeWarnings: true,
       });
 
       const validation = await bmsValidator.validateBMSFile(bmsContent);
 
       expect(validation.fieldValidations).toBeDefined();
-      expect(Object.keys(validation.fieldValidations)).toHaveLength.toBeGreaterThan(0);
-      
+      expect(
+        Object.keys(validation.fieldValidations)
+      ).toHaveLength.toBeGreaterThan(0);
+
       // Check specific field validations
       expect(validation.fieldValidations['DocumentInfo.BMSVer']).toBeDefined();
       expect(validation.fieldValidations['VehicleInfo.VIN']).toBeDefined();
     });
 
     test('should handle malformed XML gracefully', async () => {
-      const malformedXML = '<VehicleDamageEstimateAddRq><unclosed-tag>content</VehicleDamageEstimateAddRq>';
+      const malformedXML =
+        '<VehicleDamageEstimateAddRq><unclosed-tag>content</VehicleDamageEstimateAddRq>';
 
       const validation = await bmsValidator.validateBMSFile(malformedXML);
 
@@ -126,8 +144,11 @@ describe('Enhanced BMS Integration Tests', () => {
     });
 
     test('should reject invalid file types', async () => {
-      const textFilePath = await createTextFile('invalid.txt', 'Not a BMS file');
-      
+      const textFilePath = await createTextFile(
+        'invalid.txt',
+        'Not a BMS file'
+      );
+
       const response = await request(app)
         .post('/api/bms/upload')
         .set('Authorization', `Bearer ${testToken}`)
@@ -135,7 +156,7 @@ describe('Enhanced BMS Integration Tests', () => {
         .expect(400);
 
       expect(response.body.error).toContain('Invalid file type');
-      
+
       await fs.unlink(textFilePath);
     });
 
@@ -173,16 +194,20 @@ describe('Enhanced BMS Integration Tests', () => {
 
     test('should enforce rate limiting', async () => {
       // Make multiple rapid requests to trigger rate limit
-      const promises = Array(25).fill().map(() =>
-        request(app)
-          .post('/api/bms/upload')
-          .set('Authorization', `Bearer ${testToken}`)
-          .attach('file', testFiles.validBMS.path)
-      );
+      const promises = Array(25)
+        .fill()
+        .map(() =>
+          request(app)
+            .post('/api/bms/upload')
+            .set('Authorization', `Bearer ${testToken}`)
+            .attach('file', testFiles.validBMS.path)
+        );
 
       const responses = await Promise.allSettled(promises);
-      const rejectedCount = responses.filter(r => r.value?.status === 429).length;
-      
+      const rejectedCount = responses.filter(
+        r => r.value?.status === 429
+      ).length;
+
       expect(rejectedCount).toBeGreaterThan(0);
     });
   });
@@ -214,10 +239,10 @@ describe('Enhanced BMS Integration Tests', () => {
         .expect(202);
 
       expect(response.body.batchId).toBeDefined();
-      
+
       // Wait for processing to complete
       await waitForBatchCompletion(response.body.batchId);
-      
+
       // Check batch status
       const statusResponse = await request(app)
         .get(`/api/bms/batch-status/${response.body.batchId}`)
@@ -280,11 +305,11 @@ describe('Enhanced BMS Integration Tests', () => {
   describe('Error Reporting System', () => {
     test('should report and categorize errors correctly', async () => {
       const testError = new Error('XML parse error: Invalid character');
-      
+
       const errorReport = errorReporter.reportError(testError, {
         fileName: 'test.xml',
         operation: 'parsing',
-        userId: 'test-user'
+        userId: 'test-user',
       });
 
       expect(errorReport.id).toBeDefined();
@@ -296,22 +321,30 @@ describe('Enhanced BMS Integration Tests', () => {
 
     test('should provide user-friendly error messages', async () => {
       const networkError = new Error('Network connection failed');
-      
+
       const errorReport = errorReporter.reportError(networkError, {
         fileName: 'test.xml',
-        operation: 'upload'
+        operation: 'upload',
       });
 
-      expect(errorReport.analysis.userMessage).not.toContain('Network connection failed');
+      expect(errorReport.analysis.userMessage).not.toContain(
+        'Network connection failed'
+      );
       expect(errorReport.analysis.userMessage).toContain('network');
       expect(errorReport.analysis.suggestions.length).toBeGreaterThan(0);
     });
 
     test('should track error statistics', async () => {
       // Generate various types of errors
-      errorReporter.reportError(new Error('XML parse error'), { operation: 'parsing' });
-      errorReporter.reportError(new Error('Database connection failed'), { operation: 'database' });
-      errorReporter.reportError(new Error('Invalid VIN'), { operation: 'validation' });
+      errorReporter.reportError(new Error('XML parse error'), {
+        operation: 'parsing',
+      });
+      errorReporter.reportError(new Error('Database connection failed'), {
+        operation: 'database',
+      });
+      errorReporter.reportError(new Error('Invalid VIN'), {
+        operation: 'validation',
+      });
 
       const statistics = errorReporter.getErrorStatistics();
 
@@ -322,12 +355,16 @@ describe('Enhanced BMS Integration Tests', () => {
 
     test('should export error logs', async () => {
       // Add some test errors
-      errorReporter.reportError(new Error('Test error 1'), { operation: 'test' });
-      errorReporter.reportError(new Error('Test error 2'), { operation: 'test' });
+      errorReporter.reportError(new Error('Test error 1'), {
+        operation: 'test',
+      });
+      errorReporter.reportError(new Error('Test error 2'), {
+        operation: 'test',
+      });
 
       const exportData = errorReporter.exportErrorLog({
         format: 'json',
-        limit: 10
+        limit: 10,
       });
 
       expect(exportData.format).toBe('json');
@@ -341,35 +378,35 @@ describe('Enhanced BMS Integration Tests', () => {
     test('should create and manage batch jobs', async () => {
       const files = [
         { name: 'test1.xml', size: 1000 },
-        { name: 'test2.xml', size: 2000 }
+        { name: 'test2.xml', size: 2000 },
       ];
 
       const batchId = batchProcessor.createBatch(files, {
         pauseOnError: false,
-        maxRetries: 2
+        maxRetries: 2,
       });
 
       expect(batchId).toBeDefined();
-      
+
       const status = batchProcessor.getBatchStatus(batchId);
       expect(status.status).toBe('created');
       expect(status.statistics.totalFiles).toBe(2);
     });
 
-    test('should track batch progress accurately', (done) => {
+    test('should track batch progress accurately', done => {
       const files = [
         { name: 'test1.xml', size: 1000 },
-        { name: 'test2.xml', size: 2000 }
+        { name: 'test2.xml', size: 2000 },
       ];
 
       const batchId = batchProcessor.createBatch(files);
-      
+
       let progressEvents = 0;
-      batchProcessor.on('batchProgress', (batch) => {
+      batchProcessor.on('batchProgress', batch => {
         progressEvents++;
         expect(batch.progress).toBeGreaterThanOrEqual(0);
         expect(batch.progress).toBeLessThanOrEqual(100);
-        
+
         if (batch.progress === 100 || progressEvents >= 5) {
           done();
         }
@@ -380,7 +417,7 @@ describe('Enhanced BMS Integration Tests', () => {
 
     test('should handle batch errors gracefully', async () => {
       const batchId = batchProcessor.createBatch([
-        { name: 'invalid.xml', size: 1000 }
+        { name: 'invalid.xml', size: 1000 },
       ]);
 
       try {
@@ -419,7 +456,7 @@ describe('Enhanced BMS Integration Tests', () => {
     test('should handle authorization errors', async () => {
       const limitedToken = generateTestToken({
         id: 'limited-user',
-        permissions: [] // No permissions
+        permissions: [], // No permissions
       });
 
       const response = await request(app)
@@ -468,13 +505,15 @@ describe('Enhanced BMS Integration Tests', () => {
     test('should handle concurrent uploads efficiently', async () => {
       const concurrentUploads = 5;
       const startTime = Date.now();
-      
-      const promises = Array(concurrentUploads).fill().map((_, index) =>
-        request(app)
-          .post('/api/bms/upload')
-          .set('Authorization', `Bearer ${testToken}`)
-          .attach('file', testFiles[`validBMS${index % 3}`].path)
-      );
+
+      const promises = Array(concurrentUploads)
+        .fill()
+        .map((_, index) =>
+          request(app)
+            .post('/api/bms/upload')
+            .set('Authorization', `Bearer ${testToken}`)
+            .attach('file', testFiles[`validBMS${index % 3}`].path)
+        );
 
       const results = await Promise.allSettled(promises);
       const successCount = results.filter(r => r.value?.status === 200).length;
@@ -486,7 +525,7 @@ describe('Enhanced BMS Integration Tests', () => {
 
     test('should handle large file uploads', async () => {
       const largeFile = await createLargeBMSFile();
-      
+
       const response = await request(app)
         .post('/api/bms/upload')
         .set('Authorization', `Bearer ${testToken}`)
@@ -495,7 +534,7 @@ describe('Enhanced BMS Integration Tests', () => {
         .expect(200);
 
       expect(response.body.status).toBe('completed');
-      
+
       await fs.unlink(largeFile.path);
     }, 60000);
   });
@@ -510,23 +549,29 @@ describe('Enhanced BMS Integration Tests', () => {
     // Valid BMS file
     files.validBMS = {
       path: path.join(tempDir, 'valid1.xml'),
-      content: await createMockBMSFile({ includeAllSections: true })
+      content: await createMockBMSFile({ includeAllSections: true }),
     };
 
     files.validBMS2 = {
       path: path.join(tempDir, 'valid2.xml'),
-      content: await createMockBMSFile({ includeAllSections: true, customerName: 'Jane Smith' })
+      content: await createMockBMSFile({
+        includeAllSections: true,
+        customerName: 'Jane Smith',
+      }),
     };
 
     files.validBMS3 = {
       path: path.join(tempDir, 'valid3.xml'),
-      content: await createMockBMSFile({ includeAllSections: true, customerName: 'Bob Johnson' })
+      content: await createMockBMSFile({
+        includeAllSections: true,
+        customerName: 'Bob Johnson',
+      }),
     };
 
     // Invalid BMS file
     files.invalidBMS = {
       path: path.join(tempDir, 'invalid.xml'),
-      content: await createInvalidBMSFile({ missingVIN: true })
+      content: await createInvalidBMSFile({ missingVIN: true }),
     };
 
     // Large batch files
@@ -534,11 +579,11 @@ describe('Enhanced BMS Integration Tests', () => {
     for (let i = 0; i < 5; i++) {
       files.largeBatch.push({
         path: path.join(tempDir, `batch${i}.xml`),
-        content: await createMockBMSFile({ 
+        content: await createMockBMSFile({
           includeAllSections: true,
           customerName: `Customer ${i}`,
-          manyDamageLines: true
-        })
+          manyDamageLines: true,
+        }),
       });
     }
 
@@ -582,32 +627,34 @@ describe('Enhanced BMS Integration Tests', () => {
     const content = await createMockBMSFile({
       includeAllSections: true,
       manyDamageLines: true,
-      damageLineCount: 500 // Create a file with many damage lines
+      damageLineCount: 500, // Create a file with many damage lines
     });
 
     const filePath = path.join(__dirname, '../../temp/large.xml');
     await fs.writeFile(filePath, content);
-    
+
     return { path: filePath, content };
   }
 
   async function waitForBatchCompletion(batchId, timeout = 30000) {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       const response = await request(app)
         .get(`/api/bms/batch-status/${batchId}`)
         .set('Authorization', `Bearer ${testToken}`);
-      
-      if (response.body.data.status === 'completed' || 
-          response.body.data.status === 'error' ||
-          response.body.data.status === 'cancelled') {
+
+      if (
+        response.body.data.status === 'completed' ||
+        response.body.data.status === 'error' ||
+        response.body.data.status === 'cancelled'
+      ) {
         return response.body.data;
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    
+
     throw new Error('Batch processing timeout');
   }
 });

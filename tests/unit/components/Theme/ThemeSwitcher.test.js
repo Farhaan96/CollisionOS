@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '../../../../src/components/Theme/ThemeProvider';
@@ -9,10 +15,26 @@ import { ThemeSwitcher } from '../../../../src/components/Theme/ThemeSwitcher';
 const mockUseTheme = {
   currentTheme: 'modern',
   themeConfigs: {
-    light: { name: 'Light', description: 'Light theme', preview: { primary: '#1976d2', background: '#ffffff' } },
-    dark: { name: 'Dark', description: 'Dark theme', preview: { primary: '#90caf9', background: '#121212' } },
-    modern: { name: 'Modern', description: 'Modern theme', preview: { primary: '#6366f1', background: '#0f172a' } },
-    auto: { name: 'Auto', description: 'Auto theme', preview: { primary: '#6366f1', background: 'var(--system-bg)' } }
+    light: {
+      name: 'Light',
+      description: 'Light theme',
+      preview: { primary: '#1976d2', background: '#ffffff' },
+    },
+    dark: {
+      name: 'Dark',
+      description: 'Dark theme',
+      preview: { primary: '#90caf9', background: '#121212' },
+    },
+    modern: {
+      name: 'Modern',
+      description: 'Modern theme',
+      preview: { primary: '#6366f1', background: '#0f172a' },
+    },
+    auto: {
+      name: 'Auto',
+      description: 'Auto theme',
+      preview: { primary: '#6366f1', background: 'var(--system-bg)' },
+    },
   },
   switchTheme: jest.fn(),
   toggleTheme: jest.fn(),
@@ -23,7 +45,7 @@ const mockUseTheme = {
   setThemeSchedule: jest.fn(),
   isDarkMode: false,
   isTransitioning: false,
-  canAnimate: true
+  canAnimate: true,
 };
 
 // Mock ResizeObserver and matchMedia
@@ -49,20 +71,18 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock CSS.supports
 global.CSS = {
-  supports: jest.fn().mockReturnValue(true)
+  supports: jest.fn().mockReturnValue(true),
 };
 
 // Create wrapper component with ThemeProvider
 const TestWrapper = ({ children, ...props }) => (
-  <ThemeProvider {...props}>
-    {children}
-  </ThemeProvider>
+  <ThemeProvider {...props}>{children}</ThemeProvider>
 );
 
 describe('ThemeSwitcher', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
       value: {
@@ -93,7 +113,7 @@ describe('ThemeSwitcher', () => {
 
     it('shows tooltip on hover', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -101,9 +121,9 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      
+
       await user.hover(iconButton);
-      
+
       await waitFor(() => {
         expect(screen.getByRole('tooltip')).toBeInTheDocument();
       });
@@ -111,7 +131,7 @@ describe('ThemeSwitcher', () => {
 
     it('opens menu on click', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -119,9 +139,9 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      
+
       await user.click(iconButton);
-      
+
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
       });
@@ -132,7 +152,7 @@ describe('ThemeSwitcher', () => {
     it('renders switch component', () => {
       render(
         <TestWrapper>
-          <ThemeSwitcher variant="toggle" />
+          <ThemeSwitcher variant='toggle' />
         </TestWrapper>
       );
 
@@ -142,7 +162,7 @@ describe('ThemeSwitcher', () => {
     it('shows light and dark icons', () => {
       render(
         <TestWrapper>
-          <ThemeSwitcher variant="toggle" showLabel={true} />
+          <ThemeSwitcher variant='toggle' showLabel={true} />
         </TestWrapper>
       );
 
@@ -152,17 +172,17 @@ describe('ThemeSwitcher', () => {
 
     it('toggles theme on switch click', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
-          <ThemeSwitcher variant="toggle" />
+          <ThemeSwitcher variant='toggle' />
         </TestWrapper>
       );
 
       const switchElement = screen.getByRole('checkbox');
-      
+
       await user.click(switchElement);
-      
+
       // The actual theme switching is handled by the ThemeProvider mock
       expect(switchElement).toBeInTheDocument();
     });
@@ -172,7 +192,7 @@ describe('ThemeSwitcher', () => {
     it('renders compact icon button', () => {
       render(
         <TestWrapper>
-          <ThemeSwitcher variant="compact" />
+          <ThemeSwitcher variant='compact' />
         </TestWrapper>
       );
 
@@ -184,7 +204,7 @@ describe('ThemeSwitcher', () => {
   describe('Theme menu', () => {
     it('shows theme previews in menu', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -204,7 +224,7 @@ describe('ThemeSwitcher', () => {
 
     it('shows custom theme creator option', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -221,7 +241,7 @@ describe('ThemeSwitcher', () => {
 
     it('shows schedule switching option', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -238,10 +258,10 @@ describe('ThemeSwitcher', () => {
 
     it('closes menu when clicking outside', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <div>
-          <div data-testid="outside">Outside element</div>
+          <div data-testid='outside'>Outside element</div>
           <TestWrapper>
             <ThemeSwitcher />
           </TestWrapper>
@@ -266,7 +286,7 @@ describe('ThemeSwitcher', () => {
   describe('Custom theme dialog', () => {
     it('opens custom theme dialog', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -289,7 +309,7 @@ describe('ThemeSwitcher', () => {
 
     it('allows theme name input', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -311,7 +331,7 @@ describe('ThemeSwitcher', () => {
 
     it('shows color picker inputs', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -336,7 +356,7 @@ describe('ThemeSwitcher', () => {
   describe('Schedule dialog', () => {
     it('opens schedule dialog', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -353,13 +373,15 @@ describe('ThemeSwitcher', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText(/Schedule Theme Switching/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Schedule Theme Switching/)
+        ).toBeInTheDocument();
       });
     });
 
     it('shows time inputs', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -393,7 +415,7 @@ describe('ThemeSwitcher', () => {
         key: 'L',
         metaKey: true,
         shiftKey: true,
-        preventDefault: jest.fn()
+        preventDefault: jest.fn(),
       });
 
       // The actual toggle is handled by the theme provider
@@ -402,7 +424,7 @@ describe('ThemeSwitcher', () => {
 
     it('shows keyboard shortcut in tooltip when enabled', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher showShortcut={true} />
@@ -410,9 +432,9 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      
+
       await user.hover(iconButton);
-      
+
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
         expect(tooltip).toBeInTheDocument();
@@ -421,7 +443,7 @@ describe('ThemeSwitcher', () => {
 
     it('does not show keyboard shortcut when disabled', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher showShortcut={false} />
@@ -429,9 +451,9 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      
+
       await user.hover(iconButton);
-      
+
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
         expect(tooltip).toBeInTheDocument();
@@ -443,7 +465,7 @@ describe('ThemeSwitcher', () => {
   describe('Preview functionality', () => {
     it('shows preview indicator when previewing', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -510,7 +532,7 @@ describe('ThemeSwitcher', () => {
 
     it('supports keyboard navigation', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -518,14 +540,14 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      
+
       // Focus the button
       await user.tab();
       expect(iconButton).toHaveFocus();
 
       // Open menu with Enter
       await user.keyboard('{Enter}');
-      
+
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
       });

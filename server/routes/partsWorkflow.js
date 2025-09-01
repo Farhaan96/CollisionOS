@@ -1,7 +1,7 @@
 /**
  * CollisionOS Advanced Parts Management APIs
  * Phase 2 Backend Development
- * 
+ *
  * Comprehensive parts workflow with status tracking and vendor integration
  * Features:
  * - Parts workflow states: needed → sourcing → ordered → backordered → received → installed → returned → cancelled
@@ -15,7 +15,13 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
-const { AdvancedPartsManagement, PurchaseOrderSystem, Vendor, RepairOrderManagement, User } = require('../database/models');
+const {
+  AdvancedPartsManagement,
+  PurchaseOrderSystem,
+  Vendor,
+  RepairOrderManagement,
+  User,
+} = require('../database/models');
 const { realtimeService } = require('../services/realtimeService');
 const rateLimit = require('express-rate-limit');
 
@@ -23,7 +29,7 @@ const rateLimit = require('express-rate-limit');
 const partsRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // 200 parts operations per 15 minutes
-  message: 'Too many parts operations, please try again later.'
+  message: 'Too many parts operations, please try again later.',
 });
 
 /**
@@ -35,23 +41,23 @@ router.get('/workflow/:roId', async (req, res) => {
     const { shopId } = req.user;
 
     const parts = await AdvancedPartsManagement.findAll({
-      where: { 
-        repairOrderId: roId, 
-        shopId 
+      where: {
+        repairOrderId: roId,
+        shopId,
       },
       include: [
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['name', 'vendor_code', 'discount_percentage']
+          attributes: ['name', 'vendor_code', 'discount_percentage'],
         },
         {
           model: PurchaseOrderSystem,
           as: 'partsOrder',
-          attributes: ['po_number', 'status', 'requested_delivery_date']
-        }
+          attributes: ['po_number', 'status', 'requested_delivery_date'],
+        },
       ],
-      order: [['created_at', 'ASC']]
+      order: [['created_at', 'ASC']],
     });
 
     // Group parts by status buckets
@@ -63,7 +69,7 @@ router.get('/workflow/:roId', async (req, res) => {
       received: [],
       installed: [],
       returned: [],
-      cancelled: []
+      cancelled: [],
     };
 
     let total_value = 0;
@@ -71,7 +77,7 @@ router.get('/workflow/:roId', async (req, res) => {
       total_cost: 0,
       total_sell: 0,
       estimated_margin: 0,
-      margin_percentage: 0
+      margin_percentage: 0,
     };
 
     parts.forEach(part => {
@@ -86,11 +92,17 @@ router.get('/workflow/:roId', async (req, res) => {
           total_cost: part.quantity * part.unit_cost,
           vendor: part.vendor?.name || 'Not assigned',
           po_number: part.partsOrder?.po_number || null,
-          expected_date: part.expected_delivery_date || part.partsOrder?.requested_delivery_date,
-          days_in_status: part.status_changed_date ? 
-            Math.ceil((new Date() - new Date(part.status_changed_date)) / (1000 * 60 * 60 * 24)) : 0,
+          expected_date:
+            part.expected_delivery_date ||
+            part.partsOrder?.requested_delivery_date,
+          days_in_status: part.status_changed_date
+            ? Math.ceil(
+                (new Date() - new Date(part.status_changed_date)) /
+                  (1000 * 60 * 60 * 24)
+              )
+            : 0,
           priority: part.priority || 'normal',
-          notes: part.sourcing_notes
+          notes: part.sourcing_notes,
         });
       }
 
@@ -106,19 +118,29 @@ router.get('/workflow/:roId', async (req, res) => {
       }
     });
 
-    margin_analysis.estimated_margin = margin_analysis.total_sell - margin_analysis.total_cost;
-    margin_analysis.margin_percentage = margin_analysis.total_sell > 0 ? 
-      ((margin_analysis.estimated_margin / margin_analysis.total_sell) * 100) : 0;
+    margin_analysis.estimated_margin =
+      margin_analysis.total_sell - margin_analysis.total_cost;
+    margin_analysis.margin_percentage =
+      margin_analysis.total_sell > 0
+        ? (margin_analysis.estimated_margin / margin_analysis.total_sell) * 100
+        : 0;
 
     // Calculate workflow metrics
     const workflow_metrics = {
       total_parts: parts.length,
       total_value: total_value.toFixed(2),
-      completion_rate: parts.length > 0 ? 
-        ((workflow_buckets.installed.length / parts.length) * 100).toFixed(1) : '0',
-      parts_on_order: workflow_buckets.ordered.length + workflow_buckets.backordered.length,
+      completion_rate:
+        parts.length > 0
+          ? ((workflow_buckets.installed.length / parts.length) * 100).toFixed(
+              1
+            )
+          : '0',
+      parts_on_order:
+        workflow_buckets.ordered.length + workflow_buckets.backordered.length,
       ready_to_install: workflow_buckets.received.length,
-      critical_delays: workflow_buckets.backordered.filter(p => p.days_in_status > 7).length
+      critical_delays: workflow_buckets.backordered.filter(
+        p => p.days_in_status > 7
+      ).length,
     };
 
     res.json({
@@ -127,23 +149,22 @@ router.get('/workflow/:roId', async (req, res) => {
         workflow_buckets,
         workflow_metrics,
         margin_analysis,
-        last_updated: new Date().toISOString()
-      }
+        last_updated: new Date().toISOString(),
+      },
     });
-
   } catch (error) {
     console.error('Parts workflow error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get parts workflow',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/parts/bulk-update - Multi-select status updates
- * 
+ *
  * Body: {
  *   part_ids: string[],
  *   new_status: string,
@@ -159,7 +180,7 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
 
@@ -167,23 +188,32 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
     const { shopId, userId } = req.user;
 
     // Validate status transition
-    const valid_statuses = ['needed', 'sourcing', 'ordered', 'backordered', 'received', 'installed', 'returned', 'cancelled'];
+    const valid_statuses = [
+      'needed',
+      'sourcing',
+      'ordered',
+      'backordered',
+      'received',
+      'installed',
+      'returned',
+      'cancelled',
+    ];
     if (!valid_statuses.includes(new_status)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status provided'
+        message: 'Invalid status provided',
       });
     }
 
     // Get current parts to validate ownership and status transitions
     const parts = await AdvancedPartsManagement.findAll({
-      where: { id: part_ids, shopId }
+      where: { id: part_ids, shopId },
     });
 
     if (parts.length !== part_ids.length) {
       return res.status(404).json({
         success: false,
-        message: 'Some parts not found'
+        message: 'Some parts not found',
       });
     }
 
@@ -200,8 +230,8 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
           id: p.id,
           part_number: p.part_number,
           current_status: p.status,
-          attempted_status: new_status
-        }))
+          attempted_status: new_status,
+        })),
       });
     }
 
@@ -210,7 +240,7 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
       status: new_status,
       status_changed_date: new Date(),
       statusChangedBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     };
 
     // Add status-specific fields
@@ -243,20 +273,22 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
     }
 
     // Execute bulk update
-    const [updated_count] = await AdvancedPartsManagement.update(
-      update_data,
-      { where: { id: part_ids } }
-    );
+    const [updated_count] = await AdvancedPartsManagement.update(update_data, {
+      where: { id: part_ids },
+    });
 
     // Broadcast real-time updates
     for (const part of parts) {
-      realtimeService.broadcastPartsUpdate({
-        part_id: part.id,
-        part_number: part.part_number,
-        old_status: part.status,
-        new_status,
-        updated_by: userId
-      }, 'bulk_updated');
+      realtimeService.broadcastPartsUpdate(
+        {
+          part_id: part.id,
+          part_number: part.part_number,
+          old_status: part.status,
+          new_status,
+          updated_by: userId,
+        },
+        'bulk_updated'
+      );
     }
 
     res.json({
@@ -265,16 +297,15 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
       data: {
         updated_count,
         new_status,
-        part_count: parts.length
-      }
+        part_count: parts.length,
+      },
     });
-
   } catch (error) {
     console.error('Bulk parts update error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update parts',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -285,27 +316,27 @@ router.post('/bulk-update', partsRateLimit, async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const { shopId } = req.user;
-    const { 
-      q,               // Search query
-      status,          // Filter by status
-      vendor_id,       // Filter by vendor
-      ro_number,       // Filter by RO
-      priority,        // Filter by priority
-      date_from,       // Date range start
-      date_to,         // Date range end
+    const {
+      q, // Search query
+      status, // Filter by status
+      vendor_id, // Filter by vendor
+      ro_number, // Filter by RO
+      priority, // Filter by priority
+      date_from, // Date range start
+      date_to, // Date range end
       sort_by = 'created_at',
       sort_order = 'DESC',
       page = 1,
-      limit = 50
+      limit = 50,
     } = req.query;
 
     // Build where clause
     const where_clause = { shopId };
-    
+
     if (q) {
       where_clause[Op.or] = [
         { part_number: { [Op.like]: `%${q}%` } },
-        { part_description: { [Op.like]: `%${q}%` } }
+        { part_description: { [Op.like]: `%${q}%` } },
       ];
     }
 
@@ -325,31 +356,34 @@ router.get('/search', async (req, res) => {
       {
         model: Vendor,
         as: 'vendor',
-        attributes: ['name', 'vendor_code', 'discount_percentage']
+        attributes: ['name', 'vendor_code', 'discount_percentage'],
       },
       {
         model: RepairOrderManagement,
         as: 'repairOrder',
         attributes: ['ro_number', 'status'],
-        where: ro_number ? { ro_number: { [Op.like]: `%${ro_number}%` } } : undefined
+        where: ro_number
+          ? { ro_number: { [Op.like]: `%${ro_number}%` } }
+          : undefined,
       },
       {
         model: PurchaseOrderSystem,
         as: 'partsOrder',
         attributes: ['po_number', 'status', 'requested_delivery_date'],
-        required: false
-      }
+        required: false,
+      },
     ];
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    const { count, rows: parts } = await AdvancedPartsManagement.findAndCountAll({
-      where: where_clause,
-      include: include_options,
-      order: [[sort_by, sort_order.toUpperCase()]],
-      limit: parseInt(limit),
-      offset
-    });
+    const { count, rows: parts } =
+      await AdvancedPartsManagement.findAndCountAll({
+        where: where_clause,
+        include: include_options,
+        order: [[sort_by, sort_order.toUpperCase()]],
+        limit: parseInt(limit),
+        offset,
+      });
 
     // Calculate search metrics
     const search_metrics = {
@@ -358,7 +392,10 @@ router.get('/search', async (req, res) => {
       per_page: parseInt(limit),
       total_pages: Math.ceil(count / parseInt(limit)),
       status_breakdown: await getStatusBreakdown(where_clause),
-      total_value: parts.reduce((sum, part) => sum + (part.quantity * part.unit_cost), 0)
+      total_value: parts.reduce(
+        (sum, part) => sum + part.quantity * part.unit_cost,
+        0
+      ),
     };
 
     res.json({
@@ -372,24 +409,23 @@ router.get('/search', async (req, res) => {
           vendor_id,
           ro_number,
           priority,
-          date_range: { from: date_from, to: date_to }
-        }
-      }
+          date_range: { from: date_from, to: date_to },
+        },
+      },
     });
-
   } catch (error) {
     console.error('Parts search error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to search parts',
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 /**
  * POST /api/parts/vendor-quote - Request vendor quotes
- * 
+ *
  * Body: {
  *   part_requests: [{
  *     part_number: string,
@@ -409,13 +445,13 @@ router.post('/vendor-quote', partsRateLimit, async (req, res) => {
 
     // Validate vendors
     const vendors = await Vendor.findAll({
-      where: { id: vendor_ids, shopId }
+      where: { id: vendor_ids, shopId },
     });
 
     if (vendors.length !== vendor_ids.length) {
       return res.status(404).json({
         success: false,
-        message: 'Some vendors not found'
+        message: 'Some vendors not found',
       });
     }
 
@@ -424,7 +460,7 @@ router.post('/vendor-quote', partsRateLimit, async (req, res) => {
     // Create quote request for each vendor
     for (const vendor of vendors) {
       const quote_id = `QR-${Date.now()}-${vendor.vendor_code}`;
-      
+
       // In a real implementation, this would integrate with vendor APIs
       // For now, we'll simulate the quote request process
       quote_requests.push({
@@ -435,15 +471,18 @@ router.post('/vendor-quote', partsRateLimit, async (req, res) => {
         parts: part_requests.map(part => ({
           ...part,
           estimated_price: estimatePartPrice(part, vendor.discount_percentage),
-          estimated_delivery: calculateDeliveryEstimate(vendor, urgent)
+          estimated_delivery: calculateDeliveryEstimate(vendor, urgent),
         })),
         total_estimated: part_requests.reduce(
-          (sum, part) => sum + (part.quantity * estimatePartPrice(part, vendor.discount_percentage)), 0
+          (sum, part) =>
+            sum +
+            part.quantity * estimatePartPrice(part, vendor.discount_percentage),
+          0
         ),
         urgent,
         delivery_needed_by,
         requested_date: new Date(),
-        requested_by: userId
+        requested_by: userId,
       });
     }
 
@@ -451,12 +490,15 @@ router.post('/vendor-quote', partsRateLimit, async (req, res) => {
     console.log('Vendor quote requests created:', quote_requests);
 
     // Broadcast real-time notification
-    realtimeService.broadcastPartsUpdate({
-      action: 'quote_requested',
-      vendor_count: vendors.length,
-      part_count: part_requests.length,
-      urgent
-    }, 'quote_requested');
+    realtimeService.broadcastPartsUpdate(
+      {
+        action: 'quote_requested',
+        vendor_count: vendors.length,
+        part_count: part_requests.length,
+        urgent,
+      },
+      'quote_requested'
+    );
 
     res.json({
       success: true,
@@ -468,17 +510,16 @@ router.post('/vendor-quote', partsRateLimit, async (req, res) => {
           status: qr.status,
           part_count: qr.parts.length,
           total_estimated: qr.total_estimated.toFixed(2),
-          estimated_response_time: '24-48 hours'
-        }))
-      }
+          estimated_response_time: '24-48 hours',
+        })),
+      },
     });
-
   } catch (error) {
     console.error('Vendor quote error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to request vendor quotes',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -492,7 +533,7 @@ router.get('/margin-analysis', async (req, res) => {
     const { ro_id, vendor_id, date_range = '30' } = req.query;
 
     const where_clause = { shopId };
-    
+
     if (ro_id) where_clause.repairOrderId = ro_id;
     if (vendor_id) where_clause.vendorId = vendor_id;
 
@@ -507,9 +548,9 @@ router.get('/margin-analysis', async (req, res) => {
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['name', 'discount_percentage', 'markup_percentage']
-        }
-      ]
+          attributes: ['name', 'discount_percentage', 'markup_percentage'],
+        },
+      ],
     });
 
     // Calculate detailed margin analysis
@@ -526,26 +567,31 @@ router.get('/margin-analysis', async (req, res) => {
       if (part.vendor) {
         const discount = part.vendor.discount_percentage || 0;
         cost_price = sell_price * (1 - discount / 100);
-        
+
         if (!vendor_analysis[part.vendor.name]) {
           vendor_analysis[part.vendor.name] = {
             total_sell: 0,
             total_cost: 0,
             total_margin: 0,
-            part_count: 0
+            part_count: 0,
           };
         }
-        
+
         vendor_analysis[part.vendor.name].total_sell += sell_price;
         vendor_analysis[part.vendor.name].total_cost += cost_price;
-        vendor_analysis[part.vendor.name].total_margin += (sell_price - cost_price);
+        vendor_analysis[part.vendor.name].total_margin +=
+          sell_price - cost_price;
         vendor_analysis[part.vendor.name].part_count++;
       }
 
       // Status analysis
       const status = part.status || 'needed';
       if (!status_analysis[status]) {
-        status_analysis[status] = { total_sell: 0, total_cost: 0, part_count: 0 };
+        status_analysis[status] = {
+          total_sell: 0,
+          total_cost: 0,
+          part_count: 0,
+        };
       }
       status_analysis[status].total_sell += sell_price;
       status_analysis[status].total_cost += cost_price;
@@ -553,18 +599,22 @@ router.get('/margin-analysis', async (req, res) => {
 
       total_sell += sell_price;
       total_cost += cost_price;
-      total_margin += (sell_price - cost_price);
+      total_margin += sell_price - cost_price;
     });
 
     // Calculate percentages
     Object.values(vendor_analysis).forEach(vendor => {
-      vendor.margin_percentage = vendor.total_sell > 0 ? 
-        ((vendor.total_margin / vendor.total_sell) * 100) : 0;
+      vendor.margin_percentage =
+        vendor.total_sell > 0
+          ? (vendor.total_margin / vendor.total_sell) * 100
+          : 0;
     });
 
     Object.values(status_analysis).forEach(status => {
-      status.margin_percentage = status.total_sell > 0 ? 
-        (((status.total_sell - status.total_cost) / status.total_sell) * 100) : 0;
+      status.margin_percentage =
+        status.total_sell > 0
+          ? ((status.total_sell - status.total_cost) / status.total_sell) * 100
+          : 0;
     });
 
     res.json({
@@ -575,21 +625,23 @@ router.get('/margin-analysis', async (req, res) => {
           total_sell_value: total_sell.toFixed(2),
           total_cost_value: total_cost.toFixed(2),
           total_margin: total_margin.toFixed(2),
-          margin_percentage: total_sell > 0 ? ((total_margin / total_sell) * 100).toFixed(2) : '0.00'
+          margin_percentage:
+            total_sell > 0
+              ? ((total_margin / total_sell) * 100).toFixed(2)
+              : '0.00',
         },
         vendor_analysis,
         status_analysis,
         analysis_period: `${date_range} days`,
-        last_updated: new Date().toISOString()
-      }
+        last_updated: new Date().toISOString(),
+      },
     });
-
   } catch (error) {
     console.error('Margin analysis error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to calculate margin analysis',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -600,16 +652,16 @@ router.get('/margin-analysis', async (req, res) => {
 
 function isValidStatusTransition(current_status, new_status) {
   const valid_transitions = {
-    'needed': ['sourcing', 'ordered', 'cancelled'],
-    'sourcing': ['ordered', 'needed', 'cancelled'],
-    'ordered': ['backordered', 'received', 'cancelled'],
-    'backordered': ['received', 'cancelled'],
-    'received': ['installed', 'returned'],
-    'installed': ['returned'], // Can return defective installed parts
-    'returned': ['needed', 'cancelled'],
-    'cancelled': ['needed'] // Can reactivate cancelled parts
+    needed: ['sourcing', 'ordered', 'cancelled'],
+    sourcing: ['ordered', 'needed', 'cancelled'],
+    ordered: ['backordered', 'received', 'cancelled'],
+    backordered: ['received', 'cancelled'],
+    received: ['installed', 'returned'],
+    installed: ['returned'], // Can return defective installed parts
+    returned: ['needed', 'cancelled'],
+    cancelled: ['needed'], // Can reactivate cancelled parts
   };
-  
+
   return valid_transitions[current_status]?.includes(new_status) || false;
 }
 
@@ -622,33 +674,49 @@ function formatPartForResponse(part) {
     unit_cost: part.unit_cost,
     total_cost: part.quantity * part.unit_cost,
     status: part.status,
-    vendor: part.vendor ? {
-      name: part.vendor.name,
-      code: part.vendor.vendor_code,
-      discount: part.vendor.discount_percentage
-    } : null,
+    vendor: part.vendor
+      ? {
+          name: part.vendor.name,
+          code: part.vendor.vendor_code,
+          discount: part.vendor.discount_percentage,
+        }
+      : null,
     ro_number: part.repairOrder?.ro_number,
     po_number: part.partsOrder?.po_number,
-    expected_date: part.expected_delivery_date || part.partsOrder?.requested_delivery_date,
+    expected_date:
+      part.expected_delivery_date || part.partsOrder?.requested_delivery_date,
     priority: part.priority,
-    days_in_status: part.status_changed_date ? 
-      Math.ceil((new Date() - new Date(part.status_changed_date)) / (1000 * 60 * 60 * 24)) : 0,
+    days_in_status: part.status_changed_date
+      ? Math.ceil(
+          (new Date() - new Date(part.status_changed_date)) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0,
     created_at: part.created_at,
-    updated_at: part.updated_at
+    updated_at: part.updated_at,
   };
 }
 
 async function getStatusBreakdown(base_where_clause) {
-  const statuses = ['needed', 'sourcing', 'ordered', 'backordered', 'received', 'installed', 'returned', 'cancelled'];
+  const statuses = [
+    'needed',
+    'sourcing',
+    'ordered',
+    'backordered',
+    'received',
+    'installed',
+    'returned',
+    'cancelled',
+  ];
   const breakdown = {};
-  
+
   for (const status of statuses) {
     const count = await AdvancedPartsManagement.count({
-      where: { ...base_where_clause, status }
+      where: { ...base_where_clause, status },
     });
     breakdown[status] = count;
   }
-  
+
   return breakdown;
 }
 
@@ -656,7 +724,8 @@ function estimatePartPrice(part, discount_percentage = 0) {
   // Simple pricing estimation - in real implementation would use vendor catalogs
   const base_price = 50; // Default base price
   const price_multiplier = part.part_number.includes('OEM') ? 1.5 : 1.0;
-  const estimated = base_price * price_multiplier * (1 - discount_percentage / 100);
+  const estimated =
+    base_price * price_multiplier * (1 - discount_percentage / 100);
   return Math.round(estimated * 100) / 100;
 }
 

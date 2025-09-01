@@ -28,12 +28,12 @@ const mockUserModel = {
 
 // Mock the entire models module
 jest.mock('../../../server/database/models', () => ({
-  User: mockUserModel
+  User: mockUserModel,
 }));
 
 // Mock bcrypt
 jest.mock('bcrypt', () => ({
-  compare: jest.fn()
+  compare: jest.fn(),
 }));
 
 // Mock middleware
@@ -42,7 +42,7 @@ jest.mock('../../../server/middleware/auth', () => ({
     // Mock successful authentication
     req.userId = 1;
     next();
-  }
+  },
 }));
 
 describe('Auth API Routes', () => {
@@ -52,10 +52,10 @@ describe('Auth API Routes', () => {
     app = express();
     app.use(express.json());
     app.use('/api/auth', authRouter);
-    
+
     // Clear all mocks
     jest.clearAllMocks();
-    
+
     // Setup default mock implementations
     mockUser.update.mockResolvedValue(mockUser);
     mockUserModel.update.mockResolvedValue([1]);
@@ -70,7 +70,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -84,19 +84,21 @@ describe('Auth API Routes', () => {
         lastName: 'User',
         role: 'technician',
         department: 'body_shop',
-        shopId: 1
+        shopId: 1,
       });
 
       expect(mockUserModel.findOne).toHaveBeenCalledWith({
         where: {
-          $or: [
-            { username: 'testuser' },
-            { email: 'testuser' }
-          ]
-        }
+          $or: [{ username: 'testuser' }, { email: 'testuser' }],
+        },
       });
-      expect(bcrypt.compare).toHaveBeenCalledWith('password123', '$2b$10$hashedPassword');
-      expect(mockUser.update).toHaveBeenCalledWith({ lastLoginAt: expect.any(Date) });
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'password123',
+        '$2b$10$hashedPassword'
+      );
+      expect(mockUser.update).toHaveBeenCalledWith({
+        lastLoginAt: expect.any(Date),
+      });
     });
 
     test('successfully logs in with email instead of username', async () => {
@@ -107,7 +109,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'test@example.com',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -116,9 +118,9 @@ describe('Auth API Routes', () => {
         where: {
           $or: [
             { username: 'test@example.com' },
-            { email: 'test@example.com' }
-          ]
-        }
+            { email: 'test@example.com' },
+          ],
+        },
       });
     });
 
@@ -126,7 +128,7 @@ describe('Auth API Routes', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          password: 'password123'
+          password: 'password123',
         })
         .expect(400);
 
@@ -138,7 +140,7 @@ describe('Auth API Routes', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          username: 'testuser'
+          username: 'testuser',
         })
         .expect(400);
 
@@ -163,7 +165,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'nonexistent',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(401);
 
@@ -179,7 +181,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(401);
 
@@ -195,12 +197,15 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'wrongpassword'
+          password: 'wrongpassword',
         })
         .expect(401);
 
       expect(response.body.error).toBe('Invalid credentials');
-      expect(bcrypt.compare).toHaveBeenCalledWith('wrongpassword', '$2b$10$hashedPassword');
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'wrongpassword',
+        '$2b$10$hashedPassword'
+      );
     });
 
     test('generates valid JWT token', async () => {
@@ -211,7 +216,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -233,7 +238,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(500);
 
@@ -248,7 +253,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(500);
 
@@ -264,7 +269,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(500);
 
@@ -278,22 +283,18 @@ describe('Auth API Routes', () => {
       delete userWithoutPassword.password;
       mockUserModel.findByPk.mockResolvedValue(userWithoutPassword);
 
-      const response = await request(app)
-        .get('/api/auth/me')
-        .expect(200);
+      const response = await request(app).get('/api/auth/me').expect(200);
 
       expect(response.body.user).toEqual(userWithoutPassword);
       expect(mockUserModel.findByPk).toHaveBeenCalledWith(1, {
-        attributes: { exclude: ['password'] }
+        attributes: { exclude: ['password'] },
       });
     });
 
     test('returns 404 when user is not found', async () => {
       mockUserModel.findByPk.mockResolvedValue(null);
 
-      const response = await request(app)
-        .get('/api/auth/me')
-        .expect(404);
+      const response = await request(app).get('/api/auth/me').expect(404);
 
       expect(response.body.error).toBe('User not found');
     });
@@ -301,9 +302,7 @@ describe('Auth API Routes', () => {
     test('handles database errors gracefully', async () => {
       mockUserModel.findByPk.mockRejectedValue(new Error('Database error'));
 
-      const response = await request(app)
-        .get('/api/auth/me')
-        .expect(500);
+      const response = await request(app).get('/api/auth/me').expect(500);
 
       expect(response.body.error).toBe('Internal server error');
     });
@@ -311,22 +310,18 @@ describe('Auth API Routes', () => {
     test('excludes password from response', async () => {
       mockUserModel.findByPk.mockResolvedValue(mockUser);
 
-      const response = await request(app)
-        .get('/api/auth/me')
-        .expect(200);
+      const response = await request(app).get('/api/auth/me').expect(200);
 
       expect(response.body.user.password).toBeUndefined();
       expect(mockUserModel.findByPk).toHaveBeenCalledWith(1, {
-        attributes: { exclude: ['password'] }
+        attributes: { exclude: ['password'] },
       });
     });
   });
 
   describe('POST /api/auth/logout', () => {
     test('successfully logs out authenticated user', async () => {
-      const response = await request(app)
-        .post('/api/auth/logout')
-        .expect(200);
+      const response = await request(app).post('/api/auth/logout').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.message).toBe('Logged out successfully');
@@ -339,27 +334,27 @@ describe('Auth API Routes', () => {
     test('handles database errors gracefully', async () => {
       mockUserModel.update.mockRejectedValue(new Error('Database error'));
 
-      const response = await request(app)
-        .post('/api/auth/logout')
-        .expect(500);
+      const response = await request(app).post('/api/auth/logout').expect(500);
 
       expect(response.body.error).toBe('Internal server error');
     });
 
     test('updates lastLogoutAt timestamp', async () => {
       const beforeLogout = new Date();
-      
-      await request(app)
-        .post('/api/auth/logout')
-        .expect(200);
+
+      await request(app).post('/api/auth/logout').expect(200);
 
       const updateCall = mockUserModel.update.mock.calls[0];
       const updateData = updateCall[0];
       const afterLogout = new Date();
 
       expect(updateData.lastLogoutAt).toBeInstanceOf(Date);
-      expect(updateData.lastLogoutAt.getTime()).toBeGreaterThanOrEqual(beforeLogout.getTime());
-      expect(updateData.lastLogoutAt.getTime()).toBeLessThanOrEqual(afterLogout.getTime());
+      expect(updateData.lastLogoutAt.getTime()).toBeGreaterThanOrEqual(
+        beforeLogout.getTime()
+      );
+      expect(updateData.lastLogoutAt.getTime()).toBeLessThanOrEqual(
+        afterLogout.getTime()
+      );
     });
   });
 
@@ -385,13 +380,11 @@ describe('Auth API Routes', () => {
 
     test('handles very long username/password', async () => {
       const longString = 'a'.repeat(10000);
-      
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: longString,
-          password: longString
-        });
+
+      const response = await request(app).post('/api/auth/login').send({
+        username: longString,
+        password: longString,
+      });
 
       // Should handle gracefully (either find user or return not found)
       expect([401, 404, 500]).toContain(response.status);
@@ -404,7 +397,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'test@domain.com',
-          password: 'p@$$w0rd!@#$%'
+          password: 'p@$$w0rd!@#$%',
         })
         .expect(401);
 
@@ -421,7 +414,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -457,14 +450,14 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
       const decoded = jwt.decode(response.body.token);
       const now = Math.floor(Date.now() / 1000);
       const expirationTime = decoded.exp - now;
-      
+
       // Should expire in reasonable time (24 hours = 86400 seconds)
       expect(expirationTime).toBeLessThanOrEqual(86400);
       expect(expirationTime).toBeGreaterThan(0);
@@ -480,7 +473,7 @@ describe('Auth API Routes', () => {
           .post('/api/auth/login')
           .send({
             username: 'testuser',
-            password: 'wrongpassword'
+            password: 'wrongpassword',
           })
           .expect(401);
 
@@ -501,7 +494,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -522,7 +515,7 @@ describe('Auth API Routes', () => {
         .post('/api/auth/login')
         .send({
           username: 'testuser',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 

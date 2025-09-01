@@ -3,12 +3,14 @@
 ## 🎯 Target Port Configuration
 
 Your CollisionOS application is now configured to run on:
+
 - **Frontend (React)**: `http://localhost:3000`
 - **Backend (API)**: `http://localhost:3001`
 
 ## 📋 Configuration Changes Made
 
 ### 1. **package.json Updates**
+
 ```json
 {
   "proxy": "http://localhost:3001",
@@ -22,36 +24,44 @@ Your CollisionOS application is now configured to run on:
 ```
 
 ### 2. **server/index.js Updates**
+
 ```javascript
 const PORT = process.env.SERVER_PORT || 3001;
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://collisionos.com', 'https://app.collisionos.com']
-    : ['http://localhost:3000'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://collisionos.com', 'https://app.collisionos.com']
+        : ['http://localhost:3000'],
+    credentials: true,
+  })
+);
 ```
 
 ## 🚀 How to Start the Application
 
 ### Option 1: Start Both Frontend and Backend
+
 ```bash
 npm run dev
 ```
 
 ### Option 2: Start Frontend Only (UI Development)
+
 ```bash
 npm run dev:ui
 ```
 
 ### Option 3: Start Backend Only (API Development)
+
 ```bash
 npm run dev:server
 ```
 
 ### Option 4: Start with Electron (Desktop App)
+
 ```bash
 npm run electron-dev
 ```
@@ -89,6 +99,7 @@ Once running, you can access:
 ## 🔍 Verification Steps
 
 ### 1. Check if ports are available
+
 ```bash
 # Check if port 3000 is in use
 netstat -ano | findstr :3000
@@ -98,6 +109,7 @@ netstat -ano | findstr :3001
 ```
 
 ### 2. Kill processes if needed
+
 ```bash
 # Kill process on port 3000 (replace PID with actual process ID)
 taskkill /PID <PID> /F
@@ -107,6 +119,7 @@ taskkill /PID <PID> /F
 ```
 
 ### 3. Test the application
+
 1. Start the application: `npm run dev`
 2. Open browser to: `http://localhost:3000`
 3. You should see the login page
@@ -115,15 +128,18 @@ taskkill /PID <PID> /F
 ## 🚨 Troubleshooting
 
 ### Port Already in Use
+
 If you get "port already in use" errors:
 
 1. **Find the process using the port**:
+
    ```bash
    netstat -ano | findstr :3000
    netstat -ano | findstr :3001
    ```
 
 2. **Kill the process**:
+
    ```bash
    taskkill /PID <PID> /F
    ```
@@ -134,6 +150,7 @@ If you get "port already in use" errors:
    - Update proxy: `"proxy": "http://localhost:3003"`
 
 ### CORS Issues
+
 If you encounter CORS errors:
 
 1. **Check server CORS configuration** in `server/index.js`
@@ -141,6 +158,7 @@ If you encounter CORS errors:
 3. **Ensure environment variables** are set correctly
 
 ### Authentication Issues
+
 If login doesn't work:
 
 1. **Check server is running** on port 3001
@@ -150,11 +168,11 @@ If login doesn't work:
 
 ## 📊 Port Usage Summary
 
-| Service | Port | Purpose | URL |
-|---------|------|---------|-----|
-| React Frontend | 3000 | User Interface | `http://localhost:3000` |
-| Express Backend | 3001 | API Server | `http://localhost:3001` |
-| Proxy | 3000→3001 | API Requests | Automatic |
+| Service         | Port      | Purpose        | URL                     |
+| --------------- | --------- | -------------- | ----------------------- |
+| React Frontend  | 3000      | User Interface | `http://localhost:3000` |
+| Express Backend | 3001      | API Server     | `http://localhost:3001` |
+| Proxy           | 3000→3001 | API Requests   | Automatic               |
 
 ## ✅ Success Indicators
 

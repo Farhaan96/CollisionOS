@@ -5,14 +5,16 @@
 
 const express = require('express');
 const router = express.Router();
-const { IntelligentCollisionAssistant } = require('../services/intelligentAssistant');
+const {
+  IntelligentCollisionAssistant,
+} = require('../services/intelligentAssistant');
 const { ScalableNLPRouter } = require('../services/scalableNLPRouter');
 const { authenticateToken } = require('../middleware/authSupabase');
-const { 
-  aiRateLimit, 
-  validateUserShopAccess, 
-  validateQueryInput, 
-  auditAIQuery 
+const {
+  aiRateLimit,
+  validateUserShopAccess,
+  validateQueryInput,
+  auditAIQuery,
 } = require('../middleware/secureAI');
 
 // Initialize Scalable NLP Router (3-tier architecture)
@@ -67,55 +69,66 @@ const intelligentAssistant = new IntelligentCollisionAssistant();
  *                   type: array
  *                   description: AI-generated insights
  */
-router.post('/query', 
-  aiRateLimit,              // Rate limiting
-  authenticateToken(),      // Authentication required
-  validateUserShopAccess,   // Validate user-shop relationship
-  validateQueryInput,       // Input validation and sanitization
-  auditAIQuery,            // Audit logging
+router.post(
+  '/query',
+  aiRateLimit, // Rate limiting
+  authenticateToken(), // Authentication required
+  validateUserShopAccess, // Validate user-shop relationship
+  validateQueryInput, // Input validation and sanitization
+  auditAIQuery, // Audit logging
   async (req, res) => {
-  try {
-    const { query, context = {} } = req.body;
-    
-    // Use authenticated user data (from secure middleware)
-    const { userId, shopId } = req.secureUser;
+    try {
+      const { query, context = {} } = req.body;
 
-    console.log(`🚀 Scalable AI Query from user ${userId} (shop ${shopId}): "${query}"`);
+      // Use authenticated user data (from secure middleware)
+      const { userId, shopId } = req.secureUser;
 
-    // Extract user token from authorization header for secure database access
-    const userToken = req.headers.authorization?.replace('Bearer ', '');
+      console.log(
+        `🚀 Scalable AI Query from user ${userId} (shop ${shopId}): "${query}"`
+      );
 
-    // Process query with Scalable NLP Router (3-tier architecture)
-    const response = await nlpRouter.processQuery(query, shopId, userId, userToken);
+      // Extract user token from authorization header for secure database access
+      const userToken = req.headers.authorization?.replace('Bearer ', '');
 
-    // Log successful query with performance metrics
-    console.log(`✅ AI Response: ${response.performance?.processingTier} (${response.performance?.processingTime}ms), results: ${response.results?.length || 0}, shop: ${shopId}`);
+      // Process query with Scalable NLP Router (3-tier architecture)
+      const response = await nlpRouter.processQuery(
+        query,
+        shopId,
+        userId,
+        userToken
+      );
 
-    res.json({
-      success: true,
-      query,
-      timestamp: new Date().toISOString(),
-      security: {
-        shopValidated: true,
-        userValidated: true,
-        dataIsolated: true
-      },
-      ...response
-    });
+      // Log successful query with performance metrics
+      console.log(
+        `✅ AI Response: ${response.performance?.processingTier} (${response.performance?.processingTime}ms), results: ${response.results?.length || 0}, shop: ${shopId}`
+      );
 
-  } catch (error) {
-    console.error('❌ Secure AI Query Error:', error);
-    
-    // Don't expose internal error details in production
-    const isDev = process.env.NODE_ENV === 'development';
-    
-    res.status(500).json({
-      error: 'AI Assistant Error',
-      message: 'I encountered an error processing your request. Please try again.',
-      ...(isDev && { details: error.message })
-    });
+      res.json({
+        success: true,
+        query,
+        timestamp: new Date().toISOString(),
+        security: {
+          shopValidated: true,
+          userValidated: true,
+          dataIsolated: true,
+        },
+        ...response,
+      });
+    } catch (error) {
+      console.error('❌ Secure AI Query Error:', error);
+
+      // Don't expose internal error details in production
+      const isDev = process.env.NODE_ENV === 'development';
+
+      res.status(500).json({
+        error: 'AI Assistant Error',
+        message:
+          'I encountered an error processing your request. Please try again.',
+        ...(isDev && { details: error.message }),
+      });
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -144,26 +157,25 @@ router.get('/suggestions', authenticateToken(), async (req, res) => {
         {
           name: 'Search',
           icon: '🔍',
-          suggestions: suggestions.filter(s => s.type === 'search')
+          suggestions: suggestions.filter(s => s.type === 'search'),
         },
         {
           name: 'Analytics',
           icon: '📊',
-          suggestions: suggestions.filter(s => s.type === 'analytics')
+          suggestions: suggestions.filter(s => s.type === 'analytics'),
         },
         {
           name: 'Workflow',
           icon: '🔄',
-          suggestions: suggestions.filter(s => s.type === 'workflow')
-        }
-      ]
+          suggestions: suggestions.filter(s => s.type === 'workflow'),
+        },
+      ],
     });
-
   } catch (error) {
     console.error('❌ AI Suggestions Error:', error);
     res.status(500).json({
       error: 'Failed to generate suggestions',
-      message: 'Unable to generate query suggestions at this time.'
+      message: 'Unable to generate query suggestions at this time.',
     });
   }
 });
@@ -195,14 +207,13 @@ router.get('/analytics/summary', authenticateToken(), async (req, res) => {
     res.json({
       success: true,
       summary,
-      generated_at: new Date().toISOString()
+      generated_at: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('❌ AI Analytics Summary Error:', error);
     res.status(500).json({
       error: 'Failed to generate analytics summary',
-      message: 'Unable to generate analytics summary at this time.'
+      message: 'Unable to generate analytics summary at this time.',
     });
   }
 });
@@ -228,10 +239,10 @@ router.get('/performance', authenticateToken(), (req, res) => {
       architecture: '3-tier hybrid NLP',
       tiers: {
         cache: 'Redis smart caching (70% target)',
-        local: 'Local NLP processing (25% target)', 
-        cloud: 'Cloud AI APIs (5% target)'
-      }
-    }
+        local: 'Local NLP processing (25% target)',
+        cloud: 'Cloud AI APIs (5% target)',
+      },
+    },
   });
 });
 
@@ -250,18 +261,19 @@ router.get('/health', async (req, res) => {
   try {
     const health = await nlpRouter.healthCheck();
     const statusCode = health.status === 'healthy' ? 200 : 503;
-    
+
     res.status(statusCode).json({
       ...health,
-      message: health.status === 'healthy' ? 
-        'All AI systems operational' : 
-        'Some AI systems are degraded but functional'
+      message:
+        health.status === 'healthy'
+          ? 'All AI systems operational'
+          : 'Some AI systems are degraded but functional',
     });
   } catch (error) {
     res.status(500).json({
       status: 'unhealthy',
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -281,11 +293,12 @@ router.get('/help', (req, res) => {
   res.json({
     success: true,
     name: 'CollisionOS Assist',
-    description: 'Your intelligent collision repair assistant with 3-tier scalable architecture',
+    description:
+      'Your intelligent collision repair assistant with 3-tier scalable architecture',
     architecture: {
       tier1: 'Smart caching for instant responses',
-      tier2: 'Local NLP for collision repair understanding', 
-      tier3: 'Cloud AI for complex query processing'
+      tier2: 'Local NLP for collision repair understanding',
+      tier3: 'Cloud AI for complex query processing',
     },
     capabilities: [
       '🔍 Search for repair orders, customers, vehicles, and parts',
@@ -293,43 +306,44 @@ router.get('/help', (req, res) => {
       '🔄 Track workflow status and identify bottlenecks',
       '💰 Review financial metrics and profitability',
       '🤖 Answer collision repair industry questions',
-      '⚡ Lightning-fast responses with smart caching'
+      '⚡ Lightning-fast responses with smart caching',
     ],
     examples: [
       {
-        query: 'What\'s in repair?',
+        query: "What's in repair?",
         description: 'See all active repair orders',
-        expectedTier: 'cache or local'
+        expectedTier: 'cache or local',
       },
       {
         query: 'Show me Honda vehicles',
         description: 'Search for vehicles by make',
-        expectedTier: 'cache or local'
+        expectedTier: 'cache or local',
       },
       {
         query: 'What repair orders are pending parts?',
         description: 'Find workflow bottlenecks',
-        expectedTier: 'local'
+        expectedTier: 'local',
       },
       {
-        query: 'What\'s our average cycle time this month?',
+        query: "What's our average cycle time this month?",
         description: 'Get performance analytics',
-        expectedTier: 'local'
+        expectedTier: 'local',
       },
       {
-        query: 'Explain the complex relationship between DRP agreements and supplement approval processes in modern collision repair workflows',
+        query:
+          'Explain the complex relationship between DRP agreements and supplement approval processes in modern collision repair workflows',
         description: 'Complex industry knowledge query',
-        expectedTier: 'cloud'
-      }
+        expectedTier: 'cloud',
+      },
     ],
     tips: [
       'Simple queries get instant cached responses',
       'Collision repair terms are understood by local NLP',
       'Complex questions automatically route to advanced AI',
       'Ask follow-up questions - I learn from patterns',
-      'Use natural language - the system adapts to you'
+      'Use natural language - the system adapts to you',
     ],
-    performance: nlpRouter.getStats()
+    performance: nlpRouter.getStats(),
   });
 });
 
@@ -339,19 +353,51 @@ router.get('/help', (req, res) => {
 async function generateSmartSuggestions(shopId) {
   const suggestions = [
     // Search suggestions
-    { type: 'search', query: 'Show me repair orders from this week', priority: 'high' },
-    { type: 'search', query: 'Find customers with multiple vehicles', priority: 'medium' },
-    { type: 'search', query: 'List all BMW repairs in progress', priority: 'medium' },
-    
+    {
+      type: 'search',
+      query: 'Show me repair orders from this week',
+      priority: 'high',
+    },
+    {
+      type: 'search',
+      query: 'Find customers with multiple vehicles',
+      priority: 'medium',
+    },
+    {
+      type: 'search',
+      query: 'List all BMW repairs in progress',
+      priority: 'medium',
+    },
+
     // Analytics suggestions
-    { type: 'analytics', query: 'What\'s our average cycle time?', priority: 'high' },
-    { type: 'analytics', query: 'How many jobs did we complete this month?', priority: 'high' },
-    { type: 'analytics', query: 'Which parts take longest to receive?', priority: 'medium' },
-    
+    {
+      type: 'analytics',
+      query: "What's our average cycle time?",
+      priority: 'high',
+    },
+    {
+      type: 'analytics',
+      query: 'How many jobs did we complete this month?',
+      priority: 'high',
+    },
+    {
+      type: 'analytics',
+      query: 'Which parts take longest to receive?',
+      priority: 'medium',
+    },
+
     // Workflow suggestions
-    { type: 'workflow', query: 'What repair orders are pending parts?', priority: 'high' },
+    {
+      type: 'workflow',
+      query: 'What repair orders are pending parts?',
+      priority: 'high',
+    },
     { type: 'workflow', query: 'Show me overdue repairs', priority: 'high' },
-    { type: 'workflow', query: 'Which jobs are ready for pickup?', priority: 'medium' }
+    {
+      type: 'workflow',
+      query: 'Which jobs are ready for pickup?',
+      priority: 'medium',
+    },
   ];
 
   return suggestions;

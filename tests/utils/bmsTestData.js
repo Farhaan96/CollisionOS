@@ -15,7 +15,7 @@ export function createMockBMSFile(options = {}) {
     claimNumber = 'CLM123456',
     includeWarnings = false,
     manyDamageLines = false,
-    damageLineCount = manyDamageLines ? 50 : 5
+    damageLineCount = manyDamageLines ? 50 : 5,
   } = options;
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -69,7 +69,9 @@ export function createMockBMSFile(options = {}) {
       </Party>
     </PolicyHolder>
     
-    ${includeAllSections ? `
+    ${
+      includeAllSections
+        ? `
     <InsuranceCompany>
       <Party>
         <OrgInfo>
@@ -94,7 +96,9 @@ export function createMockBMSFile(options = {}) {
         </ContactInfo>
       </Party>
     </Estimator>
-    ` : ''}
+    `
+        : ''
+    }
   </AdminInfo>
 
   <ClaimInfo>
@@ -198,7 +202,9 @@ export function createMockBMSFile(options = {}) {
     </SummaryTotalsInfo>
   </RepairTotalsInfo>
 
-  ${includeAllSections ? `
+  ${
+    includeAllSections
+      ? `
   <ProfileInfo>
     <ProfileName>Standard Profile</ProfileName>
     <ProfileUUID>test-profile-uuid</ProfileUUID>
@@ -209,7 +215,9 @@ export function createMockBMSFile(options = {}) {
       <CommitDateTime>${new Date().toISOString()}</CommitDateTime>
     </EstimateEvent>
   </EventInfo>
-  ` : ''}
+  `
+      : ''
+  }
 </VehicleDamageEstimateAddRq>`;
 }
 
@@ -220,7 +228,7 @@ export function createInvalidBMSFile(options = {}) {
     invalidEmail = false,
     invalidPostalCode = false,
     invalidYear = false,
-    malformedXML = false
+    malformedXML = false,
   } = options;
 
   if (malformedXML) {
@@ -235,7 +243,7 @@ export function createInvalidBMSFile(options = {}) {
 
   const baseFile = createMockBMSFile({
     includeAllSections: true,
-    customerName: 'Invalid Test'
+    customerName: 'Invalid Test',
   });
 
   let modifiedFile = baseFile;
@@ -261,10 +269,7 @@ export function createInvalidBMSFile(options = {}) {
 
   // Add invalid postal code
   if (invalidPostalCode) {
-    modifiedFile = modifiedFile.replace(
-      'V6B 1A1',
-      'INVALID'
-    );
+    modifiedFile = modifiedFile.replace('V6B 1A1', 'INVALID');
   }
 
   // Add invalid year
@@ -280,10 +285,10 @@ export function createInvalidBMSFile(options = {}) {
 
 function generateDamageLines(count = 5) {
   const lines = [];
-  
+
   for (let i = 1; i <= count; i++) {
     const lineNum = i.toString().padStart(3, '0');
-    
+
     lines.push(`
   <DamageLineInfo>
     <LineNum>${lineNum}</LineNum>
@@ -296,8 +301,8 @@ function generateDamageLines(count = 5) {
       <PartType>Body</PartType>
       <PartNum>TEST-PART-${lineNum}</PartNum>
       <OEMPartNum>OEM-PART-${lineNum}</OEMPartNum>
-      <PartPrice>${(100 + (i * 50)).toFixed(2)}</PartPrice>
-      <OEMPartPrice>${(150 + (i * 50)).toFixed(2)}</OEMPartPrice>
+      <PartPrice>${(100 + i * 50).toFixed(2)}</PartPrice>
+      <OEMPartPrice>${(150 + i * 50).toFixed(2)}</OEMPartPrice>
       <Quantity>1</Quantity>
       <TaxableInd>1</TaxableInd>
     </PartInfo>
@@ -305,13 +310,13 @@ function generateDamageLines(count = 5) {
     <LaborInfo>
       <LaborType>B</LaborType>
       <LaborOperation>Replace</LaborOperation>
-      <LaborHours>${(2.0 + (i * 0.5)).toFixed(1)}</LaborHours>
-      <DatabaseLaborHours>${(2.0 + (i * 0.5)).toFixed(1)}</DatabaseLaborHours>
+      <LaborHours>${(2.0 + i * 0.5).toFixed(1)}</LaborHours>
+      <DatabaseLaborHours>${(2.0 + i * 0.5).toFixed(1)}</DatabaseLaborHours>
       <TaxableInd>1</TaxableInd>
     </LaborInfo>
   </DamageLineInfo>`);
   }
-  
+
   return lines.join('');
 }
 
@@ -328,12 +333,15 @@ export function createMockValidationResult(isValid = true) {
       fieldValidations: {
         'DocumentInfo.BMSVer': { isValid: true, message: 'Valid BMS version' },
         'VehicleInfo.VIN': { isValid: true, message: 'Valid VIN' },
-        'PolicyHolder.PersonName': { isValid: true, message: 'Valid person name' }
+        'PolicyHolder.PersonName': {
+          isValid: true,
+          message: 'Valid person name',
+        },
       },
       summary: {
         status: 'valid',
-        message: 'BMS file is valid with no issues detected'
-      }
+        message: 'BMS file is valid with no issues detected',
+      },
     };
   } else {
     return {
@@ -346,30 +354,36 @@ export function createMockValidationResult(isValid = true) {
         {
           field: 'vehicleInfo.vin',
           message: 'Missing VIN information',
-          severity: 'error'
+          severity: 'error',
         },
         {
           field: 'documentInfo.documentId',
           message: 'Missing required field: DocumentID',
-          severity: 'error'
-        }
+          severity: 'error',
+        },
       ],
       warnings: [
         {
           field: 'adminInfo.email',
           message: 'Invalid email format: invalid-email',
-          severity: 'warning'
-        }
+          severity: 'warning',
+        },
       ],
       fieldValidations: {
         'VehicleInfo.VIN': { isValid: false, message: 'Missing VIN' },
-        'DocumentInfo.DocumentID': { isValid: false, message: 'Missing required field' },
-        'PolicyHolder.Email': { isValid: false, message: 'Invalid email format' }
+        'DocumentInfo.DocumentID': {
+          isValid: false,
+          message: 'Missing required field',
+        },
+        'PolicyHolder.Email': {
+          isValid: false,
+          message: 'Invalid email format',
+        },
       },
       summary: {
         status: 'invalid',
-        message: 'BMS file is invalid with 2 error(s) and 1 warning(s)'
-      }
+        message: 'BMS file is invalid with 2 error(s) and 1 warning(s)',
+      },
     };
   }
 }
@@ -386,19 +400,19 @@ export function createMockBatchStatus(status = 'processing') {
       failedFiles: 0,
       skippedFiles: 0,
       totalSize: 50000,
-      processedSize: 0
+      processedSize: 0,
     },
     timestamps: {
       created: new Date(Date.now() - 60000),
       started: new Date(Date.now() - 30000),
       paused: null,
       resumed: null,
-      completed: null
+      completed: null,
     },
     canPause: true,
     canResume: false,
     canCancel: true,
-    files: []
+    files: [],
   };
 
   // Generate file statuses based on overall batch status
@@ -408,7 +422,7 @@ export function createMockBatchStatus(status = 'processing') {
       fileName: `test-file-${i}.xml`,
       status: 'pending',
       progress: 0,
-      error: null
+      error: null,
     };
 
     if (status === 'completed') {
@@ -422,7 +436,7 @@ export function createMockBatchStatus(status = 'processing') {
       baseStatus.timestamps.completed = new Date();
       baseStatus.canPause = false;
       baseStatus.canCancel = false;
-      
+
       if (i === 4) {
         fileStatus.error = 'Validation failed';
       }
@@ -467,14 +481,14 @@ export function createMockErrorReport(errorType = 'validation') {
       fileSize: 1024,
       operation: 'upload',
       userId: 'test-user-id',
-      sessionId: 'test-session'
+      sessionId: 'test-session',
     },
     resolution: {
       status: 'unresolved',
       resolvedAt: null,
       resolvedBy: null,
-      resolution: null
-    }
+      resolution: null,
+    },
   };
 
   switch (errorType) {
@@ -484,21 +498,22 @@ export function createMockErrorReport(errorType = 'validation') {
         originalError: {
           name: 'ValidationError',
           message: 'Invalid VIN format',
-          stack: 'ValidationError: Invalid VIN format\n    at validateVIN...'
+          stack: 'ValidationError: Invalid VIN format\n    at validateVIN...',
         },
         analysis: {
           category: 'validation',
           severity: 'medium',
-          userMessage: 'The Vehicle Identification Number (VIN) in the BMS file is invalid or missing.',
+          userMessage:
+            'The Vehicle Identification Number (VIN) in the BMS file is invalid or missing.',
           technicalMessage: 'Invalid VIN format',
           suggestions: [
             'Verify the VIN in the original estimate',
             'Check that the VIN contains exactly 17 characters',
-            'Ensure the VIN does not contain invalid characters (I, O, Q)'
+            'Ensure the VIN does not contain invalid characters (I, O, Q)',
           ],
           retryable: false,
-          affectedComponents: ['Data Validation']
-        }
+          affectedComponents: ['Data Validation'],
+        },
       };
 
     case 'parsing':
@@ -507,21 +522,22 @@ export function createMockErrorReport(errorType = 'validation') {
         originalError: {
           name: 'XMLParseError',
           message: 'XML parse error: Unexpected end of input',
-          stack: 'XMLParseError: XML parse error...'
+          stack: 'XMLParseError: XML parse error...',
         },
         analysis: {
           category: 'parsing',
           severity: 'high',
-          userMessage: 'The BMS file appears to be corrupted or not in valid XML format. Please check the file and try again.',
+          userMessage:
+            'The BMS file appears to be corrupted or not in valid XML format. Please check the file and try again.',
           technicalMessage: 'XML parse error: Unexpected end of input',
           suggestions: [
             'Ensure the file is a valid BMS XML file from Mitchell Estimating',
             'Check that the file was not corrupted during transfer',
-            'Try opening the file in a text editor to verify its contents'
+            'Try opening the file in a text editor to verify its contents',
           ],
           retryable: false,
-          affectedComponents: ['XML Parser']
-        }
+          affectedComponents: ['XML Parser'],
+        },
       };
 
     case 'network':
@@ -530,7 +546,7 @@ export function createMockErrorReport(errorType = 'validation') {
         originalError: {
           name: 'NetworkError',
           message: 'fetch failed',
-          stack: 'NetworkError: fetch failed...'
+          stack: 'NetworkError: fetch failed...',
         },
         analysis: {
           category: 'network',
@@ -540,11 +556,11 @@ export function createMockErrorReport(errorType = 'validation') {
           suggestions: [
             'Check your internet connection',
             'Ensure firewall is not blocking the connection',
-            'Try again with a smaller file size'
+            'Try again with a smaller file size',
           ],
           retryable: true,
-          affectedComponents: ['Network']
-        }
+          affectedComponents: ['Network'],
+        },
       };
 
     default:
@@ -562,7 +578,7 @@ export function createMockProcessingStatistics() {
       totalFiles: 150,
       successfulFiles: 142,
       failedFiles: 8,
-      overallSuccessRate: 94.67
+      overallSuccessRate: 94.67,
     },
     errors: {
       totalErrors: 12,
@@ -570,18 +586,18 @@ export function createMockProcessingStatistics() {
       unresolvedErrors: 4,
       resolutionRate: 66.67,
       errorsByCategory: {
-        'validation': 5,
-        'parsing': 3,
-        'network': 2,
-        'database': 2
+        validation: 5,
+        parsing: 3,
+        network: 2,
+        database: 2,
       },
       errorsBySeverity: {
-        'low': 2,
-        'medium': 6,
-        'high': 3,
-        'critical': 1
+        low: 2,
+        medium: 6,
+        high: 3,
+        critical: 1,
       },
-      recentErrors: []
+      recentErrors: [],
     },
     period: {
       name: 'month',
@@ -591,12 +607,14 @@ export function createMockProcessingStatistics() {
         failedUploads: 8,
         averageProcessingTime: 4.2,
         dailyBreakdown: Array.from({ length: 30 }, (_, i) => ({
-          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
           uploads: Math.floor(Math.random() * 10) + 1,
           successes: Math.floor(Math.random() * 9) + 1,
-          failures: Math.floor(Math.random() * 2)
-        }))
-      }
-    }
+          failures: Math.floor(Math.random() * 2),
+        })),
+      },
+    },
   };
 }

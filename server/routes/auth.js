@@ -4,10 +4,17 @@ const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { User } = require('../database/models');
 const { authenticateToken: legacyAuth } = require('../middleware/authEnhanced');
-const { authenticateToken, loginWithSupabase } = require('../middleware/authSupabase');
+const {
+  authenticateToken,
+  loginWithSupabase,
+} = require('../middleware/authSupabase');
 const { validateBody } = require('../middleware/validation');
 const { loginSchema } = require('../schemas/authSchemas');
-const { asyncHandler, errors, successResponse } = require('../utils/errorHandler');
+const {
+  asyncHandler,
+  errors,
+  successResponse,
+} = require('../utils/errorHandler');
 const { rateLimits } = require('../middleware/security');
 const { isSupabaseEnabled } = require('../config/supabase');
 
@@ -50,7 +57,8 @@ const router = express.Router();
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/login', 
+router.post(
+  '/login',
   rateLimits.auth,
   validateBody(loginSchema),
   asyncHandler(async (req, res) => {
@@ -62,15 +70,22 @@ router.post('/login',
       if (isSupabaseEnabled) {
         try {
           const result = await loginWithSupabase(username, password);
-          return successResponse(res, {
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            user: result.user,
-            expiresIn: '1h',
-            provider: 'supabase'
-          }, 'Login successful');
+          return successResponse(
+            res,
+            {
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken,
+              user: result.user,
+              expiresIn: '1h',
+              provider: 'supabase',
+            },
+            'Login successful'
+          );
         } catch (supabaseError) {
-          console.log('Supabase login failed, trying legacy:', supabaseError.message);
+          console.log(
+            'Supabase login failed, trying legacy:',
+            supabaseError.message
+          );
         }
       }
 
@@ -83,11 +98,8 @@ router.post('/login',
       // Find user by username or email
       const user = await User.findOne({
         where: {
-          [Op.or]: [
-            { username: username },
-            { email: username }
-          ]
-        }
+          [Op.or]: [{ username: username }, { email: username }],
+        },
       });
 
       if (!user) {
@@ -112,9 +124,16 @@ router.post('/login',
       authRateLimit.clearAttempts(clientIp);
 
       // Generate JWT tokens
-      const { generateAccessToken, generateRefreshToken } = require('../middleware/authEnhanced');
-      const tokenPayload = { userId: user.id, role: user.role, shopId: user.shopId };
-      
+      const {
+        generateAccessToken,
+        generateRefreshToken,
+      } = require('../middleware/authEnhanced');
+      const tokenPayload = {
+        userId: user.id,
+        role: user.role,
+        shopId: user.shopId,
+      };
+
       const accessToken = generateAccessToken(tokenPayload);
       const refreshToken = generateRefreshToken(tokenPayload);
 
@@ -130,17 +149,20 @@ router.post('/login',
         lastName: user.lastName,
         role: user.role,
         department: user.department,
-        shopId: user.shopId
+        shopId: user.shopId,
       };
 
-      successResponse(res, {
-        accessToken,
-        refreshToken,
-        user: userData,
-        expiresIn: process.env.JWT_EXPIRES_IN || '1h',
-        provider: 'legacy'
-      }, 'Login successful');
-
+      successResponse(
+        res,
+        {
+          accessToken,
+          refreshToken,
+          user: userData,
+          expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+          provider: 'legacy',
+        },
+        'Login successful'
+      );
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -176,11 +198,12 @@ router.post('/login',
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get('/me', 
+router.get(
+  '/me',
   authenticateToken(),
   asyncHandler(async (req, res) => {
     const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] }
+      attributes: { exclude: ['password'] },
     });
 
     if (!user) {
@@ -218,7 +241,8 @@ router.get('/me',
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/logout', 
+router.post(
+  '/logout',
   authenticateToken(),
   asyncHandler(async (req, res) => {
     // Update last logout time
@@ -275,7 +299,8 @@ router.post('/logout',
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/refresh', 
+router.post(
+  '/refresh',
   rateLimits.auth,
   asyncHandler(async (req, res) => {
     const { refreshTokenHandler } = require('../middleware/authEnhanced');

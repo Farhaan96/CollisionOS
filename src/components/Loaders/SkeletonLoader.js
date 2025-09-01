@@ -15,8 +15,8 @@ const shimmerAnimation = {
       duration: 2,
       ease: 'linear',
       repeat: Infinity,
-    }
-  }
+    },
+  },
 };
 
 // Pulse animation for subtle variant
@@ -27,8 +27,8 @@ const pulseAnimation = {
       duration: 1.5,
       ease: 'easeInOut',
       repeat: Infinity,
-    }
-  }
+    },
+  },
 };
 
 // Wave animation for progressive loading
@@ -40,17 +40,17 @@ const waveAnimation = {
       duration: 1.8,
       ease: 'easeInOut',
       repeat: Infinity,
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 // Base skeleton styles with glassmorphism
 const createSkeletonStyles = (theme, variant, animation) => {
   const isDark = theme.palette.mode === 'dark';
-  
+
   const baseStyles = {
-    backgroundColor: isDark 
+    backgroundColor: isDark
       ? premiumDesignSystem.colors.glass.white[8]
       : premiumDesignSystem.colors.glass.dark[5],
     borderRadius: premiumDesignSystem.borderRadius.lg,
@@ -58,14 +58,16 @@ const createSkeletonStyles = (theme, variant, animation) => {
     position: 'relative',
     willChange: 'transform, opacity',
     transform: 'translate3d(0, 0, 0)',
-    
+
     // Glassmorphism effect
     backdropFilter: 'blur(12px) saturate(180%)',
     WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-    border: `1px solid ${isDark 
-      ? premiumDesignSystem.colors.glass.white[10]
-      : premiumDesignSystem.colors.glass.dark[10]}`,
-    
+    border: `1px solid ${
+      isDark
+        ? premiumDesignSystem.colors.glass.white[10]
+        : premiumDesignSystem.colors.glass.dark[10]
+    }`,
+
     // Premium shadow
     boxShadow: isDark
       ? premiumDesignSystem.shadows.glass.soft
@@ -100,389 +102,441 @@ const createSkeletonStyles = (theme, variant, animation) => {
 };
 
 // Text skeleton component
-const TextSkeleton = forwardRef(({ 
-  lines = 1, 
-  width = '100%', 
-  height = '1em',
-  spacing = '0.5em',
-  animation = 'shimmer',
-  variant = 'text',
-  ...props 
-}, ref) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  const getAnimationVariant = () => {
-    switch (animation) {
-      case 'pulse': return pulseAnimation;
-      case 'wave': return waveAnimation;
-      case 'shimmer':
-      default: return shimmerAnimation;
-    }
-  };
+const TextSkeleton = forwardRef(
+  (
+    {
+      lines = 1,
+      width = '100%',
+      height = '1em',
+      spacing = '0.5em',
+      animation = 'shimmer',
+      variant = 'text',
+      ...props
+    },
+    ref
+  ) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const renderLine = (index) => {
-    const isLastLine = index === lines - 1;
-    const lineWidth = typeof width === 'object' ? width[index] || '100%' : 
-      isLastLine && lines > 1 ? '75%' : width;
-    
+    const getAnimationVariant = () => {
+      switch (animation) {
+        case 'pulse':
+          return pulseAnimation;
+        case 'wave':
+          return waveAnimation;
+        case 'shimmer':
+        default:
+          return shimmerAnimation;
+      }
+    };
+
+    const renderLine = index => {
+      const isLastLine = index === lines - 1;
+      const lineWidth =
+        typeof width === 'object'
+          ? width[index] || '100%'
+          : isLastLine && lines > 1
+            ? '75%'
+            : width;
+
+      return (
+        <motion.div
+          key={index}
+          variants={getAnimationVariant()}
+          animate='animate'
+          style={{
+            width: lineWidth,
+            height,
+            marginBottom: index < lines - 1 ? spacing : 0,
+            ...createSkeletonStyles(theme, variant, animation),
+          }}
+          {...animationUtils.optimizedTransform}
+        />
+      );
+    };
+
     return (
-      <motion.div
-        key={index}
-        variants={getAnimationVariant()}
-        animate="animate"
-        style={{
-          width: lineWidth,
-          height,
-          marginBottom: index < lines - 1 ? spacing : 0,
-          ...createSkeletonStyles(theme, variant, animation),
-        }}
-        {...animationUtils.optimizedTransform}
-      />
+      <Box ref={ref} {...props}>
+        {Array.from({ length: lines }, (_, i) => renderLine(i))}
+      </Box>
     );
-  };
-
-  return (
-    <Box ref={ref} {...props}>
-      {Array.from({ length: lines }, (_, i) => renderLine(i))}
-    </Box>
-  );
-});
+  }
+);
 
 // Avatar skeleton component
-const AvatarSkeleton = forwardRef(({ 
-  size = 40,
-  variant = 'circular',
-  animation = 'pulse',
-  ...props 
-}, ref) => {
-  const theme = useTheme();
-  const responsiveSize = typeof size === 'object' ? size : { xs: size, sm: size, md: size };
-  
-  return (
-    <motion.div
-      ref={ref}
-      variants={animation === 'pulse' ? pulseAnimation : shimmerAnimation}
-      animate="animate"
-      style={{
-        width: responsiveSize,
-        height: responsiveSize,
-        borderRadius: variant === 'circular' ? '50%' : 
-          variant === 'rounded' ? premiumDesignSystem.borderRadius.lg : 
-          premiumDesignSystem.borderRadius.sm,
-        flexShrink: 0,
-        ...createSkeletonStyles(theme, 'avatar', animation),
-        ...animationUtils.optimizedTransform,
-      }}
-      {...props}
-    />
-  );
-});
+const AvatarSkeleton = forwardRef(
+  ({ size = 40, variant = 'circular', animation = 'pulse', ...props }, ref) => {
+    const theme = useTheme();
+    const responsiveSize =
+      typeof size === 'object' ? size : { xs: size, sm: size, md: size };
+
+    return (
+      <motion.div
+        ref={ref}
+        variants={animation === 'pulse' ? pulseAnimation : shimmerAnimation}
+        animate='animate'
+        style={{
+          width: responsiveSize,
+          height: responsiveSize,
+          borderRadius:
+            variant === 'circular'
+              ? '50%'
+              : variant === 'rounded'
+                ? premiumDesignSystem.borderRadius.lg
+                : premiumDesignSystem.borderRadius.sm,
+          flexShrink: 0,
+          ...createSkeletonStyles(theme, 'avatar', animation),
+          ...animationUtils.optimizedTransform,
+        }}
+        {...props}
+      />
+    );
+  }
+);
 
 // Card skeleton component
-const CardSkeleton = forwardRef(({ 
-  width = '100%',
-  height = 200,
-  padding = 24,
-  animation = 'shimmer',
-  children,
-  hasHeader = true,
-  hasAvatar = false,
-  hasActions = false,
-  ...props 
-}, ref) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  const cardPadding = isMobile ? padding * 0.75 : padding;
-  
-  return (
-    <motion.div
-      ref={ref}
-      variants={waveAnimation}
-      animate="animate"
-      style={{
-        width,
-        height,
-        padding: cardPadding,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: premiumDesignSystem.spacing[4],
-        ...createSkeletonStyles(theme, 'card', animation),
-        ...animationUtils.optimizedTransform,
-      }}
-      {...props}
-    >
-      {hasHeader && (
-        <Box display="flex" alignItems="center" gap={2}>
-          {hasAvatar && (
-            <AvatarSkeleton size={isMobile ? 32 : 40} animation="pulse" />
-          )}
-          <Box flex={1}>
-            <TextSkeleton lines={1} width="60%" height="1.2em" animation="pulse" />
-            <TextSkeleton lines={1} width="40%" height="0.9em" animation="pulse" />
+const CardSkeleton = forwardRef(
+  (
+    {
+      width = '100%',
+      height = 200,
+      padding = 24,
+      animation = 'shimmer',
+      children,
+      hasHeader = true,
+      hasAvatar = false,
+      hasActions = false,
+      ...props
+    },
+    ref
+  ) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const cardPadding = isMobile ? padding * 0.75 : padding;
+
+    return (
+      <motion.div
+        ref={ref}
+        variants={waveAnimation}
+        animate='animate'
+        style={{
+          width,
+          height,
+          padding: cardPadding,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: premiumDesignSystem.spacing[4],
+          ...createSkeletonStyles(theme, 'card', animation),
+          ...animationUtils.optimizedTransform,
+        }}
+        {...props}
+      >
+        {hasHeader && (
+          <Box display='flex' alignItems='center' gap={2}>
+            {hasAvatar && (
+              <AvatarSkeleton size={isMobile ? 32 : 40} animation='pulse' />
+            )}
+            <Box flex={1}>
+              <TextSkeleton
+                lines={1}
+                width='60%'
+                height='1.2em'
+                animation='pulse'
+              />
+              <TextSkeleton
+                lines={1}
+                width='40%'
+                height='0.9em'
+                animation='pulse'
+              />
+            </Box>
           </Box>
-        </Box>
-      )}
-      
-      {children || (
-        <Box flex={1} display="flex" flexDirection="column" gap={2}>
-          <TextSkeleton lines={3} animation="pulse" />
-          <Box 
-            sx={{
-              height: '60%',
-              borderRadius: premiumDesignSystem.borderRadius.md,
-              ...createSkeletonStyles(theme, 'content', 'pulse'),
-            }}
-          />
-        </Box>
-      )}
-      
-      {hasActions && (
-        <Box display="flex" gap={1} justifyContent="flex-end">
-          <Box 
-            sx={{
-              width: 80,
-              height: 32,
-              borderRadius: premiumDesignSystem.borderRadius.md,
-              ...createSkeletonStyles(theme, 'button', 'pulse'),
-            }}
-          />
-          <Box 
-            sx={{
-              width: 80,
-              height: 32,
-              borderRadius: premiumDesignSystem.borderRadius.md,
-              ...createSkeletonStyles(theme, 'button', 'pulse'),
-            }}
-          />
-        </Box>
-      )}
-    </motion.div>
-  );
-});
+        )}
+
+        {children || (
+          <Box flex={1} display='flex' flexDirection='column' gap={2}>
+            <TextSkeleton lines={3} animation='pulse' />
+            <Box
+              sx={{
+                height: '60%',
+                borderRadius: premiumDesignSystem.borderRadius.md,
+                ...createSkeletonStyles(theme, 'content', 'pulse'),
+              }}
+            />
+          </Box>
+        )}
+
+        {hasActions && (
+          <Box display='flex' gap={1} justifyContent='flex-end'>
+            <Box
+              sx={{
+                width: 80,
+                height: 32,
+                borderRadius: premiumDesignSystem.borderRadius.md,
+                ...createSkeletonStyles(theme, 'button', 'pulse'),
+              }}
+            />
+            <Box
+              sx={{
+                width: 80,
+                height: 32,
+                borderRadius: premiumDesignSystem.borderRadius.md,
+                ...createSkeletonStyles(theme, 'button', 'pulse'),
+              }}
+            />
+          </Box>
+        )}
+      </motion.div>
+    );
+  }
+);
 
 // Table skeleton component
-const TableSkeleton = forwardRef(({ 
-  rows = 5,
-  columns = 4,
-  hasHeader = true,
-  animation = 'wave',
-  ...props 
-}, ref) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  const visibleColumns = isMobile ? Math.min(columns, 2) : columns;
-  
-  return (
-    <motion.div
-      ref={ref}
-      variants={waveAnimation}
-      animate="animate"
-      style={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: premiumDesignSystem.spacing[2],
-        ...animationUtils.optimizedTransform,
-      }}
-      {...props}
-    >
-      {hasHeader && (
-        <Box 
-          display="grid" 
-          gridTemplateColumns={`repeat(${visibleColumns}, 1fr)`}
-          gap={2}
-          p={2}
-          sx={{
-            borderRadius: `${premiumDesignSystem.borderRadius.lg} ${premiumDesignSystem.borderRadius.lg} 0 0`,
-            ...createSkeletonStyles(theme, 'header', 'pulse'),
-          }}
-        >
-          {Array.from({ length: visibleColumns }, (_, i) => (
-            <TextSkeleton 
-              key={i} 
-              lines={1} 
-              height="1.1em" 
-              width="80%" 
-              animation="pulse" 
-            />
-          ))}
-        </Box>
-      )}
-      
-      {Array.from({ length: rows }, (_, rowIndex) => (
-        <Box 
-          key={rowIndex}
-          display="grid"
-          gridTemplateColumns={`repeat(${visibleColumns}, 1fr)`}
-          gap={2}
-          p={2}
-          sx={{
-            borderRadius: rowIndex === rows - 1 && !hasHeader ? 
-              premiumDesignSystem.borderRadius.lg : 0,
-            ...createSkeletonStyles(theme, 'row', 'pulse'),
-          }}
-        >
-          {Array.from({ length: visibleColumns }, (_, colIndex) => (
-            <TextSkeleton 
-              key={colIndex} 
-              lines={1} 
-              height="1em" 
-              width={colIndex === 0 ? '90%' : '70%'}
-              animation="pulse"
-            />
-          ))}
-        </Box>
-      ))}
-    </motion.div>
-  );
-});
+const TableSkeleton = forwardRef(
+  (
+    { rows = 5, columns = 4, hasHeader = true, animation = 'wave', ...props },
+    ref
+  ) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-// Chart skeleton component
-const ChartSkeleton = forwardRef(({ 
-  type = 'line',
-  width = '100%',
-  height = 300,
-  hasLegend = true,
-  hasTitle = true,
-  animation = 'wave',
-  ...props 
-}, ref) => {
-  const theme = useTheme();
-  
-  return (
-    <motion.div
-      ref={ref}
-      variants={waveAnimation}
-      animate="animate"
-      style={{
-        width,
-        height,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: premiumDesignSystem.spacing[4],
-        padding: premiumDesignSystem.spacing[6],
-        ...createSkeletonStyles(theme, 'chart', animation),
-        ...animationUtils.optimizedTransform,
-      }}
-      {...props}
-    >
-      {hasTitle && (
-        <TextSkeleton lines={1} width="40%" height="1.5em" animation="pulse" />
-      )}
-      
-      <Box flex={1} position="relative">
-        {type === 'line' && (
-          <svg width="100%" height="100%" style={{ position: 'absolute' }}>
-            {/* Animated line path */}
-            <motion.path
-              d="M10,150 Q50,100 100,120 T200,80 T300,110 T400,60"
-              stroke={premiumDesignSystem.colors.primary[400]}
-              strokeWidth="3"
-              fill="none"
-              opacity="0.3"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-            />
-          </svg>
-        )}
-        
-        {type === 'bar' && (
-          <Box display="flex" alignItems="end" height="100%" gap={1}>
-            {Array.from({ length: 8 }, (_, i) => (
-              <motion.div
+    const visibleColumns = isMobile ? Math.min(columns, 2) : columns;
+
+    return (
+      <motion.div
+        ref={ref}
+        variants={waveAnimation}
+        animate='animate'
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: premiumDesignSystem.spacing[2],
+          ...animationUtils.optimizedTransform,
+        }}
+        {...props}
+      >
+        {hasHeader && (
+          <Box
+            display='grid'
+            gridTemplateColumns={`repeat(${visibleColumns}, 1fr)`}
+            gap={2}
+            p={2}
+            sx={{
+              borderRadius: `${premiumDesignSystem.borderRadius.lg} ${premiumDesignSystem.borderRadius.lg} 0 0`,
+              ...createSkeletonStyles(theme, 'header', 'pulse'),
+            }}
+          >
+            {Array.from({ length: visibleColumns }, (_, i) => (
+              <TextSkeleton
                 key={i}
-                style={{
-                  flex: 1,
-                  height: `${Math.random() * 60 + 40}%`,
-                  ...createSkeletonStyles(theme, 'bar', 'pulse'),
-                }}
-                animate={{ 
-                  height: [`${Math.random() * 60 + 40}%`, `${Math.random() * 60 + 40}%`]
-                }}
-                transition={{ 
-                  duration: 2, 
-                  repeat: Infinity, 
-                  delay: i * 0.1 
-                }}
+                lines={1}
+                height='1.1em'
+                width='80%'
+                animation='pulse'
               />
             ))}
           </Box>
         )}
-        
-        {type === 'pie' && (
-          <Box 
-            display="flex" 
-            justifyContent="center" 
-            alignItems="center" 
-            height="100%"
+
+        {Array.from({ length: rows }, (_, rowIndex) => (
+          <Box
+            key={rowIndex}
+            display='grid'
+            gridTemplateColumns={`repeat(${visibleColumns}, 1fr)`}
+            gap={2}
+            p={2}
+            sx={{
+              borderRadius:
+                rowIndex === rows - 1 && !hasHeader
+                  ? premiumDesignSystem.borderRadius.lg
+                  : 0,
+              ...createSkeletonStyles(theme, 'row', 'pulse'),
+            }}
           >
-            <motion.div
-              style={{
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                border: `20px solid ${premiumDesignSystem.colors.primary[200]}`,
-                borderTopColor: premiumDesignSystem.colors.primary[500],
-                ...animationUtils.optimizedTransform,
-              }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-            />
+            {Array.from({ length: visibleColumns }, (_, colIndex) => (
+              <TextSkeleton
+                key={colIndex}
+                lines={1}
+                height='1em'
+                width={colIndex === 0 ? '90%' : '70%'}
+                animation='pulse'
+              />
+            ))}
           </Box>
+        ))}
+      </motion.div>
+    );
+  }
+);
+
+// Chart skeleton component
+const ChartSkeleton = forwardRef(
+  (
+    {
+      type = 'line',
+      width = '100%',
+      height = 300,
+      hasLegend = true,
+      hasTitle = true,
+      animation = 'wave',
+      ...props
+    },
+    ref
+  ) => {
+    const theme = useTheme();
+
+    return (
+      <motion.div
+        ref={ref}
+        variants={waveAnimation}
+        animate='animate'
+        style={{
+          width,
+          height,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: premiumDesignSystem.spacing[4],
+          padding: premiumDesignSystem.spacing[6],
+          ...createSkeletonStyles(theme, 'chart', animation),
+          ...animationUtils.optimizedTransform,
+        }}
+        {...props}
+      >
+        {hasTitle && (
+          <TextSkeleton
+            lines={1}
+            width='40%'
+            height='1.5em'
+            animation='pulse'
+          />
         )}
-      </Box>
-      
-      {hasLegend && (
-        <Box display="flex" gap={3} justifyContent="center" flexWrap="wrap">
-          {Array.from({ length: 4 }, (_, i) => (
-            <Box key={i} display="flex" alignItems="center" gap={1}>
-              <Box 
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  backgroundColor: premiumDesignSystem.colors.primary[300 + i * 100],
+
+        <Box flex={1} position='relative'>
+          {type === 'line' && (
+            <svg width='100%' height='100%' style={{ position: 'absolute' }}>
+              {/* Animated line path */}
+              <motion.path
+                d='M10,150 Q50,100 100,120 T200,80 T300,110 T400,60'
+                stroke={premiumDesignSystem.colors.primary[400]}
+                strokeWidth='3'
+                fill='none'
+                opacity='0.3'
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: 'reverse',
                 }}
               />
-              <TextSkeleton lines={1} width="60px" height="0.9em" animation="pulse" />
+            </svg>
+          )}
+
+          {type === 'bar' && (
+            <Box display='flex' alignItems='end' height='100%' gap={1}>
+              {Array.from({ length: 8 }, (_, i) => (
+                <motion.div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: `${Math.random() * 60 + 40}%`,
+                    ...createSkeletonStyles(theme, 'bar', 'pulse'),
+                  }}
+                  animate={{
+                    height: [
+                      `${Math.random() * 60 + 40}%`,
+                      `${Math.random() * 60 + 40}%`,
+                    ],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.1,
+                  }}
+                />
+              ))}
             </Box>
-          ))}
+          )}
+
+          {type === 'pie' && (
+            <Box
+              display='flex'
+              justifyContent='center'
+              alignItems='center'
+              height='100%'
+            >
+              <motion.div
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: '50%',
+                  border: `20px solid ${premiumDesignSystem.colors.primary[200]}`,
+                  borderTopColor: premiumDesignSystem.colors.primary[500],
+                  ...animationUtils.optimizedTransform,
+                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              />
+            </Box>
+          )}
         </Box>
-      )}
-    </motion.div>
-  );
-});
+
+        {hasLegend && (
+          <Box display='flex' gap={3} justifyContent='center' flexWrap='wrap'>
+            {Array.from({ length: 4 }, (_, i) => (
+              <Box key={i} display='flex' alignItems='center' gap={1}>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: '50%',
+                    backgroundColor:
+                      premiumDesignSystem.colors.primary[300 + i * 100],
+                  }}
+                />
+                <TextSkeleton
+                  lines={1}
+                  width='60px'
+                  height='0.9em'
+                  animation='pulse'
+                />
+              </Box>
+            ))}
+          </Box>
+        )}
+      </motion.div>
+    );
+  }
+);
 
 // Main SkeletonLoader component
-const SkeletonLoader = forwardRef(({ 
-  variant = 'text',
-  animation = 'shimmer',
-  responsive = true,
-  ...props 
-}, ref) => {
-  const components = {
-    text: TextSkeleton,
-    avatar: AvatarSkeleton,
-    card: CardSkeleton,
-    table: TableSkeleton,
-    chart: ChartSkeleton,
-  };
-  
-  const Component = components[variant] || TextSkeleton;
-  
-  return (
-    <Component
-      ref={ref}
-      animation={animation}
-      responsive={responsive}
-      {...props}
-    />
-  );
-});
+const SkeletonLoader = forwardRef(
+  (
+    { variant = 'text', animation = 'shimmer', responsive = true, ...props },
+    ref
+  ) => {
+    const components = {
+      text: TextSkeleton,
+      avatar: AvatarSkeleton,
+      card: CardSkeleton,
+      table: TableSkeleton,
+      chart: ChartSkeleton,
+    };
+
+    const Component = components[variant] || TextSkeleton;
+
+    return (
+      <Component
+        ref={ref}
+        animation={animation}
+        responsive={responsive}
+        {...props}
+      />
+    );
+  }
+);
 
 SkeletonLoader.displayName = 'SkeletonLoader';
 TextSkeleton.displayName = 'TextSkeleton';
@@ -499,5 +553,5 @@ export {
   CardSkeleton,
   TableSkeleton,
   ChartSkeleton,
-  SkeletonLoader
+  SkeletonLoader,
 };

@@ -8,7 +8,7 @@ describe('EMSParser', () => {
 
   beforeEach(() => {
     parser = new EMSParser();
-    
+
     sampleEMSContent = `HDR|1.0|Mitchell|UltraMate|20250115|103000
 CLM|CLM789012|POL456789|500.00|20250101|John Smith|Test Insurance Co
 CST|John|Doe|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|john@email.com|N
@@ -37,33 +37,33 @@ CST|John|Doe|`;
   describe('parseEMS', () => {
     it('should successfully parse a valid EMS file', async () => {
       const result = await parser.parseEMS(sampleEMSContent);
-      
+
       expect(result).toHaveProperty('identities');
       expect(result).toHaveProperty('customer');
       expect(result).toHaveProperty('vehicle');
       expect(result).toHaveProperty('lines');
       expect(result).toHaveProperty('parts');
       expect(result).toHaveProperty('meta');
-      
+
       // Check identities
       expect(result.identities.ro_number).toBe('EST123456');
       expect(result.identities.claim_number).toBe('CLM789012');
       expect(result.identities.vin).toBe('1HGCM82633A123456');
-      
+
       // Check customer data
       expect(result.customer.firstName).toBe('John');
       expect(result.customer.lastName).toBe('Doe');
       expect(result.customer.companyName).toBe('ABC Corp');
       expect(result.customer.type).toBe('organization');
       expect(result.customer.gst_payable).toBe(true); // Business customer
-      
+
       // Check vehicle data
       expect(result.vehicle.year).toBe(2020);
       expect(result.vehicle.make).toBe('Honda');
       expect(result.vehicle.model).toBe('Civic');
       expect(result.vehicle.vin).toBe('1HGCM82633A123456');
       expect(result.vehicle.odometer).toBe(35000);
-      
+
       // Check estimate lines
       expect(result.lines).toHaveLength(3);
       expect(result.lines[0].lineNum).toBe(1);
@@ -71,11 +71,11 @@ CST|John|Doe|`;
       expect(result.lines[0].partInfo).toBeDefined();
       expect(result.lines[1].laborInfo).toBeDefined();
       expect(result.lines[2].otherChargesInfo).toBeDefined();
-      
+
       // Check parts data
       expect(result.parts).toHaveLength(1);
       expect(result.parts[0].partNumber).toBe('04711-TBA-A90ZZ');
-      
+
       // Check metadata
       expect(result.meta.source_system).toBe('Mitchell EMS');
       expect(result.meta.import_timestamp).toBeInstanceOf(Date);
@@ -84,12 +84,12 @@ CST|John|Doe|`;
 
     it('should handle minimal EMS content with defaults', async () => {
       const result = await parser.parseEMS(minimalEMSContent);
-      
+
       expect(result.customer.firstName).toBe('Unknown');
       expect(result.customer.lastName).toBe('Customer');
       expect(result.customer.type).toBe('person');
       expect(result.customer.gst_payable).toBe(false);
-      
+
       expect(result.vehicle.year).toBe(2020);
       expect(result.vehicle.make).toBe('Unknown');
       expect(result.vehicle.model).toBe('Unknown');
@@ -97,15 +97,19 @@ CST|John|Doe|`;
 
     it('should handle malformed EMS content and track unknown records', async () => {
       const result = await parser.parseEMS(malformedEMSContent);
-      
+
       expect(result.meta.unknown_tags.length).toBeGreaterThan(0);
-      expect(result.meta.unknown_tags.some(tag => tag.includes('INVALID_RECORD_TYPE'))).toBe(true);
+      expect(
+        result.meta.unknown_tags.some(tag =>
+          tag.includes('INVALID_RECORD_TYPE')
+        )
+      ).toBe(true);
     });
 
     it('should detect different EMS source systems', async () => {
       const cccEMS = sampleEMSContent.replace('Mitchell|UltraMate', 'CCC|ONE');
       const result = await parser.parseEMS(cccEMS);
-      
+
       expect(result.meta.source_system).toBe('CCC ONE EMS');
     });
 
@@ -115,30 +119,30 @@ CST|John|Doe|`;
 CST|John|Doe||||||||N
 
 VEH||2020|Honda|Civic||||||0|||`;
-      
+
       const result = await parser.parseEMS(contentWithEmptyLines);
-      
+
       expect(result.customer.firstName).toBe('John');
       expect(result.vehicle.make).toBe('Honda');
     });
 
     it('should correctly parse and link line items with parts/labor/materials', async () => {
       const result = await parser.parseEMS(sampleEMSContent);
-      
+
       // Check part line
       const partLine = result.lines.find(line => line.lineNum === 1);
       expect(partLine.partInfo).toBeDefined();
       expect(partLine.partInfo.partNumber).toBe('04711-TBA-A90ZZ');
       expect(partLine.partInfo.price.toString()).toBe('450');
       expect(partLine.partInfo.quantity).toBe(1);
-      
+
       // Check labor line
       const laborLine = result.lines.find(line => line.lineNum === 2);
       expect(laborLine.laborInfo).toBeDefined();
       expect(laborLine.laborInfo.hours.toString()).toBe('3.5');
       expect(laborLine.laborInfo.rate.toString()).toBe('75');
       expect(laborLine.laborInfo.paintStages).toBe(3);
-      
+
       // Check material line
       const materialLine = result.lines.find(line => line.lineNum === 3);
       expect(materialLine.otherChargesInfo).toBeDefined();
@@ -149,10 +153,12 @@ VEH||2020|Honda|Civic||||||0|||`;
       const emsWithDates = `HDR|1.0|Mitchell|UltraMate|20250115|103000
 CLM|CLM123|POL123|0|20250101||
 EST|EST123|20250115|draft|0|0|0|0`;
-      
+
       const result = await parser.parseEMS(emsWithDates);
-      const sections = parser.parseEMSSections(emsWithDates.split('\n').filter(line => line.trim()));
-      
+      const sections = parser.parseEMSSections(
+        emsWithDates.split('\n').filter(line => line.trim())
+      );
+
       const headerRecord = sections.get('HDR')[0];
       expect(headerRecord.timestamp).toBeInstanceOf(Date);
       expect(headerRecord.timestamp.getFullYear()).toBe(2025);
@@ -163,9 +169,9 @@ EST|EST123|20250115|draft|0|0|0|0`;
     it('should handle business customers correctly', async () => {
       const businessEMS = `HDR|1.0|Mitchell|UltraMate|20250115|103000
 CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email.com|Y`;
-      
+
       const result = await parser.parseEMS(businessEMS);
-      
+
       expect(result.customer.type).toBe('organization');
       expect(result.customer.companyName).toBe('ABC Corp');
       expect(result.customer.firstName).toBe('Business');
@@ -178,7 +184,7 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
     it('should correctly parse lines into sections by record type', () => {
       const lines = sampleEMSContent.split('\n').filter(line => line.trim());
       const sections = parser.parseEMSSections(lines);
-      
+
       expect(sections.has('HDR')).toBe(true);
       expect(sections.has('CLM')).toBe(true);
       expect(sections.has('CST')).toBe(true);
@@ -189,21 +195,21 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
       expect(sections.has('LAB')).toBe(true);
       expect(sections.has('MTL')).toBe(true);
       expect(sections.has('TOT')).toBe(true);
-      
+
       expect(sections.get('LIN')).toHaveLength(3);
       expect(sections.get('TOT')).toHaveLength(4);
     });
 
     it('should handle invalid or malformed lines', () => {
       const malformedLines = [
-        'HDR|1.0|Mitchell',  // Missing fields
-        '',                  // Empty line
-        'INVALID',          // No pipe separator
-        'UNK|unknown|data'   // Unknown record type
+        'HDR|1.0|Mitchell', // Missing fields
+        '', // Empty line
+        'INVALID', // No pipe separator
+        'UNK|unknown|data', // Unknown record type
       ];
-      
+
       const sections = parser.parseEMSSections(malformedLines);
-      
+
       expect(sections.has('HDR')).toBe(true);
       expect(sections.has('UNK')).toBe(true);
       expect(sections.get('UNK')).toHaveLength(1);
@@ -275,24 +281,28 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
     it('should track unknown record types', async () => {
       await parser.parseEMS(malformedEMSContent);
       const unknownFields = parser.getUnknownFields();
-      
+
       expect(Array.isArray(unknownFields)).toBe(true);
-      expect(unknownFields.some(field => field.includes('INVALID_RECORD_TYPE'))).toBe(true);
+      expect(
+        unknownFields.some(field => field.includes('INVALID_RECORD_TYPE'))
+      ).toBe(true);
     });
   });
 
   describe('error handling', () => {
     it('should provide meaningful error messages', async () => {
       const invalidContent = null;
-      
-      await expect(parser.parseEMS(invalidContent)).rejects.toThrow(/EMS parsing failed/);
+
+      await expect(parser.parseEMS(invalidContent)).rejects.toThrow(
+        /EMS parsing failed/
+      );
     });
 
     it('should handle empty content', async () => {
       const emptyContent = '';
-      
+
       const result = await parser.parseEMS(emptyContent);
-      
+
       expect(result.identities.ro_number).toBe('');
       expect(result.customer.firstName).toBe('Unknown');
       expect(result.vehicle.make).toBe('Unknown');
@@ -301,9 +311,16 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
 
   describe('record type parsing', () => {
     it('should parse header records correctly', () => {
-      const headerFields = ['HDR', '1.0', 'Mitchell', 'UltraMate', '20250115', '103000'];
+      const headerFields = [
+        'HDR',
+        '1.0',
+        'Mitchell',
+        'UltraMate',
+        '20250115',
+        '103000',
+      ];
       const record = parser.parseEMSFields(headerFields, 'HDR');
-      
+
       expect(record.recordType).toBe('HDR');
       expect(record.version).toBe('1.0');
       expect(record.vendor).toBe('Mitchell');
@@ -313,9 +330,17 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
     });
 
     it('should parse claim records correctly', () => {
-      const claimFields = ['CLM', 'CLM123', 'POL456', '500.00', '20250101', 'John Smith', 'Test Insurance'];
+      const claimFields = [
+        'CLM',
+        'CLM123',
+        'POL456',
+        '500.00',
+        '20250101',
+        'John Smith',
+        'Test Insurance',
+      ];
       const record = parser.parseEMSFields(claimFields, 'CLM');
-      
+
       expect(record.claimNumber).toBe('CLM123');
       expect(record.policyNumber).toBe('POL456');
       expect(record.deductible.toString()).toBe('500');
@@ -324,9 +349,20 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
     });
 
     it('should parse parts records correctly', () => {
-      const partsFields = ['PRT', '1', 'PART123', 'Test Part', 'OEM123', '2', '150.00', 'OEM', 'OEM', 'Y'];
+      const partsFields = [
+        'PRT',
+        '1',
+        'PART123',
+        'Test Part',
+        'OEM123',
+        '2',
+        '150.00',
+        'OEM',
+        'OEM',
+        'Y',
+      ];
       const record = parser.parseEMSFields(partsFields, 'PRT');
-      
+
       expect(record.lineNumber).toBe(1);
       expect(record.partNumber).toBe('PART123');
       expect(record.description).toBe('Test Part');
@@ -339,9 +375,18 @@ CST||Business|ABC Corp|123 Main St|Toronto|ON|M5V3A8|555-123-4567|business@email
     });
 
     it('should parse labor records correctly', () => {
-      const laborFields = ['LAB', '2', 'Paint Operation', '3.5', '75.00', 'paint', 'Y', '3'];
+      const laborFields = [
+        'LAB',
+        '2',
+        'Paint Operation',
+        '3.5',
+        '75.00',
+        'paint',
+        'Y',
+        '3',
+      ];
       const record = parser.parseEMSFields(laborFields, 'LAB');
-      
+
       expect(record.lineNumber).toBe(2);
       expect(record.operation).toBe('Paint Operation');
       expect(record.hours.toString()).toBe('3.5');

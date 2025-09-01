@@ -1,7 +1,12 @@
 import axios from 'axios';
-import { transformToFrontend, transformToBackend, ensureBackendFormat } from '../utils/fieldTransformers';
+import {
+  transformToFrontend,
+  transformToBackend,
+  ensureBackendFormat,
+} from '../utils/fieldTransformers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 class CustomerService {
   constructor() {
@@ -14,41 +19,50 @@ class CustomerService {
 
     // Add request interceptor to include auth token and transform data
     this.api.interceptors.request.use(
-      (config) => {
+      config => {
         const token = localStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        
+
         // Transform camelCase request data to snake_case for backend
-        if (config.data && (config.method === 'post' || config.method === 'put' || config.method === 'patch')) {
+        if (
+          config.data &&
+          (config.method === 'post' ||
+            config.method === 'put' ||
+            config.method === 'patch')
+        ) {
           config.data = ensureBackendFormat(config.data);
         }
-        
+
         return config;
       },
-      (error) => {
+      error => {
         return Promise.reject(error);
       }
     );
 
     // Add response interceptor for error handling and field transformation
     this.api.interceptors.response.use(
-      (response) => {
+      response => {
         // Handle the new API response format: { success: true, data: [...] }
-        if (response.data && response.data.success && response.data.data !== undefined) {
+        if (
+          response.data &&
+          response.data.success &&
+          response.data.data !== undefined
+        ) {
           // Transform snake_case backend data to camelCase frontend format
-          const transformedData = Array.isArray(response.data.data) 
+          const transformedData = Array.isArray(response.data.data)
             ? response.data.data.map(transformToFrontend)
             : transformToFrontend(response.data.data);
-          
+
           // Return just the transformed data as expected by components
           return transformedData;
         }
         // Fallback for other response formats
         return response.data;
       },
-      (error) => {
+      error => {
         console.error('Customer API Error:', error);
         throw error;
       }
@@ -59,10 +73,14 @@ class CustomerService {
   async getCustomers(filters = {}) {
     try {
       const params = new URLSearchParams();
-      
+
       // Add filters to query parameters
       Object.keys(filters).forEach(key => {
-        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+        if (
+          filters[key] !== undefined &&
+          filters[key] !== null &&
+          filters[key] !== ''
+        ) {
           params.append(key, filters[key]);
         }
       });
@@ -124,7 +142,7 @@ class CustomerService {
     try {
       const params = new URLSearchParams({
         q: query,
-        ...filters
+        ...filters,
       });
 
       const response = await this.api.get(`/search?${params.toString()}`);
@@ -250,11 +268,11 @@ class CustomerService {
     try {
       const params = new URLSearchParams({
         format,
-        ...filters
+        ...filters,
       });
 
       const response = await this.api.get(`/export?${params.toString()}`, {
-        responseType: 'blob'
+        responseType: 'blob',
       });
       return response;
     } catch (error) {
@@ -268,7 +286,7 @@ class CustomerService {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       // Add import options
       Object.keys(options).forEach(key => {
         formData.append(key, options[key]);
@@ -291,7 +309,7 @@ class CustomerService {
     try {
       const response = await this.api.patch('/bulk-update', {
         customerIds,
-        updates
+        updates,
       });
       return response;
     } catch (error) {
@@ -304,7 +322,7 @@ class CustomerService {
   async bulkDeleteCustomers(customerIds) {
     try {
       const response = await this.api.delete('/bulk-delete', {
-        data: { customerIds }
+        data: { customerIds },
       });
       return response;
     } catch (error) {
@@ -319,7 +337,10 @@ class CustomerService {
       const response = await this.api.get(`/${id}/communication-preferences`);
       return response;
     } catch (error) {
-      console.error('Error fetching customer communication preferences:', error);
+      console.error(
+        'Error fetching customer communication preferences:',
+        error
+      );
       throw error;
     }
   }
@@ -327,10 +348,16 @@ class CustomerService {
   // Update customer communication preferences
   async updateCustomerCommunicationPreferences(id, preferences) {
     try {
-      const response = await this.api.put(`/${id}/communication-preferences`, preferences);
+      const response = await this.api.put(
+        `/${id}/communication-preferences`,
+        preferences
+      );
       return response;
     } catch (error) {
-      console.error('Error updating customer communication preferences:', error);
+      console.error(
+        'Error updating customer communication preferences:',
+        error
+      );
       throw error;
     }
   }
@@ -351,7 +378,7 @@ class CustomerService {
     try {
       const response = await this.api.post(`/${id}/loyalty/points`, {
         points,
-        reason
+        reason,
       });
       return response;
     } catch (error) {
@@ -374,7 +401,9 @@ class CustomerService {
   // Update customer credit limit
   async updateCustomerCreditLimit(id, creditLimit) {
     try {
-      const response = await this.api.patch(`/${id}/credit-limit`, { creditLimit });
+      const response = await this.api.patch(`/${id}/credit-limit`, {
+        creditLimit,
+      });
       return response;
     } catch (error) {
       console.error('Error updating customer credit limit:', error);
@@ -407,7 +436,9 @@ class CustomerService {
   // Get customer suggestions (for autocomplete)
   async getCustomerSuggestions(query, limit = 10) {
     try {
-      const response = await this.api.get(`/suggestions?q=${encodeURIComponent(query)}&limit=${limit}`);
+      const response = await this.api.get(
+        `/suggestions?q=${encodeURIComponent(query)}&limit=${limit}`
+      );
       return response;
     } catch (error) {
       console.error('Error fetching customer suggestions:', error);

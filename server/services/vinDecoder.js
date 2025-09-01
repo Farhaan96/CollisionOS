@@ -1,6 +1,10 @@
 const axios = require('axios');
 const { Vehicle } = require('../database/models');
-const { ValidationError, ApiError, NotFoundError } = require('../utils/errorHandler');
+const {
+  ValidationError,
+  ApiError,
+  NotFoundError,
+} = require('../utils/errorHandler');
 
 /**
  * VIN Decoder Service
@@ -24,7 +28,7 @@ class VINDecoder {
     try {
       // Validate VIN format
       const validatedVIN = this.validateAndNormalizeVIN(vin);
-      
+
       // Check cache first
       const cached = await this.checkCache(validatedVIN);
       if (cached) {
@@ -32,7 +36,7 @@ class VINDecoder {
         return {
           success: true,
           source: 'cache',
-          vehicle: cached
+          vehicle: cached,
         };
       }
 
@@ -44,13 +48,18 @@ class VINDecoder {
         return {
           success: true,
           source: 'nhtsa_api',
-          vehicle: apiResult
+          vehicle: apiResult,
         };
       } catch (apiError) {
-        console.warn(`NHTSA API failed for VIN ${validatedVIN}:`, apiError.message);
-        
+        console.warn(
+          `NHTSA API failed for VIN ${validatedVIN}:`,
+          apiError.message
+        );
+
         if (useApiOnly) {
-          throw new ApiError('NHTSA API unavailable and local decoding disabled');
+          throw new ApiError(
+            'NHTSA API unavailable and local decoding disabled'
+          );
         }
 
         // Fallback to local decoding
@@ -60,7 +69,7 @@ class VINDecoder {
         return {
           success: true,
           source: 'local_decoder',
-          vehicle: localResult
+          vehicle: localResult,
         };
       }
     } catch (error) {
@@ -85,17 +94,23 @@ class VINDecoder {
 
     // Check length
     if (normalizedVIN.length !== 17) {
-      throw new ValidationError(`Invalid VIN length: expected 17 characters, got ${normalizedVIN.length}`);
+      throw new ValidationError(
+        `Invalid VIN length: expected 17 characters, got ${normalizedVIN.length}`
+      );
     }
 
     // Check for invalid characters (I, O, Q are not used in VINs)
     if (/[IOQ]/i.test(normalizedVIN)) {
-      throw new ValidationError('VIN contains invalid characters (I, O, Q are not allowed)');
+      throw new ValidationError(
+        'VIN contains invalid characters (I, O, Q are not allowed)'
+      );
     }
 
     // Validate alphanumeric
     if (!/^[A-HJ-NPR-Z0-9]{17}$/i.test(normalizedVIN)) {
-      throw new ValidationError('VIN must contain only letters and numbers (excluding I, O, Q)');
+      throw new ValidationError(
+        'VIN must contain only letters and numbers (excluding I, O, Q)'
+      );
     }
 
     // Validate check digit (position 9)
@@ -114,10 +129,39 @@ class VINDecoder {
   validateCheckDigit(vin) {
     const weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
     const values = {
-      'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8,
-      'J': 1, 'K': 2, 'L': 3, 'M': 4, 'N': 5, 'P': 7, 'R': 9,
-      'S': 2, 'T': 3, 'U': 4, 'V': 5, 'W': 6, 'X': 7, 'Y': 8, 'Z': 9,
-      '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9
+      A: 1,
+      B: 2,
+      C: 3,
+      D: 4,
+      E: 5,
+      F: 6,
+      G: 7,
+      H: 8,
+      J: 1,
+      K: 2,
+      L: 3,
+      M: 4,
+      N: 5,
+      P: 7,
+      R: 9,
+      S: 2,
+      T: 3,
+      U: 4,
+      V: 5,
+      W: 6,
+      X: 7,
+      Y: 8,
+      Z: 9,
+      0: 0,
+      1: 1,
+      2: 2,
+      3: 3,
+      4: 4,
+      5: 5,
+      6: 6,
+      7: 7,
+      8: 8,
+      9: 9,
     };
 
     let sum = 0;
@@ -129,7 +173,7 @@ class VINDecoder {
 
     const checkDigit = sum % 11;
     const expectedChar = checkDigit === 10 ? 'X' : checkDigit.toString();
-    
+
     return vin[8] === expectedChar;
   }
 
@@ -143,8 +187,8 @@ class VINDecoder {
       timeout: this.apiTimeout,
       headers: {
         'User-Agent': 'CollisionOS-VINDecoder/1.0',
-        'Accept': 'application/json'
-      }
+        Accept: 'application/json',
+      },
     });
 
     if (response.status !== 200) {
@@ -166,7 +210,7 @@ class VINDecoder {
     }
 
     const results = data.Results;
-    const getValue = (variable) => {
+    const getValue = variable => {
       const item = results.find(r => r.Variable === variable);
       return item?.Value || null;
     };
@@ -177,7 +221,10 @@ class VINDecoder {
       make: getValue('Make') || 'Unknown',
       model: getValue('Model') || 'Unknown',
       trim: getValue('Trim') || null,
-      engine: this.formatEngine(getValue('Engine Number of Cylinders'), getValue('Displacement (L)')),
+      engine: this.formatEngine(
+        getValue('Engine Number of Cylinders'),
+        getValue('Displacement (L)')
+      ),
       transmission: getValue('Transmission Style') || null,
       drivetrain: getValue('Drive Type') || null,
       body_type: this.normalizeBodyType(getValue('Body Class')),
@@ -191,7 +238,7 @@ class VINDecoder {
       wheelbase: getValue('Wheelbase (inches)'),
       series: getValue('Series') || null,
       decoded_at: new Date().toISOString(),
-      source: 'NHTSA'
+      source: 'NHTSA',
     };
 
     return vehicle;
@@ -223,7 +270,7 @@ class VINDecoder {
       wheelbase: null,
       series: null,
       decoded_at: new Date().toISOString(),
-      source: 'Local'
+      source: 'Local',
     };
 
     return vehicle;
@@ -238,13 +285,59 @@ class VINDecoder {
     const yearCode = vin.charAt(9);
     const yearMap = {
       // 1980s-1990s
-      'A': 1980, 'B': 1981, 'C': 1982, 'D': 1983, 'E': 1984, 'F': 1985, 'G': 1986, 'H': 1987, 'J': 1988, 'K': 1989,
-      'L': 1990, 'M': 1991, 'N': 1992, 'P': 1993, 'R': 1994, 'S': 1995, 'T': 1996, 'V': 1997, 'W': 1998, 'X': 1999, 'Y': 2000,
+      A: 1980,
+      B: 1981,
+      C: 1982,
+      D: 1983,
+      E: 1984,
+      F: 1985,
+      G: 1986,
+      H: 1987,
+      J: 1988,
+      K: 1989,
+      L: 1990,
+      M: 1991,
+      N: 1992,
+      P: 1993,
+      R: 1994,
+      S: 1995,
+      T: 1996,
+      V: 1997,
+      W: 1998,
+      X: 1999,
+      Y: 2000,
       // 2000s-2010s
-      '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, '6': 2006, '7': 2007, '8': 2008, '9': 2009,
+      1: 2001,
+      2: 2002,
+      3: 2003,
+      4: 2004,
+      5: 2005,
+      6: 2006,
+      7: 2007,
+      8: 2008,
+      9: 2009,
       // 2010s-2020s (repeating pattern)
-      'A': 2010, 'B': 2011, 'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015, 'G': 2016, 'H': 2017, 'J': 2018, 'K': 2019,
-      'L': 2020, 'M': 2021, 'N': 2022, 'P': 2023, 'R': 2024, 'S': 2025, 'T': 2026, 'V': 2027, 'W': 2028, 'X': 2029, 'Y': 2030
+      A: 2010,
+      B: 2011,
+      C: 2012,
+      D: 2013,
+      E: 2014,
+      F: 2015,
+      G: 2016,
+      H: 2017,
+      J: 2018,
+      K: 2019,
+      L: 2020,
+      M: 2021,
+      N: 2022,
+      P: 2023,
+      R: 2024,
+      S: 2025,
+      T: 2026,
+      V: 2027,
+      W: 2028,
+      X: 2029,
+      Y: 2030,
     };
 
     // Handle dual mappings based on context
@@ -256,9 +349,11 @@ class VINDecoder {
       const currentYear = new Date().getFullYear();
       const decade1 = baseYear;
       const decade2 = baseYear + 30;
-      
+
       // Choose the decade that makes most sense
-      return Math.abs(currentYear - decade2) < Math.abs(currentYear - decade1) ? decade2 : decade1;
+      return Math.abs(currentYear - decade2) < Math.abs(currentYear - decade1)
+        ? decade2
+        : decade1;
     }
 
     return baseYear;
@@ -271,61 +366,143 @@ class VINDecoder {
    */
   getMakeFromVIN(vin) {
     const wmi = vin.substring(0, 3);
-    
+
     // Comprehensive WMI to make mapping
     const makeMap = {
       // Honda
-      '1HG': 'Honda', '1H1': 'Honda', '1H2': 'Honda', '1H3': 'Honda', '1H4': 'Honda',
-      'JHM': 'Honda', 'JHL': 'Honda',
+      '1HG': 'Honda',
+      '1H1': 'Honda',
+      '1H2': 'Honda',
+      '1H3': 'Honda',
+      '1H4': 'Honda',
+      JHM: 'Honda',
+      JHL: 'Honda',
       // Toyota
-      '1NX': 'Toyota', '2T1': 'Toyota', '2T2': 'Toyota', '4T1': 'Toyota', '4T3': 'Toyota',
-      'JTD': 'Toyota', 'JTH': 'Toyota', 'JTK': 'Toyota', 'JTN': 'Toyota',
+      '1NX': 'Toyota',
+      '2T1': 'Toyota',
+      '2T2': 'Toyota',
+      '4T1': 'Toyota',
+      '4T3': 'Toyota',
+      JTD: 'Toyota',
+      JTH: 'Toyota',
+      JTK: 'Toyota',
+      JTN: 'Toyota',
       // Ford
-      '1FA': 'Ford', '1FB': 'Ford', '1FC': 'Ford', '1FD': 'Ford', '1FE': 'Ford',
-      '1FF': 'Ford', '1FG': 'Ford', '1FH': 'Ford', '1FJ': 'Ford', '1FK': 'Ford',
-      '1FL': 'Ford', '1FM': 'Ford', '1FN': 'Ford', '1FP': 'Ford', '1FR': 'Ford',
-      '1FT': 'Ford', '1FU': 'Ford', '1FV': 'Ford', '1FW': 'Ford', '1FX': 'Ford',
-      '1FY': 'Ford', '1FZ': 'Ford',
+      '1FA': 'Ford',
+      '1FB': 'Ford',
+      '1FC': 'Ford',
+      '1FD': 'Ford',
+      '1FE': 'Ford',
+      '1FF': 'Ford',
+      '1FG': 'Ford',
+      '1FH': 'Ford',
+      '1FJ': 'Ford',
+      '1FK': 'Ford',
+      '1FL': 'Ford',
+      '1FM': 'Ford',
+      '1FN': 'Ford',
+      '1FP': 'Ford',
+      '1FR': 'Ford',
+      '1FT': 'Ford',
+      '1FU': 'Ford',
+      '1FV': 'Ford',
+      '1FW': 'Ford',
+      '1FX': 'Ford',
+      '1FY': 'Ford',
+      '1FZ': 'Ford',
       // General Motors
-      '1G1': 'Chevrolet', '1G2': 'Pontiac', '1G3': 'Oldsmobile', '1G4': 'Buick',
-      '1G6': 'Cadillac', '1G8': 'Saturn', '1GT': 'GMC', '1GC': 'Chevrolet',
-      '1GD': 'GMC', '1GE': 'GMC', '1GH': 'GMC', '1GK': 'GMC',
+      '1G1': 'Chevrolet',
+      '1G2': 'Pontiac',
+      '1G3': 'Oldsmobile',
+      '1G4': 'Buick',
+      '1G6': 'Cadillac',
+      '1G8': 'Saturn',
+      '1GT': 'GMC',
+      '1GC': 'Chevrolet',
+      '1GD': 'GMC',
+      '1GE': 'GMC',
+      '1GH': 'GMC',
+      '1GK': 'GMC',
       // Chrysler
-      '1C3': 'Chrysler', '1C4': 'Chrysler', '1C6': 'Chrysler', '1C8': 'Chrysler',
-      '1D3': 'Dodge', '1D4': 'Dodge', '1D7': 'Dodge', '1D8': 'Dodge',
+      '1C3': 'Chrysler',
+      '1C4': 'Chrysler',
+      '1C6': 'Chrysler',
+      '1C8': 'Chrysler',
+      '1D3': 'Dodge',
+      '1D4': 'Dodge',
+      '1D7': 'Dodge',
+      '1D8': 'Dodge',
       // Nissan
-      '1N4': 'Nissan', '1N6': 'Nissan', 'JN1': 'Nissan', 'JN8': 'Nissan',
+      '1N4': 'Nissan',
+      '1N6': 'Nissan',
+      JN1: 'Nissan',
+      JN8: 'Nissan',
       // BMW
-      'WBA': 'BMW', 'WBS': 'BMW', 'WBY': 'BMW', '4US': 'BMW', '5UX': 'BMW',
+      WBA: 'BMW',
+      WBS: 'BMW',
+      WBY: 'BMW',
+      '4US': 'BMW',
+      '5UX': 'BMW',
       // Mercedes-Benz
-      'WDB': 'Mercedes-Benz', 'WDC': 'Mercedes-Benz', 'WDD': 'Mercedes-Benz',
-      'WDF': 'Mercedes-Benz', '4JG': 'Mercedes-Benz',
+      WDB: 'Mercedes-Benz',
+      WDC: 'Mercedes-Benz',
+      WDD: 'Mercedes-Benz',
+      WDF: 'Mercedes-Benz',
+      '4JG': 'Mercedes-Benz',
       // Volkswagen
-      '1VW': 'Volkswagen', '3VW': 'Volkswagen', 'WVW': 'Volkswagen',
+      '1VW': 'Volkswagen',
+      '3VW': 'Volkswagen',
+      WVW: 'Volkswagen',
       // Audi
-      'WA1': 'Audi', 'WAU': 'Audi', 'WUA': 'Audi',
+      WA1: 'Audi',
+      WAU: 'Audi',
+      WUA: 'Audi',
       // Hyundai
-      'KMH': 'Hyundai', '5NM': 'Hyundai', '5NP': 'Hyundai',
+      KMH: 'Hyundai',
+      '5NM': 'Hyundai',
+      '5NP': 'Hyundai',
       // Kia
-      'KNA': 'Kia', 'KND': 'Kia', '5XY': 'Kia',
+      KNA: 'Kia',
+      KND: 'Kia',
+      '5XY': 'Kia',
       // Subaru
-      'JF1': 'Subaru', 'JF2': 'Subaru', '4S3': 'Subaru', '4S4': 'Subaru',
+      JF1: 'Subaru',
+      JF2: 'Subaru',
+      '4S3': 'Subaru',
+      '4S4': 'Subaru',
       // Mazda
-      'JM1': 'Mazda', 'JM3': 'Mazda', '4F2': 'Mazda', '4F4': 'Mazda',
+      JM1: 'Mazda',
+      JM3: 'Mazda',
+      '4F2': 'Mazda',
+      '4F4': 'Mazda',
       // Mitsubishi
-      'JA3': 'Mitsubishi', 'JA4': 'Mitsubishi', '4A3': 'Mitsubishi', '4A4': 'Mitsubishi',
+      JA3: 'Mitsubishi',
+      JA4: 'Mitsubishi',
+      '4A3': 'Mitsubishi',
+      '4A4': 'Mitsubishi',
       // Acura
-      '19U': 'Acura', 'JH4': 'Acura',
+      '19U': 'Acura',
+      JH4: 'Acura',
       // Infiniti
-      'JNK': 'Infiniti', 'JNR': 'Infiniti', '5N1': 'Infiniti',
+      JNK: 'Infiniti',
+      JNR: 'Infiniti',
+      '5N1': 'Infiniti',
       // Lexus
-      'JTH': 'Lexus', 'JTK': 'Lexus', '2T2': 'Lexus', '5TD': 'Lexus',
+      JTH: 'Lexus',
+      JTK: 'Lexus',
+      '2T2': 'Lexus',
+      '5TD': 'Lexus',
       // Volvo
-      'YV1': 'Volvo', 'YV4': 'Volvo', 'LVY': 'Volvo',
+      YV1: 'Volvo',
+      YV4: 'Volvo',
+      LVY: 'Volvo',
       // Land Rover/Jaguar
-      'SAL': 'Land Rover', 'SAJ': 'Jaguar', 'SAT': 'Land Rover',
+      SAL: 'Land Rover',
+      SAJ: 'Jaguar',
+      SAT: 'Land Rover',
       // Porsche
-      'WP0': 'Porsche', 'WP1': 'Porsche'
+      WP0: 'Porsche',
+      WP1: 'Porsche',
     };
 
     return makeMap[wmi] || this.getMakeFromCountryCode(vin.charAt(0));
@@ -338,28 +515,28 @@ class VINDecoder {
    */
   getManufacturerFromVIN(vin) {
     const make = this.getMakeFromVIN(vin);
-    
+
     // Map makes to full manufacturer names
     const manufacturerMap = {
-      'Honda': 'Honda Motor Company',
-      'Toyota': 'Toyota Motor Corporation',
-      'Ford': 'Ford Motor Company',
-      'Chevrolet': 'General Motors',
-      'GMC': 'General Motors',
-      'Buick': 'General Motors',
-      'Cadillac': 'General Motors',
-      'Pontiac': 'General Motors',
-      'Oldsmobile': 'General Motors',
-      'Saturn': 'General Motors',
-      'Chrysler': 'Stellantis (formerly FCA)',
-      'Dodge': 'Stellantis (formerly FCA)',
-      'Nissan': 'Nissan Motor Company',
-      'BMW': 'Bayerische Motoren Werke AG',
+      Honda: 'Honda Motor Company',
+      Toyota: 'Toyota Motor Corporation',
+      Ford: 'Ford Motor Company',
+      Chevrolet: 'General Motors',
+      GMC: 'General Motors',
+      Buick: 'General Motors',
+      Cadillac: 'General Motors',
+      Pontiac: 'General Motors',
+      Oldsmobile: 'General Motors',
+      Saturn: 'General Motors',
+      Chrysler: 'Stellantis (formerly FCA)',
+      Dodge: 'Stellantis (formerly FCA)',
+      Nissan: 'Nissan Motor Company',
+      BMW: 'Bayerische Motoren Werke AG',
       'Mercedes-Benz': 'Mercedes-Benz Group AG',
-      'Volkswagen': 'Volkswagen AG',
-      'Audi': 'Audi AG',
-      'Hyundai': 'Hyundai Motor Company',
-      'Kia': 'Kia Corporation'
+      Volkswagen: 'Volkswagen AG',
+      Audi: 'Audi AG',
+      Hyundai: 'Hyundai Motor Company',
+      Kia: 'Kia Corporation',
     };
 
     return manufacturerMap[make] || make;
@@ -372,15 +549,32 @@ class VINDecoder {
    */
   getPlantCountryFromVIN(firstChar) {
     const countryMap = {
-      '1': 'United States', '2': 'Canada', '3': 'Mexico',
-      '4': 'United States', '5': 'United States',
-      '6': 'Australia', '8': 'Argentina', '9': 'Brazil',
-      'A': 'South Africa', 'B': 'Kenya', 'C': 'Benin',
-      'J': 'Japan', 'K': 'South Korea', 'L': 'China',
-      'M': 'India', 'N': 'Turkey', 'P': 'Italy',
-      'R': 'Taiwan', 'S': 'United Kingdom', 'T': 'Czechoslovakia',
-      'U': 'Romania', 'V': 'France', 'W': 'Germany',
-      'X': 'Russia', 'Y': 'Sweden', 'Z': 'Italy'
+      1: 'United States',
+      2: 'Canada',
+      3: 'Mexico',
+      4: 'United States',
+      5: 'United States',
+      6: 'Australia',
+      8: 'Argentina',
+      9: 'Brazil',
+      A: 'South Africa',
+      B: 'Kenya',
+      C: 'Benin',
+      J: 'Japan',
+      K: 'South Korea',
+      L: 'China',
+      M: 'India',
+      N: 'Turkey',
+      P: 'Italy',
+      R: 'Taiwan',
+      S: 'United Kingdom',
+      T: 'Czechoslovakia',
+      U: 'Romania',
+      V: 'France',
+      W: 'Germany',
+      X: 'Russia',
+      Y: 'Sweden',
+      Z: 'Italy',
     };
 
     return countryMap[firstChar] || null;
@@ -393,10 +587,17 @@ class VINDecoder {
    */
   getMakeFromCountryCode(countryCode) {
     const countryMakes = {
-      '1': 'American', '2': 'American', '3': 'American',
-      '4': 'American', '5': 'American',
-      'J': 'Japanese', 'K': 'Korean', 'W': 'German',
-      'V': 'French', 'S': 'British', 'Y': 'Swedish'
+      1: 'American',
+      2: 'American',
+      3: 'American',
+      4: 'American',
+      5: 'American',
+      J: 'Japanese',
+      K: 'Korean',
+      W: 'German',
+      V: 'French',
+      S: 'British',
+      Y: 'Swedish',
     };
 
     return countryMakes[countryCode] || 'Unknown';
@@ -410,13 +611,15 @@ class VINDecoder {
   async checkCache(vin) {
     try {
       const cached = await Vehicle.findOne({
-        where: { 
+        where: {
           vin: vin,
           // Only use cache if it's recent enough
           updatedAt: {
-            [require('sequelize').Op.gte]: new Date(Date.now() - this.cacheExpiry)
-          }
-        }
+            [require('sequelize').Op.gte]: new Date(
+              Date.now() - this.cacheExpiry
+            ),
+          },
+        },
       });
 
       if (cached) {
@@ -455,13 +658,13 @@ class VINDecoder {
         // Store additional decoded data in features JSON
         features: {
           decoded_data: vehicleData,
-          cached_at: new Date().toISOString()
+          cached_at: new Date().toISOString(),
         },
         vehicleStatus: 'active',
         isActive: true,
         // Temporary values for required fields
         customerId: null,
-        shopId: null
+        shopId: null,
       });
 
       console.log(`Cached VIN ${vin} successfully`);
@@ -477,7 +680,7 @@ class VINDecoder {
    */
   formatCachedVehicle(cachedVehicle) {
     const decoded = cachedVehicle.features?.decoded_data || {};
-    
+
     return {
       vin: cachedVehicle.vin,
       year: cachedVehicle.year,
@@ -495,7 +698,7 @@ class VINDecoder {
       vehicle_type: decoded.vehicle_type,
       fuel_type: cachedVehicle.fuelType,
       decoded_at: decoded.decoded_at || cachedVehicle.updatedAt,
-      source: decoded.source || 'Cache'
+      source: decoded.source || 'Cache',
     };
   }
 
@@ -503,13 +706,13 @@ class VINDecoder {
   parseYear(yearStr) {
     if (!yearStr) return null;
     const year = parseInt(yearStr);
-    return (year >= 1900 && year <= new Date().getFullYear() + 1) ? year : null;
+    return year >= 1900 && year <= new Date().getFullYear() + 1 ? year : null;
   }
 
   parseDoors(doorsStr) {
     if (!doorsStr) return null;
     const doors = parseInt(doorsStr);
-    return (doors >= 2 && doors <= 5) ? doors : null;
+    return doors >= 2 && doors <= 5 ? doors : null;
   }
 
   formatEngine(cylinders, displacement) {
@@ -521,40 +724,62 @@ class VINDecoder {
 
   normalizeBodyType(bodyClass) {
     if (!bodyClass) return 'other';
-    
+
     const bodyType = bodyClass.toLowerCase();
     if (bodyType.includes('sedan')) return 'sedan';
-    if (bodyType.includes('suv') || bodyType.includes('sport utility')) return 'suv';
-    if (bodyType.includes('truck') || bodyType.includes('pickup')) return 'truck';
+    if (bodyType.includes('suv') || bodyType.includes('sport utility'))
+      return 'suv';
+    if (bodyType.includes('truck') || bodyType.includes('pickup'))
+      return 'truck';
     if (bodyType.includes('coupe')) return 'coupe';
     if (bodyType.includes('convertible')) return 'convertible';
     if (bodyType.includes('wagon')) return 'wagon';
     if (bodyType.includes('hatchback')) return 'hatchback';
     if (bodyType.includes('van')) return 'van';
-    
+
     return 'other';
   }
 
   normalizeFuelType(fuelType) {
     if (!fuelType) return null;
-    
+
     const fuel = fuelType.toLowerCase();
     if (fuel.includes('gasoline') || fuel.includes('gas')) return 'gasoline';
     if (fuel.includes('diesel')) return 'diesel';
-    if (fuel.includes('hybrid')) return fuel.includes('plug') ? 'plug_in_hybrid' : 'hybrid';
+    if (fuel.includes('hybrid'))
+      return fuel.includes('plug') ? 'plug_in_hybrid' : 'hybrid';
     if (fuel.includes('electric')) return 'electric';
     if (fuel.includes('hydrogen')) return 'hydrogen';
-    
+
     return 'other';
   }
 
   mapBodyTypeToEnum(bodyType) {
-    const validTypes = ['sedan', 'suv', 'truck', 'coupe', 'convertible', 'wagon', 'hatchback', 'van', 'motorcycle', 'other'];
+    const validTypes = [
+      'sedan',
+      'suv',
+      'truck',
+      'coupe',
+      'convertible',
+      'wagon',
+      'hatchback',
+      'van',
+      'motorcycle',
+      'other',
+    ];
     return validTypes.includes(bodyType) ? bodyType : 'other';
   }
 
   mapFuelTypeToEnum(fuelType) {
-    const validTypes = ['gasoline', 'diesel', 'hybrid', 'electric', 'plug_in_hybrid', 'hydrogen', 'other'];
+    const validTypes = [
+      'gasoline',
+      'diesel',
+      'hybrid',
+      'electric',
+      'plug_in_hybrid',
+      'hydrogen',
+      'other',
+    ];
     return validTypes.includes(fuelType) ? fuelType : null;
   }
 }

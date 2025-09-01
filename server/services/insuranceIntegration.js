@@ -15,7 +15,7 @@ class InsuranceProvider extends IntegrationClient {
   constructor(config) {
     super({
       ...config,
-      name: config.name || 'Insurance Provider'
+      name: config.name || 'Insurance Provider',
     });
   }
 
@@ -30,13 +30,13 @@ class InsuranceProvider extends IntegrationClient {
 
     const formattedClaim = this.formatClaimData(claimData);
     const response = await this.post('/claims', formattedClaim);
-    
+
     // Update job with claim number
     if (claimData.jobId && response.claimNumber) {
       await Job.update(
-        { 
+        {
           insuranceClaimNumber: response.claimNumber,
-          claimStatus: 'submitted'
+          claimStatus: 'submitted',
         },
         { where: { id: claimData.jobId } }
       );
@@ -56,13 +56,13 @@ class InsuranceProvider extends IntegrationClient {
 
     const formattedEstimate = this.formatEstimateData(estimateData);
     const response = await this.post('/estimates', formattedEstimate);
-    
+
     // Update job with estimate status
     if (estimateData.jobId) {
       await Job.update(
-        { 
+        {
           estimateStatus: 'submitted',
-          estimateSubmittedAt: new Date()
+          estimateSubmittedAt: new Date(),
         },
         { where: { id: estimateData.jobId } }
       );
@@ -92,16 +92,18 @@ class InsuranceProvider extends IntegrationClient {
    */
   validateClaimData(claimData) {
     const errors = [];
-    
+
     if (!claimData.policyNumber) errors.push('Policy number is required');
     if (!claimData.dateOfLoss) errors.push('Date of loss is required');
-    if (!claimData.customerInfo) errors.push('Customer information is required');
+    if (!claimData.customerInfo)
+      errors.push('Customer information is required');
     if (!claimData.vehicleInfo) errors.push('Vehicle information is required');
-    if (!claimData.damageDescription) errors.push('Damage description is required');
-    
+    if (!claimData.damageDescription)
+      errors.push('Damage description is required');
+
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -110,14 +112,14 @@ class InsuranceProvider extends IntegrationClient {
    */
   validateEstimateData(estimateData) {
     const errors = [];
-    
+
     if (!estimateData.claimNumber) errors.push('Claim number is required');
     if (!estimateData.repairItems) errors.push('Repair items are required');
     if (!estimateData.totalAmount) errors.push('Total amount is required');
-    
+
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -161,7 +163,7 @@ class MitchellProvider extends InsuranceProvider {
       authType: 'oauth',
       credentials,
       timeout: 45000,
-      retryAttempts: 3
+      retryAttempts: 3,
     });
   }
 
@@ -170,27 +172,27 @@ class MitchellProvider extends InsuranceProvider {
       Policy: {
         PolicyNumber: claimData.policyNumber,
         EffectiveDate: claimData.effectiveDate,
-        ExpirationDate: claimData.expirationDate
+        ExpirationDate: claimData.expirationDate,
       },
       Claim: {
         LossDate: claimData.dateOfLoss,
         LossDescription: claimData.damageDescription,
-        LossLocation: claimData.lossLocation
+        LossLocation: claimData.lossLocation,
       },
       Vehicle: {
         VIN: claimData.vehicleInfo.vin,
         Year: claimData.vehicleInfo.year,
         Make: claimData.vehicleInfo.make,
         Model: claimData.vehicleInfo.model,
-        Mileage: claimData.vehicleInfo.mileage
+        Mileage: claimData.vehicleInfo.mileage,
       },
       Insured: {
         FirstName: claimData.customerInfo.firstName,
         LastName: claimData.customerInfo.lastName,
         Phone: claimData.customerInfo.phone,
         Email: claimData.customerInfo.email,
-        Address: claimData.customerInfo.address
-      }
+        Address: claimData.customerInfo.address,
+      },
     };
   }
 
@@ -205,8 +207,8 @@ class MitchellProvider extends InsuranceProvider {
         Description: item.description,
         LaborHours: item.laborHours,
         LaborRate: item.laborRate,
-        PartsAmount: item.partsAmount
-      }))
+        PartsAmount: item.partsAmount,
+      })),
     };
   }
 }
@@ -221,7 +223,7 @@ class CCCProvider extends InsuranceProvider {
       baseURL: 'https://api.cccis.com/v2',
       authType: 'apikey',
       credentials,
-      timeout: 30000
+      timeout: 30000,
     });
   }
 
@@ -235,17 +237,17 @@ class CCCProvider extends InsuranceProvider {
           vin: claimData.vehicleInfo.vin,
           year: claimData.vehicleInfo.year,
           make: claimData.vehicleInfo.make,
-          model: claimData.vehicleInfo.model
+          model: claimData.vehicleInfo.model,
         },
         customer: {
           first_name: claimData.customerInfo.firstName,
           last_name: claimData.customerInfo.lastName,
           contact_info: {
             phone: claimData.customerInfo.phone,
-            email: claimData.customerInfo.email
-          }
-        }
-      }
+            email: claimData.customerInfo.email,
+          },
+        },
+      },
     };
   }
 }
@@ -260,20 +262,20 @@ class AudatexProvider extends InsuranceProvider {
       baseURL: 'https://api.audatex.com/v1',
       authType: 'basic',
       credentials,
-      timeout: 40000
+      timeout: 40000,
     });
   }
 
   async submitEstimate(estimateData) {
     // Audatex requires XML format
     const xmlData = this.convertToXML(estimateData);
-    
+
     const response = await this.post('/estimates', xmlData, {
       headers: {
-        'Content-Type': 'application/xml'
-      }
+        'Content-Type': 'application/xml',
+      },
     });
-    
+
     return this.parseXMLResponse(response);
   }
 
@@ -284,12 +286,15 @@ class AudatexProvider extends InsuranceProvider {
       <ClaimNumber>${estimateData.claimNumber}</ClaimNumber>
       <TotalAmount>${estimateData.totalAmount}</TotalAmount>
       <RepairItems>
-        ${estimateData.repairItems.map(item => 
-          `<Item>
+        ${estimateData.repairItems
+          .map(
+            item =>
+              `<Item>
             <Description>${item.description}</Description>
             <Amount>${item.amount}</Amount>
           </Item>`
-        ).join('')}
+          )
+          .join('')}
       </RepairItems>
     </Estimate>`;
   }
@@ -298,7 +303,7 @@ class AudatexProvider extends InsuranceProvider {
     // Parse XML response (simplified - would use proper XML parser in production)
     return {
       status: 'submitted',
-      estimateId: 'AUD-' + Date.now()
+      estimateId: 'AUD-' + Date.now(),
     };
   }
 }
@@ -317,10 +322,10 @@ class InsuranceIntegrationService {
    */
   registerProvider(name, provider) {
     this.providers.set(name, provider);
-    
+
     // Set up webhook handlers
     this.setupWebhookHandlers(name, provider);
-    
+
     console.log(`✅ Insurance provider registered: ${name}`);
   }
 
@@ -329,21 +334,21 @@ class InsuranceIntegrationService {
    */
   setupWebhookHandlers(providerName, provider) {
     const { integrationManager } = require('./integrationFramework');
-    
+
     // Claim status updates
     integrationManager.registerWebhookHandler(
       providerName,
       'claim_status_update',
-      async (payload) => {
+      async payload => {
         await this.handleClaimStatusUpdate(providerName, payload);
       }
     );
-    
+
     // Estimate approval updates
     integrationManager.registerWebhookHandler(
       providerName,
       'estimate_approval',
-      async (payload) => {
+      async payload => {
         await this.handleEstimateApproval(providerName, payload);
       }
     );
@@ -355,15 +360,15 @@ class InsuranceIntegrationService {
   async handleClaimStatusUpdate(providerName, payload) {
     try {
       const { claimNumber, status, updatedAt } = payload;
-      
+
       // Update job status
       await Job.update(
-        { 
+        {
           claimStatus: status,
-          claimUpdatedAt: new Date(updatedAt)
+          claimUpdatedAt: new Date(updatedAt),
         },
-        { 
-          where: { insuranceClaimNumber: claimNumber }
+        {
+          where: { insuranceClaimNumber: claimNumber },
         }
       );
 
@@ -372,11 +377,11 @@ class InsuranceIntegrationService {
         provider: providerName,
         type: 'claim_status',
         claimNumber,
-        status
+        status,
       });
 
       console.log(`📋 Claim status updated: ${claimNumber} -> ${status}`);
-      
+
       return { success: true, claimNumber, status };
     } catch (error) {
       console.error('Error handling claim status update:', error);
@@ -390,10 +395,10 @@ class InsuranceIntegrationService {
   async handleEstimateApproval(providerName, payload) {
     try {
       const { estimateId, status, approvedAmount, notes } = payload;
-      
+
       // Update job with approval info
       const job = await Job.findOne({
-        where: { estimateId }
+        where: { estimateId },
       });
 
       if (job) {
@@ -401,7 +406,7 @@ class InsuranceIntegrationService {
           estimateStatus: status,
           approvedAmount,
           approvalNotes: notes,
-          estimateApprovedAt: new Date()
+          estimateApprovedAt: new Date(),
         });
 
         // Broadcast update
@@ -410,12 +415,14 @@ class InsuranceIntegrationService {
           type: 'estimate_approval',
           jobId: job.id,
           status,
-          approvedAmount
+          approvedAmount,
         });
 
-        console.log(`💰 Estimate approved: ${estimateId} -> $${approvedAmount}`);
+        console.log(
+          `💰 Estimate approved: ${estimateId} -> $${approvedAmount}`
+        );
       }
-      
+
       return { success: true, estimateId, status, approvedAmount };
     } catch (error) {
       console.error('Error handling estimate approval:', error);
@@ -488,18 +495,18 @@ class InsuranceIntegrationService {
    */
   async healthCheck() {
     const results = {};
-    
+
     for (const [name, provider] of this.providers) {
       try {
         results[name] = await provider.healthCheck();
       } catch (error) {
         results[name] = {
           status: 'error',
-          error: error.message
+          error: error.message,
         };
       }
     }
-    
+
     return results;
   }
 
@@ -510,7 +517,7 @@ class InsuranceIntegrationService {
     return {
       totalProviders: this.providers.size,
       defaultProvider: this.defaultProvider,
-      providers: Array.from(this.providers.keys())
+      providers: Array.from(this.providers.keys()),
     };
   }
 }
@@ -521,5 +528,5 @@ module.exports = {
   MitchellProvider,
   CCCProvider,
   AudatexProvider,
-  InsuranceIntegrationService
+  InsuranceIntegrationService,
 };

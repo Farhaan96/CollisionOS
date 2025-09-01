@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { animate, useReducedMotion } from 'framer-motion';
 
-export const AnimatedCounter = ({ value, duration = 1.0, prefix = '', suffix = '' }) => {
+export const AnimatedCounter = ({
+  value,
+  duration = 1.0,
+  prefix = '',
+  suffix = '',
+}) => {
   const nodeRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -17,7 +22,7 @@ export const AnimatedCounter = ({ value, duration = 1.0, prefix = '', suffix = '
       ease: 'easeOut',
       onUpdate(v) {
         node.textContent = `${prefix}${Math.round(v).toLocaleString()}${suffix}`;
-      }
+      },
     });
     return () => controls.stop();
   }, [value, duration, prefix, suffix, prefersReducedMotion]);

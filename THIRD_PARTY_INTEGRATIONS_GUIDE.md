@@ -37,16 +37,19 @@ server/services/
 ### Supported Providers
 
 #### Mitchell International
+
 - **Authentication**: OAuth 2.0
 - **Features**: Claims submission, estimate approval, status updates
 - **Data Format**: Structured JSON with Mitchell-specific schema
 
 #### CCC Information Services
+
 - **Authentication**: API Key
 - **Features**: Claims processing, estimate management
 - **Data Format**: REST API with CCC data model
 
 #### Audatex
+
 - **Authentication**: Basic Authentication
 - **Features**: Estimate submission, status tracking
 - **Data Format**: XML-based communication
@@ -139,21 +142,25 @@ POST /api/integrations/insurance/estimates
 ### Supported Suppliers
 
 #### LKQ Corporation
+
 - **Authentication**: API Key
 - **Features**: OEM, Aftermarket, and Recycled parts search
 - **Specialties**: Extensive recycled parts inventory
 
 #### Genuine Parts Company (GPC)
+
 - **Authentication**: OAuth 2.0
 - **Features**: Aftermarket parts catalog, pricing
 - **Specialties**: NAPA Auto Parts network
 
 #### AutoZone Commercial
+
 - **Authentication**: Custom API Key
 - **Features**: Vehicle-specific parts search
 - **Specialties**: Commercial accounts, fast delivery
 
 #### Hollander Interchange
+
 - **Authentication**: Basic Authentication
 - **Features**: Parts interchange lookup
 - **Specialties**: Alternative parts identification
@@ -238,11 +245,13 @@ https://your-domain.com/api/integrations/webhooks/{provider}/{eventType}
 ### Supported Webhook Events
 
 #### Insurance Webhooks
+
 - `claim_status_update`: Claim approval/denial notifications
 - `estimate_approval`: Estimate approval with authorized amounts
 - `payment_issued`: Payment processing notifications
 
 #### Parts Supplier Webhooks
+
 - `order_status_update`: Shipping and delivery updates
 - `price_update`: Real-time pricing changes
 - `availability_update`: Stock level changes
@@ -379,11 +388,11 @@ GET /api/integrations/config
 
 ```javascript
 // Check all integrations
-GET /api/integrations/health
+GET / api / integrations / health;
 
 // Check specific provider type
-GET /api/integrations/insurance/health
-GET /api/integrations/parts/health
+GET / api / integrations / insurance / health;
+GET / api / integrations / parts / health;
 ```
 
 ### Response Format
@@ -462,16 +471,19 @@ process.env.INTEGRATION_MOCK_MODE = 'true';
 ## Security Best Practices
 
 ### API Key Management
+
 - Store credentials in environment variables
 - Use key rotation for long-lived integrations
 - Implement least-privilege access principles
 
 ### Webhook Security
+
 - Verify webhook signatures
 - Use HTTPS endpoints only
 - Implement rate limiting on webhook endpoints
 
 ### Data Protection
+
 - Encrypt sensitive data in transit and at rest
 - Log access and modifications
 - Implement data retention policies
@@ -481,16 +493,19 @@ process.env.INTEGRATION_MOCK_MODE = 'true';
 ### Common Issues
 
 #### Authentication Failures
+
 - Verify API credentials are correct
 - Check token expiration for OAuth providers
 - Ensure correct authentication method is configured
 
 #### Rate Limiting
+
 - Monitor API usage quotas
 - Implement request caching where appropriate
 - Consider upgrading API plans for higher limits
 
 #### Timeout Issues
+
 - Increase timeout values for slow providers
 - Implement circuit breaker patterns
 - Use asynchronous processing for long-running operations
@@ -506,17 +521,20 @@ DEBUG=integration:* npm start
 ## Support and Documentation
 
 ### API Documentation
+
 - Swagger/OpenAPI specs available at `/api-docs`
 - Postman collections provided for testing
 - Interactive API explorer for development
 
 ### Provider Documentation
+
 - [Mitchell API Documentation](https://api.mitchell.com/docs)
 - [CCC Information Services API](https://developer.cccis.com)
 - [LKQ API Documentation](https://developer.lkq.com)
 - [Genuine Parts Company API](https://developer.genpt.com)
 
 ### Getting Help
+
 - Check logs in `logs/integrations.log`
 - Review health check endpoints
 - Contact provider support for API-specific issues
@@ -524,4 +542,4 @@ DEBUG=integration:* npm start
 
 ---
 
-*This guide covers the comprehensive third-party integration system in CollisionOS. For specific implementation details, refer to the source code and API documentation.*
+_This guide covers the comprehensive third-party integration system in CollisionOS. For specific implementation details, refer to the source code and API documentation._
