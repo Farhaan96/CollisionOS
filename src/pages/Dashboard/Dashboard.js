@@ -558,7 +558,7 @@ const Dashboard = () => {
             </Typography>
           }
           secondary={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Typography
                 variant='caption'
                 sx={{ color: 'text.secondary' }}
@@ -573,7 +573,7 @@ const Dashboard = () => {
                   sx={{ ml: 1, height: 20, fontSize: '0.7rem' }}
                 />
               )}
-            </span>
+            </div>
           }
         />
         <ArrowForwardIos
@@ -710,7 +710,7 @@ const Dashboard = () => {
       {/* Comprehensive Metrics Grid - 12+ KPIs */}
       <Grid container spacing={3}>
         {/* Row 1: Core Operations */}
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Active Repairs'
             icon={<DirectionsCar />}
@@ -723,7 +723,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title="Today's Deliveries"
             icon={<Schedule />}
@@ -737,7 +737,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Monthly Revenue'
             icon={<AttachMoney />}
@@ -750,7 +750,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Parts Inventory'
             icon={<Inventory />}
@@ -763,7 +763,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Row 2: Performance Metrics */}
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Technician Utilization'
             icon={<Engineering />}
@@ -778,7 +778,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Average Cycle Time'
             icon={<AccessTime />}
@@ -793,7 +793,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Job Completion Rate'
             icon={<Assignment />}
@@ -808,7 +808,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Customer Satisfaction'
             icon={<StarRate />}
@@ -823,7 +823,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Row 3: Business Intelligence */}
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Insurance Claims'
             icon={<AccountBalance />}
@@ -835,7 +835,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Shop Capacity'
             icon={<Business />}
@@ -861,7 +861,7 @@ const Dashboard = () => {
           </MetricCard>
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Quality Score'
             icon={<Assessment />}
@@ -873,7 +873,7 @@ const Dashboard = () => {
           />
         </Grid>
 
-        <Grid xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricCard
             title='Average Ticket'
             icon={<ShowChart />}
@@ -889,7 +889,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Row 4: Activity Feed and Technician Performance */}
-        <Grid xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Paper
             sx={{
               p: 3,
@@ -942,7 +942,7 @@ const Dashboard = () => {
           </Paper>
         </Grid>
 
-        <Grid xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Paper
             sx={{
               p: 3,

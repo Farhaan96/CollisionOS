@@ -1,0 +1,22 @@
+{
+  "_description": "Manual loop control configuration for CollisionOS agent workflow system",
+  "_lastUpdated": "2025-09-01T15:22:00.000Z",
+  "enabled": true,
+  "paused": false,
+  "maxQueueSize": 10,
+  "queueProcessingDelayMs": 3000,
+  "commands": {
+    "pause": "Pause all agent automation",
+    "resume": "Resume agent automation", 
+    "status": "Show current system status",
+    "clear": "Clear the task queue",
+    "reset": "Reset all loop detection counters"
+  },
+  "taskQueue": [],
+  "statistics": {
+    "totalTasksProcessed": 0,
+    "loopDetectionEvents": 0,
+    "manualInterventions": 0,
+    "averageTaskDurationMs": 0
+  }
+}

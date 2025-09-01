@@ -19,7 +19,9 @@
       "Bash(timeout:*)",
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(tasklist:*)",
+      "Bash(copy:*)"
     ],
     "deny": [],
     "ask": [],

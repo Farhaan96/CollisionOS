@@ -1,10 +1,5 @@
 param([string]$FilePath)
 
-# Handle template variable that wasn't processed
-if ($FilePath -like "*{{ .tool_input.file_path }}*") {
-    $FilePath = ""
-}
-
 # Exit quietly if nothing passed
 if ([string]::IsNullOrWhiteSpace($FilePath)) { exit 0 }
 
