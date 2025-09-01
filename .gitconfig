@@ -1,0 +1,7 @@
+[core]
+    pager = cat
+    editor = notepad
+[color]
+    ui = auto
+[init]
+    defaultBranch = main
