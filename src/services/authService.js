@@ -1,7 +1,7 @@
 import axios from 'axios';
+import logger from '../utils/logger';
 
-const API_BASE =
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -55,7 +55,12 @@ export const authService = {
         );
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout errors are typically non-critical since we clear local storage anyway
+      logger.warn('Logout API call failed, but continuing with local cleanup', {
+        component: 'authService',
+        operation: 'logout',
+        error: error.message
+      });
     } finally {
       localStorage.removeItem('token');
     }

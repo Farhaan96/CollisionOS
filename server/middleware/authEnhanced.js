@@ -83,7 +83,7 @@ const authenticateToken = (options = {}) => {
       if (!token) {
         if (process.env.NODE_ENV === 'development' && !required) {
           // Allow unauthenticated access in development for optional routes
-          req.user = { id: 'dev-user', shopId: 'dev-shop', role: 'admin' };
+          req.user = { id: 'dev-user', shopId: '00000000-0000-4000-8000-000000000001', role: 'admin' };
           return next();
         }
 
@@ -103,7 +103,7 @@ const authenticateToken = (options = {}) => {
           id: 'dev-user',
           userId: 'dev-user',
           username: 'admin',
-          shopId: 'dev-shop',
+          shopId: '00000000-0000-4000-8000-000000000001',
           role: 'admin',
           email: 'admin@collisionos.com',
         };
@@ -113,15 +113,27 @@ const authenticateToken = (options = {}) => {
       // Verify and decode token
       let decoded;
       try {
+        // Check if token has proper format (should have 3 parts separated by dots)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          throw new Error('Token contains an invalid number of segments');
+        }
+
         decoded = verifyAccessToken(token);
       } catch (tokenError) {
+        console.warn(`Authentication failed: ${tokenError.message}`, {
+          token: token.substring(0, 20) + '...',
+          error: tokenError.name
+        });
+
         // In development with optional auth, allow invalid tokens to pass through
         if (process.env.NODE_ENV === 'development' && !required) {
+          console.log('Development mode: allowing invalid token to pass through');
           req.user = {
             id: 'dev-user',
             userId: 'dev-user',
             username: 'admin',
-            shopId: 'dev-shop',
+            shopId: '00000000-0000-4000-8000-000000000001',
             role: 'admin',
             email: 'admin@collisionos.com',
           };
@@ -136,14 +148,18 @@ const authenticateToken = (options = {}) => {
           });
         }
 
-        if (tokenError.name === 'JsonWebTokenError') {
+        if (tokenError.name === 'JsonWebTokenError' || tokenError.message.includes('invalid number of segments')) {
           return res.status(401).json({
             error: 'Invalid token',
-            message: 'Access token is invalid',
+            message: 'Access token is malformed or invalid',
           });
         }
 
-        throw tokenError;
+        console.error('Unexpected token error:', tokenError);
+        return res.status(401).json({
+          error: 'Authentication failed',
+          message: 'Token validation failed',
+        });
       }
 
       // Validate user exists and is active

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0007</EstimateNumber>
+        <ClaimNumber>CLM5309056507</ClaimNumber>
+        <EstimateDate>2024-07-28</EstimateDate>
+        <AccidentDate>2024-07-26</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Bryant Nienow</Name>
+            <Company>Farmers</Company>
+            <Phone>609-260-7722 x3434</Phone>
+            <Email>Zelda.Jaskolski35@hotmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Minerva</FirstName>
+        <LastName>Johnson</LastName>
+        <Phone>726.605.7126 x64736</Phone>
+        <Email>Minerva.Johnson91@hotmail.com</Email>
+        <Address>
+            <Street>996 Anderson Lakes</Street>
+            <City>Torrance</City>
+            <State>OR</State>
+            <Zip>29345</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HDKJAEP5F5OZYZVQ</VIN>
+        <Year>2016</Year>
+        <Make>Mercedes-Benz</Make>
+        <Model>C-Class</Model>
+        <Color>Blue</Color>
+        <Trim>SE</Trim>
+        <Mileage>27999</Mileage>
+        <LicensePlate>4QZA765</LicensePlate>
+        <LicenseState>SD</LicenseState>
+        <EngineType>V8</EngineType>
+        <Transmission>Automatic</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Farmers</Company>
+        <PolicyNumber>ZHU18X1SC9W2</PolicyNumber>
+        <ClaimNumber>CLM5309056507</ClaimNumber>
+        <Deductible>1000</Deductible>
+        <Coverage>Comprehensive</Coverage>
+        <Adjuster>
+            <Name>Dr. Shane Lang</Name>
+            <Phone>498-679-3735 x874</Phone>
+            <Email>Dr.11@yahoo.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Front End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Front Bumper Cover</Description>
+            <PartNumber>52119-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>425.50</UnitPrice>
+            <LaborHours>1.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>425.50</PartsAmount>
+            <LaborAmount>93.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Headlamp Assembly RH</Description>
+            <PartNumber>81130-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>389.99</UnitPrice>
+            <LaborHours>1.9</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>389.99</PartsAmount>
+            <LaborAmount>104.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Grille Assembly</Description>
+            <PartNumber>53101-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>245.75</UnitPrice>
+            <LaborHours>1.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>245.75</PartsAmount>
+            <LaborAmount>88.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Hood</Description>
+            <PartNumber>66400-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>675.00</UnitPrice>
+            <LaborHours>0.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>675.00</PartsAmount>
+            <LaborAmount>38.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Refinish</Operation>
+            <Description>Refinish - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.3</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>409.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Install</Operation>
+            <Description>Remove and Install - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>99.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>330.13</UnitPrice>
+            
+            
+            <PartsAmount>330.13</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1736.24</PartsTotal>
+        <LaborTotal>833.00</LaborTotal>
+        <MaterialsTotal>330.13</MaterialsTotal>
+        <SubletTotal>88.59</SubletTotal>
+        <Subtotal>2987.96</Subtotal>
+        <Tax>261.45</Tax>
+        <GrandTotal>3249.41</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Doyle and Sons Auto Body</Name>
+        <Address>727 Blind Lane</Address>
+        <City>South Kaliberg</City>
+        <State>MO</State>
+        <Zip>38053-0567</Zip>
+        <Phone>(837) 897-4577</Phone>
+        <Email>Johanna_Kreiger@hotmail.com</Email>
+        <LicenseNumber>LIC31892711</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0007.jpg</Filename>
+            <DateTaken>2024-07-26T19:04:27.030Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0007.jpg</Filename>
+            <DateTaken>2024-07-26T19:04:27.030Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

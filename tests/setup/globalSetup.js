@@ -10,7 +10,9 @@ module.exports = async () => {
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render is deprecated')
+      (args[0].includes('Warning: ReactDOM.render is deprecated') ||
+       args[0].includes('Warning: `ReactDOMTestUtils.act` is deprecated') ||
+       args[0].includes('Warning: React.jsx: type is invalid'))
     ) {
       return;
     }

@@ -452,7 +452,6 @@ describe('ValidationDisplay Component', () => {
   });
 
   it('expands to show all validation issues', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -461,7 +460,7 @@ describe('ValidationDisplay Component', () => {
     );
 
     const expandButton = screen.getByLabelText(/expand/i);
-    await user.click(expandButton);
+    await userEvent.click(expandButton);
 
     expect(
       screen.getByText('Consider using a longer password')
@@ -574,7 +573,6 @@ describe('ValidationSummary Component', () => {
   });
 
   it('expands to show detailed field information', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -583,7 +581,7 @@ describe('ValidationSummary Component', () => {
     );
 
     const expandButton = screen.getByLabelText(/expand/i);
-    await user.click(expandButton);
+    await userEvent.click(expandButton);
 
     expect(screen.getByText('Fields with Errors')).toBeInTheDocument();
     expect(screen.getByText('email')).toBeInTheDocument();
@@ -592,7 +590,6 @@ describe('ValidationSummary Component', () => {
 
   it('calls onFieldFocus when field is clicked', async () => {
     const mockOnFieldFocus = jest.fn();
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -605,11 +602,11 @@ describe('ValidationSummary Component', () => {
 
     // Expand first
     const expandButton = screen.getByLabelText(/expand/i);
-    await user.click(expandButton);
+    await userEvent.click(expandButton);
 
     // Click on email field
     const emailField = screen.getByText('email');
-    await user.click(emailField);
+    await userEvent.click(emailField);
 
     expect(mockOnFieldFocus).toHaveBeenCalledWith('email');
   });
@@ -628,7 +625,6 @@ describe('ValidationSummary Component', () => {
   });
 
   it('shows valid fields when showSuccessFields is true', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -641,7 +637,7 @@ describe('ValidationSummary Component', () => {
 
     // Expand first
     const expandButton = screen.getByLabelText(/expand/i);
-    await user.click(expandButton);
+    await userEvent.click(expandButton);
 
     expect(screen.getByText('Valid Fields')).toBeInTheDocument();
     expect(screen.getByText('firstName')).toBeInTheDocument();

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0003</EstimateNumber>
+        <ClaimNumber>CLM1237888712</ClaimNumber>
+        <EstimateDate>2024-11-16</EstimateDate>
+        <AccidentDate>2024-11-15</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Javier Rempel Jr.</Name>
+            <Company>Geico</Company>
+            <Phone>218-663-4970 x414</Phone>
+            <Email>Archibald3@hotmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Marcelino</FirstName>
+        <LastName>Nolan</LastName>
+        <Phone>1-447-355-7186 x1237</Phone>
+        <Email>Marcelino.Nolan@hotmail.com</Email>
+        <Address>
+            <Street>63782 Stracke Track</Street>
+            <City>New Dahliafield</City>
+            <State>MT</State>
+            <Zip>19550</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>JM3WJAXDM820KDIH9</VIN>
+        <Year>2020</Year>
+        <Make>Honda</Make>
+        <Model>CR-V</Model>
+        <Color>Blue</Color>
+        <Trim>Premium</Trim>
+        <Mileage>15842</Mileage>
+        <LicensePlate>7VKQ938</LicensePlate>
+        <LicenseState>VA</LicenseState>
+        <EngineType>V6</EngineType>
+        <Transmission>CVT</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Geico</Company>
+        <PolicyNumber>PO8RW4LMNLRP</PolicyNumber>
+        <ClaimNumber>CLM1237888712</ClaimNumber>
+        <Deductible>1000</Deductible>
+        <Coverage>Comprehensive</Coverage>
+        <Adjuster>
+            <Name>Pat Parker DDS</Name>
+            <Phone>(534) 580-5651</Phone>
+            <Email>Pat.Murphy@hotmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Rear End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Rear Bumper Cover</Description>
+            <PartNumber>52159-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>385.25</UnitPrice>
+            <LaborHours>2.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>385.25</PartsAmount>
+            <LaborAmount>126.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Tail Lamp Assembly LH</Description>
+            <PartNumber>81560-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>295.50</UnitPrice>
+            <LaborHours>0.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>295.50</PartsAmount>
+            <LaborAmount>33.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Trunk Lid</Description>
+            <PartNumber>64500-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>525.75</UnitPrice>
+            <LaborHours>2.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>525.75</PartsAmount>
+            <LaborAmount>148.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>License Plate Bracket</Description>
+            <PartNumber>76403-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>45.99</UnitPrice>
+            <LaborHours>1.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>45.99</PartsAmount>
+            <LaborAmount>88.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Refinish</Operation>
+            <Description>Refinish - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.1</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>71.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>7.1</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>390.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>345.68</UnitPrice>
+            
+            
+            <PartsAmount>345.68</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1252.49</PartsTotal>
+        <LaborTotal>858.00</LaborTotal>
+        <MaterialsTotal>345.68</MaterialsTotal>
+        <SubletTotal>431.92</SubletTotal>
+        <Subtotal>2888.09</Subtotal>
+        <Tax>252.71</Tax>
+        <GrandTotal>3140.80</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>McCullough, Mosciski and Pfeffer Auto Body</Name>
+        <Address>353 W Oak Street</Address>
+        <City>North Miles</City>
+        <State>WA</State>
+        <Zip>42804-6449</Zip>
+        <Phone>299.364.7408 x95767</Phone>
+        <Email>Joanne51@yahoo.com</Email>
+        <LicenseNumber>LIC76040519</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0003.jpg</Filename>
+            <DateTaken>2024-11-15T02:14:44.714Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0003.jpg</Filename>
+            <DateTaken>2024-11-15T02:14:44.714Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

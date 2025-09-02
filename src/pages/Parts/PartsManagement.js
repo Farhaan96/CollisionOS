@@ -10,6 +10,9 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
+  Tab,
+  Tabs,
+  Paper,
 } from '@mui/material';
 import {
   Inventory,
@@ -18,10 +21,14 @@ import {
   Warning,
   TrendingUp,
   Assessment,
+  AutoMode,
+  Insights,
 } from '@mui/icons-material';
 
 // Components
 import PartsManagementSystem from '../../components/Parts/PartsManagementSystem';
+import AutomatedSourcingDashboard from '../../components/Parts/AutomatedSourcingDashboard';
+import VendorIntegrationMonitor from '../../components/Parts/VendorIntegrationMonitor';
 
 // Hooks
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,6 +37,11 @@ const PartsManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   // Mock data for dashboard
   const partsStats = {
@@ -221,8 +233,42 @@ const PartsManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Parts Management System */}
-      <PartsManagementSystem />
+      {/* Tab Navigation */}
+      <Paper sx={{ mb: 3 }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange}
+          variant={isMobile ? "scrollable" : "standard"}
+          scrollButtons="auto"
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab 
+            icon={<Inventory />} 
+            label="Parts Management" 
+            iconPosition="start"
+            sx={{ minHeight: 64, textTransform: 'none', fontSize: '0.9rem' }}
+          />
+          <Tab 
+            icon={<AutoMode />} 
+            label="Automated Sourcing" 
+            iconPosition="start"
+            sx={{ minHeight: 64, textTransform: 'none', fontSize: '0.9rem' }}
+          />
+          <Tab 
+            icon={<Insights />} 
+            label="Vendor Integration" 
+            iconPosition="start"
+            sx={{ minHeight: 64, textTransform: 'none', fontSize: '0.9rem' }}
+          />
+        </Tabs>
+      </Paper>
+
+      {/* Tab Content */}
+      <Box sx={{ mt: 2 }}>
+        {tabValue === 0 && <PartsManagementSystem />}
+        {tabValue === 1 && <AutomatedSourcingDashboard />}
+        {tabValue === 2 && <VendorIntegrationMonitor />}
+      </Box>
     </Box>
   );
 };

@@ -4,8 +4,16 @@ import {
   Typography,
   useTheme,
   CircularProgress,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon,
 } from '@mui/material';
-import ProductionKanbanBoardSimple from '../../components/Production/ProductionKanbanBoardSimple';
+import {
+  Person,
+  Add,
+  Refresh,
+} from '@mui/icons-material';
+import ProductionBoardTable from '../../components/Production/ProductionBoardTable';
 import { CustomerForm } from '../../components/Customer/CustomerForm';
 import useJobStore from '../../store/jobStore';
 
@@ -16,7 +24,8 @@ const ProductionBoard = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Remove fetchJobs dependency to prevent infinite re-renders
 
   const handleJobMove = async (job, newStatus) => {
     try {
@@ -95,14 +104,13 @@ const ProductionBoard = () => {
         )}
       </Box>
 
-      {/* Production Kanban Board */}
-      <Box sx={{ flex: 1, overflow: 'hidden' }}>
-        <ProductionKanbanBoardSimple
+      {/* Production Board Table */}
+      <Box sx={{ flex: 1, overflow: 'hidden', p: 2 }}>
+        <ProductionBoardTable
           jobs={jobs}
           onJobMove={handleJobMove}
           onJobUpdate={handleJobUpdate}
           onJobClick={handleJobClick}
-          onCustomerCreate={() => setCustomerFormOpen(true)}
           loading={loading}
           error={error}
         />
@@ -114,6 +122,37 @@ const ProductionBoard = () => {
         onClose={() => setCustomerFormOpen(false)}
         onSave={handleCustomerSave}
       />
+
+      {/* Floating Action Button for Quick Actions */}
+      <SpeedDial
+        ariaLabel="Production actions"
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          zIndex: 9999,
+        }}
+        icon={<SpeedDialIcon />}
+      >
+        <SpeedDialAction
+          icon={<Person />}
+          tooltipTitle="New Customer"
+          onClick={() => setCustomerFormOpen(true)}
+        />
+        <SpeedDialAction
+          icon={<Add />}
+          tooltipTitle="New Job"
+          onClick={() => {
+            // TODO: Implement direct job creation functionality
+            // This would open a job creation dialog
+          }}
+        />
+        <SpeedDialAction
+          icon={<Refresh />}
+          tooltipTitle="Refresh Jobs"
+          onClick={() => fetchJobs()}
+        />
+      </SpeedDial>
     </Box>
   );
 };

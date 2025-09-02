@@ -1,0 +1,63 @@
+{
+  "name": "collisionos-mobile",
+  "version": "1.0.0",
+  "description": "CollisionOS Mobile Companion App for Technicians",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "build:android": "expo build:android",
+    "build:ios": "expo build:ios"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^13.0.0",
+    "@react-native-async-storage/async-storage": "~1.18.2",
+    "@react-navigation/bottom-tabs": "^6.5.7",
+    "@react-navigation/native": "^6.1.6",
+    "@react-navigation/stack": "^6.3.16",
+    "@reduxjs/toolkit": "^1.9.5",
+    "expo": "~49.0.0",
+    "expo-barcode-scanner": "~12.5.0",
+    "expo-camera": "~13.4.2",
+    "expo-constants": "~14.4.2",
+    "expo-file-system": "~15.4.3",
+    "expo-image-picker": "~14.3.2",
+    "expo-location": "~16.1.0",
+    "expo-notifications": "~0.20.1",
+    "expo-secure-store": "~12.3.1",
+    "expo-sqlite": "~11.3.2",
+    "expo-status-bar": "~1.6.0",
+    "react": "18.2.0",
+    "react-native": "0.72.3",
+    "react-native-elements": "^3.4.3",
+    "react-native-gesture-handler": "~2.12.0",
+    "react-native-paper": "^5.8.0",
+    "react-native-reanimated": "~3.3.0",
+    "react-native-safe-area-context": "4.6.3",
+    "react-native-screens": "~3.22.0",
+    "react-native-vector-icons": "^9.2.0",
+    "react-redux": "^8.1.1",
+    "redux-persist": "^6.0.0",
+    "socket.io-client": "^4.7.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@testing-library/jest-native": "^5.4.2",
+    "@testing-library/react-native": "^12.1.2",
+    "eslint": "^8.43.0",
+    "eslint-config-expo": "^7.0.0",
+    "jest": "^29.5.0",
+    "jest-expo": "~49.0.0"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+  },
+  "private": true
+}

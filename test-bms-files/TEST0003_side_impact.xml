@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0003</EstimateNumber>
+        <ClaimNumber>CLM4214039410</ClaimNumber>
+        <EstimateDate>2024-07-10</EstimateDate>
+        <AccidentDate>2024-07-04</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Pablo Stoltenberg</Name>
+            <Company>State Farm</Company>
+            <Phone>1-636-583-9831 x95687</Phone>
+            <Email>Alia_Mayer@yahoo.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Maryam</FirstName>
+        <LastName>Hilll</LastName>
+        <Phone>1-392-395-2834 x429</Phone>
+        <Email>Maryam.Hilll@yahoo.com</Email>
+        <Address>
+            <Street>378 Walnut Close</Street>
+            <City>New Haven</City>
+            <State>NE</State>
+            <Zip>76258</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HDW426YINI3V5M4O</VIN>
+        <Year>2020</Year>
+        <Make>Toyota</Make>
+        <Model>RAV4</Model>
+        <Color>White</Color>
+        <Trim>Base</Trim>
+        <Mileage>52001</Mileage>
+        <LicensePlate>1XNB581</LicensePlate>
+        <LicenseState>NY</LicenseState>
+        <EngineType>4-Cyl</EngineType>
+        <Transmission>CVT</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>State Farm</Company>
+        <PolicyNumber>AYPMK6V3GLSA</PolicyNumber>
+        <ClaimNumber>CLM4214039410</ClaimNumber>
+        <Deductible>250</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Gerard Bernier</Name>
+            <Phone>(573) 276-8887 x796</Phone>
+            <Email>Gerard_Lesch@gmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Side Impact</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Door Shell LH</Description>
+            <PartNumber>67002-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>445.00</UnitPrice>
+            <LaborHours>2.4</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>445.00</PartsAmount>
+            <LaborAmount>132.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Door Mirror LH</Description>
+            <PartNumber>87940-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>185.25</UnitPrice>
+            <LaborHours>1.0</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>185.25</PartsAmount>
+            <LaborAmount>55.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Quarter Panel</Description>
+            <PartNumber>61301-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>725.50</UnitPrice>
+            <LaborHours>2.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>725.50</PartsAmount>
+            <LaborAmount>143.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Side Molding</Description>
+            <PartNumber>75951-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>125.99</UnitPrice>
+            <LaborHours>2.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>125.99</PartsAmount>
+            <LaborAmount>148.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Install</Operation>
+            <Description>Remove and Install - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>99.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.2</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>66.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Blend</Operation>
+            <Description>Blend - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.8</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>442.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>8</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Refinish</Operation>
+            <Description>Refinish - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>2.8</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>182.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>9</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>202.80</UnitPrice>
+            
+            
+            <PartsAmount>202.80</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1481.74</PartsTotal>
+        <LaborTotal>1267.50</LaborTotal>
+        <MaterialsTotal>202.80</MaterialsTotal>
+        <SubletTotal>258.12</SubletTotal>
+        <Subtotal>3210.16</Subtotal>
+        <Tax>280.89</Tax>
+        <GrandTotal>3491.05</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Hahn, Funk and Rippin Auto Body</Name>
+        <Address>119 Bartoletti Shoal</Address>
+        <City>Margretview</City>
+        <State>ME</State>
+        <Zip>96987-2612</Zip>
+        <Phone>241-697-2981 x53655</Phone>
+        <Email>Baron_Sawayn@gmail.com</Email>
+        <LicenseNumber>LIC34823077</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0003.jpg</Filename>
+            <DateTaken>2024-07-04T06:30:53.371Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0003.jpg</Filename>
+            <DateTaken>2024-07-04T06:30:53.371Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

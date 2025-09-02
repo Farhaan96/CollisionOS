@@ -1,13 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeContextProvider } from '../contexts/ThemeContext';
 
-// Import AuthContext
-import AuthContext from '../contexts/AuthContext';
+// Create a simple AuthContext mock for testing
+const AuthContext = React.createContext();
 
 // Create a test theme
 const testTheme = createTheme({
@@ -21,10 +21,20 @@ const testTheme = createTheme({
     },
   },
   typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 500,
     fontWeightBold: 700,
+    h1: { fontWeight: 300 },
+    h2: { fontWeight: 300 },
+    h3: { fontWeight: 400 },
+    h4: { fontWeight: 400 },
+    h5: { fontWeight: 400 },
+    h6: { fontWeight: 500 },
+    body1: { fontWeight: 400 },
+    body2: { fontWeight: 400 },
+    button: { fontWeight: 500 },
   },
 });
 
@@ -220,8 +230,10 @@ export const createMockChartData = (labels = [], datasets = []) => ({
 export const fillForm = async fields => {
   for (const [fieldName, value] of Object.entries(fields)) {
     const field = screen.getByLabelText(new RegExp(fieldName, 'i'));
-    await userEvent.clear(field);
-    await userEvent.type(field, value);
+    await act(async () => {
+      await userEvent.clear(field);
+      await userEvent.type(field, value);
+    });
   }
 };
 
@@ -229,7 +241,9 @@ export const submitForm = async (buttonText = 'submit') => {
   const submitButton = screen.getByRole('button', {
     name: new RegExp(buttonText, 'i'),
   });
-  await userEvent.click(submitButton);
+  await act(async () => {
+    await userEvent.click(submitButton);
+  });
 };
 
 // Async utilities
@@ -338,4 +352,4 @@ export * from '@testing-library/react';
 export { userEvent };
 
 // Re-export commonly used testing utilities
-export { screen, fireEvent, waitFor, within } from '@testing-library/react';
+export { screen, fireEvent, waitFor, within, act } from '@testing-library/react';

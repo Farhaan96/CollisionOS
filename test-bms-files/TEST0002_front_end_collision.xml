@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0002</EstimateNumber>
+        <ClaimNumber>CLM2293019514</ClaimNumber>
+        <EstimateDate>2024-10-23</EstimateDate>
+        <AccidentDate>2024-10-16</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Dr. Steven Wilkinson</Name>
+            <Company>Liberty Mutual</Company>
+            <Phone>683.933.3574</Phone>
+            <Email>Alivia89@hotmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Kailyn</FirstName>
+        <LastName>Feeney</LastName>
+        <Phone>(527) 244-3405 x8380</Phone>
+        <Email>Kailyn_Feeney6@yahoo.com</Email>
+        <Address>
+            <Street>386 Cecile Unions</Street>
+            <City>Ashtonboro</City>
+            <State>HI</State>
+            <Zip>86682</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>JTD35LQSOEM2ZWXMY</VIN>
+        <Year>2020</Year>
+        <Make>Mercedes-Benz</Make>
+        <Model>A-Class</Model>
+        <Color>White</Color>
+        <Trim>Sport</Trim>
+        <Mileage>107657</Mileage>
+        <LicensePlate>5VHX857</LicensePlate>
+        <LicenseState>GA</LicenseState>
+        <EngineType>V8</EngineType>
+        <Transmission>Manual</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Liberty Mutual</Company>
+        <PolicyNumber>NZCOARLMJ8LP</PolicyNumber>
+        <ClaimNumber>CLM2293019514</ClaimNumber>
+        <Deductible>250</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Grant Bayer</Name>
+            <Phone>567-743-6678</Phone>
+            <Email>Grant12@gmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Front End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Front Bumper Cover</Description>
+            <PartNumber>52119-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>425.50</UnitPrice>
+            <LaborHours>1.2</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>425.50</PartsAmount>
+            <LaborAmount>66.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Headlamp Assembly RH</Description>
+            <PartNumber>81130-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>389.99</UnitPrice>
+            <LaborHours>0.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>389.99</PartsAmount>
+            <LaborAmount>33.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Grille Assembly</Description>
+            <PartNumber>53101-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>245.75</UnitPrice>
+            <LaborHours>2.9</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>245.75</PartsAmount>
+            <LaborAmount>159.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Hood</Description>
+            <PartNumber>66400-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>675.00</UnitPrice>
+            <LaborHours>3.0</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>675.00</PartsAmount>
+            <LaborAmount>165.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>7.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>412.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Blend</Operation>
+            <Description>Blend - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>2.8</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>182.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>155.72</UnitPrice>
+            
+            
+            <PartsAmount>155.72</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1736.24</PartsTotal>
+        <LaborTotal>1018.00</LaborTotal>
+        <MaterialsTotal>155.72</MaterialsTotal>
+        <SubletTotal>131.43</SubletTotal>
+        <Subtotal>3041.39</Subtotal>
+        <Tax>266.12</Tax>
+        <GrandTotal>3307.51</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Durgan, Lemke and Morissette Auto Body</Name>
+        <Address>235 Parisian Loaf</Address>
+        <City>Pittsburg</City>
+        <State>AL</State>
+        <Zip>29465-2908</Zip>
+        <Phone>804-397-8168 x7489</Phone>
+        <Email>Kevin.Boehm75@hotmail.com</Email>
+        <LicenseNumber>LIC93755022</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0002.jpg</Filename>
+            <DateTaken>2024-10-16T05:30:17.077Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0002.jpg</Filename>
+            <DateTaken>2024-10-16T05:30:17.077Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

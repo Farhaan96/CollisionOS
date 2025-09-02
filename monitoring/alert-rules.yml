@@ -1,0 +1,252 @@
+groups:
+  # Application Health & Performance Alerts
+  - name: collisionos-application
+    rules:
+      - alert: CollisionOSDown
+        expr: up{job="collisionos-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "CollisionOS application is down"
+          description: "CollisionOS application has been down for more than 1 minute"
+          runbook_url: "https://runbooks.collisionos.com/app-down"
+
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{job="collisionos-app",quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for the last 5 minutes"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="collisionos-app",status=~"5.."}[5m]) / rate(http_requests_total{job="collisionos-app"}[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 3 minutes"
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{name="collisionos-prod"} / container_spec_memory_limit_bytes{name="collisionos-prod"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} of limit"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="collisionos-prod"}[5m]) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }} cores for the last 10 minutes"
+
+  # Automated Parts Sourcing Specific Alerts
+  - name: automated-sourcing
+    rules:
+      - alert: AutomatedSourcingFailure
+        expr: rate(sourcing_requests_total{status="failed"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          component: automated-sourcing
+        annotations:
+          summary: "Automated parts sourcing failures detected"
+          description: "Automated sourcing failure rate is {{ $value }} requests/second"
+          runbook_url: "https://runbooks.collisionos.com/sourcing-failures"
+
+      - alert: VendorAPITimeout
+        expr: increase(vendor_api_timeouts_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          component: vendor-integration
+        annotations:
+          summary: "Vendor API timeouts detected"
+          description: "{{ $labels.vendor }} API has {{ $value }} timeouts in the last 5 minutes"
+
+      - alert: LowSourcingSuccessRate
+        expr: rate(sourcing_requests_total{status="success"}[15m]) / rate(sourcing_requests_total[15m]) < 0.85
+        for: 10m
+        labels:
+          severity: warning
+          component: automated-sourcing
+        annotations:
+          summary: "Low automated sourcing success rate"
+          description: "Sourcing success rate is {{ $value | humanizePercentage }} over the last 15 minutes"
+
+      - alert: VendorQuotaExceeded
+        expr: vendor_api_quota_remaining < 100
+        for: 0m
+        labels:
+          severity: warning
+          component: vendor-integration
+          vendor: "{{ $labels.vendor }}"
+        annotations:
+          summary: "Vendor API quota nearly exceeded"
+          description: "{{ $labels.vendor }} API quota has {{ $value }} requests remaining"
+
+      - alert: PartsDataStaleness
+        expr: time() - parts_catalog_last_update_timestamp > 86400
+        for: 0m
+        labels:
+          severity: warning
+          component: parts-catalog
+        annotations:
+          summary: "Parts catalog data is stale"
+          description: "Parts catalog for {{ $labels.vendor }} was last updated {{ $value | humanizeDuration }} ago"
+
+  # Database & Infrastructure Alerts
+  - name: infrastructure
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL has been down for more than 1 minute"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis has been down for more than 1 minute"
+
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connections"
+          description: "Database connections are at {{ $value | humanizePercentage }} of maximum"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: storage
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value | humanizePercentage }} full on {{ $labels.device }}"
+
+  # Business Logic & Workflow Alerts  
+  - name: business-logic
+    rules:
+      - alert: BMSProcessingFailure
+        expr: rate(bms_processing_total{status="failed"}[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: bms-processing
+        annotations:
+          summary: "BMS processing failures detected"
+          description: "BMS processing failure rate is {{ $value }} files/second"
+
+      - alert: StuckBMSJobs
+        expr: bms_processing_queue_size > 50
+        for: 15m
+        labels:
+          severity: warning
+          component: bms-processing
+        annotations:
+          summary: "BMS processing queue is backed up"
+          description: "{{ $value }} BMS files are stuck in processing queue"
+
+      - alert: HighOrderProcessingTime
+        expr: histogram_quantile(0.95, rate(order_processing_duration_seconds_bucket[10m])) > 300
+        for: 10m
+        labels:
+          severity: warning
+          component: order-processing
+        annotations:
+          summary: "Slow order processing detected"
+          description: "95th percentile order processing time is {{ $value }}s"
+
+      - alert: VendorResponseSlow
+        expr: histogram_quantile(0.95, rate(vendor_api_request_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: vendor-integration
+          vendor: "{{ $labels.vendor }}"
+        annotations:
+          summary: "Slow vendor API response"
+          description: "{{ $labels.vendor }} API 95th percentile response time is {{ $value }}s"
+
+  # Security & Compliance Alerts
+  - name: security
+    rules:
+      - alert: UnauthorizedAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High rate of unauthorized access attempts"
+          description: "{{ $value }} unauthorized requests/second detected"
+
+      - alert: SSLCertExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 7 * 24 * 3600
+        for: 0m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+      - alert: RateLimitHit
+        expr: increase(rate_limit_exceeded_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "Rate limit exceeded"
+          description: "Rate limit exceeded {{ $value }} times in the last 5 minutes"
+
+  # External Dependencies
+  - name: external-dependencies
+    rules:
+      - alert: ExternalAPIDown
+        expr: up{job=~".*-api-health"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: external-api
+        annotations:
+          summary: "External API is down"
+          description: "{{ $labels.job }} is not responding"
+
+      - alert: ExternalAPIHighLatency
+        expr: probe_http_duration_seconds{job=~".*-api-health"} > 5
+        for: 3m
+        labels:
+          severity: warning
+          component: external-api
+        annotations:
+          summary: "External API high latency"
+          description: "{{ $labels.job }} response time is {{ $value }}s"

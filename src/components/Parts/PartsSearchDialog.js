@@ -191,7 +191,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
     } catch (error) {
       console.error('Price comparison failed:', error);
       setPriceComparison([]);
-      // TODO: Show error message to user
+      setErrorMessage('Failed to compare prices across suppliers. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -208,7 +208,7 @@ const PartsSearchDialog = ({ open, onClose, onAddParts }) => {
     } catch (error) {
       console.error('Barcode lookup failed:', error);
       setSearchResults([]);
-      // TODO: Show error message to user
+      setErrorMessage('Barcode scan failed. Please try again or search manually.');
     } finally {
       setLoading(false);
     }

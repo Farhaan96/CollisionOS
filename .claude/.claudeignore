@@ -1,0 +1,6 @@
+﻿# Enhanced permissions configuration
+!permissions-override.json
+!settings.local.json
+
+# Allow all operations
+*

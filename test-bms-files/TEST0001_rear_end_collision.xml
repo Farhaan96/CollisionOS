@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0001</EstimateNumber>
+        <ClaimNumber>CLM5748272821</ClaimNumber>
+        <EstimateDate>2024-05-19</EstimateDate>
+        <AccidentDate>2024-05-12</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Ronnie Sipes</Name>
+            <Company>Nationwide</Company>
+            <Phone>1-220-555-3418 x4857</Phone>
+            <Email>Larry70@gmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Billy</FirstName>
+        <LastName>Jakubowski</LastName>
+        <Phone>(473) 347-3457 x48343</Phone>
+        <Email>Billy.Jakubowski98@hotmail.com</Email>
+        <Address>
+            <Street>74975 Baker Street</Street>
+            <City>Downers Grove</City>
+            <State>NE</State>
+            <Zip>94010</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HDSORYLXLDXQNTJC</VIN>
+        <Year>2023</Year>
+        <Make>Chevrolet</Make>
+        <Model>Equinox</Model>
+        <Color>White</Color>
+        <Trim>SE</Trim>
+        <Mileage>106944</Mileage>
+        <LicensePlate>4ULS337</LicensePlate>
+        <LicenseState>AR</LicenseState>
+        <EngineType>Hybrid</EngineType>
+        <Transmission>Manual</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Nationwide</Company>
+        <PolicyNumber>UH8XMXWMY37Q</PolicyNumber>
+        <ClaimNumber>CLM5748272821</ClaimNumber>
+        <Deductible>1500</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Ross Raynor</Name>
+            <Phone>510.496.2027</Phone>
+            <Email>Ross14@yahoo.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Rear End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Rear Bumper Cover</Description>
+            <PartNumber>52159-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>385.25</UnitPrice>
+            <LaborHours>2.1</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>385.25</PartsAmount>
+            <LaborAmount>115.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Tail Lamp Assembly LH</Description>
+            <PartNumber>81560-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>295.50</UnitPrice>
+            <LaborHours>2.4</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>295.50</PartsAmount>
+            <LaborAmount>132.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Trunk Lid</Description>
+            <PartNumber>64500-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>525.75</UnitPrice>
+            <LaborHours>2.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>525.75</PartsAmount>
+            <LaborAmount>126.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>License Plate Bracket</Description>
+            <PartNumber>76403-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>45.99</UnitPrice>
+            <LaborHours>0.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>45.99</PartsAmount>
+            <LaborAmount>38.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>7.1</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>390.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Replace</Operation>
+            <Description>Remove and Replace - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>99.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Blend</Operation>
+            <Description>Blend - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>5.9</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>383.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>8</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>148.74</UnitPrice>
+            
+            
+            <PartsAmount>148.74</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1252.49</PartsTotal>
+        <LaborTotal>1285.50</LaborTotal>
+        <MaterialsTotal>148.74</MaterialsTotal>
+        <SubletTotal>286.87</SubletTotal>
+        <Subtotal>2973.60</Subtotal>
+        <Tax>260.19</Tax>
+        <GrandTotal>3233.79</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Roberts, Schmeler and Bradtke Auto Body</Name>
+        <Address>43863 Burley Viaduct</Address>
+        <City>Port Wilfridborough</City>
+        <State>CO</State>
+        <Zip>05168</Zip>
+        <Phone>241-559-3446</Phone>
+        <Email>Lura_Ziemann92@hotmail.com</Email>
+        <LicenseNumber>LIC31613743</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0001.jpg</Filename>
+            <DateTaken>2024-05-12T23:19:36.571Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0001.jpg</Filename>
+            <DateTaken>2024-05-12T23:19:36.571Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

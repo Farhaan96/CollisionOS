@@ -42,6 +42,14 @@ const LoanerReservationModel = require('./LoanerReservation');
 const AdvancedPartsManagementModel = require('./AdvancedPartsManagement');
 const PurchaseOrderSystemModel = require('./PurchaseOrderSystem');
 
+// Automated Parts Sourcing Enhancement Models
+const PartsSourcingRequestModel = require('./PartsSourcingRequest');
+const VendorPartQuoteModel = require('./VendorPartQuote');
+const VendorApiConfigModel = require('./VendorApiConfig');
+const VendorApiMetricsModel = require('./VendorApiMetrics');
+const PartsInventoryTrackingModel = require('./PartsInventoryTracking');
+const AutomatedPurchaseOrderModel = require('./AutomatedPurchaseOrder');
+
 const User = UserModel(sequelize);
 const Job = JobModel(sequelize);
 const Shop = ShopModel(sequelize);
@@ -82,6 +90,14 @@ const LoanerFleetManagement = LoanerFleetManagementModel(sequelize);
 const LoanerReservation = LoanerReservationModel(sequelize);
 const AdvancedPartsManagement = AdvancedPartsManagementModel(sequelize);
 const PurchaseOrderSystem = PurchaseOrderSystemModel(sequelize);
+
+// Automated Parts Sourcing Enhancement Models
+const PartsSourcingRequest = PartsSourcingRequestModel(sequelize);
+const VendorPartQuote = VendorPartQuoteModel(sequelize);
+const VendorApiConfig = VendorApiConfigModel(sequelize);
+const VendorApiMetrics = VendorApiMetricsModel(sequelize);
+const PartsInventoryTracking = PartsInventoryTrackingModel(sequelize);
+const AutomatedPurchaseOrder = AutomatedPurchaseOrderModel(sequelize);
 
 // Define associations
 
@@ -156,6 +172,32 @@ Shop.hasMany(AdvancedPartsManagement, {
 Shop.hasMany(PurchaseOrderSystem, {
   foreignKey: 'shopId',
   as: 'purchaseOrders',
+});
+
+// Automated Parts Sourcing Enhancement Associations
+Shop.hasMany(PartsSourcingRequest, {
+  foreignKey: 'shopId',
+  as: 'partsSourcingRequests',
+});
+Shop.hasMany(VendorPartQuote, {
+  foreignKey: 'shopId',
+  as: 'vendorPartQuotes',
+});
+Shop.hasMany(VendorApiConfig, {
+  foreignKey: 'shopId',
+  as: 'vendorApiConfigs',
+});
+Shop.hasMany(VendorApiMetrics, {
+  foreignKey: 'shopId',
+  as: 'vendorApiMetrics',
+});
+Shop.hasMany(PartsInventoryTracking, {
+  foreignKey: 'shopId',
+  as: 'partsInventoryTracking',
+});
+Shop.hasMany(AutomatedPurchaseOrder, {
+  foreignKey: 'shopId',
+  as: 'automatedPurchaseOrders',
 });
 
 User.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
@@ -952,6 +994,93 @@ PurchaseOrderSystem.hasMany(PurchaseOrderSystem, {
   as: 'childOrders',
 });
 
+// =====================================================================
+// AUTOMATED PARTS SOURCING ENHANCEMENT ASSOCIATIONS
+// =====================================================================
+
+// Parts Sourcing Request Associations
+PartsSourcingRequest.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+PartsSourcingRequest.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+PartsSourcingRequest.belongsTo(EstimateLineItem, { foreignKey: 'estimateLineItemId', as: 'estimateLineItem' });
+PartsSourcingRequest.belongsTo(ClaimManagement, { foreignKey: 'claimManagementId', as: 'claimManagement' });
+PartsSourcingRequest.belongsTo(Vendor, { foreignKey: 'selectedVendorId', as: 'selectedVendor' });
+PartsSourcingRequest.belongsTo(VendorPartQuote, { foreignKey: 'selectedQuoteId', as: 'selectedQuote' });
+PartsSourcingRequest.belongsTo(User, { foreignKey: 'requestedBy', as: 'requester' });
+PartsSourcingRequest.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+PartsSourcingRequest.belongsTo(User, { foreignKey: 'reviewedBy', as: 'reviewer' });
+PartsSourcingRequest.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+PartsSourcingRequest.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+
+// Vendor Part Quote Associations
+VendorPartQuote.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+VendorPartQuote.belongsTo(PartsSourcingRequest, { foreignKey: 'sourcingRequestId', as: 'sourcingRequest' });
+VendorPartQuote.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+VendorPartQuote.belongsTo(User, { foreignKey: 'receivedBy', as: 'receiver' });
+VendorPartQuote.belongsTo(User, { foreignKey: 'analyzedBy', as: 'analyzer' });
+VendorPartQuote.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+
+// Vendor API Config Associations
+VendorApiConfig.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+VendorApiConfig.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+VendorApiConfig.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+VendorApiConfig.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+VendorApiConfig.belongsTo(User, { foreignKey: 'lastTestedBy', as: 'lastTester' });
+
+// Vendor API Metrics Associations
+VendorApiMetrics.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+VendorApiMetrics.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+VendorApiMetrics.belongsTo(VendorApiConfig, { foreignKey: 'apiConfigId', as: 'apiConfig' });
+VendorApiMetrics.belongsTo(PartsSourcingRequest, { foreignKey: 'sourcingRequestId', as: 'sourcingRequest' });
+
+// Parts Inventory Tracking Associations
+PartsInventoryTracking.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+PartsInventoryTracking.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+PartsInventoryTracking.belongsTo(Part, { foreignKey: 'partId', as: 'part' });
+PartsInventoryTracking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+PartsInventoryTracking.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+
+// Automated Purchase Order Associations
+AutomatedPurchaseOrder.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+AutomatedPurchaseOrder.belongsTo(PartsSourcingRequest, { foreignKey: 'sourcingRequestId', as: 'sourcingRequest' });
+AutomatedPurchaseOrder.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+AutomatedPurchaseOrder.belongsTo(VendorPartQuote, { foreignKey: 'selectedQuoteId', as: 'selectedQuote' });
+AutomatedPurchaseOrder.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+AutomatedPurchaseOrder.belongsTo(ClaimManagement, { foreignKey: 'claimManagementId', as: 'claimManagement' });
+AutomatedPurchaseOrder.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+AutomatedPurchaseOrder.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+AutomatedPurchaseOrder.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+AutomatedPurchaseOrder.belongsTo(User, { foreignKey: 'sentBy', as: 'sender' });
+AutomatedPurchaseOrder.belongsTo(User, { foreignKey: 'cancelledBy', as: 'canceller' });
+
+// Reverse Associations for new models
+RepairOrderManagement.hasMany(PartsSourcingRequest, { foreignKey: 'repairOrderId', as: 'partsSourcingRequests' });
+EstimateLineItem.hasMany(PartsSourcingRequest, { foreignKey: 'estimateLineItemId', as: 'partsSourcingRequests' });
+ClaimManagement.hasMany(PartsSourcingRequest, { foreignKey: 'claimManagementId', as: 'partsSourcingRequests' });
+
+PartsSourcingRequest.hasMany(VendorPartQuote, { foreignKey: 'sourcingRequestId', as: 'vendorQuotes' });
+PartsSourcingRequest.hasMany(AutomatedPurchaseOrder, { foreignKey: 'sourcingRequestId', as: 'automatedPurchaseOrders' });
+
+Vendor.hasMany(PartsSourcingRequest, { foreignKey: 'selectedVendorId', as: 'selectedPartsSourcingRequests' });
+Vendor.hasMany(VendorPartQuote, { foreignKey: 'vendorId', as: 'partQuotes' });
+Vendor.hasMany(VendorApiConfig, { foreignKey: 'vendorId', as: 'apiConfigs' });
+Vendor.hasMany(VendorApiMetrics, { foreignKey: 'vendorId', as: 'apiMetrics' });
+Vendor.hasMany(PartsInventoryTracking, { foreignKey: 'vendorId', as: 'inventoryTracking' });
+Vendor.hasMany(AutomatedPurchaseOrder, { foreignKey: 'vendorId', as: 'automatedPurchaseOrders' });
+
+VendorApiConfig.hasMany(VendorApiMetrics, { foreignKey: 'apiConfigId', as: 'metrics' });
+
+User.hasMany(PartsSourcingRequest, { foreignKey: 'requestedBy', as: 'requestedPartsSourcing' });
+User.hasMany(PartsSourcingRequest, { foreignKey: 'approvedBy', as: 'approvedPartsSourcing' });
+User.hasMany(PartsSourcingRequest, { foreignKey: 'reviewedBy', as: 'reviewedPartsSourcing' });
+User.hasMany(VendorPartQuote, { foreignKey: 'receivedBy', as: 'receivedVendorQuotes' });
+User.hasMany(VendorPartQuote, { foreignKey: 'analyzedBy', as: 'analyzedVendorQuotes' });
+User.hasMany(VendorApiConfig, { foreignKey: 'createdBy', as: 'createdVendorApiConfigs' });
+User.hasMany(VendorApiConfig, { foreignKey: 'lastTestedBy', as: 'testedVendorApiConfigs' });
+User.hasMany(PartsInventoryTracking, { foreignKey: 'createdBy', as: 'createdInventoryTracking' });
+User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'createdBy', as: 'createdAutomatedPOs' });
+User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'approvedBy', as: 'approvedAutomatedPOs' });
+User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'sentBy', as: 'sentAutomatedPOs' });
+
 module.exports = {
   sequelize,
   User,
@@ -990,4 +1119,11 @@ module.exports = {
   LoanerReservation,
   AdvancedPartsManagement,
   PurchaseOrderSystem,
+  // Automated Parts Sourcing Enhancement Models
+  PartsSourcingRequest,
+  VendorPartQuote,
+  VendorApiConfig,
+  VendorApiMetrics,
+  PartsInventoryTracking,
+  AutomatedPurchaseOrder,
 };

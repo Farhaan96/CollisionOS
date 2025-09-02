@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0004</EstimateNumber>
+        <ClaimNumber>CLM9946044840</ClaimNumber>
+        <EstimateDate>2024-06-10</EstimateDate>
+        <AccidentDate>2024-06-09</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Margarita Swaniawski</Name>
+            <Company>Liberty Mutual</Company>
+            <Phone>(219) 835-3680 x2538</Phone>
+            <Email>Marcos.OConner@yahoo.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Rocky</FirstName>
+        <LastName>O'Conner</LastName>
+        <Phone>1-259-885-4947 x26864</Phone>
+        <Email>Rocky.OConner38@hotmail.com</Email>
+        <Address>
+            <Street>8931 Cullen Motorway</Street>
+            <City>East Adah</City>
+            <State>NM</State>
+            <Zip>59323</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1G1OXEMW7MBU38PAN</VIN>
+        <Year>2024</Year>
+        <Make>Honda</Make>
+        <Model>Odyssey</Model>
+        <Color>Blue</Color>
+        <Trim>Base</Trim>
+        <Mileage>78743</Mileage>
+        <LicensePlate>4QYH404</LicensePlate>
+        <LicenseState>MA</LicenseState>
+        <EngineType>Hybrid</EngineType>
+        <Transmission>Manual</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Liberty Mutual</Company>
+        <PolicyNumber>GZDLVZOSD073</PolicyNumber>
+        <ClaimNumber>CLM9946044840</ClaimNumber>
+        <Deductible>1000</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Ronnie Ankunding</Name>
+            <Phone>1-216-584-6096 x41623</Phone>
+            <Email>Ronnie.Boyer@gmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Side Impact</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Door Shell LH</Description>
+            <PartNumber>67002-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>445.00</UnitPrice>
+            <LaborHours>1.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>445.00</PartsAmount>
+            <LaborAmount>82.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Door Mirror LH</Description>
+            <PartNumber>87940-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>185.25</UnitPrice>
+            <LaborHours>0.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>185.25</PartsAmount>
+            <LaborAmount>33.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Quarter Panel</Description>
+            <PartNumber>61301-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>725.50</UnitPrice>
+            <LaborHours>2.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>725.50</PartsAmount>
+            <LaborAmount>154.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Side Molding</Description>
+            <PartNumber>75951-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>125.99</UnitPrice>
+            <LaborHours>2.0</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>125.99</PartsAmount>
+            <LaborAmount>110.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>368.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Install</Operation>
+            <Description>Remove and Install - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.9</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>379.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>138.60</UnitPrice>
+            
+            
+            <PartsAmount>138.60</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1481.74</PartsTotal>
+        <LaborTotal>1127.50</LaborTotal>
+        <MaterialsTotal>138.60</MaterialsTotal>
+        <SubletTotal>145.22</SubletTotal>
+        <Subtotal>2893.06</Subtotal>
+        <Tax>253.14</Tax>
+        <GrandTotal>3146.20</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Schaefer - Torphy Auto Body</Name>
+        <Address>61771 The Mews</Address>
+        <City>Salina</City>
+        <State>NC</State>
+        <Zip>80020</Zip>
+        <Phone>1-597-617-3553 x36075</Phone>
+        <Email>Trace.Hilll53@gmail.com</Email>
+        <LicenseNumber>LIC27516841</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0004.jpg</Filename>
+            <DateTaken>2024-06-09T01:39:02.661Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0004.jpg</Filename>
+            <DateTaken>2024-06-09T01:39:02.661Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

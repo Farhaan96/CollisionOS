@@ -40,6 +40,7 @@ router.get('/', authenticateToken(), async (req, res) => {
     }
 
     // Build query - be more flexible with optional columns
+    // Only select columns that exist in the database to avoid schema errors
     let query = supabase
       .from('customers')
       .select(
@@ -50,12 +51,10 @@ router.get('/', authenticateToken(), async (req, res) => {
         last_name,
         email,
         phone,
+        mobile,
         company_name,
         customer_type,
         customer_status,
-        primary_insurance_company,
-        policy_number,
-        deductible,
         is_active,
         created_at,
         updated_at

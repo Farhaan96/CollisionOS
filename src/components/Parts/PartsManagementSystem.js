@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import {
   Box,
   Card,
   CardContent,
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -19,77 +14,41 @@ import {
   Paper,
   Chip,
   IconButton,
-  Menu,
-  MenuItem,
   Tabs,
   Tab,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
   Alert,
-  CircularProgress,
-  Tooltip,
   Badge,
   LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
   Avatar,
   Switch,
-  Checkbox,
   useTheme,
   alpha,
 } from '@mui/material';
 
 // Import new components
 import PartsSearchDialog from './PartsSearchDialog';
-import PartsInventoryManager from './PartsInventoryManager';
 import PartsOrderingSystem from './PartsOrderingSystem';
 import VendorManagement from './VendorManagement';
 import {
   Add,
   Edit,
-  Delete,
   Search,
-  FilterList,
   LocalShipping,
   Inventory,
   ShoppingCart,
   QrCode,
-  Barcode,
   Warning,
   CheckCircle,
   Error,
-  Schedule,
-  Compare,
-  AttachMoney,
-  Refresh,
-  Download,
-  Upload,
   Print,
   Build,
   DirectionsCar,
   Settings,
-  Store,
-  ExpandMore,
-  Visibility,
-  Phone,
-  Email,
-  LocationOn,
-  Star,
-  TrendingUp,
-  TrendingDown,
-  PhotoCamera,
   Assignment,
-  History,
+  Visibility,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+// Removed unused framer-motion imports
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { partsService } from '../../services/partsService';
 
@@ -164,23 +123,29 @@ const PART_STATUSES = {
 
 const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   const theme = useTheme();
-  const barcodeRef = useRef();
+  const _barcodeRef = useRef();
+
+  // Use static sample data references (moved to be constants)
+  // eslint-disable-next-line no-use-before-define
+  const samplePartsRef = sampleParts;
+  // eslint-disable-next-line no-use-before-define
+  const sampleInventoryRef = sampleInventory;
 
   const [activeTab, setActiveTab] = useState(0);
   const [parts, setParts] = useState([]);
   const [inventory, setInventory] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [selectedPart, setSelectedPart] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [_orders, _setOrders] = useState([]);
+  const [_selectedPart, _setSelectedPart] = useState(null);
+  const [_dialogOpen, _setDialogOpen] = useState(false);
   const [searchDialog, setSearchDialog] = useState(false);
-  const [priceComparisonDialog, setPriceComparisonDialog] = useState(false);
-  const [inventoryDialog, setInventoryDialog] = useState(false);
-  const [orderDialog, setOrderDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
-  const [scannerActive, setScannerActive] = useState(false);
+  const [_priceComparisonDialog, _setPriceComparisonDialog] = useState(false);
+  const [_inventoryDialog, _setInventoryDialog] = useState(false);
+  const [_orderDialog, _setOrderDialog] = useState(false);
+  const [_loading, setLoading] = useState(false);
+  const [_searchTerm, _setSearchTerm] = useState('');
+  const [_selectedSupplier, _setSelectedSupplier] = useState('');
+  const [_filterCategory, _setFilterCategory] = useState('');
+  const [_scannerActive, setScannerActive] = useState(false);
   const [realtimeUpdates, setRealtimeUpdates] = useState(false);
 
   // Sample parts data
@@ -251,34 +216,38 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
     },
   ];
 
-  useEffect(() => {
-    setParts(sampleParts);
-    setInventory(sampleInventory);
-    loadPartsData();
-  }, []);
-
   // Load parts data from service
-  const loadPartsData = async () => {
+  const loadPartsData = useCallback(async () => {
     setLoading(true);
     try {
-      const [partsData, inventoryData, ordersData] = await Promise.all([
+      const [partsData, inventoryData, _ordersData] = await Promise.all([
         partsService.getAllParts({ jobId }),
         partsService.getInventoryStatus(),
         partsService.getPurchaseOrders(),
       ]);
 
-      setParts(partsData || sampleParts);
-      setInventory(inventoryData || sampleInventory);
-      setOrders(ordersData || []);
+      setParts(partsData || samplePartsRef);
+      setInventory(inventoryData || sampleInventoryRef);
+      _setOrders(_ordersData || []);
     } catch (error) {
-      console.error('Failed to load parts data:', error);
+      // Log error for debugging (replace with proper logging service)
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load parts data:', error);
+      }
       // Fallback to sample data
-      setParts(sampleParts);
-      setInventory(sampleInventory);
+      setParts(samplePartsRef);
+      setInventory(sampleInventoryRef);
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId, samplePartsRef, sampleInventoryRef]);
+
+  useEffect(() => {
+    setParts(samplePartsRef);
+    setInventory(sampleInventoryRef);
+    loadPartsData();
+  }, [loadPartsData, samplePartsRef, sampleInventoryRef]);
 
   // Handle parts updates
   const handlePartsChange = () => {
@@ -303,7 +272,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   };
 
   // Parts search and price comparison
-  const searchParts = async searchQuery => {
+  const searchParts = async _searchQuery => {
     setLoading(true);
     try {
       // Simulate API call to search parts across suppliers
@@ -342,12 +311,12 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   };
 
   // Barcode scanner simulation
-  const handleBarcodeScan = barcode => {
+  const _handleBarcodeScan = barcode => {
     // Simulate barcode lookup
     const foundPart = inventory.find(item => item.partNumber === barcode);
     if (foundPart) {
-      setSelectedPart(foundPart);
-      setInventoryDialog(true);
+      _setSelectedPart(foundPart);
+      _setInventoryDialog(true);
     } else {
       // Search external databases
       searchParts(barcode);
@@ -355,7 +324,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   };
 
   // Parts ordering workflow
-  const createPurchaseOrder = selectedParts => {
+  const _createPurchaseOrder = selectedParts => {
     const groupedBySupplier = selectedParts.reduce((acc, part) => {
       if (!acc[part.supplier]) {
         acc[part.supplier] = [];
@@ -381,13 +350,15 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
     }));
   };
 
-  // Parts board component showing parts pipeline
-  const PartsBoard = () => {
-    const partsByStatus = Object.keys(PART_STATUSES).reduce((acc, status) => {
+  // Parts board component showing parts pipeline (optimized with memoization)
+  const partsByStatus = useMemo(() => 
+    Object.keys(PART_STATUSES).reduce((acc, status) => {
       acc[status] = parts.filter(part => part.status === status);
       return acc;
-    }, {});
+    }, {}), [parts]
+  );
 
+  const PartsBoard = () => {
     return (
       <Box sx={{ display: 'flex', overflowX: 'auto', gap: 2, pb: 2 }}>
         {Object.entries(PART_STATUSES).map(([statusKey, status]) => {
@@ -422,8 +393,8 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
                         '&:hover': { boxShadow: theme.shadows[2] },
                       }}
                       onClick={() => {
-                        setSelectedPart(part);
-                        setDialogOpen(true);
+                        _setSelectedPart(part);
+                        _setDialogOpen(true);
                       }}
                     >
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
@@ -498,12 +469,13 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
     );
   };
 
-  // Inventory management component
-  const InventoryManagement = () => {
-    const lowStockItems = inventory.filter(
-      item => item.currentStock <= item.minStock
-    );
+  // Inventory management component (optimized with memoization)
+  const lowStockItems = useMemo(() => 
+    inventory.filter(item => item.currentStock <= item.minStock), 
+    [inventory]
+  );
 
+  const InventoryManagement = () => {
     return (
       <Box>
         {/* Low stock alert */}
@@ -627,7 +599,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   };
 
   // Purchase orders component
-  const PurchaseOrders = () => {
+  const _PurchaseOrders = () => {
     const sampleOrders = [
       {
         id: '1',
@@ -655,7 +627,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
           <Button
             startIcon={<Add />}
             variant='contained'
-            onClick={() => setOrderDialog(true)}
+            onClick={() => _setOrderDialog(true)}
           >
             Create PO
           </Button>
@@ -754,7 +726,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
           <Button
             startIcon={<Add />}
             variant='contained'
-            onClick={() => setDialogOpen(true)}
+            onClick={() => _setDialogOpen(true)}
           >
             Add Part
           </Button>
@@ -777,9 +749,7 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
       {/* Tab content */}
       <Box>
         {activeTab === 0 && <PartsBoard />}
-        {activeTab === 1 && (
-          <PartsInventoryManager onPartsChange={handlePartsChange} />
-        )}
+        {activeTab === 1 && <InventoryManagement />}
         {activeTab === 2 && (
           <PartsOrderingSystem onOrdersChange={handlePartsChange} />
         )}
@@ -864,4 +834,4 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
   );
 };
 
-export default PartsManagementSystem;
+export default memo(PartsManagementSystem);

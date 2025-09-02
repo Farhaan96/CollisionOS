@@ -94,7 +94,6 @@ describe('ModernCard Component', () => {
   describe('Click Interactions', () => {
     test('handles click events when onClick is provided', async () => {
       const handleClick = jest.fn();
-      const user = userEvent.setup();
 
       renderWithProviders(
         <ModernCard onClick={handleClick} data-testid='clickable-card'>
@@ -103,7 +102,7 @@ describe('ModernCard Component', () => {
       );
 
       const card = screen.getByTestId('clickable-card');
-      await user.click(card);
+      await userEvent.click(card);
 
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
@@ -111,7 +110,6 @@ describe('ModernCard Component', () => {
     test('does not interfere with child element clicks', async () => {
       const handleCardClick = jest.fn();
       const handleButtonClick = jest.fn();
-      const user = userEvent.setup();
 
       renderWithProviders(
         <ModernCard onClick={handleCardClick} data-testid='card'>
@@ -122,7 +120,7 @@ describe('ModernCard Component', () => {
       );
 
       const button = screen.getByTestId('button');
-      await user.click(button);
+      await userEvent.click(button);
 
       expect(handleButtonClick).toHaveBeenCalledTimes(1);
       // Card click might also fire depending on event bubbling
@@ -200,7 +198,6 @@ describe('ModernCard Component', () => {
 
     test('handles keyboard navigation when clickable', async () => {
       const handleClick = jest.fn();
-      const user = userEvent.setup();
 
       renderWithProviders(
         <ModernCard
@@ -220,10 +217,10 @@ describe('ModernCard Component', () => {
       const card = screen.getByTestId('keyboard-card');
       card.focus();
 
-      await user.keyboard('{Enter}');
+      await userEvent.keyboard('{Enter}');
       expect(handleClick).toHaveBeenCalledTimes(1);
 
-      await user.keyboard(' ');
+      await userEvent.keyboard(' ');
       expect(handleClick).toHaveBeenCalledTimes(2);
     });
   });

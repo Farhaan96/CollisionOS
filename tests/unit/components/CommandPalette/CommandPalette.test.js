@@ -93,7 +93,6 @@ describe('CommandPalette', () => {
   });
 
   it('filters commands based on search query', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -106,7 +105,7 @@ describe('CommandPalette', () => {
     );
 
     // Search for dashboard
-    await user.type(searchInput, 'dashboard');
+    await userEvent.type(searchInput, 'dashboard');
 
     await waitFor(() => {
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -115,7 +114,6 @@ describe('CommandPalette', () => {
   });
 
   it('highlights search terms in results', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -126,7 +124,7 @@ describe('CommandPalette', () => {
     const searchInput = screen.getByPlaceholderText(
       'Type a command or search...'
     );
-    await user.type(searchInput, 'dash');
+    await userEvent.type(searchInput, 'dash');
 
     await waitFor(() => {
       const dashboardItem = screen.getByText('Dashboard');
@@ -137,7 +135,6 @@ describe('CommandPalette', () => {
   });
 
   it('navigates through commands with arrow keys', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -151,7 +148,7 @@ describe('CommandPalette', () => {
     searchInput.focus();
 
     // Press arrow down to select first item
-    await user.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{ArrowDown}');
 
     // First command item should be selected (have selected styling)
     await waitFor(() => {
@@ -163,7 +160,6 @@ describe('CommandPalette', () => {
   });
 
   it('executes command on Enter key', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -177,8 +173,8 @@ describe('CommandPalette', () => {
     searchInput.focus();
 
     // Select first command and press Enter
-    await user.keyboard('{ArrowDown}');
-    await user.keyboard('{Enter}');
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{Enter}');
 
     // Should close the palette after execution
     await waitFor(() => {
@@ -187,7 +183,6 @@ describe('CommandPalette', () => {
   });
 
   it('closes on Escape key', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -200,7 +195,7 @@ describe('CommandPalette', () => {
     );
     searchInput.focus();
 
-    await user.keyboard('{Escape}');
+    await userEvent.keyboard('{Escape}');
 
     expect(mockOnClose).toHaveBeenCalled();
   });
@@ -219,7 +214,6 @@ describe('CommandPalette', () => {
   });
 
   it('filters by category when category chip is clicked', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -229,7 +223,7 @@ describe('CommandPalette', () => {
 
     // Click on Navigation category
     const navigationChip = screen.getByText(/Navigation/);
-    await user.click(navigationChip);
+    await userEvent.click(navigationChip);
 
     await waitFor(() => {
       // Should show Navigation category chip as selected
@@ -252,7 +246,6 @@ describe('CommandPalette', () => {
   });
 
   it('shows no results message for empty search', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -263,7 +256,7 @@ describe('CommandPalette', () => {
     const searchInput = screen.getByPlaceholderText(
       'Type a command or search...'
     );
-    await user.type(searchInput, 'nonexistentcommand');
+    await userEvent.type(searchInput, 'nonexistentcommand');
 
     await waitFor(() => {
       expect(screen.getByText('No commands found')).toBeInTheDocument();
@@ -274,7 +267,6 @@ describe('CommandPalette', () => {
   });
 
   it('clears search when clear button is clicked', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -285,11 +277,11 @@ describe('CommandPalette', () => {
     const searchInput = screen.getByPlaceholderText(
       'Type a command or search...'
     );
-    await user.type(searchInput, 'test');
+    await userEvent.type(searchInput, 'test');
 
     // Find and click clear button
     const clearButton = screen.getByRole('button', { name: /clear/i });
-    await user.click(clearButton);
+    await userEvent.click(clearButton);
 
     expect(searchInput.value).toBe('');
   });
@@ -318,7 +310,6 @@ describe('CommandPalette', () => {
   });
 
   it('handles command execution errors gracefully', async () => {
-    const user = userEvent.setup();
 
     // Mock console.error to avoid error output in tests
     const consoleSpy = jest
@@ -337,8 +328,8 @@ describe('CommandPalette', () => {
     searchInput.focus();
 
     // Try to execute a command (first one)
-    await user.keyboard('{ArrowDown}');
-    await user.keyboard('{Enter}');
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{Enter}');
 
     // Should not crash the component
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -347,7 +338,6 @@ describe('CommandPalette', () => {
   });
 
   it('supports fuzzy search functionality', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -360,7 +350,7 @@ describe('CommandPalette', () => {
     );
 
     // Type partial/fuzzy match for "customers"
-    await user.type(searchInput, 'cust');
+    await userEvent.type(searchInput, 'cust');
 
     await waitFor(() => {
       expect(screen.getByText('Customers')).toBeInTheDocument();
@@ -368,7 +358,6 @@ describe('CommandPalette', () => {
   });
 
   it('closes when backdrop is clicked', async () => {
-    const user = userEvent.setup();
 
     render(
       <TestWrapper>
@@ -379,7 +368,7 @@ describe('CommandPalette', () => {
     // Click on backdrop (outside the dialog content)
     const backdrop = document.querySelector('.MuiBackdrop-root');
     if (backdrop) {
-      await user.click(backdrop);
+      await userEvent.click(backdrop);
       expect(mockOnClose).toHaveBeenCalled();
     }
   });

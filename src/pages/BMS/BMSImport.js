@@ -61,7 +61,9 @@ const BMSImport = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await axios.post('/import/bms', formData, {
+      // Construct the full API URL
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+      const response = await axios.post(`${API_BASE}/import/bms`, formData, {
         headers,
         onUploadProgress: progressEvent => {
           const progress = Math.round(
@@ -191,9 +193,24 @@ const BMSImport = () => {
           {/* Success Result */}
           {uploadResult && (
             <Alert severity='success' sx={{ mb: 2 }} icon={<CheckCircle />}>
-              BMS file processed successfully!
-              {uploadResult.jobsCreated &&
-                ` Created ${uploadResult.jobsCreated} job(s).`}
+              <Typography variant="body2">
+                <strong>BMS file processed successfully!</strong>
+              </Typography>
+              {uploadResult.data?.createdJob && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Created Repair Order: <strong>{uploadResult.data.createdJob.jobNumber || uploadResult.data.createdJob.id}</strong>
+                </Typography>
+              )}
+              {uploadResult.data?.createdCustomer && (
+                <Typography variant="body2">
+                  Customer: {uploadResult.data.createdCustomer.name || `${uploadResult.data.createdCustomer.firstName} ${uploadResult.data.createdCustomer.lastName}`}
+                </Typography>
+              )}
+              {uploadResult.data?.createdVehicle && (
+                <Typography variant="body2">
+                  Vehicle: {uploadResult.data.createdVehicle.year} {uploadResult.data.createdVehicle.make} {uploadResult.data.createdVehicle.model}
+                </Typography>
+              )}
             </Alert>
           )}
 

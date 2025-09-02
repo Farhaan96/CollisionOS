@@ -1,5 +1,6 @@
 const { XMLParser } = require('fast-xml-parser');
 const Decimal = require('decimal.js');
+const { AutomatedPartsSourcingService } = require('../automatedPartsSourcing');
 
 class EnhancedBMSParser {
   constructor() {
@@ -25,20 +26,44 @@ class EnhancedBMSParser {
 
       // Handle different root elements
       let root = parsed;
+      let estimateType = 'unknown';
+      
       if (parsed.VehicleDamageEstimateAddRq) {
         root = parsed.VehicleDamageEstimateAddRq;
+        estimateType = 'mitchell_bms';
+        console.log('Detected Mitchell BMS format (VehicleDamageEstimateAddRq)');
       } else if (parsed.BMS_ESTIMATE) {
         root = parsed.BMS_ESTIMATE;
+        estimateType = 'generic_bms';
+        console.log('Detected generic BMS format');
       } else if (parsed.estimate) {
         root = parsed.estimate;
+        estimateType = 'simple_estimate';
+        console.log('Detected simple estimate format');
       } else if (parsed.estimateData) {
         root = parsed.estimateData;
+        estimateType = 'estimate_data';
+        console.log('Detected estimate data format');
       } else if (parsed.estimateInfo) {
         root = parsed.estimateInfo;
+        estimateType = 'estimate_info';
+        console.log('Detected estimate info format');
       }
 
       if (!root) {
+        console.error('No valid estimate root found. Available keys:', Object.keys(parsed));
         throw new Error('No valid estimate root found in BMS file');
+      }
+
+      // Log Mitchell-specific info
+      if (estimateType === 'mitchell_bms') {
+        if (root.DocumentInfo?.VendorCode) {
+          console.log('Vendor Code:', root.DocumentInfo.VendorCode);
+        }
+        if (root.ApplicationInfo) {
+          const appInfo = Array.isArray(root.ApplicationInfo) ? root.ApplicationInfo[0] : root.ApplicationInfo;
+          console.log('Estimating System:', appInfo?.ApplicationName, appInfo?.ApplicationVer);
+        }
       }
 
       // Extract all data
@@ -49,7 +74,7 @@ class EnhancedBMSParser {
         parts: this.extractPartsInfo(root),
         labor: this.extractLaborInfo(root),
         financial: this.extractFinancialInfo(root),
-        metadata: this.extractMetadata(root),
+        metadata: this.extractMetadata(root, estimateType),
       };
 
       console.log('BMS parsing completed successfully');
@@ -64,6 +89,12 @@ class EnhancedBMSParser {
 
   extractCustomerInfo(root) {
     const customer = {};
+    const isMitchell = this.isMitchellFormat(root);
+    
+    // Log format detection for debugging
+    if (isMitchell) {
+      console.log('Mitchell BMS format detected - prioritizing Owner section for customer data');
+    }
 
     // Handle simple test format: <estimate><customer>...</customer></estimate>
     if (root.customer) {
@@ -107,14 +138,51 @@ class EnhancedBMSParser {
       customer.insurance = this.getTextValue(claimInfo.INSURANCE_COMPANY);
     }
 
-    // Handle BMS format with PolicyHolder
-    if (root.AdminInfo && root.AdminInfo.PolicyHolder) {
+    // Handle BMS format with Owner (Primary extraction - Mitchell stores customer in Owner)
+    if (root.AdminInfo && root.AdminInfo.Owner) {
+      const owner = root.AdminInfo.Owner.Party;
+      if (owner.PersonInfo && owner.PersonInfo.PersonName) {
+        const personName = owner.PersonInfo.PersonName;
+        customer.firstName = this.getTextValue(personName.FirstName);
+        customer.lastName = this.getTextValue(personName.LastName);
+        customer.name = `${customer.firstName} ${customer.lastName}`.trim();
+      }
+
+      if (owner.ContactInfo && owner.ContactInfo.Communications) {
+        const communications = Array.isArray(
+          owner.ContactInfo.Communications
+        )
+          ? owner.ContactInfo.Communications
+          : [owner.ContactInfo.Communications];
+
+        communications.forEach(comm => {
+          // Mitchell uses CP for customer phone, HP for home phone, WP for work phone
+          if ((comm.CommQualifier === 'CP' || comm.CommQualifier === 'HP' || comm.CommQualifier === 'WP') && comm.CommPhone) {
+            customer.phone = this.formatPhoneNumber(comm.CommPhone);
+          } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
+            customer.email = this.getTextValue(comm.CommEmail);
+          }
+        });
+      }
+
+      // Handle address from PersonInfo Communications
+      if (owner.PersonInfo && owner.PersonInfo.Communications && owner.PersonInfo.Communications.Address) {
+        const address = owner.PersonInfo.Communications.Address;
+        customer.address = this.getTextValue(address.Address1);
+        customer.city = this.getTextValue(address.City);
+        customer.state = this.getTextValue(address.StateProvince);
+        customer.zip = this.getTextValue(address.PostalCode);
+      }
+    }
+
+    // Handle BMS format with PolicyHolder (fallback when Owner doesn't contain customer info)
+    if (!customer.name && root.AdminInfo && root.AdminInfo.PolicyHolder) {
       const policyHolder = root.AdminInfo.PolicyHolder.Party;
       if (policyHolder.PersonInfo && policyHolder.PersonInfo.PersonName) {
         const personName = policyHolder.PersonInfo.PersonName;
-        const firstName = this.getTextValue(personName.FirstName);
-        const lastName = this.getTextValue(personName.LastName);
-        customer.name = `${firstName} ${lastName}`.trim();
+        customer.firstName = this.getTextValue(personName.FirstName);
+        customer.lastName = this.getTextValue(personName.LastName);
+        customer.name = `${customer.firstName} ${customer.lastName}`.trim();
       }
 
       if (policyHolder.ContactInfo && policyHolder.ContactInfo.Communications) {
@@ -125,8 +193,9 @@ class EnhancedBMSParser {
           : [policyHolder.ContactInfo.Communications];
 
         communications.forEach(comm => {
-          if (comm.CommQualifier === 'HP' && comm.CommPhone) {
-            customer.phone = this.getTextValue(comm.CommPhone);
+          // Support multiple phone qualifiers for PolicyHolder as well
+          if ((comm.CommQualifier === 'CP' || comm.CommQualifier === 'HP' || comm.CommQualifier === 'WP') && comm.CommPhone) {
+            customer.phone = this.formatPhoneNumber(comm.CommPhone);
           } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
             customer.email = this.getTextValue(comm.CommEmail);
           }
@@ -152,9 +221,18 @@ class EnhancedBMSParser {
       }
     }
 
-    // Handle claim number
+    // Handle claim number (Mitchell often uses N/A)
     if (root.RefClaimNum) {
-      customer.claim = this.getTextValue(root.RefClaimNum);
+      const claimNum = this.getTextValue(root.RefClaimNum);
+      customer.claimNumber = claimNum !== 'N/A' ? claimNum : '';
+    }
+    
+    // Also check ClaimInfo.ClaimNum
+    if (root.ClaimInfo && root.ClaimInfo.ClaimNum) {
+      const claimNum = this.getTextValue(root.ClaimInfo.ClaimNum);
+      if (!customer.claimNumber && claimNum !== 'N/A') {
+        customer.claimNumber = claimNum;
+      }
     }
 
     return customer;
@@ -259,10 +337,37 @@ class EnhancedBMSParser {
       estimate.date = this.getTextValue(root.DocumentInfo.CreateDateTime);
       estimate.status = this.getTextValue(root.DocumentInfo.DocumentStatus);
       estimate.type = this.getTextValue(root.DocumentInfo.DocumentType);
+      estimate.bmsVersion = this.getTextValue(root.DocumentInfo.BMSVer);
+      estimate.vendorCode = this.getTextValue(root.DocumentInfo.VendorCode);
+      
+      // Handle currency info (Mitchell supports CAD and USD)
+      if (root.DocumentInfo.CurrencyInfo) {
+        estimate.currency = this.getTextValue(root.DocumentInfo.CurrencyInfo.CurCode);
+      }
     }
 
     if (root.RqUID) {
       estimate.roNumber = this.getTextValue(root.RqUID);
+    }
+
+    // Handle Mitchell application info
+    if (root.ApplicationInfo) {
+      const appInfo = Array.isArray(root.ApplicationInfo) ? root.ApplicationInfo : [root.ApplicationInfo];
+      appInfo.forEach(app => {
+        if (app.ApplicationType === 'Estimating') {
+          estimate.estimatingSystem = this.getTextValue(app.ApplicationName);
+          estimate.systemVersion = this.getTextValue(app.ApplicationVer);
+          estimate.databaseVersion = this.getTextValue(app.DatabaseVer);
+        }
+      });
+    }
+
+    // Handle repair facility info
+    if (root.AdminInfo && root.AdminInfo.RepairFacility) {
+      const facility = root.AdminInfo.RepairFacility.Party;
+      if (facility.OrgInfo) {
+        estimate.repairFacilityName = this.getTextValue(facility.OrgInfo.CompanyName);
+      }
     }
 
     return estimate;
@@ -459,18 +564,43 @@ class EnhancedBMSParser {
     return financial;
   }
 
-  extractMetadata(root) {
+  extractMetadata(root, estimateType = 'unknown') {
     const metadata = {};
 
-    metadata.parserVersion = '3.2-patched';
+    metadata.parserVersion = '3.3-mitchell-enhanced';
     metadata.parseDate = new Date().toISOString();
     metadata.sourceFormat = 'BMS XML';
+    metadata.estimateType = estimateType;
     metadata.unknownTags = Array.from(this.unknownTags);
+
+    // Add Mitchell-specific metadata
+    if (estimateType === 'mitchell_bms') {
+      metadata.isMitchell = true;
+      if (root.DocumentInfo) {
+        metadata.bmsVersion = this.getTextValue(root.DocumentInfo.BMSVer);
+        metadata.vendorCode = this.getTextValue(root.DocumentInfo.VendorCode);
+        metadata.documentStatus = this.getTextValue(root.DocumentInfo.DocumentStatus);
+      }
+      if (root.ApplicationInfo) {
+        const appInfo = Array.isArray(root.ApplicationInfo) ? root.ApplicationInfo[0] : root.ApplicationInfo;
+        if (appInfo.ApplicationType === 'Estimating') {
+          metadata.estimatingSystem = this.getTextValue(appInfo.ApplicationName);
+          metadata.systemVersion = this.getTextValue(appInfo.ApplicationVer);
+        }
+      }
+    } else {
+      metadata.isMitchell = false;
+    }
 
     return metadata;
   }
 
   // Helper methods
+  isMitchellFormat(root) {
+    // Detect Mitchell format by checking VendorCode in DocumentInfo
+    return root.DocumentInfo && root.DocumentInfo.VendorCode === 'M';
+  }
+
   getTextValue(value) {
     if (!value) return '';
     if (typeof value === 'string') return value.trim();
@@ -497,6 +627,27 @@ class EnhancedBMSParser {
     if (!value) return false;
     const str = this.getTextValue(value).toLowerCase();
     return str === 'true' || str === 'yes' || str === '1' || str === 'on';
+  }
+
+  formatPhoneNumber(phoneValue) {
+    if (!phoneValue) return '';
+    const phone = this.getTextValue(phoneValue);
+    
+    // Remove common international prefixes and formatting
+    let cleanPhone = phone.replace(/[^\d]/g, '');
+    
+    // Remove leading +1 if present
+    if (cleanPhone.startsWith('1') && cleanPhone.length === 11) {
+      cleanPhone = cleanPhone.substring(1);
+    }
+    
+    // Format as (XXX) XXX-XXXX if 10 digits
+    if (cleanPhone.length === 10) {
+      return `(${cleanPhone.substring(0, 3)}) ${cleanPhone.substring(3, 6)}-${cleanPhone.substring(6)}`;
+    }
+    
+    // Return original if not standard format
+    return phone;
   }
 }
 

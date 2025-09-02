@@ -86,10 +86,9 @@ describe('AuthContext', () => {
   describe('Login Functionality', () => {
     test('logs in user successfully with valid data and token', async () => {
       renderAuthProvider(<TestComponent />);
-      const user = userEvent.setup();
       const mockUser = createMockUser();
 
-      await user.click(screen.getByTestId('login-button'));
+      await userEvent.click(screen.getByTestId('login-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('user')).toHaveTextContent(
@@ -124,9 +123,8 @@ describe('AuthContext', () => {
       };
 
       renderAuthProvider(<TestComponentWithNullUser />);
-      const user = userEvent.setup();
 
-      await user.click(screen.getByTestId('login-null-button'));
+      await userEvent.click(screen.getByTestId('login-null-button'));
 
       const expectedUser = { firstName: 'Admin', role: 'owner' };
 
@@ -157,9 +155,8 @@ describe('AuthContext', () => {
       };
 
       renderAuthProvider(<TestComponentWithNullToken />);
-      const user = userEvent.setup();
 
-      await user.click(screen.getByTestId('login-null-token-button'));
+      await userEvent.click(screen.getByTestId('login-null-token-button'));
 
       await waitFor(() => {
         expect(localStorage.getItem('token')).toBe('dev-token');
@@ -194,9 +191,8 @@ describe('AuthContext', () => {
       };
 
       renderAuthProvider(<TestComponentWithError />);
-      const user = userEvent.setup();
 
-      await user.click(screen.getByTestId('login-error-button'));
+      await userEvent.click(screen.getByTestId('login-error-button'));
 
       // Should not change the state when error occurs
       expect(screen.getByTestId('user')).toHaveTextContent('null');
@@ -211,16 +207,15 @@ describe('AuthContext', () => {
   describe('Logout Functionality', () => {
     test('logs out user successfully', async () => {
       renderAuthProvider(<TestComponent />);
-      const user = userEvent.setup();
 
       // First login
-      await user.click(screen.getByTestId('login-button'));
+      await userEvent.click(screen.getByTestId('login-button'));
       await waitFor(() => {
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
       });
 
       // Then logout
-      await user.click(screen.getByTestId('logout-button'));
+      await userEvent.click(screen.getByTestId('logout-button'));
       await waitFor(() => {
         expect(screen.getByTestId('user')).toHaveTextContent('null');
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent(
@@ -269,16 +264,15 @@ describe('AuthContext', () => {
       };
 
       renderAuthProvider(<TestComponentWithLogoutError />);
-      const user = userEvent.setup();
 
       // First login
-      await user.click(screen.getByTestId('login-button'));
+      await userEvent.click(screen.getByTestId('login-button'));
       await waitFor(() => {
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
       });
 
       // Then logout with error
-      await user.click(screen.getByTestId('logout-error-button'));
+      await userEvent.click(screen.getByTestId('logout-error-button'));
 
       expect(console.error).toHaveBeenCalledWith(
         'AuthContext - Logout error:',
@@ -290,11 +284,10 @@ describe('AuthContext', () => {
   describe('Loading State Management', () => {
     test('manages loading state correctly', async () => {
       renderAuthProvider(<TestComponent />);
-      const user = userEvent.setup();
 
       expect(screen.getByTestId('isLoading')).toHaveTextContent('false');
 
-      await user.click(screen.getByTestId('set-loading-button'));
+      await userEvent.click(screen.getByTestId('set-loading-button'));
 
       expect(screen.getByTestId('isLoading')).toHaveTextContent('true');
     });
@@ -310,9 +303,8 @@ describe('AuthContext', () => {
 
     test('isAuthenticated becomes true when user is set', async () => {
       renderAuthProvider(<TestComponent />);
-      const user = userEvent.setup();
 
-      await user.click(screen.getByTestId('login-button'));
+      await userEvent.click(screen.getByTestId('login-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
@@ -321,16 +313,15 @@ describe('AuthContext', () => {
 
     test('isAuthenticated becomes false when user is null', async () => {
       renderAuthProvider(<TestComponent />);
-      const user = userEvent.setup();
 
       // Login first
-      await user.click(screen.getByTestId('login-button'));
+      await userEvent.click(screen.getByTestId('login-button'));
       await waitFor(() => {
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
       });
 
       // Then logout
-      await user.click(screen.getByTestId('logout-button'));
+      await userEvent.click(screen.getByTestId('logout-button'));
       await waitFor(() => {
         expect(screen.getByTestId('isAuthenticated')).toHaveTextContent(
           'false'

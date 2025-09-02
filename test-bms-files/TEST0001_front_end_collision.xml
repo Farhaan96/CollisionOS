@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0001</EstimateNumber>
+        <ClaimNumber>CLM4582778351</ClaimNumber>
+        <EstimateDate>2024-09-27</EstimateDate>
+        <AccidentDate>2024-09-27</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Maurice Mante</Name>
+            <Company>Liberty Mutual</Company>
+            <Phone>(627) 802-0768</Phone>
+            <Email>Hillard.Mohr@yahoo.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Xander</FirstName>
+        <LastName>Raynor</LastName>
+        <Phone>341-217-2036 x80485</Phone>
+        <Email>Xander_Raynor60@yahoo.com</Email>
+        <Address>
+            <Street>588 Damian Club</Street>
+            <City>Passaic</City>
+            <State>MA</State>
+            <Zip>67796</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HDRM6KFPXJARQQ8J</VIN>
+        <Year>2022</Year>
+        <Make>Ford</Make>
+        <Model>Escape</Model>
+        <Color>White</Color>
+        <Trim>SE</Trim>
+        <Mileage>129918</Mileage>
+        <LicensePlate>8THC968</LicensePlate>
+        <LicenseState>MI</LicenseState>
+        <EngineType>V6</EngineType>
+        <Transmission>CVT</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Liberty Mutual</Company>
+        <PolicyNumber>KLIAAHGIPPQY</PolicyNumber>
+        <ClaimNumber>CLM4582778351</ClaimNumber>
+        <Deductible>250</Deductible>
+        <Coverage>Comprehensive</Coverage>
+        <Adjuster>
+            <Name>Van Goldner</Name>
+            <Phone>616-877-1167</Phone>
+            <Email>Van_Yost@gmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Front End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Front Bumper Cover</Description>
+            <PartNumber>52119-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>425.50</UnitPrice>
+            <LaborHours>1.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>425.50</PartsAmount>
+            <LaborAmount>82.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Headlamp Assembly RH</Description>
+            <PartNumber>81130-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>389.99</UnitPrice>
+            <LaborHours>1.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>389.99</PartsAmount>
+            <LaborAmount>71.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Grille Assembly</Description>
+            <PartNumber>53101-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>245.75</UnitPrice>
+            <LaborHours>2.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>245.75</PartsAmount>
+            <LaborAmount>126.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Hood</Description>
+            <PartNumber>66400-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>675.00</UnitPrice>
+            <LaborHours>0.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>675.00</PartsAmount>
+            <LaborAmount>44.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Install</Operation>
+            <Description>Remove and Install - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>7.4</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>407.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>99.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Replace</Operation>
+            <Description>Remove and Replace - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>5.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>308.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>8</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>224.66</UnitPrice>
+            
+            
+            <PartsAmount>224.66</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1736.24</PartsTotal>
+        <LaborTotal>1138.50</LaborTotal>
+        <MaterialsTotal>224.66</MaterialsTotal>
+        <SubletTotal>435.84</SubletTotal>
+        <Subtotal>3535.24</Subtotal>
+        <Tax>309.33</Tax>
+        <GrandTotal>3844.57</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Little - Turner Auto Body</Name>
+        <Address>1749 Hudson Prairie</Address>
+        <City>Fort Johnathonboro</City>
+        <State>NV</State>
+        <Zip>41589-7709</Zip>
+        <Phone>1-818-332-6505</Phone>
+        <Email>Leonie.DAmore30@hotmail.com</Email>
+        <LicenseNumber>LIC02455785</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0001.jpg</Filename>
+            <DateTaken>2024-09-27T01:43:34.595Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0001.jpg</Filename>
+            <DateTaken>2024-09-27T01:43:34.595Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

@@ -282,11 +282,13 @@ const errors = {
   shopAccessDenied: () => new AuthorizationError('Access denied for this shop'),
 
   // Validation errors
+  validationError: (message = 'Validation failed') => new ValidationError(message),
   missingField: field => new ValidationError(`${field} is required`),
   invalidField: (field, reason) =>
     new ValidationError(`Invalid ${field}: ${reason}`),
 
   // Not found errors
+  notFound: (message = 'Resource not found') => new NotFoundError(message),
   userNotFound: () => new NotFoundError('User not found'),
   customerNotFound: () => new NotFoundError('Customer not found'),
   jobNotFound: () => new NotFoundError('Job not found'),
@@ -301,6 +303,20 @@ const errors = {
     new ValidationError(`Cannot transition job from ${from} to ${to}`),
   insufficientInventory: item =>
     new ConflictError(`Insufficient inventory for ${item}`),
+
+  // Database errors
+  databaseError: (message = 'Database operation failed') =>
+    new APIError(message, 500, 'DATABASE_ERROR'),
+  connectionError: () =>
+    new APIError('Database connection failed', 503, 'DATABASE_CONNECTION_ERROR'),
+  queryError: (message = 'Query execution failed') =>
+    new APIError(message, 500, 'DATABASE_QUERY_ERROR'),
+
+  // Generic system errors
+  systemError: (message = 'Internal system error') =>
+    new APIError(message, 500, 'SYSTEM_ERROR'),
+  serviceUnavailable: (message = 'Service temporarily unavailable') =>
+    new APIError(message, 503, 'SERVICE_UNAVAILABLE'),
 };
 
 module.exports = {

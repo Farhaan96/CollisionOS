@@ -22,6 +22,8 @@ const ProductionBoard = lazy(
   () => import('./pages/Production/ProductionBoard')
 );
 const PartsManagement = lazy(() => import('./pages/Parts/PartsManagement'));
+const AutomatedSourcingDashboard = lazy(() => import('./components/Parts/AutomatedSourcingDashboard'));
+const VendorIntegrationMonitor = lazy(() => import('./components/Parts/VendorIntegrationMonitor'));
 const TechnicianDashboard = lazy(
   () => import('./pages/Technician/TechnicianDashboard')
 );
@@ -165,6 +167,22 @@ const AppRoutes = () => {
           element={
             <Suspense fallback={<LoadingSpinner />}>
               <PartsManagement />
+            </Suspense>
+          }
+        />
+        <Route
+          path='automated-sourcing'
+          element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AutomatedSourcingDashboard />
+            </Suspense>
+          }
+        />
+        <Route
+          path='vendor-integration'
+          element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <VendorIntegrationMonitor />
             </Suspense>
           }
         />

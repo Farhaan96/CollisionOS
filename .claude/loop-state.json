@@ -1,7 +1,19 @@
 ﻿{
+    "failureHistory":  [
+
+                       ],
     "consecutiveFailures":  0,
-    "restarts":  null,
-    "lastHookExecution":  1756743542450,
+    "recentOperations":  [
+
+                         ],
+    "agentOperationCount":  0,
+    "restarts":  [
+
+                 ],
+    "lastWarningTime":  1756764907232,
+    "lastHookExecution":  1756784941565,
     "isPaused":  false,
-    "isLoopDetected":  false
+    "lastAgentOperation":  0,
+    "isLoopDetected":  false,
+    "warningIssued":  true
 }

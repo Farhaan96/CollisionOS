@@ -42,6 +42,8 @@ import {
   ShoppingCart,
   Message,
   Timeline,
+  AutoMode,
+  Insights,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
@@ -52,7 +54,7 @@ const navigationItems = [
   { path: '/search', label: 'Search', icon: <Search /> },
   { path: '/analytics', label: 'Analytics', icon: <Analytics /> },
   {
-    path: '/advanced-production',
+    path: '/production',
     label: 'Production Board',
     icon: <Timeline />,
   },
@@ -65,6 +67,8 @@ const navigationItems = [
   { path: '/bms-import', label: 'BMS Import', icon: <Inventory /> },
   { path: '/customers', label: 'Customers', icon: <People /> },
   { path: '/parts', label: 'Parts', icon: <Handyman /> },
+  { path: '/automated-sourcing', label: 'Auto Sourcing', icon: <AutoMode /> },
+  { path: '/vendor-integration', label: 'Vendor Integration', icon: <Insights /> },
   { path: '/quality-control', label: 'QC', icon: <VerifiedUser /> },
 ];
 

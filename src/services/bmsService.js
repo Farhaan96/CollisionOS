@@ -76,20 +76,33 @@ class BMSService {
    */
   extractDocumentInfo(bmsData) {
     const docInfo = bmsData.DocumentInfo;
+    // Helper function to safely extract text from XML objects
+    const safeText = value => {
+      if (typeof value === 'string') return value;
+      if (typeof value === 'number') return value.toString();
+      if (value && typeof value === 'object') {
+        // Handle XML parser output with #text property
+        if (value['#text'] !== undefined) return value['#text'];
+        // Handle other object cases
+        return JSON.stringify(value);
+      }
+      return 'N/A';
+    };
+
     return {
-      bmsVersion: docInfo.BMSVer,
-      documentType: docInfo.DocumentType,
-      documentId: docInfo.DocumentID,
-      vendorCode: docInfo.VendorCode,
-      documentStatus: docInfo.DocumentStatus,
-      createDateTime: docInfo.CreateDateTime,
-      transmitDateTime: docInfo.TransmitDateTime,
-      claimNumber: bmsData.RefClaimNum,
-      requestUID: bmsData.RqUID,
+      bmsVersion: safeText(docInfo.BMSVer),
+      documentType: safeText(docInfo.DocumentType),
+      documentId: safeText(docInfo.DocumentID),
+      vendorCode: safeText(docInfo.VendorCode),
+      documentStatus: safeText(docInfo.DocumentStatus),
+      createDateTime: safeText(docInfo.CreateDateTime),
+      transmitDateTime: safeText(docInfo.TransmitDateTime),
+      claimNumber: safeText(bmsData.RefClaimNum),
+      requestUID: safeText(bmsData.RqUID),
       currency: {
-        code: docInfo.CurrencyInfo?.CurCode,
-        baseCode: docInfo.CurrencyInfo?.BaseCurCode,
-        rate: docInfo.CurrencyInfo?.CurRate,
+        code: safeText(docInfo.CurrencyInfo?.CurCode),
+        baseCode: safeText(docInfo.CurrencyInfo?.BaseCurCode),
+        rate: safeText(docInfo.CurrencyInfo?.CurRate),
       },
     };
   }
@@ -122,6 +135,19 @@ class BMSService {
   extractPartyInfo(party) {
     if (!party) return null;
 
+    // Helper function to safely extract text from XML objects
+    const safeText = value => {
+      if (typeof value === 'string') return value;
+      if (typeof value === 'number') return value.toString();
+      if (value && typeof value === 'object') {
+        // Handle XML parser output with #text property
+        if (value['#text'] !== undefined) return value['#text'];
+        // Handle other object cases
+        return JSON.stringify(value);
+      }
+      return 'N/A';
+    };
+
     const personInfo = party.PersonInfo;
     const orgInfo = party.OrgInfo;
     const contactInfo = party.ContactInfo;
@@ -129,10 +155,10 @@ class BMSService {
     if (personInfo) {
       return {
         type: 'person',
-        firstName: personInfo.PersonName?.FirstName,
-        lastName: personInfo.PersonName?.LastName,
+        firstName: safeText(personInfo.PersonName?.FirstName),
+        lastName: safeText(personInfo.PersonName?.LastName),
         fullName:
-          `${personInfo.PersonName?.FirstName || ''} ${personInfo.PersonName?.LastName || ''}`.trim(),
+          `${safeText(personInfo.PersonName?.FirstName) || ''} ${safeText(personInfo.PersonName?.LastName) || ''}`.trim(),
         address: this.extractAddress(personInfo.Communications),
         phone: this.extractPhone(contactInfo?.Communications),
         email: this.extractEmail(contactInfo?.Communications),
@@ -140,7 +166,7 @@ class BMSService {
     } else if (orgInfo) {
       return {
         type: 'organization',
-        companyName: orgInfo.CompanyName,
+        companyName: safeText(orgInfo.CompanyName),
         address: this.extractAddress(orgInfo.Communications),
         phone: this.extractPhone(contactInfo?.Communications),
         email: this.extractEmail(contactInfo?.Communications),
@@ -275,28 +301,40 @@ class BMSService {
    */
   extractVehicleInfo(bmsData) {
     const vehicle = bmsData.VehicleInfo;
+    
+    // Helper function to safely extract text from XML objects
+    const safeText = value => {
+      if (typeof value === 'string') return value;
+      if (typeof value === 'number') return value.toString();
+      if (value && typeof value === 'object') {
+        // Handle XML parser output with #text property
+        if (value['#text'] !== undefined) return value['#text'];
+        // Handle other object cases
+        return JSON.stringify(value);
+      }
+      return 'N/A';
+    };
 
     return {
-      vin: vehicle.VINInfo?.VIN?.VINNum,
+      vin: safeText(vehicle.VINInfo?.VIN?.VINNum),
       license: {
-        plateNumber: vehicle.License?.LicensePlateNum,
-        stateProvince: vehicle.License?.LicensePlateStateProvince,
+        plateNumber: safeText(vehicle.License?.LicensePlateNum),
+        stateProvince: safeText(vehicle.License?.LicensePlateStateProvince),
       },
       description: {
-        productionDate: vehicle.VehicleDesc?.ProductionDate,
-        modelYear: vehicle.VehicleDesc?.ModelYear,
-        makeCode: vehicle.VehicleDesc?.MakeCode,
-        makeDesc: vehicle.VehicleDesc?.MakeDesc,
-        modelNum: vehicle.VehicleDesc?.ModelNum,
-        modelName: vehicle.VehicleDesc?.ModelName,
-        subModelDesc: vehicle.VehicleDesc?.SubModelDesc,
-        vehicleType: vehicle.VehicleDesc?.VehicleType,
-        bodyStyle: vehicle.Body?.BodyStyle,
-        engineDesc: vehicle.Powertrain?.EngineDesc,
-        engineCode: vehicle.Powertrain?.EngineCode,
-        transmissionDesc:
-          vehicle.Powertrain?.TransmissionInfo?.TransmissionDesc,
-        fuelType: vehicle.Powertrain?.FuelType,
+        productionDate: safeText(vehicle.VehicleDesc?.ProductionDate),
+        modelYear: safeText(vehicle.VehicleDesc?.ModelYear),
+        makeCode: safeText(vehicle.VehicleDesc?.MakeCode),
+        makeDesc: safeText(vehicle.VehicleDesc?.MakeDesc),
+        modelNum: safeText(vehicle.VehicleDesc?.ModelNum),
+        modelName: safeText(vehicle.VehicleDesc?.ModelName),
+        subModelDesc: safeText(vehicle.VehicleDesc?.SubModelDesc),
+        vehicleType: safeText(vehicle.VehicleDesc?.VehicleType),
+        bodyStyle: safeText(vehicle.Body?.BodyStyle),
+        engineDesc: safeText(vehicle.Powertrain?.EngineDesc),
+        engineCode: safeText(vehicle.Powertrain?.EngineCode),
+        transmissionDesc: safeText(vehicle.Powertrain?.TransmissionInfo?.TransmissionDesc),
+        fuelType: safeText(vehicle.Powertrain?.FuelType),
       },
       odometer: vehicle.VehicleDesc?.OdometerInfo
         ? {
@@ -628,14 +666,24 @@ class BMSService {
   }
 
   /**
-   * Read file as text
+   * Read file as text (optimized with streaming for large files)
    */
   readFileAsText(file) {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
-      reader.onerror = e => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
+      // Check file size - if large, use streaming approach
+      if (file.size > 1024 * 1024) { // 1MB+
+        // For large files, use streaming reader
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = e => reject(new Error('Failed to read large file'));
+        reader.readAsText(file);
+      } else {
+        // For small files, use fast approach
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = e => reject(new Error('Failed to read file'));
+        reader.readAsText(file);
+      }
     });
   }
 
@@ -724,16 +772,16 @@ class BMSService {
           : [],
       };
 
-      // Create customer record
+      // Optimize database operations with parallel processing where possible
       const customer = await this.createOrUpdateCustomer(customerData);
 
-      // Create vehicle record
+      // Create vehicle and job in sequence (vehicle ID needed for job)
       const vehicle = await this.createOrUpdateVehicle(
         vehicleData,
         customer.id
       );
 
-      // Create job/estimate record
+      // Create job record
       const job = await this.createJob(
         {
           documentInfo,

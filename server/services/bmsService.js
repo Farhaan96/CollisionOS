@@ -1,5 +1,6 @@
 const EnhancedBMSParser = require('./import/bms_parser.js');
 const EMSParser = require('./import/ems_parser.js');
+const { AutomatedPartsSourcingService } = require('./automatedPartsSourcing');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 
@@ -10,6 +11,7 @@ class BMSService {
   constructor() {
     this.bmsParser = new EnhancedBMSParser();
     this.emsParser = new EMSParser();
+    this.automatedSourcing = new AutomatedPartsSourcingService();
     this.importHistory = new Map();
   }
 
@@ -58,6 +60,270 @@ class BMSService {
       console.error('BMS processing error:', error);
       throw new Error(`BMS file processing failed: ${error.message}`);
     }
+  }
+
+  /**
+   * Process BMS XML file with automated parts sourcing
+   * @param {string} content - XML content
+   * @param {Object} context - Processing context
+   * @param {Object} sourcingOptions - Automated sourcing options
+   */
+  async processBMSWithAutomatedSourcing(content, context = {}, sourcingOptions = {}) {
+    try {
+      console.log('Processing BMS file with automated sourcing...', context.fileName);
+
+      const startTime = Date.now();
+      
+      // First do standard BMS parsing
+      const parsedData = await this.bmsParser.parseBMS(content);
+      
+      // Check if automated sourcing should be applied
+      const shouldRunAutomatedSourcing = 
+        sourcingOptions.enableAutomatedSourcing !== false && 
+        parsedData.parts && 
+        parsedData.parts.length > 0;
+
+      let automatedSourcingResults = null;
+      
+      if (shouldRunAutomatedSourcing) {
+        console.log('Running automated parts sourcing for', parsedData.parts.length, 'parts');
+        
+        try {
+          automatedSourcingResults = await this.automatedSourcing.processAutomatedPartsSourcing(
+            parsedData.parts,
+            parsedData.vehicle,
+            {
+              enhanceWithVinDecoding: sourcingOptions.enhanceWithVinDecoding !== false,
+              generatePO: sourcingOptions.generateAutoPO === true,
+              vendorTimeout: sourcingOptions.vendorTimeout || 2000,
+              preferredVendors: sourcingOptions.preferredVendors,
+              approvalThreshold: sourcingOptions.approvalThreshold || 1000,
+              baseMarkup: sourcingOptions.baseMarkup || 0.25,
+              insuranceCompany: parsedData.estimate?.insuranceCompany,
+              claimInfo: parsedData.estimate?.claimInfo
+            }
+          );
+        } catch (sourcingError) {
+          console.error('Automated sourcing failed:', sourcingError);
+          automatedSourcingResults = {
+            success: false,
+            error: sourcingError.message,
+            fallbackMode: true
+          };
+        }
+      }
+
+      const processingTime = Date.now() - startTime;
+
+      // Create enhanced import record
+      const importRecord = {
+        id: context.uploadId || uuidv4(),
+        fileName: context.fileName,
+        fileType: 'BMS',
+        status: 'completed',
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        processingTime,
+        userId: context.userId,
+        data: parsedData,
+        automatedSourcing: automatedSourcingResults,
+        sourcingOptions,
+      };
+
+      this.importHistory.set(importRecord.id, importRecord);
+
+      // Generate enhanced result with sourcing data
+      const result = {
+        importId: importRecord.id,
+        customer: this.normalizeCustomerData(parsedData.customer),
+        vehicle: this.normalizeVehicleData(parsedData.vehicle),
+        job: this.createJobFromEstimate(parsedData),
+        documentInfo: parsedData.estimate,
+        claimInfo: parsedData.claim || {},
+        damage: this.normalizeDamageData(parsedData),
+        validation: this.validateImportedData(parsedData),
+        metadata: {
+          ...parsedData.metadata,
+          processingTime,
+          importId: importRecord.id,
+        },
+        // Enhanced with automated sourcing data
+        automatedSourcing: automatedSourcingResults ? {
+          enabled: true,
+          ...automatedSourcingResults,
+          recommendations: this.generateSourcingRecommendations(automatedSourcingResults, sourcingOptions)
+        } : {
+          enabled: false,
+          reason: 'No parts found or sourcing disabled'
+        }
+      };
+
+      // Add sourced parts data if available
+      if (automatedSourcingResults?.success && automatedSourcingResults.results) {
+        result.sourcedParts = this.formatSourcedPartsForUI(automatedSourcingResults.results);
+        result.purchaseOrderRecommendations = this.generatePORecommendations(automatedSourcingResults.results);
+      }
+
+      return result;
+
+    } catch (error) {
+      console.error('BMS processing with automated sourcing error:', error);
+      throw new Error(`BMS file processing with automated sourcing failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate sourcing recommendations for UI
+   */
+  generateSourcingRecommendations(sourcingResults, options) {
+    if (!sourcingResults.success || !sourcingResults.results) {
+      return null;
+    }
+
+    const results = sourcingResults.results;
+    const successful = results.filter(r => r.recommendedSource.recommended);
+    const failed = results.filter(r => !r.recommendedSource.recommended);
+    
+    const recommendations = {
+      summary: {
+        totalParts: results.length,
+        successfullySourced: successful.length,
+        requiresManualSourcing: failed.length,
+        sourcingSuccessRate: results.length > 0 ? 
+          ((successful.length / results.length) * 100).toFixed(1) + '%' : '0%'
+      },
+      actions: []
+    };
+
+    // Add action recommendations
+    if (successful.length > 0) {
+      const autoGeneratePO = successful.filter(r => r.poData && !r.poData.requiresApproval);
+      const requiresApproval = successful.filter(r => r.poData && r.poData.requiresApproval);
+      
+      if (autoGeneratePO.length > 0) {
+        recommendations.actions.push({
+          type: 'auto_generate_po',
+          description: `Auto-generate purchase orders for ${autoGeneratePO.length} parts`,
+          count: autoGeneratePO.length,
+          estimatedValue: autoGeneratePO.reduce((sum, part) => 
+            sum + (part.poData?.poLineItem?.extendedPrice || 0), 0
+          )
+        });
+      }
+      
+      if (requiresApproval.length > 0) {
+        recommendations.actions.push({
+          type: 'review_for_approval',
+          description: `Review ${requiresApproval.length} high-value parts for approval`,
+          count: requiresApproval.length,
+          estimatedValue: requiresApproval.reduce((sum, part) => 
+            sum + (part.poData?.poLineItem?.extendedPrice || 0), 0
+          )
+        });
+      }
+    }
+    
+    if (failed.length > 0) {
+      recommendations.actions.push({
+        type: 'manual_sourcing',
+        description: `${failed.length} parts require manual sourcing`,
+        count: failed.length,
+        reasons: failed.map(part => part.recommendedSource.reason).filter((v, i, a) => a.indexOf(v) === i)
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Format sourced parts data for UI consumption
+   */
+  formatSourcedPartsForUI(results) {
+    return results.map(result => ({
+      originalPart: {
+        lineNumber: result.originalLine.lineNumber,
+        description: result.originalLine.description || result.originalLine.partName,
+        partNumber: result.originalLine.partNumber,
+        quantity: result.originalLine.quantity || 1,
+        originalPrice: result.originalLine.partCost || result.originalLine.price || 0
+      },
+      classification: result.classifiedPart.classifiedType,
+      category: result.classifiedPart.category,
+      priority: result.classifiedPart.priority,
+      sourcing: {
+        success: result.recommendedSource.recommended,
+        vendor: result.recommendedSource.recommended ? {
+          id: result.recommendedSource.vendor.vendorId,
+          partNumber: result.recommendedSource.vendor.partNumber,
+          price: result.recommendedSource.vendor.price,
+          availability: result.recommendedSource.vendor.available,
+          leadTime: result.recommendedSource.vendor.leadTime,
+          reliability: result.recommendedSource.vendor.reliability
+        } : null,
+        alternatives: result.recommendedSource.alternatives || [],
+        reason: result.recommendedSource.reason || 'Successfully sourced'
+      },
+      poData: result.poData || null,
+      processingTimestamp: result.processingTimestamp
+    }));
+  }
+
+  /**
+   * Generate purchase order recommendations
+   */
+  generatePORecommendations(results) {
+    const poRecommendations = [];
+    const vendorGroups = {};
+
+    // Group parts by vendor
+    results.forEach(result => {
+      if (result.recommendedSource.recommended && result.poData) {
+        const vendorId = result.poData.vendorId;
+        if (!vendorGroups[vendorId]) {
+          vendorGroups[vendorId] = {
+            vendorId,
+            parts: [],
+            totalValue: 0,
+            highestPriority: 0,
+            requiresApproval: false
+          };
+        }
+
+        vendorGroups[vendorId].parts.push(result);
+        vendorGroups[vendorId].totalValue += result.poData.poLineItem.extendedPrice;
+        vendorGroups[vendorId].highestPriority = Math.max(
+          vendorGroups[vendorId].highestPriority,
+          result.classifiedPart.priority || 0
+        );
+        vendorGroups[vendorId].requiresApproval = 
+          vendorGroups[vendorId].requiresApproval || result.poData.requiresApproval;
+      }
+    });
+
+    // Create PO recommendations
+    for (const [vendorId, group] of Object.entries(vendorGroups)) {
+      poRecommendations.push({
+        vendorId,
+        itemCount: group.parts.length,
+        totalValue: group.totalValue,
+        priority: group.highestPriority,
+        requiresApproval: group.requiresApproval,
+        recommendedAction: group.requiresApproval ? 'review_and_approve' : 'auto_generate',
+        estimatedDelivery: Math.max(...group.parts.map(p => p.poData?.poLineItem?.leadTime || 0)),
+        parts: group.parts.map(part => ({
+          partNumber: part.classifiedPart.normalizedPartNumber,
+          description: part.classifiedPart.description,
+          quantity: part.classifiedPart.quantity,
+          unitPrice: part.poData.poLineItem.unitPrice,
+          extendedPrice: part.poData.poLineItem.extendedPrice
+        }))
+      });
+    }
+
+    // Sort by priority (highest first)
+    poRecommendations.sort((a, b) => b.priority - a.priority);
+
+    return poRecommendations;
   }
 
   /**
@@ -502,12 +768,12 @@ class BMSService {
       let job = null;
 
       try {
-        // Extract shop context from context or use default
+        // Extract shop context from context or use default UUID format
         const shopId =
           context.shopId ||
           context.userId?.split('-shop')[0] ||
           process.env.DEV_SHOP_ID ||
-          'dev-shop-123';
+          '00000000-0000-4000-8000-000000000001';
 
         // Check if customer exists (by email, phone, or name)
         customer = await this.findOrCreateCustomer(

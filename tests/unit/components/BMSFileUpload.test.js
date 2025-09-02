@@ -89,7 +89,6 @@ describe('BMSFileUpload Component', () => {
 
   describe('File Selection', () => {
     it('should handle file selection through input', async () => {
-      const user = userEvent.setup();
       renderWithTheme(
         <BMSFileUpload onUploadComplete={mockOnUploadComplete} />
       );
@@ -113,7 +112,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       // Simulate FileReader success
       setTimeout(() => {
@@ -126,7 +125,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should handle multiple file selection', async () => {
-      const user = userEvent.setup();
       renderWithTheme(
         <BMSFileUpload onUploadComplete={mockOnUploadComplete} />
       );
@@ -143,13 +141,12 @@ describe('BMSFileUpload Component', () => {
         message: 'Success',
       });
 
-      await user.upload(fileInput, mockFiles);
+      await userEvent.upload(fileInput, mockFiles);
 
       expect(fileInput.files).toHaveLength(2);
     });
 
     it('should filter non-XML files', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload onError={mockOnError} />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -254,7 +251,6 @@ describe('BMSFileUpload Component', () => {
 
   describe('Upload Progress and Feedback', () => {
     it('should show progress during upload', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -279,7 +275,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       // Simulate FileReader success
       setTimeout(() => {
@@ -293,7 +289,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should show success animation after completion', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -317,7 +312,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       // Simulate FileReader success
       setTimeout(() => {
@@ -330,7 +325,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should display upload statistics', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -351,7 +345,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFiles);
+      await userEvent.upload(fileInput, mockFiles);
 
       // Simulate FileReader success for each file
       setTimeout(() => {
@@ -367,7 +361,6 @@ describe('BMSFileUpload Component', () => {
 
   describe('Error Handling', () => {
     it('should display error messages on upload failure', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload onError={mockOnError} />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -387,7 +380,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -403,7 +396,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should handle FileReader errors', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -417,7 +409,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       // Simulate FileReader error
       setTimeout(() => {
@@ -432,7 +424,6 @@ describe('BMSFileUpload Component', () => {
 
   describe('File Management', () => {
     it('should display uploaded files list', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -456,7 +447,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -469,7 +460,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should allow file removal', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -489,7 +479,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -503,7 +493,7 @@ describe('BMSFileUpload Component', () => {
       const removeButton =
         screen.getByTitle('Remove file') ||
         screen.getByLabelText('Remove file');
-      await user.click(removeButton);
+      await userEvent.click(removeButton);
 
       await waitFor(() => {
         expect(screen.queryByText('test.xml')).not.toBeInTheDocument();
@@ -511,7 +501,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should allow file data download', async () => {
-      const user = userEvent.setup();
 
       // Mock URL.createObjectURL and related methods
       global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
@@ -544,7 +533,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -555,14 +544,13 @@ describe('BMSFileUpload Component', () => {
       });
 
       const downloadButton = screen.getByTitle('Download parsed data');
-      await user.click(downloadButton);
+      await userEvent.click(downloadButton);
 
       expect(mockLink.click).toHaveBeenCalled();
       expect(global.URL.createObjectURL).toHaveBeenCalled();
     });
 
     it('should allow file details expansion', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -587,7 +575,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -603,7 +591,7 @@ describe('BMSFileUpload Component', () => {
       const expandButton =
         screen.getByTitle(/Expand details/) ||
         screen.getByTitle(/Collapse details/);
-      await user.click(expandButton);
+      await userEvent.click(expandButton);
 
       await waitFor(() => {
         expect(screen.getByText('Parsed Data Preview')).toBeInTheDocument();
@@ -613,7 +601,6 @@ describe('BMSFileUpload Component', () => {
 
   describe('Callback Functions', () => {
     it('should call onUploadComplete callback on successful upload', async () => {
-      const user = userEvent.setup();
       renderWithTheme(
         <BMSFileUpload onUploadComplete={mockOnUploadComplete} />
       );
@@ -636,7 +623,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });
@@ -648,7 +635,6 @@ describe('BMSFileUpload Component', () => {
     });
 
     it('should call onError callback on upload failure', async () => {
-      const user = userEvent.setup();
       renderWithTheme(<BMSFileUpload onError={mockOnError} />);
 
       const fileInput = screen.getByLabelText('Upload BMS XML files');
@@ -668,7 +654,7 @@ describe('BMSFileUpload Component', () => {
       };
       global.FileReader = jest.fn(() => mockFileReader);
 
-      await user.upload(fileInput, mockFile);
+      await userEvent.upload(fileInput, mockFile);
 
       setTimeout(() => {
         mockFileReader.onload({ target: { result: '<xml>test</xml>' } });

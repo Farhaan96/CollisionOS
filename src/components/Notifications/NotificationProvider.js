@@ -630,4 +630,7 @@ export const useNotification = () => {
 
 // Export types and constants
 export { NOTIFICATION_PRIORITIES, NOTIFICATION_TYPES };
+
+// Use named export instead of mixing with default
+export { NotificationProvider };
 export default NotificationProvider;

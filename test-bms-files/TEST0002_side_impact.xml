@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0002</EstimateNumber>
+        <ClaimNumber>CLM2662440206</ClaimNumber>
+        <EstimateDate>2024-08-28</EstimateDate>
+        <AccidentDate>2024-08-21</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Mr. Forrest Batz</Name>
+            <Company>Farmers</Company>
+            <Phone>662.422.5882 x80464</Phone>
+            <Email>Toy65@gmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Brycen</FirstName>
+        <LastName>Krajcik-Gislason</LastName>
+        <Phone>757-485-6561 x64737</Phone>
+        <Email>Brycen.Krajcik-Gislason@hotmail.com</Email>
+        <Address>
+            <Street>5616 Grady Center</Street>
+            <City>Kaylinport</City>
+            <State>NJ</State>
+            <Zip>37353-0735</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HDQXPLVAC9RZ4LY8</VIN>
+        <Year>2017</Year>
+        <Make>BMW</Make>
+        <Model>X1</Model>
+        <Color>White</Color>
+        <Trim>Sport</Trim>
+        <Mileage>87526</Mileage>
+        <LicensePlate>0SCQ945</LicensePlate>
+        <LicenseState>IA</LicenseState>
+        <EngineType>V6</EngineType>
+        <Transmission>Manual</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Farmers</Company>
+        <PolicyNumber>XOT5QVVKLX45</PolicyNumber>
+        <ClaimNumber>CLM2662440206</ClaimNumber>
+        <Deductible>250</Deductible>
+        <Coverage>Collision</Coverage>
+        <Adjuster>
+            <Name>Kristie Halvorson</Name>
+            <Phone>539.787.6471 x098</Phone>
+            <Email>Kristie51@hotmail.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Side Impact</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Door Shell LH</Description>
+            <PartNumber>67002-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>445.00</UnitPrice>
+            <LaborHours>2.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>445.00</PartsAmount>
+            <LaborAmount>137.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Door Mirror LH</Description>
+            <PartNumber>87940-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>185.25</UnitPrice>
+            <LaborHours>1.2</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>185.25</PartsAmount>
+            <LaborAmount>66.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Quarter Panel</Description>
+            <PartNumber>61301-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>725.50</UnitPrice>
+            <LaborHours>1.2</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>725.50</PartsAmount>
+            <LaborAmount>66.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Side Molding</Description>
+            <PartNumber>75951-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>125.99</UnitPrice>
+            <LaborHours>2.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>125.99</PartsAmount>
+            <LaborAmount>137.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.4</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>352.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Install</Operation>
+            <Description>Remove and Install - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>1.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>71.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Blend</Operation>
+            <Description>Blend - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>7.7</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>500.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>8</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>270.07</UnitPrice>
+            
+            
+            <PartsAmount>270.07</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1481.74</PartsTotal>
+        <LaborTotal>1331.00</LaborTotal>
+        <MaterialsTotal>270.07</MaterialsTotal>
+        <SubletTotal>485.29</SubletTotal>
+        <Subtotal>3568.10</Subtotal>
+        <Tax>312.21</Tax>
+        <GrandTotal>3880.31</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Mueller Group Auto Body</Name>
+        <Address>8100 Low Road</Address>
+        <City>East Queen</City>
+        <State>WA</State>
+        <Zip>97356-6738</Zip>
+        <Phone>508-341-3242 x5587</Phone>
+        <Email>Norwood.Pouros19@gmail.com</Email>
+        <LicenseNumber>LIC36322428</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0002.jpg</Filename>
+            <DateTaken>2024-08-21T17:44:55.292Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0002.jpg</Filename>
+            <DateTaken>2024-08-21T17:44:55.292Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

@@ -1,22 +1,25 @@
-{
-  "_description": "Manual loop control configuration for CollisionOS agent workflow system",
-  "_lastUpdated": "2025-09-01T15:22:00.000Z",
-  "enabled": true,
-  "paused": false,
-  "maxQueueSize": 10,
-  "queueProcessingDelayMs": 3000,
-  "commands": {
-    "pause": "Pause all agent automation",
-    "resume": "Resume agent automation", 
-    "status": "Show current system status",
-    "clear": "Clear the task queue",
-    "reset": "Reset all loop detection counters"
-  },
-  "taskQueue": [],
-  "statistics": {
-    "totalTasksProcessed": 0,
-    "loopDetectionEvents": 0,
-    "manualInterventions": 0,
-    "averageTaskDurationMs": 0
-  }
+﻿{
+    "maxQueueSize":  20,
+    "enabled":  true,
+    "taskQueue":  [
+
+                  ],
+    "_lastUpdated":  "2025-09-01T21:00:37.592Z",
+    "commands":  {
+                     "enhance":  "Apply enhanced permissions",
+                     "reset":  "Reset all loop detection counters",
+                     "clear":  "Clear the task queue",
+                     "pause":  "Pause all agent automation",
+                     "resume":  "Resume agent automation",
+                     "status":  "Show current system status"
+                 },
+    "queueProcessingDelayMs":  1000,
+    "_description":  "Enhanced loop control configuration for CollisionOS agent workflow system",
+    "statistics":  {
+                       "totalTasksProcessed":  0,
+                       "manualInterventions":  0,
+                       "averageTaskDurationMs":  0,
+                       "loopDetectionEvents":  0
+                   },
+    "paused":  false
 }

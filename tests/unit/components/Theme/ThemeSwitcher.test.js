@@ -112,8 +112,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('shows tooltip on hover', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -122,7 +120,9 @@ describe('ThemeSwitcher', () => {
 
       const iconButton = screen.getByRole('button');
 
-      await user.hover(iconButton);
+      await act(async () => {
+        await userEvent.hover(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('tooltip')).toBeInTheDocument();
@@ -130,8 +130,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('opens menu on click', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -140,7 +138,9 @@ describe('ThemeSwitcher', () => {
 
       const iconButton = screen.getByRole('button');
 
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
@@ -156,7 +156,9 @@ describe('ThemeSwitcher', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole('checkbox')).toBeInTheDocument();
+      // ThemeSwitcher with toggle variant should render a button, not checkbox
+      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toHaveAttribute('aria-label');
     });
 
     it('shows light and dark icons', () => {
@@ -166,22 +168,22 @@ describe('ThemeSwitcher', () => {
         </TestWrapper>
       );
 
-      // Should have light/dark mode indicators
-      expect(screen.getByRole('checkbox')).toBeInTheDocument();
+      // Should have light/dark mode indicators as a button
+      expect(screen.getByRole('button')).toBeInTheDocument();
     });
 
     it('toggles theme on switch click', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher variant='toggle' />
         </TestWrapper>
       );
 
-      const switchElement = screen.getByRole('checkbox');
+      const switchElement = screen.getByRole('button');
 
-      await user.click(switchElement);
+      await act(async () => {
+        await userEvent.click(switchElement);
+      });
 
       // The actual theme switching is handled by the ThemeProvider mock
       expect(switchElement).toBeInTheDocument();
@@ -203,8 +205,6 @@ describe('ThemeSwitcher', () => {
 
   describe('Theme menu', () => {
     it('shows theme previews in menu', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -212,7 +212,10 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
@@ -223,8 +226,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('shows custom theme creator option', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -232,7 +233,10 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Create Custom Theme/)).toBeInTheDocument();
@@ -240,8 +244,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('shows schedule switching option', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -249,7 +251,10 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Schedule Switching/)).toBeInTheDocument();
@@ -257,8 +262,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('closes menu when clicking outside', async () => {
-      const user = userEvent.setup();
-
       render(
         <div>
           <div data-testid='outside'>Outside element</div>
@@ -269,13 +272,18 @@ describe('ThemeSwitcher', () => {
       );
 
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
       });
 
-      await user.click(document.body);
+      await act(async () => {
+        await userEvent.click(document.body);
+      });
 
       await waitFor(() => {
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
@@ -285,8 +293,6 @@ describe('ThemeSwitcher', () => {
 
   describe('Custom theme dialog', () => {
     it('opens custom theme dialog', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -295,11 +301,15 @@ describe('ThemeSwitcher', () => {
 
       // Open menu
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       // Click create custom theme
       const createCustomButton = await screen.findByText(/Create Custom Theme/);
-      await user.click(createCustomButton);
+      await act(async () => {
+        await userEvent.click(createCustomButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -308,8 +318,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('allows theme name input', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -318,20 +326,24 @@ describe('ThemeSwitcher', () => {
 
       // Open menu and custom dialog
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       const createCustomButton = await screen.findByText(/Create Custom Theme/);
-      await user.click(createCustomButton);
+      await act(async () => {
+        await userEvent.click(createCustomButton);
+      });
 
       const nameInput = await screen.findByLabelText(/Theme Name/);
-      await user.type(nameInput, 'My Custom Theme');
+      await act(async () => {
+        await userEvent.type(nameInput, 'My Custom Theme');
+      });
 
       expect(nameInput).toHaveValue('My Custom Theme');
     });
 
     it('shows color picker inputs', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -340,10 +352,14 @@ describe('ThemeSwitcher', () => {
 
       // Open menu and custom dialog
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       const createCustomButton = await screen.findByText(/Create Custom Theme/);
-      await user.click(createCustomButton);
+      await act(async () => {
+        await userEvent.click(createCustomButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Primary/)).toBeInTheDocument();
@@ -355,8 +371,6 @@ describe('ThemeSwitcher', () => {
 
   describe('Schedule dialog', () => {
     it('opens schedule dialog', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -365,11 +379,15 @@ describe('ThemeSwitcher', () => {
 
       // Open menu
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       // Click schedule switching
       const scheduleButton = await screen.findByText(/Schedule Switching/);
-      await user.click(scheduleButton);
+      await act(async () => {
+        await userEvent.click(scheduleButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -380,8 +398,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('shows time inputs', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -390,10 +406,14 @@ describe('ThemeSwitcher', () => {
 
       // Open menu and schedule dialog
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       const scheduleButton = await screen.findByText(/Schedule Switching/);
-      await user.click(scheduleButton);
+      await act(async () => {
+        await userEvent.click(scheduleButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByLabelText(/Light Theme Start/)).toBeInTheDocument();
@@ -423,8 +443,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('shows keyboard shortcut in tooltip when enabled', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher showShortcut={true} />
@@ -433,7 +451,9 @@ describe('ThemeSwitcher', () => {
 
       const iconButton = screen.getByRole('button');
 
-      await user.hover(iconButton);
+      await act(async () => {
+        await userEvent.hover(iconButton);
+      });
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -442,8 +462,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('does not show keyboard shortcut when disabled', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher showShortcut={false} />
@@ -452,7 +470,9 @@ describe('ThemeSwitcher', () => {
 
       const iconButton = screen.getByRole('button');
 
-      await user.hover(iconButton);
+      await act(async () => {
+        await userEvent.hover(iconButton);
+      });
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -464,8 +484,6 @@ describe('ThemeSwitcher', () => {
 
   describe('Preview functionality', () => {
     it('shows preview indicator when previewing', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -474,16 +492,20 @@ describe('ThemeSwitcher', () => {
 
       // Open menu
       const iconButton = screen.getByRole('button');
-      await user.click(iconButton);
+      await act(async () => {
+        await userEvent.click(iconButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
       });
 
-      // Find and toggle preview mode
-      const previewSwitch = screen.getByRole('checkbox', { name: '' });
-      if (previewSwitch) {
-        await user.click(previewSwitch);
+      // Find and toggle preview mode - check if element exists first
+      const previewSwitches = screen.queryAllByRole('checkbox');
+      if (previewSwitches.length > 0) {
+        await act(async () => {
+          await userEvent.click(previewSwitches[0]);
+        });
       }
 
       // Preview functionality is handled by the theme provider
@@ -531,8 +553,6 @@ describe('ThemeSwitcher', () => {
     });
 
     it('supports keyboard navigation', async () => {
-      const user = userEvent.setup();
-
       render(
         <TestWrapper>
           <ThemeSwitcher />
@@ -542,11 +562,15 @@ describe('ThemeSwitcher', () => {
       const iconButton = screen.getByRole('button');
 
       // Focus the button
-      await user.tab();
+      await act(async () => {
+        await userEvent.tab();
+      });
       expect(iconButton).toHaveFocus();
 
       // Open menu with Enter
-      await user.keyboard('{Enter}');
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument();

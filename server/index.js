@@ -209,6 +209,43 @@ app.get('/api/migration/status', async (req, res) => {
   }
 });
 
+// Health check endpoints (both versioned and legacy)
+app.get('/api/health', async (req, res) => {
+  const { databaseService } = require('./services/databaseService');
+  const { realtimeService } = require('./services/realtimeService');
+
+  try {
+    const dbStatus = await databaseService.getConnectionStatus();
+    const realtimeStatus = realtimeService.getStatus();
+
+    res.json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+      database: {
+        type: dbStatus.type,
+        connected: dbStatus.connected,
+        error: dbStatus.error || null,
+      },
+      realtime: {
+        backend: realtimeStatus.backend,
+        subscriptions: realtimeStatus.activeSubscriptions,
+      },
+      supabase: {
+        enabled: isSupabaseEnabled,
+        configured: process.env.SUPABASE_URL ? true : false,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+    });
+  }
+});
+
 // API v1 Routes (with versioning)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', authenticateToken(), userRoutes);

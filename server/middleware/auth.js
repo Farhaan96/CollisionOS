@@ -4,24 +4,41 @@ function authenticateToken(req, res, next) {
   try {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    
     if (!token) {
       // Allow unauthenticated in development for now
-      req.user = { id: 'dev-user', shopId: 'dev-shop' };
+      req.user = { id: 'dev-user', shopId: '00000000-0000-4000-8000-000000000001' };
       return next();
     }
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error('❌ JWT_SECRET environment variable is required');
-      console.error('Please set JWT_SECRET in your .env.local file');
-      return res.status(500).json({ error: 'Server configuration error' });
+
+    // Validate token format
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) {
+      console.warn('Invalid JWT format: token does not have 3 segments');
+      if (process.env.NODE_ENV === 'development') {
+        req.user = { id: 'dev-user', shopId: '00000000-0000-4000-8000-000000000001' };
+        return next();
+      }
+      return res.status(401).json({ error: 'Invalid token format' });
     }
+
+    const jwtSecret = process.env.JWT_SECRET || 'collisionos_super_secret_jwt_key_2024_make_it_long_and_random_for_production';
+    
     const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded || { id: 'dev-user', shopId: 'dev-shop' };
     next();
   } catch (e) {
+    console.warn('JWT verification failed:', e.message);
     // Soft-fail in dev
-    req.user = { id: 'dev-user', shopId: 'dev-shop' };
-    next();
+    if (process.env.NODE_ENV === 'development') {
+      req.user = { id: 'dev-user', shopId: 'dev-shop' };
+      return next();
+    }
+    
+    return res.status(401).json({ 
+      error: 'Authentication failed',
+      message: e.message 
+    });
   }
 }
 

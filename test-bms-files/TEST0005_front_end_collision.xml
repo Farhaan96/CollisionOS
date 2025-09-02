@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0005</EstimateNumber>
+        <ClaimNumber>CLM0601756682</ClaimNumber>
+        <EstimateDate>2024-07-10</EstimateDate>
+        <AccidentDate>2024-07-08</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Joanna Lynch</Name>
+            <Company>State Farm</Company>
+            <Phone>1-858-725-4477 x289</Phone>
+            <Email>Colby_Fadel@gmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Carey</FirstName>
+        <LastName>Schroeder</LastName>
+        <Phone>740-533-1266 x550</Phone>
+        <Email>Carey.Schroeder9@hotmail.com</Email>
+        <Address>
+            <Street>74534 Stark Grove</Street>
+            <City>Susanhaven</City>
+            <State>IA</State>
+            <Zip>40021-9397</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>JM39XYT5GLIOHA02Q</VIN>
+        <Year>2019</Year>
+        <Make>Honda</Make>
+        <Model>Accord</Model>
+        <Color>Red</Color>
+        <Trim>Base</Trim>
+        <Mileage>104318</Mileage>
+        <LicensePlate>1FQZ131</LicensePlate>
+        <LicenseState>KS</LicenseState>
+        <EngineType>4-Cyl</EngineType>
+        <Transmission>CVT</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>State Farm</Company>
+        <PolicyNumber>UNPGGTFKNCIT</PolicyNumber>
+        <ClaimNumber>CLM0601756682</ClaimNumber>
+        <Deductible>1500</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Miguel Becker</Name>
+            <Phone>358-781-5356 x5344</Phone>
+            <Email>Miguel.Stroman74@yahoo.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Front End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Front Bumper Cover</Description>
+            <PartNumber>52119-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>425.50</UnitPrice>
+            <LaborHours>1.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>425.50</PartsAmount>
+            <LaborAmount>82.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Headlamp Assembly RH</Description>
+            <PartNumber>81130-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>389.99</UnitPrice>
+            <LaborHours>2.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>389.99</PartsAmount>
+            <LaborAmount>126.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Grille Assembly</Description>
+            <PartNumber>53101-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>245.75</UnitPrice>
+            <LaborHours>2.0</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>245.75</PartsAmount>
+            <LaborAmount>110.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Hood</Description>
+            <PartNumber>66400-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>675.00</UnitPrice>
+            <LaborHours>1.1</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>675.00</PartsAmount>
+            <LaborAmount>60.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Replace</Operation>
+            <Description>Remove and Replace - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>4.0</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>220.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>3.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>203.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>144.26</UnitPrice>
+            
+            
+            <PartsAmount>144.26</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1736.24</PartsTotal>
+        <LaborTotal>803.00</LaborTotal>
+        <MaterialsTotal>144.26</MaterialsTotal>
+        <SubletTotal>212.80</SubletTotal>
+        <Subtotal>2896.30</Subtotal>
+        <Tax>253.43</Tax>
+        <GrandTotal>3149.73</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Buckridge LLC Auto Body</Name>
+        <Address>763 Cormier Motorway</Address>
+        <City>Juddborough</City>
+        <State>CO</State>
+        <Zip>46772</Zip>
+        <Phone>531.545.7731 x7866</Phone>
+        <Email>Hoyt.Ondricka90@hotmail.com</Email>
+        <LicenseNumber>LIC60352151</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0005.jpg</Filename>
+            <DateTaken>2024-07-08T01:49:21.602Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0005.jpg</Filename>
+            <DateTaken>2024-07-08T01:49:21.602Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

@@ -1,0 +1,83 @@
+{
+  "generated_at": "2025-09-02T05:54:42.673Z",
+  "total_files": 10,
+  "output_directory": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files",
+  "total_size_bytes": 68245,
+  "damage_types_distribution": {
+    "Front End Collision": 6,
+    "Rear End Collision": 1,
+    "Side Impact": 3
+  },
+  "files": [
+    {
+      "filename": "TEST0001_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0001_front_end_collision.xml",
+      "estimateNumber": "TEST0001",
+      "damageType": "Front End Collision",
+      "size": 7052
+    },
+    {
+      "filename": "TEST0002_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0002_front_end_collision.xml",
+      "estimateNumber": "TEST0002",
+      "damageType": "Front End Collision",
+      "size": 6589
+    },
+    {
+      "filename": "TEST0003_side_impact.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0003_side_impact.xml",
+      "estimateNumber": "TEST0003",
+      "damageType": "Side Impact",
+      "size": 7477
+    },
+    {
+      "filename": "TEST0004_side_impact.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0004_side_impact.xml",
+      "estimateNumber": "TEST0004",
+      "damageType": "Side Impact",
+      "size": 6611
+    },
+    {
+      "filename": "TEST0005_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0005_front_end_collision.xml",
+      "estimateNumber": "TEST0005",
+      "damageType": "Front End Collision",
+      "size": 6604
+    },
+    {
+      "filename": "TEST0006_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0006_front_end_collision.xml",
+      "estimateNumber": "TEST0006",
+      "damageType": "Front End Collision",
+      "size": 7536
+    },
+    {
+      "filename": "TEST0007_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0007_front_end_collision.xml",
+      "estimateNumber": "TEST0007",
+      "damageType": "Front End Collision",
+      "size": 6604
+    },
+    {
+      "filename": "TEST0008_front_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0008_front_end_collision.xml",
+      "estimateNumber": "TEST0008",
+      "damageType": "Front End Collision",
+      "size": 6581
+    },
+    {
+      "filename": "TEST0009_side_impact.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0009_side_impact.xml",
+      "estimateNumber": "TEST0009",
+      "damageType": "Side Impact",
+      "size": 6593
+    },
+    {
+      "filename": "TEST0010_rear_end_collision.xml",
+      "filepath": "C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\test-bms-files\\TEST0010_rear_end_collision.xml",
+      "estimateNumber": "TEST0010",
+      "damageType": "Rear End Collision",
+      "size": 6598
+    }
+  ]
+}

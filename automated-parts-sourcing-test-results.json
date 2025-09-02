@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-09-02T04:38:53.663Z",
+  "summary": {
+    "passed": 6,
+    "partial": 0,
+    "failed": 2
+  },
+  "overallStatus": "ISSUES DETECTED",
+  "results": [
+    {
+      "test": "Server Connection",
+      "status": "PASS",
+      "details": {
+        "status": "OK",
+        "timestamp": "2025-09-02T04:38:53.595Z",
+        "version": "1.0.0",
+        "environment": "development",
+        "database": {
+          "type": "supabase",
+          "connected": true,
+          "error": null
+        },
+        "realtime": {
+          "backend": "supabase",
+          "subscriptions": 1
+        },
+        "supabase": {
+          "enabled": true,
+          "configured": true
+        }
+      }
+    },
+    {
+      "test": "Frontend Connection",
+      "status": "FAIL",
+      "error": ""
+    },
+    {
+      "test": "Database Connectivity",
+      "status": "PASS",
+      "details": {
+        "type": "supabase",
+        "connected": true,
+        "error": null
+      }
+    },
+    {
+      "test": "Authentication",
+      "status": "FAIL",
+      "error": "Request failed with status code 400"
+    },
+    {
+      "test": "Parts Workflow Endpoints",
+      "status": "PASS",
+      "details": "4/4 endpoints responding"
+    },
+    {
+      "test": "Vendor System Integration",
+      "status": "PASS"
+    },
+    {
+      "test": "Purchase Order Workflow",
+      "status": "PASS"
+    },
+    {
+      "test": "API Documentation",
+      "status": "PASS"
+    }
+  ]
+}

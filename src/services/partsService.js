@@ -1,10 +1,11 @@
 import axios from 'axios';
+import logger from '../utils/logger';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-// Parts API service
+// Parts API service  
 const partsAPI = axios.create({
-  baseURL: `${API_BASE_URL}/api/parts`,
+  baseURL: `${API_BASE_URL}/parts`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -123,7 +124,10 @@ class PartsService {
       }
       return response.data || [];
     } catch (error) {
-      console.error('Parts search failed:', error);
+      logger.serviceError('partsService', 'searchParts', error, {
+        query,
+        filters
+      });
       throw this.handleError(error);
     }
   }
@@ -140,7 +144,12 @@ class PartsService {
       }
       return response.data || [];
     } catch (error) {
-      console.error('Vehicle parts search failed:', error);
+      logger.serviceError('partsService', 'searchPartsByVehicle', error, {
+        make,
+        model,
+        year,
+        category
+      });
       throw this.handleError(error);
     }
   }
@@ -157,7 +166,9 @@ class PartsService {
       }
       return response.data;
     } catch (error) {
-      console.error('Part lookup failed:', error);
+      logger.serviceError('partsService', 'getPartDetails', error, {
+        partNumber
+      });
       throw this.handleError(error);
     }
   }
@@ -176,7 +187,9 @@ class PartsService {
       }
       return response.data || [];
     } catch (error) {
-      console.error('Price comparison failed:', error);
+      logger.serviceError('partsService', 'getPartPrices', error, {
+        partNumber
+      });
       throw this.handleError(error);
     }
   }
@@ -377,7 +390,9 @@ class PartsService {
       }
       return response.data;
     } catch (error) {
-      console.error('Barcode lookup failed:', error);
+      logger.serviceError('partsService', 'lookupByBarcode', error, {
+        barcode
+      });
       throw this.handleError(error);
     }
   }
@@ -402,7 +417,9 @@ class PartsService {
           callback(updates);
         }
       } catch (error) {
-        console.error('Failed to fetch updates:', error);
+        logger.serviceError('partsService', 'checkForUpdates', error, {
+          context: 'WebSocket polling fallback'
+        });
       }
     }, 30000); // Poll every 30 seconds
 

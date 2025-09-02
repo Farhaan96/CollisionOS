@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test BMS Upload API Connection</title>
+</head>
+<body>
+    <h2>CollisionOS BMS Upload Test</h2>
+    <div>
+        <input type="file" id="fileInput" accept=".xml,.bms" />
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+    <div id="status" style="margin-top: 20px;"></div>
+    <div id="result" style="margin-top: 20px; white-space: pre-wrap;"></div>
+
+    <script>
+        async function testUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files.length) {
+                statusDiv.innerHTML = '<div style="color: red;">Please select a BMS XML file</div>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            statusDiv.innerHTML = '<div style="color: blue;">Testing upload...</div>';
+
+            try {
+                // Test the exact same API endpoint the React app would use
+                const response = await fetch('http://localhost:3001/api/import/bms', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': 'Bearer dev-token'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = '<div style="color: green;">✅ Upload successful!</div>';
+                    resultDiv.textContent = JSON.stringify(result, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<div style="color: red;">❌ Upload failed: ${result.error || result.message}</div>`;
+                    resultDiv.textContent = JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div style="color: red;">❌ Connection failed: ${error.message}</div>`;
+                resultDiv.textContent = `Error details: ${error.toString()}\n\nThis typically means:\n1. Server is not running on port 3001\n2. CORS is blocking the request\n3. Network connectivity issue`;
+            }
+        }
+    </script>
+</body>
+</html>

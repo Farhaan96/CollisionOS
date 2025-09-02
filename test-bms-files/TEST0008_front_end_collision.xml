@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0008</EstimateNumber>
+        <ClaimNumber>CLM3805006817</ClaimNumber>
+        <EstimateDate>2024-04-12</EstimateDate>
+        <AccidentDate>2024-03-30</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Naomi Witting PhD</Name>
+            <Company>State Farm</Company>
+            <Phone>(535) 750-1503</Phone>
+            <Email>Adrian97@hotmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Marian</FirstName>
+        <LastName>Schmeler</LastName>
+        <Phone>357.567.7741 x3816</Phone>
+        <Email>Marian.Schmeler35@yahoo.com</Email>
+        <Address>
+            <Street>17637 Tierra Gardens</Street>
+            <City>Port Mosheshire</City>
+            <State>RI</State>
+            <Zip>50806-3657</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>JTDBRES8VFRHAVLGY</VIN>
+        <Year>2022</Year>
+        <Make>Ford</Make>
+        <Model>F-150</Model>
+        <Color>Black</Color>
+        <Trim>SE</Trim>
+        <Mileage>79787</Mileage>
+        <LicensePlate>7RJX400</LicensePlate>
+        <LicenseState>TX</LicenseState>
+        <EngineType>V8</EngineType>
+        <Transmission>CVT</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>State Farm</Company>
+        <PolicyNumber>GKRSSLVR7UWZ</PolicyNumber>
+        <ClaimNumber>CLM3805006817</ClaimNumber>
+        <Deductible>1500</Deductible>
+        <Coverage>Full Coverage</Coverage>
+        <Adjuster>
+            <Name>Doug Ratke-Jones</Name>
+            <Phone>779.291.0555 x254</Phone>
+            <Email>Doug.Franecki@yahoo.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Front End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Front Bumper Cover</Description>
+            <PartNumber>52119-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>425.50</UnitPrice>
+            <LaborHours>1.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>425.50</PartsAmount>
+            <LaborAmount>88.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Headlamp Assembly RH</Description>
+            <PartNumber>81130-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>389.99</UnitPrice>
+            <LaborHours>2.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>389.99</PartsAmount>
+            <LaborAmount>154.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Grille Assembly</Description>
+            <PartNumber>53101-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>245.75</UnitPrice>
+            <LaborHours>1.4</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>245.75</PartsAmount>
+            <LaborAmount>77.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>Hood</Description>
+            <PartNumber>66400-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>675.00</UnitPrice>
+            <LaborHours>1.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>675.00</PartsAmount>
+            <LaborAmount>82.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>5.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>319.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Refinish</Operation>
+            <Description>Refinish - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>5.3</LaborHours>
+            <LaborRate>65.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>344.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>294.31</UnitPrice>
+            
+            
+            <PartsAmount>294.31</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1736.24</PartsTotal>
+        <LaborTotal>1065.00</LaborTotal>
+        <MaterialsTotal>294.31</MaterialsTotal>
+        <SubletTotal>282.52</SubletTotal>
+        <Subtotal>3378.07</Subtotal>
+        <Tax>295.58</Tax>
+        <GrandTotal>3673.65</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Bashirian Group Auto Body</Name>
+        <Address>514 E Broadway Street</Address>
+        <City>Darrellberg</City>
+        <State>ID</State>
+        <Zip>33279</Zip>
+        <Phone>1-587-230-8119</Phone>
+        <Email>David_Medhurst@hotmail.com</Email>
+        <LicenseNumber>LIC94851098</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0008.jpg</Filename>
+            <DateTaken>2024-03-30T16:09:48.837Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0008.jpg</Filename>
+            <DateTaken>2024-03-30T16:09:48.837Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

@@ -245,7 +245,6 @@ describe('SmartForm Component', () => {
     });
 
     it('shows previous button on non-first steps', async () => {
-      const user = userEvent.setup();
 
       render(
         <TestWrapper>
@@ -261,7 +260,7 @@ describe('SmartForm Component', () => {
 
       // Move to next step
       const nextButton = screen.getByRole('button', { name: /next/i });
-      await user.click(nextButton);
+      await userEvent.click(nextButton);
 
       await waitFor(() => {
         expect(
@@ -271,7 +270,6 @@ describe('SmartForm Component', () => {
     });
 
     it('shows submit button on final step', async () => {
-      const user = userEvent.setup();
 
       render(
         <TestWrapper>
@@ -287,7 +285,7 @@ describe('SmartForm Component', () => {
 
       // Move to final step
       const nextButton = screen.getByRole('button', { name: /next/i });
-      await user.click(nextButton);
+      await userEvent.click(nextButton);
 
       await waitFor(() => {
         expect(
@@ -299,7 +297,6 @@ describe('SmartForm Component', () => {
 
   describe('Validation', () => {
     it('prevents form submission when validation fails', async () => {
-      const user = userEvent.setup();
 
       render(
         <TestWrapper>
@@ -312,13 +309,12 @@ describe('SmartForm Component', () => {
       );
 
       const submitButton = screen.getByRole('button', { name: /submit/i });
-      await user.click(submitButton);
+      await userEvent.click(submitButton);
 
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
     it('calls onSubmit when validation passes', async () => {
-      const user = userEvent.setup();
 
       render(
         <TestWrapper>
@@ -332,7 +328,7 @@ describe('SmartForm Component', () => {
       );
 
       const submitButton = screen.getByRole('button', { name: /submit/i });
-      await user.click(submitButton);
+      await userEvent.click(submitButton);
 
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -460,7 +456,6 @@ describe('SmartForm Component', () => {
     });
 
     it('opens history dialog when history button is clicked', async () => {
-      const user = userEvent.setup();
 
       render(
         <TestWrapper>
@@ -474,7 +469,7 @@ describe('SmartForm Component', () => {
       );
 
       const historyButton = screen.getByLabelText(/history/i);
-      await user.click(historyButton);
+      await userEvent.click(historyButton);
 
       await waitFor(() => {
         expect(screen.getByText('Form History')).toBeInTheDocument();
@@ -484,7 +479,6 @@ describe('SmartForm Component', () => {
 
   describe('Form Reset', () => {
     it('resets form to initial values when reset button is clicked', async () => {
-      const user = userEvent.setup();
       const initialValues = { firstName: 'John', email: 'john@example.com' };
 
       render(
@@ -500,7 +494,7 @@ describe('SmartForm Component', () => {
       );
 
       const resetButton = screen.getByRole('button', { name: /reset/i });
-      await user.click(resetButton);
+      await userEvent.click(resetButton);
 
       // Form should reset to initial values
       // This would be verified through field values in a full integration test
@@ -581,7 +575,6 @@ describe('SmartForm Component', () => {
 
   describe('Error Handling', () => {
     it('handles form submission errors gracefully', async () => {
-      const user = userEvent.setup();
       const mockOnSubmitError = jest
         .fn()
         .mockRejectedValue(new Error('Submission failed'));
@@ -598,7 +591,7 @@ describe('SmartForm Component', () => {
       );
 
       const submitButton = screen.getByRole('button', { name: /submit/i });
-      await user.click(submitButton);
+      await userEvent.click(submitButton);
 
       await waitFor(() => {
         expect(mockOnSubmitError).toHaveBeenCalled();

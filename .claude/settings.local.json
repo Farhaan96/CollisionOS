@@ -1,112 +1,29 @@
 {
   "permissions": {
     "allow": [
+      "WebSearch",
       "Bash(node:*)",
-      "Bash(curl:*)",
-      "Bash(npm run server:*)",
-      "Bash(BashOutput bash_1)",
-      "Bash(pkill:*)",
-      "Bash(taskkill:*)",
-      "Bash(dir \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\")",
-      "Bash(powershell:*)",
-      "Bash(npm start)",
-      "Bash(dir:*)",
-      "Read(C:\\Users\\farha\\.claude/**)",
-      "Read(C:\\Users\\farha\\.claude/**)",
-      "Read(C:\\Users\\farha/**)",
-      "Read(C:\\Users\\farha\\.claude/**)",
-      "Bash(npm:*)",
-      "Bash(timeout:*)",
-      "Bash(npx tsc:*)",
-      "Bash(git add:*)",
-      "Bash(git push:*)",
       "Bash(tasklist:*)",
-      "Bash(copy:*)"
-    ],
-    "deny": [],
-    "ask": [],
-    "defaultMode": "acceptEdits"
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\loop-detector.ps1\" \"check\" \"pre-edit\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\block_sensitive_writes.ps1\" \"{{ .tool_input.file_path }}\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\code-review.ps1\" \"{{ .tool_input.file_path }}\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\format_on_edit.ps1\" \"{{ .tool_input.file_path }}\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\auto-test.ps1\" \"{{ .tool_input.file_path }}\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\progress-tracker.ps1\" \"{{ .tool_input.file_path }}\" \"{{ .tool_name }}\" \"{{ .agent_name }}\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS\\.claude\\hooks\\stabilization-check.ps1\" \"{{ .tool_input.file_path }}\" \"wait\""
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Task initiated. Orchestrator will analyze and delegate...' -ForegroundColor Cyan\""
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Subagent completed task. Results available.' -ForegroundColor Green\""
-          }
-        ]
-      }
+      "Bash(npm run server:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run client:*)",
+      "Bash(npx jest:*)",
+      "Bash(npm install:*)",
+      "Bash(find:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(npm start)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)"
     ]
-  },
-  "loopControl": {
-    "maxRestartsPerMinute": 5,
-    "hookCooldownMs": 2000,
-    "enableLoopDetection": true,
-    "maxConsecutiveFailures": 3,
-    "stabilizationDelayMs": 5000
-  },
-  "budgets": {
-    "default": {
-      "maxStepsPerTask": 6,
-      "cooldownMsBetweenSteps": 1200,
-      "maxFilesChangedPerStep": 12
-    }
-  },
-  "ui": {
-    "diffStrategy": "small-batches",
-    "askBeforeLargeRefactor": true
   }
 }

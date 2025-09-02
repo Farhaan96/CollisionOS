@@ -1,16 +1,10 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('BMS Upload Simple Test', () => {
-  test('should load BMS Dashboard without XML parsing errors', async ({
+  test('should load BMS page after login without XML parsing errors', async ({
     page,
   }) => {
-    // Navigate to the application
-    await page.goto('http://localhost:3000');
-
-    // Wait for page to load
-    await page.waitForTimeout(3000);
-
-    // Check if there are any console errors
+    // Set up console error tracking
     const consoleErrors = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -18,12 +12,28 @@ test.describe('BMS Upload Simple Test', () => {
       }
     });
 
-    // Navigate to BMS Dashboard if possible
+    // Login first
+    await page.goto('http://localhost:3000/login');
+    await page.waitForLoadState('networkidle');
+    
+    await page.waitForSelector('input[placeholder="Enter your username"]', { timeout: 10000 });
+    await page.fill('input[placeholder="Enter your username"]', 'admin');
+    await page.fill('input[placeholder="Enter your password"]', 'admin123');
+    await page.click('button:has-text("Sign In to CollisionOS")');
+    
+    // Wait for dashboard
+    await page.waitForURL(/.*\/dashboard/, { timeout: 15000 });
+    await page.waitForLoadState('networkidle');
+
+    // Navigate to BMS Import page
     try {
-      await page.click('text=BMS Dashboard');
-      await page.waitForTimeout(2000);
+      const bmsLink = page.locator('text=BMS').or(page.locator('text=Import')).first();
+      if (await bmsLink.isVisible()) {
+        await bmsLink.click();
+        await page.waitForTimeout(2000);
+      }
     } catch (e) {
-      console.log('Could not navigate to BMS Dashboard, checking current page');
+      console.log('Could not find BMS navigation, that\'s OK for this test');
     }
 
     // Check for XML parsing errors specifically

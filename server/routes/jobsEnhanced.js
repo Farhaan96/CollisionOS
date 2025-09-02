@@ -9,6 +9,7 @@ const {
   asyncHandler,
   errors,
   successResponse,
+  paginatedResponse,
 } = require('../utils/errorHandler');
 const { validateBody } = require('../middleware/validation');
 const router = express.Router();
@@ -184,13 +185,11 @@ router.get(
         total = await Job.count({ where: { shopId: req.user.shopId } });
       }
 
-      successResponse(res, transformedJobs, 'Jobs retrieved successfully', {
-        pagination: {
-          limit: options.limit,
-          offset: options.offset,
-          total,
-        },
-      });
+      paginatedResponse(res, transformedJobs, {
+        limit: options.limit,
+        offset: options.offset,
+        total,
+      }, 'Jobs retrieved successfully');
     } catch (error) {
       console.error('Error fetching jobs:', error);
       throw errors.databaseError('Failed to fetch jobs');

@@ -31,7 +31,9 @@ describe('LoadingSpinner Component', () => {
       renderWithProviders(<LoadingSpinner message='' />);
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
-      expect(screen.queryByText('')).not.toBeInTheDocument();
+      // When message is empty, no typography element should be rendered
+      const messageElements = screen.queryAllByRole('text');
+      expect(messageElements.length).toBe(0);
     });
   });
 

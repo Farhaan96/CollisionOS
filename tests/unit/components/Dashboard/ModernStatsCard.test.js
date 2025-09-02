@@ -97,14 +97,13 @@ describe('ModernStatsCard Component', () => {
     });
 
     test('icon button is interactive', async () => {
-      const user = userEvent.setup();
       renderWithProviders(<ModernStatsCard {...defaultProps} />);
 
       const iconButton = screen.getByRole('button');
       expect(iconButton).toBeInTheDocument();
 
       // Test that the button can receive focus
-      await user.tab();
+      await userEvent.tab();
       expect(iconButton).toHaveFocus();
     });
   });
@@ -354,17 +353,16 @@ describe('ModernStatsCard Component', () => {
     });
 
     test('icon button has proper accessibility', async () => {
-      const user = userEvent.setup();
       renderWithProviders(<ModernStatsCard {...defaultProps} />);
 
       const iconButton = screen.getByRole('button');
 
       // Button should be focusable
-      await user.tab();
+      await userEvent.tab();
       expect(iconButton).toHaveFocus();
 
       // Button should be clickable
-      await user.click(iconButton);
+      await userEvent.click(iconButton);
       // No specific action expected, but should not crash
     });
 

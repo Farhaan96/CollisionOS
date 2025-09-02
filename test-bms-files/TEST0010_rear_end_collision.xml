@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate>
+    <EstimateInfo>
+        <EstimateNumber>TEST0010</EstimateNumber>
+        <ClaimNumber>CLM8553789737</ClaimNumber>
+        <EstimateDate>2024-09-01</EstimateDate>
+        <AccidentDate>2024-08-28</AccidentDate>
+        <EstimateType>Insurance</EstimateType>
+        <Status>Approved</Status>
+        <Appraiser>
+            <Name>Judith Kozey</Name>
+            <Company>Geico</Company>
+            <Phone>430.879.9541 x4234</Phone>
+            <Email>Bell_Fadel78@hotmail.com</Email>
+        </Appraiser>
+    </EstimateInfo>
+
+    <Customer>
+        <FirstName>Jodie</FirstName>
+        <LastName>Goldner</LastName>
+        <Phone>1-425-609-2127 x4917</Phone>
+        <Email>Jodie.Goldner@gmail.com</Email>
+        <Address>
+            <Street>3317 Woodside</Street>
+            <City>Legrosside</City>
+            <State>NM</State>
+            <Zip>81883-5939</Zip>
+        </Address>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HD44LGMT2TAIMRFQ</VIN>
+        <Year>2018</Year>
+        <Make>BMW</Make>
+        <Model>X3</Model>
+        <Color>Blue</Color>
+        <Trim>Base</Trim>
+        <Mileage>114758</Mileage>
+        <LicensePlate>3BZC857</LicensePlate>
+        <LicenseState>NJ</LicenseState>
+        <EngineType>4-Cyl</EngineType>
+        <Transmission>Automatic</Transmission>
+    </Vehicle>
+
+    <Insurance>
+        <Company>Geico</Company>
+        <PolicyNumber>S2DOLD6QCOHK</PolicyNumber>
+        <ClaimNumber>CLM8553789737</ClaimNumber>
+        <Deductible>250</Deductible>
+        <Coverage>Collision</Coverage>
+        <Adjuster>
+            <Name>Hugh Tremblay</Name>
+            <Phone>(468) 482-0525 x967</Phone>
+            <Email>Hugh_Bernier-Howe@yahoo.com</Email>
+        </Adjuster>
+    </Insurance>
+
+    <DamageDescription>
+        <PrimaryDamage>Rear End Collision</PrimaryDamage>
+        <DamageArea>Front</DamageArea>
+        <Severity>Moderate</Severity>
+        <DrivabilityImpact>Yes</DrivabilityImpact>
+        <SafetyIssues>Airbag Deployment</SafetyIssues>
+    </DamageDescription>
+
+    <LineItems>
+        <LineItem>
+            <LineNumber>1</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Rear Bumper Cover</Description>
+            <PartNumber>52159-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>385.25</UnitPrice>
+            <LaborHours>0.6</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>385.25</PartsAmount>
+            <LaborAmount>33.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>2</LineNumber>
+            <Type>Part</Type>
+            <Operation>Refinish</Operation>
+            <Description>Tail Lamp Assembly LH</Description>
+            <PartNumber>81560-06821</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>295.50</UnitPrice>
+            <LaborHours>2.3</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>295.50</PartsAmount>
+            <LaborAmount>126.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>3</LineNumber>
+            <Type>Part</Type>
+            <Operation>Replace</Operation>
+            <Description>Trunk Lid</Description>
+            <PartNumber>64500-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>525.75</UnitPrice>
+            <LaborHours>0.5</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>525.75</PartsAmount>
+            <LaborAmount>27.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>4</LineNumber>
+            <Type>Part</Type>
+            <Operation>Repair</Operation>
+            <Description>License Plate Bracket</Description>
+            <PartNumber>76403-06903</PartNumber>
+            <Quantity>1</Quantity>
+            <UnitPrice>45.99</UnitPrice>
+            <LaborHours>2.8</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>45.99</PartsAmount>
+            <LaborAmount>154.00</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>5</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Remove and Replace</Operation>
+            <Description>Remove and Replace - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>4.9</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>269.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>6</LineNumber>
+            <Type>Labor</Type>
+            <Operation>Repair</Operation>
+            <Description>Repair - Body Panel</Description>
+            
+            <Quantity>1</Quantity>
+            
+            <LaborHours>6.7</LaborHours>
+            <LaborRate>55.00</LaborRate>
+            <PartsAmount>0.00</PartsAmount>
+            <LaborAmount>368.50</LaborAmount>
+        </LineItem>
+        <LineItem>
+            <LineNumber>7</LineNumber>
+            <Type>Material</Type>
+            <Operation>Apply</Operation>
+            <Description>Paint and Materials</Description>
+            
+            <Quantity>1</Quantity>
+            <UnitPrice>218.90</UnitPrice>
+            
+            
+            <PartsAmount>218.90</PartsAmount>
+            <LaborAmount>0.00</LaborAmount>
+        </LineItem>
+    </LineItems>
+
+    <Totals>
+        <PartsTotal>1252.49</PartsTotal>
+        <LaborTotal>979.00</LaborTotal>
+        <MaterialsTotal>218.90</MaterialsTotal>
+        <SubletTotal>310.98</SubletTotal>
+        <Subtotal>2761.37</Subtotal>
+        <Tax>241.62</Tax>
+        <GrandTotal>3002.99</GrandTotal>
+    </Totals>
+
+    <Shop>
+        <Name>Daugherty Group Auto Body</Name>
+        <Address>3473 Hansen Loop</Address>
+        <City>Fort Nicholebury</City>
+        <State>CA</State>
+        <Zip>44164-4017</Zip>
+        <Phone>1-717-811-0386</Phone>
+        <Email>Brandon_Little@hotmail.com</Email>
+        <LicenseNumber>LIC80503181</LicenseNumber>
+    </Shop>
+
+    <Photos>
+        <Photo>
+            <Description>Accident Scene - Front Angle</Description>
+            <Filename>accident_front_test0010.jpg</Filename>
+            <DateTaken>2024-08-28T16:26:26.768Z</DateTaken>
+        </Photo>
+        <Photo>
+            <Description>Damage Detail - Primary Impact</Description>
+            <Filename>damage_detail_test0010.jpg</Filename>
+            <DateTaken>2024-08-28T16:26:26.768Z</DateTaken>
+        </Photo>
+    </Photos>
+
+</Estimate>

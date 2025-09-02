@@ -55,13 +55,12 @@ describe('AnimatedButton', () => {
 
   it('handles click events', async () => {
     const handleClick = jest.fn();
-    const user = userEvent.setup();
 
     renderWithTheme(
       <AnimatedButton onClick={handleClick}>Clickable Button</AnimatedButton>
     );
 
-    await user.click(screen.getByText('Clickable Button'));
+    await userEvent.click(screen.getByText('Clickable Button'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
@@ -197,7 +196,6 @@ describe('AnimatedCard', () => {
 
   it('handles card click when interactive', async () => {
     const handleClick = jest.fn();
-    const user = userEvent.setup();
 
     renderWithTheme(
       <AnimatedCard onCardClick={handleClick} interactive>
@@ -205,12 +203,11 @@ describe('AnimatedCard', () => {
       </AnimatedCard>
     );
 
-    await user.click(screen.getByText('Interactive Card'));
+    await userEvent.click(screen.getByText('Interactive Card'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
   it('supports flippable functionality', async () => {
-    const user = userEvent.setup();
 
     renderWithTheme(
       <AnimatedCard flippable backContent={<div>Back Content</div>}>
@@ -222,7 +219,7 @@ describe('AnimatedCard', () => {
     expect(screen.getByText('Front Content')).toBeInTheDocument();
 
     // Click to flip
-    await user.click(screen.getByText('Front Content'));
+    await userEvent.click(screen.getByText('Front Content'));
 
     // Should show back content (mocked animation)
     await waitFor(() => {
