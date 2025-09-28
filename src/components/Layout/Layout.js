@@ -44,6 +44,8 @@ import {
   Timeline,
   AutoMode,
   Insights,
+  DirectionsCar,
+  Receipt,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
@@ -51,7 +53,7 @@ import { ThemeSwitcher } from '../Theme/ThemeSwitcher';
 
 const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <Dashboard /> },
-  { path: '/search', label: 'Search', icon: <Search /> },
+  { path: '/search', label: 'RO Search', icon: <Search /> },
   { path: '/analytics', label: 'Analytics', icon: <Analytics /> },
   {
     path: '/production',

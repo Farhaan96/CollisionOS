@@ -27,7 +27,6 @@ const securityHeaders = () => {
     },
     noSniff: true,
     frameguard: { action: 'deny' },
-    xssFilter: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   });
 };

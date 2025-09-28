@@ -24,7 +24,12 @@
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Read(/C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS/**)",
+      "Bash(cat:*)",
+      "Bash(supabase:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

@@ -29,7 +29,7 @@ router.get('/', authenticateToken(), async (req, res) => {
       sortBy
     );
 
-    const supabase = getSupabaseClient(true); // Use admin client for now
+    const supabase = getSupabaseClient(); // Use RLS-protected client
     const shopId = req.user?.shopId;
 
     if (!shopId) {
@@ -133,7 +133,7 @@ router.get('/', authenticateToken(), async (req, res) => {
 // Get customer by ID
 router.get('/:id', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -202,7 +202,7 @@ router.get('/:id', authenticateToken(), async (req, res) => {
 // Create new customer
 router.post('/', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient();
     const shopId = req.user?.shopId;
 
     if (!shopId) {
@@ -249,7 +249,7 @@ router.post('/', authenticateToken(), async (req, res) => {
 // Update customer
 router.put('/:id', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 

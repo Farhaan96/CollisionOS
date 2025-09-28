@@ -42,6 +42,7 @@ const communicationRoutes = require('./routes/communication');
 
 // Phase 2 Backend Development Routes
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
+const repairOrderRoutes = require('./routes/repairOrders');
 const partsWorkflowRoutes = require('./routes/partsWorkflow');
 const schedulingRoutes = require('./routes/scheduling');
 const loanerFleetRoutes = require('./routes/loanerFleet');
@@ -278,6 +279,8 @@ app.use('/api/v1/communication', authenticateToken(), communicationRoutes);
 // Phase 2 Backend Development API Routes (v1)
 app.use('/api/v1/purchase-orders', authenticateToken(), purchaseOrderRoutes);
 app.use('/api/v1/pos', authenticateToken(), purchaseOrderRoutes); // Shorter alias
+app.use('/api/v1/repair-orders', authenticateToken(), repairOrderRoutes);
+app.use('/api/v1/ros', authenticateToken(), repairOrderRoutes); // Shorter alias
 app.use('/api/v1/parts-workflow', authenticateToken(), partsWorkflowRoutes);
 app.use('/api/v1/scheduling', authenticateToken(), schedulingRoutes);
 app.use('/api/v1/loaner-fleet', authenticateToken(), loanerFleetRoutes);
@@ -323,6 +326,8 @@ app.use('/api/communication', authenticateToken(), communicationRoutes);
 // Phase 2 Backend Development API Routes (legacy)
 app.use('/api/purchase-orders', authenticateToken(), purchaseOrderRoutes);
 app.use('/api/pos', authenticateToken(), purchaseOrderRoutes);
+app.use('/api/repair-orders', authenticateToken(), repairOrderRoutes);
+app.use('/api/ros', authenticateToken(), repairOrderRoutes);
 app.use('/api/parts-workflow', authenticateToken(), partsWorkflowRoutes);
 app.use('/api/scheduling', authenticateToken(), schedulingRoutes);
 app.use('/api/loaner-fleet', authenticateToken(), loanerFleetRoutes);

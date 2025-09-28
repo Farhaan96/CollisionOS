@@ -11,11 +11,13 @@ class CustomerService {
   /**
    * Find customers by criteria
    */
-  async findCustomers(criteria = {}) {
+  async findCustomers(criteria = {}, shopId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
-      let query = client.from(this.table).select('*');
+      const client = supabase || supabaseAdmin;
+
+      // Enforce tenant scoping
+      const effectiveShopId = this._requireShopId(shopId);
+      let query = client.from(this.table).select('*').eq('shop_id', effectiveShopId);
 
       // Apply filters based on criteria
       if (criteria.email) {
@@ -50,7 +52,7 @@ class CustomerService {
   /**
    * Create a new customer
    */
-  async createCustomer(customerData) {
+  async createCustomer(customerData, shopId) {
     try {
       // Generate customer number if not provided
       const customerNumber =
@@ -65,10 +67,7 @@ class CustomerService {
           customerData.lastName ||
           customerData.name?.split(' ').slice(1).join(' ') ||
           '',
-        shop_id:
-          customerData.shopId ||
-          process.env.DEV_SHOP_ID ||
-          '00000000-0000-4000-8000-000000000001',
+        shop_id: this._requireShopId(customerData.shopId || shopId),
         customer_type: customerData.customerType || 'individual',
         customer_status: customerData.status || 'active',
         is_active: true,
@@ -84,8 +83,8 @@ class CustomerService {
       if (customerData.state) customerRecord.state = customerData.state;
       // Note: removed zip field as it doesn't exist in current schema
 
-      // Use admin client to bypass RLS for system operations
-      const client = supabaseAdmin || supabase;
+      // Use non-admin when RLS is configured; fallback to admin only if needed
+      const client = supabase || supabaseAdmin;
       const { data, error } = await client
         .from(this.table)
         .insert([customerRecord])
@@ -110,10 +109,9 @@ class CustomerService {
   /**
    * Update existing customer
    */
-  async updateCustomer(customerId, updateData) {
+  async updateCustomer(customerId, updateData, shopId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
+      const client = supabase || supabaseAdmin;
       const customerRecord = {
         first_name: updateData.firstName,
         last_name: updateData.lastName,
@@ -188,11 +186,11 @@ class CustomerService {
   /**
    * Get all customers
    */
-  async getAllCustomers(options = {}) {
+  async getAllCustomers(options = {}, shopId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
-      let query = client.from(this.table).select('*');
+      const client = supabase || supabaseAdmin;
+      const effectiveShopId = this._requireShopId(shopId);
+      let query = client.from(this.table).select('*').eq('shop_id', effectiveShopId);
 
       // Apply sorting
       if (options.sortBy) {
@@ -231,13 +229,14 @@ class CustomerService {
   /**
    * Search customers by text
    */
-  async searchCustomers(searchTerm) {
+  async searchCustomers(searchTerm, shopId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
+      const client = supabase || supabaseAdmin;
+      const effectiveShopId = this._requireShopId(shopId);
       const { data, error } = await client
         .from(this.table)
         .select('*')
+        .eq('shop_id', effectiveShopId)
         .or(
           `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
         )
@@ -258,14 +257,15 @@ class CustomerService {
   /**
    * Delete customer
    */
-  async deleteCustomer(customerId) {
+  async deleteCustomer(customerId, shopId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
+      const client = supabase || supabaseAdmin;
+      const effectiveShopId = this._requireShopId(shopId);
       const { error } = await client
         .from(this.table)
         .delete()
-        .eq('id', customerId);
+        .eq('id', customerId)
+        .eq('shop_id', effectiveShopId);
 
       if (error) {
         console.error('Error deleting customer:', error);
@@ -305,6 +305,19 @@ class CustomerService {
       createdAt: customerRecord.created_at,
       updatedAt: customerRecord.updated_at,
     };
+  }
+
+  /**
+   * Internal: ensure a valid shopId is present
+   */
+  _requireShopId(shopId) {
+    if (shopId) return shopId;
+    if (process.env.NODE_ENV === 'development') {
+      const fallback = process.env.DEV_SHOP_ID || '00000000-0000-4000-8000-000000000001';
+      console.warn('Shop ID missing; using DEV fallback shop ID:', fallback);
+      return fallback;
+    }
+    throw new Error('Missing shopId for tenant-scoped customer operation');
   }
 }
 

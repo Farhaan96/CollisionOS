@@ -839,9 +839,10 @@ class BMSService {
     try {
       // Try to find existing customer by email first
       if (customerData.email) {
-        const existingCustomers = await customerService.findCustomers({
-          email: customerData.email,
-        });
+        const existingCustomers = await customerService.findCustomers(
+          { email: customerData.email },
+          shopId
+        );
         if (existingCustomers.length > 0) {
           console.log(
             'Found existing customer by email:',
@@ -853,9 +854,10 @@ class BMSService {
 
       // Try to find by phone
       if (customerData.phone) {
-        const existingCustomers = await customerService.findCustomers({
-          phone: customerData.phone,
-        });
+        const existingCustomers = await customerService.findCustomers(
+          { phone: customerData.phone },
+          shopId
+        );
         if (existingCustomers.length > 0) {
           console.log(
             'Found existing customer by phone:',
@@ -867,10 +869,10 @@ class BMSService {
 
       // Try to find by name (exact match)
       if (customerData.firstName && customerData.lastName) {
-        const existingCustomers = await customerService.findCustomers({
-          firstName: customerData.firstName,
-          lastName: customerData.lastName,
-        });
+        const existingCustomers = await customerService.findCustomers(
+          { firstName: customerData.firstName, lastName: customerData.lastName },
+          shopId
+        );
         if (existingCustomers.length > 0) {
           console.log(
             'Found existing customer by name:',
@@ -894,9 +896,9 @@ class BMSService {
 
       const customerWithShop = {
         ...customerDataForDB,
-        shopId: shopId || process.env.DEV_SHOP_ID || 'dev-shop-123',
+        shopId,
       };
-      return await customerService.createCustomer(customerWithShop);
+      return await customerService.createCustomer(customerWithShop, shopId);
     } catch (error) {
       console.error('Error in findOrCreateCustomer:', error);
       throw error;

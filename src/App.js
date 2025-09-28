@@ -39,6 +39,8 @@ const MUIComponentTest = lazy(
 
 // New Enterprise Collision Repair Components
 const SearchPage = lazy(() => import('./pages/Search/SearchPage'));
+const ROSearchPage = lazy(() => import('./pages/Search/ROSearchPage'));
+const RODetailPage = lazy(() => import('./pages/RO/RODetailPage'));
 const BusinessIntelligenceDashboard = lazy(
   () => import('./components/Analytics/BusinessIntelligenceDashboard')
 );
@@ -94,7 +96,15 @@ const AppRoutes = () => {
           path='search'
           element={
             <Suspense fallback={<LoadingSpinner />}>
-              <SearchPage />
+              <ROSearchPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path='ro/:id'
+          element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <RODetailPage />
             </Suspense>
           }
         />

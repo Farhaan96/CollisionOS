@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate version="5.2" provider="State Farm">
+    <Header>
+        <ClaimNumber>SF-2024-001234</ClaimNumber>
+        <EstimateNumber>EST-001234</EstimateNumber>
+        <DateCreated>2024-09-16</DateCreated>
+        <Adjuster>
+            <Name>Lisa Martinez</Name>
+            <Email>lisa.martinez@statefarm.com</Email>
+            <Phone>(800) 555-0199</Phone>
+        </Adjuster>
+    </Header>
+
+    <Customer>
+        <FirstName>Emily</FirstName>
+        <LastName>Johnson</LastName>
+        <Phone>(416) 555-0123</Phone>
+        <Email>emily.johnson@email.com</Email>
+    </Customer>
+
+    <Vehicle>
+        <VIN>1HGCM82633A123456</VIN>
+        <Year>2018</Year>
+        <Make>Honda</Make>
+        <Model>Civic</Model>
+        <Trim>LX</Trim>
+        <BodyStyle>Sedan</BodyStyle>
+        <Color>Silver</Color>
+        <LicensePlate>ABCD123</LicensePlate>
+        <Odometer>75000</Odometer>
+    </Vehicle>
+
+    <DamageAssessment>
+        <IncidentDate>2024-09-15</IncidentDate>
+        <Description>Rear-end collision at intersection. Damage to front bumper, hood, and headlight.</Description>
+        <AreaOfImpact>Front</AreaOfImpact>
+    </DamageAssessment>
+
+    <Parts>
+        <Part>
+            <Operation>Replace</Operation>
+            <Description>Front Bumper Cover</Description>
+            <OEMNumber>04711-52370</OEMNumber>
+            <Quantity>1</Quantity>
+            <LaborHours>2.5</LaborHours>
+            <PaintHours>4.0</PaintHours>
+        </Part>
+        <Part>
+            <Operation>Replace</Operation>
+            <Description>Right Headlight Assembly</Description>
+            <OEMNumber>33151-SNA-A01</OEMNumber>
+            <Quantity>1</Quantity>
+            <LaborHours>0.8</LaborHours>
+        </Part>
+        <Part>
+            <Operation>Replace</Operation>
+            <Description>Front Grille Assembly</Description>
+            <OEMNumber>75101-SNA-A01</OEMNumber>
+            <Quantity>1</Quantity>
+            <LaborHours>0.5</LaborHours>
+            <PaintHours>1.0</PaintHours>
+        </Part>
+        <Part>
+            <Operation>Repair</Operation>
+            <Description>Hood Panel</Description>
+            <Quantity>1</Quantity>
+            <LaborHours>3.0</LaborHours>
+            <PaintHours>5.0</PaintHours>
+        </Part>
+    </Parts>
+
+    <Totals>
+        <Labor>1650.00</Labor>
+        <Parts>1200.00</Parts>
+        <Paint>400.00</Paint>
+        <Total>3250.00</Total>
+        <Deductible>500.00</Deductible>
+    </Totals>
+</Estimate>

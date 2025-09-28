@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Estimate version="4.1" provider="Intact Insurance">
+    <Header>
+        <ClaimNumber>INT-2024-567890</ClaimNumber>
+        <EstimateNumber>EST-567890</EstimateNumber>
+        <DateCreated>2024-09-21</DateCreated>
+        <Adjuster>
+            <Name>Robert Kim</Name>
+            <Email>robert.kim@intact.com</Email>
+            <Phone>(800) 555-0188</Phone>
+        </Adjuster>
+    </Header>
+
+    <Customer>
+        <FirstName>Michael</FirstName>
+        <LastName>Chen</LastName>
+        <Phone>(647) 555-0456</Phone>
+        <Email>mchen@email.com</Email>
+    </Customer>
+
+    <Vehicle>
+        <VIN>5NPE34AF5KH654321</VIN>
+        <Year>2019</Year>
+        <Make>Hyundai</Make>
+        <Model>Elantra</Model>
+        <Trim>Preferred</Trim>
+        <BodyStyle>Sedan</BodyStyle>
+        <Color>Black</Color>
+        <LicensePlate>EFGH456</LicensePlate>
+        <Odometer>45000</Odometer>
+    </Vehicle>
+
+    <DamageAssessment>
+        <IncidentDate>2024-09-20</IncidentDate>
+        <Description>Side impact collision. Damage to passenger side door, quarter panel, and mirror.</Description>
+        <AreaOfImpact>Right Side</AreaOfImpact>
+    </DamageAssessment>
+
+    <Parts>
+        <Part>
+            <Operation>Repair</Operation>
+            <Description>Right Front Door</Description>
+            <Quantity>1</Quantity>
+            <LaborHours>4.0</LaborHours>
+            <PaintHours>3.0</PaintHours>
+        </Part>
+        <Part>
+            <Operation>Replace</Operation>
+            <Description>Right Rear Door</Description>
+            <OEMNumber>77004-F2000</OEMNumber>
+            <Quantity>1</Quantity>
+            <LaborHours>2.0</LaborHours>
+            <PaintHours>4.0</PaintHours>
+            <PartType>Used</PartType>
+        </Part>
+        <Part>
+            <Operation>Repair</Operation>
+            <Description>Right Quarter Panel</Description>
+            <Quantity>1</Quantity>
+            <LaborHours>6.0</LaborHours>
+            <PaintHours>5.0</PaintHours>
+        </Part>
+        <Part>
+            <Operation>Replace</Operation>
+            <Description>Right Side Mirror Assembly</Description>
+            <OEMNumber>87620-F2010</OEMNumber>
+            <Quantity>1</Quantity>
+            <LaborHours>0.5</LaborHours>
+            <PartType>Used</PartType>
+        </Part>
+    </Parts>
+
+    <Totals>
+        <Labor>2400.00</Labor>
+        <Parts>1850.00</Parts>
+        <Paint>500.00</Paint>
+        <Total>4750.00</Total>
+        <Deductible>1000.00</Deductible>
+    </Totals>
+</Estimate>

@@ -5,19 +5,107 @@
 -- REALTIME CONFIGURATION
 -- =====================================================
 
--- Enable realtime for key tables
-ALTER PUBLICATION supabase_realtime ADD TABLE shops;
-ALTER PUBLICATION supabase_realtime ADD TABLE users;
-ALTER PUBLICATION supabase_realtime ADD TABLE jobs;
-ALTER PUBLICATION supabase_realtime ADD TABLE job_updates;
-ALTER PUBLICATION supabase_realtime ADD TABLE customers;
-ALTER PUBLICATION supabase_realtime ADD TABLE vehicles;
-ALTER PUBLICATION supabase_realtime ADD TABLE parts;
-ALTER PUBLICATION supabase_realtime ADD TABLE job_parts;
-ALTER PUBLICATION supabase_realtime ADD TABLE job_labor;
-ALTER PUBLICATION supabase_realtime ADD TABLE estimates;
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-ALTER PUBLICATION supabase_realtime ADD TABLE vendors;
+-- Enable realtime for key tables (only if not already added)
+DO $$
+BEGIN
+    -- Add tables to realtime publication if they exist and aren't already added
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'shops') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE shops;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'users') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE users;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'jobs') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE jobs;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'job_updates') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE job_updates;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'customers') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE customers;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'vehicles') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE vehicles;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'parts') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE parts;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'job_parts') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE job_parts;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'job_labor') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE job_labor;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'estimates') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE estimates;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'notifications') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'vendors') THEN
+        BEGIN
+            ALTER PUBLICATION supabase_realtime ADD TABLE vendors;
+        EXCEPTION WHEN duplicate_object THEN
+            -- Table already in publication, skip
+        END;
+    END IF;
+END
+$$;
 
 -- =====================================================
 -- ADVANCED RLS POLICIES FOR ROLE-BASED ACCESS
@@ -32,7 +120,7 @@ DECLARE
 BEGIN
   SELECT permissions, role INTO user_permissions, user_role
   FROM users 
-  WHERE user_id = user_uuid AND is_active = true;
+  WHERE id = user_uuid AND is_active = true;
   
   -- If no user found or inactive, deny access
   IF NOT FOUND THEN
@@ -57,7 +145,7 @@ DECLARE
 BEGIN
   SELECT shop_id INTO shop_uuid
   FROM users 
-  WHERE user_id = auth.uid() AND is_active = true;
+  WHERE id = auth.uid() AND is_active = true;
   
   RETURN shop_uuid;
 END;
@@ -79,6 +167,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Enhanced Customers policies
 DROP POLICY IF EXISTS "Customers are viewable by shop members" ON customers;
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON customers;
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON jobs;
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON parts;
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON estimates;
 DROP POLICY IF EXISTS "Shop members can manage customers" ON customers;
 
 CREATE POLICY "Customers select policy" ON customers
@@ -208,7 +300,7 @@ BEGIN
   -- Get the current user's shop ID
   SELECT shop_id INTO user_shop_id
   FROM users 
-  WHERE user_id = auth.uid();
+  WHERE id = auth.uid();
   
   -- Only allow realtime updates for the user's shop
   IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') AND NEW.shop_id != user_shop_id THEN
@@ -720,7 +812,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TABLE audit_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   shop_id UUID NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES users(user_id),
+  user_id UUID REFERENCES users(id),
   table_name TEXT NOT NULL,
   record_id UUID NOT NULL,
   operation TEXT NOT NULL, -- INSERT, UPDATE, DELETE
@@ -747,7 +839,7 @@ CREATE POLICY "Audit logs are viewable by shop owners and admins" ON audit_log
   FOR SELECT USING (
     user_belongs_to_shop(shop_id) AND 
     auth.uid() IN (
-      SELECT user_id FROM users 
+      SELECT id FROM users 
       WHERE shop_id = audit_log.shop_id 
       AND role IN ('owner', 'admin', 'manager')
       AND is_active = true

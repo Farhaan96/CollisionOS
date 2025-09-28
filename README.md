@@ -88,8 +88,13 @@ documents (bms_document_id PK, bms_version, document_type, created_at, provenanc
 3. **Set up Supabase configuration**
 
    ```bash
-   cp .env.example .env
-   # Edit .env with your Supabase URL and keys
+   # Windows (PowerShell or CMD)
+   copy env.example .env
+
+   # macOS/Linux
+   cp env.example .env
+
+   # Then edit .env with your Supabase URL and keys
    ```
 
 4. **Initialize collision repair database**

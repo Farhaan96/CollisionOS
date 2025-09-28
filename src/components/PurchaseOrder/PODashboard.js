@@ -73,6 +73,167 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 /**
+ * ReceivingInterface - Component for processing partial PO receiving
+ */
+const ReceivingInterface = ({ purchaseOrder, onReceiveComplete }) => {
+  const [receivingItems, setReceivingItems] = useState([]);
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    if (purchaseOrder?.items) {
+      setReceivingItems(
+        purchaseOrder.items.map(item => ({
+          part_line_id: item.id,
+          partNumber: item.partNumber,
+          description: item.description,
+          ordered: item.quantity,
+          received: item.received || 0,
+          receivedQuantity: item.quantity - (item.received || 0), // Default to remaining
+          condition: 'good',
+          notes: ''
+        }))
+      );
+    }
+  }, [purchaseOrder]);
+
+  const updateReceivingItem = (partLineId, field, value) => {
+    setReceivingItems(prev =>
+      prev.map(item =>
+        item.part_line_id === partLineId ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const processReceiving = async () => {
+    setProcessing(true);
+    try {
+      const receivedItems = receivingItems
+        .filter(item => item.receivedQuantity > 0)
+        .map(item => ({
+          part_line_id: item.part_line_id,
+          received_quantity: item.receivedQuantity,
+          condition: item.condition,
+          notes: item.notes
+        }));
+
+      // Simulate API call to backend
+      const response = await fetch(`/api/purchase-orders/${purchaseOrder.id}/receive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ received_items: receivedItems })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        onReceiveComplete(result.data);
+      } else {
+        console.error('Receiving failed:', result.message);
+      }
+    } catch (error) {
+      console.error('Receiving error:', error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <Box>
+      <Typography variant='h6' gutterBottom>
+        Items to Receive
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ mb: 3 }}>
+        <Table size='small'>
+          <TableHead>
+            <TableRow>
+              <TableCell>Part Number</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell align='center'>Ordered</TableCell>
+              <TableCell align='center'>Previously Received</TableCell>
+              <TableCell align='center'>Receiving Now</TableCell>
+              <TableCell>Condition</TableCell>
+              <TableCell>Notes</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {receivingItems.map((item) => (
+              <TableRow key={item.part_line_id}>
+                <TableCell>
+                  <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                    {item.partNumber}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant='body2'>
+                    {item.description}
+                  </Typography>
+                </TableCell>
+                <TableCell align='center'>
+                  <Chip label={item.ordered} size='small' />
+                </TableCell>
+                <TableCell align='center'>
+                  <Chip label={item.received} size='small' color='success' />
+                </TableCell>
+                <TableCell align='center'>
+                  <TextField
+                    type='number'
+                    size='small'
+                    value={item.receivedQuantity}
+                    onChange={(e) => updateReceivingItem(item.part_line_id, 'receivedQuantity', parseInt(e.target.value) || 0)}
+                    inputProps={{ min: 0, max: item.ordered * 2 }}
+                    sx={{ width: 80 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <FormControl size='small' sx={{ minWidth: 120 }}>
+                    <Select
+                      value={item.condition}
+                      onChange={(e) => updateReceivingItem(item.part_line_id, 'condition', e.target.value)}
+                    >
+                      <MenuItem value='good'>Good</MenuItem>
+                      <MenuItem value='damaged'>Damaged</MenuItem>
+                      <MenuItem value='wrong_part'>Wrong Part</MenuItem>
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size='small'
+                    placeholder='Notes...'
+                    value={item.notes}
+                    onChange={(e) => updateReceivingItem(item.part_line_id, 'notes', e.target.value)}
+                    sx={{ width: 120 }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button
+          variant='outlined'
+          onClick={() => onReceiveComplete(null)}
+          disabled={processing}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant='contained'
+          onClick={processReceiving}
+          disabled={processing || receivingItems.every(item => item.receivedQuantity === 0)}
+          startIcon={processing ? <Schedule /> : <CheckCircle />}
+        >
+          {processing ? 'Processing...' : 'Process Receipt'}
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+/**
  * PODashboard - Advanced Purchase Order Management System
  * Complete vendor and purchasing workflow
  */
@@ -593,6 +754,344 @@ const PODashboard = ({ className, ...props }) => {
     </TableContainer>
   );
 
+  // Render analytics dashboard with vendor KPIs
+  const renderAnalyticsDashboard = () => {
+    const analytics = calculateAnalytics();
+
+    return (
+      <Box>
+        <Typography variant='h6' gutterBottom>
+          Purchase Analytics & Vendor Performance
+        </Typography>
+
+        {/* Overall KPI Summary */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Typography variant='h4' color='primary' sx={{ fontWeight: 600 }}>
+                  ${analytics.totalSpend.toLocaleString()}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Total Spend
+                </Typography>
+                <Typography variant='caption' color='success.main'>
+                  +{analytics.spendGrowth}% vs last month
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Typography variant='h4' color='warning.main' sx={{ fontWeight: 600 }}>
+                  {analytics.avgLeadTime}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Avg Lead Time (days)
+                </Typography>
+                <Typography variant='caption' color='error.main'>
+                  +0.5 days vs target
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Typography variant='h4' color='success.main' sx={{ fontWeight: 600 }}>
+                  {analytics.avgFillRate}%
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Overall Fill Rate
+                </Typography>
+                <Typography variant='caption' color='success.main'>
+                  Above 90% target
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Typography variant='h4' color='info.main' sx={{ fontWeight: 600 }}>
+                  {analytics.activeVendors}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Active Vendors
+                </Typography>
+                <Typography variant='caption' color='info.main'>
+                  {analytics.preferredVendors} preferred
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Vendor Performance Comparison */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} lg={8}>
+            <Card>
+              <CardContent>
+                <Typography variant='h6' gutterBottom>
+                  Vendor Performance Scorecard
+                </Typography>
+                <TableContainer>
+                  <Table size='small'>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Vendor</TableCell>
+                        <TableCell align='center'>Fill Rate</TableCell>
+                        <TableCell align='center'>On-Time %</TableCell>
+                        <TableCell align='center'>Avg Lead Time</TableCell>
+                        <TableCell align='center'>Return Rate</TableCell>
+                        <TableCell align='center'>Overall Score</TableCell>
+                        <TableCell align='center'>Trend</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {vendors.map(vendor => {
+                        const score = calculateVendorScore(vendor);
+                        return (
+                          <TableRow key={vendor.id}>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar sx={{ width: 24, height: 24 }}>
+                                  <Business />
+                                </Avatar>
+                                <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                  {vendor.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Chip
+                                label={`${vendor.fillRate}%`}
+                                size='small'
+                                color={vendor.fillRate >= 95 ? 'success' : vendor.fillRate >= 90 ? 'warning' : 'error'}
+                              />
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Chip
+                                label={`${vendor.performance.onTimeDelivery}%`}
+                                size='small'
+                                color={vendor.performance.onTimeDelivery >= 95 ? 'success' : vendor.performance.onTimeDelivery >= 90 ? 'warning' : 'error'}
+                              />
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Typography variant='body2'>
+                                {vendor.leadTime} days
+                              </Typography>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Typography variant='body2' color={vendor.performance.returnRate <= 2 ? 'success.main' : 'error.main'}>
+                                {vendor.performance.returnRate}%
+                              </Typography>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                  {score.toFixed(1)}
+                                </Typography>
+                                {score >= 90 ? (
+                                  <Star fontSize='small' color='warning' />
+                                ) : score >= 80 ? (
+                                  <Star fontSize='small' color='action' />
+                                ) : (
+                                  <StarBorder fontSize='small' color='action' />
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell align='center'>
+                              {score >= 85 ? (
+                                <TrendingUp fontSize='small' color='success' />
+                              ) : (
+                                <TrendingDown fontSize='small' color='error' />
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} lg={4}>
+            <Card>
+              <CardContent>
+                <Typography variant='h6' gutterBottom>
+                  Spend Distribution
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  {vendors.map((vendor, index) => {
+                    const percentage = (vendor.totalSpent / analytics.totalSpend) * 100;
+                    return (
+                      <Box key={vendor.id} sx={{ mb: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant='body2'>{vendor.name}</Typography>
+                          <Typography variant='body2'>{percentage.toFixed(1)}%</Typography>
+                        </Box>
+                        <LinearProgress
+                          variant='determinate'
+                          value={percentage}
+                          sx={{ height: 8, borderRadius: 4 }}
+                          color={index % 2 === 0 ? 'primary' : 'secondary'}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Key Performance Indicators */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant='h6' gutterBottom>
+                  Performance Trends
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant='body2' color='text.secondary' gutterBottom>
+                    Monthly Performance Indicators
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant='body2'>Fill Rate Target (95%)</Typography>
+                    <LinearProgress
+                      variant='determinate'
+                      value={analytics.avgFillRate}
+                      sx={{ width: '60%', mr: 1 }}
+                      color={analytics.avgFillRate >= 95 ? 'success' : 'warning'}
+                    />
+                    <Typography variant='body2'>{analytics.avgFillRate}%</Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant='body2'>On-Time Delivery (90%)</Typography>
+                    <LinearProgress
+                      variant='determinate'
+                      value={analytics.avgOnTimeDelivery}
+                      sx={{ width: '60%', mr: 1 }}
+                      color={analytics.avgOnTimeDelivery >= 90 ? 'success' : 'warning'}
+                    />
+                    <Typography variant='body2'>{analytics.avgOnTimeDelivery}%</Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant='body2'>Quality Rating (4.5+)</Typography>
+                    <LinearProgress
+                      variant='determinate'
+                      value={(analytics.avgQualityRating / 5) * 100}
+                      sx={{ width: '60%', mr: 1 }}
+                      color={analytics.avgQualityRating >= 4.5 ? 'success' : 'warning'}
+                    />
+                    <Typography variant='body2'>{analytics.avgQualityRating}/5</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant='h6' gutterBottom>
+                  Vendor Recommendations
+                </Typography>
+                <Box>
+                  <Typography variant='body2' color='text.secondary' gutterBottom>
+                    Based on performance analysis
+                  </Typography>
+
+                  {analytics.recommendations.map((rec, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 1,
+                        mb: 1,
+                        p: 1,
+                        bgcolor: rec.type === 'success' ? 'success.light' : rec.type === 'warning' ? 'warning.light' : 'error.light',
+                        borderRadius: 1,
+                        opacity: 0.1
+                      }}
+                    >
+                      {rec.type === 'success' ? (
+                        <CheckCircle fontSize='small' color='success' />
+                      ) : rec.type === 'warning' ? (
+                        <Warning fontSize='small' color='warning' />
+                      ) : (
+                        <Warning fontSize='small' color='error' />
+                      )}
+                      <Typography variant='body2'>{rec.message}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+    );
+  };
+
+  // Calculate analytics data
+  const calculateAnalytics = () => {
+    const totalSpend = vendors.reduce((sum, v) => sum + v.totalSpent, 0);
+    const avgFillRate = vendors.reduce((sum, v) => sum + v.fillRate, 0) / vendors.length;
+    const avgLeadTime = vendors.reduce((sum, v) => sum + v.leadTime, 0) / vendors.length;
+    const avgOnTimeDelivery = vendors.reduce((sum, v) => sum + v.performance.onTimeDelivery, 0) / vendors.length;
+    const avgQualityRating = vendors.reduce((sum, v) => sum + v.performance.qualityRating, 0) / vendors.length;
+
+    const recommendations = [
+      {
+        type: 'success',
+        message: `${vendors.filter(v => v.fillRate >= 95).length} vendors meeting fill rate targets`
+      },
+      {
+        type: 'warning',
+        message: `Consider negotiating better terms with high-spend vendors`
+      },
+      {
+        type: 'info',
+        message: `Diversify supplier base to reduce lead time dependencies`
+      }
+    ];
+
+    return {
+      totalSpend,
+      avgFillRate: Math.round(avgFillRate * 10) / 10,
+      avgLeadTime: Math.round(avgLeadTime * 10) / 10,
+      avgOnTimeDelivery: Math.round(avgOnTimeDelivery * 10) / 10,
+      avgQualityRating: Math.round(avgQualityRating * 10) / 10,
+      activeVendors: vendors.length,
+      preferredVendors: vendors.filter(v => v.rating >= 4.5).length,
+      spendGrowth: 12.5, // Mock growth percentage
+      recommendations
+    };
+  };
+
+  // Calculate vendor performance score
+  const calculateVendorScore = (vendor) => {
+    const fillRateScore = vendor.fillRate;
+    const onTimeScore = vendor.performance.onTimeDelivery;
+    const qualityScore = (vendor.performance.qualityRating / 5) * 100;
+    const returnPenalty = vendor.performance.returnRate * 5; // Penalty for returns
+
+    return Math.max(0, (fillRateScore * 0.3 + onTimeScore * 0.3 + qualityScore * 0.25 - returnPenalty * 0.15));
+  };
+
   // Render vendor performance dashboard
   const renderVendorDashboard = () => (
     <Grid container spacing={3}>
@@ -778,17 +1277,7 @@ const PODashboard = ({ className, ...props }) => {
 
       {activeTab === 1 && renderVendorDashboard()}
 
-      {activeTab === 2 && (
-        <Box>
-          <Typography variant='h6' gutterBottom>
-            Purchase Analytics & Reports
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            Analytics dashboard will be implemented here with spend analysis,
-            vendor performance metrics, and procurement insights.
-          </Typography>
-        </Box>
-      )}
+      {activeTab === 2 && renderAnalyticsDashboard()}
 
       {/* Context Menu */}
       <Menu
@@ -833,19 +1322,38 @@ const PODashboard = ({ className, ...props }) => {
       <Dialog
         open={showReceiving}
         onClose={() => setShowReceiving(false)}
-        maxWidth='md'
+        maxWidth='lg'
         fullWidth
       >
-        <DialogTitle>Receive Items - {selectedPO?.poNumber}</DialogTitle>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Receipt />
+            <Box>
+              <Typography variant='h6'>
+                Receive Items - {selectedPO?.poNumber}
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                {selectedPO?.vendor?.name} • Expected: {selectedPO?.expectedDelivery}
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
         <DialogContent>
-          <Typography variant='body2' sx={{ mb: 2 }}>
-            Partial receiving interface will be implemented here.
-          </Typography>
+          <ReceivingInterface
+            purchaseOrder={selectedPO}
+            onReceiveComplete={(result) => {
+              setShowReceiving(false);
+              // Refresh PO data after receiving
+              setPOs(prevPOs =>
+                prevPOs.map(po =>
+                  po.id === selectedPO.id
+                    ? { ...po, status: result.po_status, receivedItems: po.itemsCount }
+                    : po
+                )
+              );
+            }}
+          />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowReceiving(false)}>Cancel</Button>
-          <Button variant='contained'>Process Receipt</Button>
-        </DialogActions>
       </Dialog>
 
       {/* Floating Action Button for Mobile */}

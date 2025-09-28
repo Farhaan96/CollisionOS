@@ -690,8 +690,157 @@ class BMSService {
   /**
    * Save BMS data to database
    */
-  async saveBMSData(bmsData) {
+  /**
+   * Save BMS data using Supabase Edge Function for collision repair workflow
+   */
+  async saveBMSDataViaSupabase(bmsData, options = {}) {
     try {
+      // Import Supabase client
+      const { supabase, supabaseHelpers } = await import('../config/supabase-client.js');
+
+      // Get current user and shop context
+      const user = await supabaseHelpers.getCurrentUser();
+      const shopId = await supabaseHelpers.getUserShopId();
+
+      if (!user || !shopId) {
+        throw new Error('User must be authenticated and associated with a shop');
+      }
+
+      // Prepare data for Supabase Edge Function
+      const bmsPayload = {
+        data: this.prepareBMSDataForCollisionRepair(bmsData),
+        format: 'json',
+        shop_id: shopId,
+        user_id: user.id,
+        file_name: options.fileName || `bms-upload-${Date.now()}.xml`,
+        original_file_name: options.originalFileName || options.fileName,
+        auto_create_ro: options.autoCreateRO !== false
+      };
+
+      console.log('Sending BMS data to Supabase Edge Function...');
+
+      // Call Supabase Edge Function for BMS ingestion
+      const { data, error } = await supabase.functions.invoke('bms_ingest', {
+        body: bmsPayload
+      });
+
+      if (error) {
+        console.error('Supabase Edge Function error:', error);
+        throw new Error(`BMS ingestion failed: ${error.message}`);
+      }
+
+      if (!data.success) {
+        console.error('BMS ingestion errors:', data.errors);
+        throw new Error(`BMS ingestion failed: ${data.message}`);
+      }
+
+      console.log('BMS data successfully processed:', data);
+
+      return {
+        success: true,
+        savedData: data,
+        message: 'BMS data processed successfully via collision repair pipeline',
+        bmsImportId: data.bms_import_id,
+        workflowCreated: data.workflow_created,
+        counts: data.counts,
+        processingTime: data.processing_time_ms,
+        warnings: data.warnings || [],
+        source: 'supabase_edge_function'
+      };
+
+    } catch (error) {
+      console.error('Error saving BMS data via Supabase:', error);
+      throw new Error(`Failed to save BMS data via Supabase: ${error.message}`);
+    }
+  }
+
+  /**
+   * Prepare BMS data for collision repair workflow format
+   */
+  prepareBMSDataForCollisionRepair(bmsData) {
+    return {
+      documents: [{
+        document_type: 'BMS',
+        version: '1.0',
+        source_system: 'CollisionOS Frontend',
+        created_date: new Date().toISOString(),
+        document_id: bmsData.documentInfo?.documentId || `DOC_${Date.now()}`
+      }],
+      customers: [{
+        first_name: bmsData.adminInfo?.policyHolder?.firstName || 'Unknown',
+        last_name: bmsData.adminInfo?.policyHolder?.lastName || 'Customer',
+        email: bmsData.adminInfo?.policyHolder?.email || '',
+        phone: bmsData.adminInfo?.policyHolder?.phone || '',
+        address_line1: bmsData.adminInfo?.policyHolder?.address?.address1 || '',
+        city: bmsData.adminInfo?.policyHolder?.address?.city || '',
+        state: bmsData.adminInfo?.policyHolder?.address?.stateProvince || '',
+        zip_code: bmsData.adminInfo?.policyHolder?.address?.postalCode || '',
+        type: 'individual',
+        status: 'active'
+      }],
+      vehicles: [{
+        vin: bmsData.vehicleInfo?.vin || '',
+        year: parseInt(bmsData.vehicleInfo?.year) || null,
+        make: bmsData.vehicleInfo?.make || '',
+        model: bmsData.vehicleInfo?.model || '',
+        color: bmsData.vehicleInfo?.color || '',
+        odometer: parseInt(bmsData.vehicleInfo?.mileage) || null,
+        odometer_unit: 'miles'
+      }],
+      claims: [{
+        claim_number: bmsData.claimInfo?.claimNumber || `CLM-${Date.now()}`,
+        insurance_company: bmsData.adminInfo?.insuranceCompany?.companyName || 'Unknown',
+        deductible: parseFloat(bmsData.claimInfo?.deductible) || 0,
+        date_of_loss: new Date().toISOString().split('T')[0],
+        loss_description: 'BMS imported claim'
+      }],
+      repair_orders: [{
+        ro_number: bmsData.documentInfo?.documentId || `RO-${Date.now()}`,
+        status: 'estimate',
+        stage: 'intake',
+        total_estimate: parseFloat(bmsData.totals?.grossTotal) || 0,
+        total_labor: parseFloat(bmsData.totals?.laborTotal) || 0,
+        total_parts: parseFloat(bmsData.totals?.partsTotal) || 0
+      }],
+      part_lines: this.extractPartLinesForCollisionRepair(bmsData.damageLines || [])
+    };
+  }
+
+  /**
+   * Extract part lines in collision repair format
+   */
+  extractPartLinesForCollisionRepair(damageLines) {
+    if (!Array.isArray(damageLines)) return [];
+
+    return damageLines.map((line, index) => ({
+      line_number: index + 1,
+      part_number: line.partInfo?.partNum || '',
+      part_description: line.partInfo?.description || '',
+      quantity: parseInt(line.partInfo?.quantity) || 1,
+      unit_cost: parseFloat(line.partInfo?.price) || 0,
+      total_cost: parseFloat(line.partInfo?.totalPrice) || 0,
+      status: 'needed',
+      operation_type: line.laborInfo?.operation || 'repair',
+      labor_hours: parseFloat(line.laborInfo?.hours) || 0,
+      part_type: 'OEM'
+    }));
+  }
+
+  async saveBMSData(bmsData, options = {}) {
+    try {
+      // Try Supabase Edge Function first for modern collision repair workflow
+      if (options.useSupabase !== false) {
+        try {
+          return await this.saveBMSDataViaSupabase(bmsData, options);
+        } catch (supabaseError) {
+          console.warn('Supabase BMS save failed, falling back to legacy method:', supabaseError.message);
+          if (options.fallbackToLegacy === false) {
+            throw supabaseError;
+          }
+        }
+      }
+
+      // Fallback to legacy Express API method
       // Helper function to safely extract text from XML objects
       const safeText = value => {
         if (typeof value === 'string') return value;
