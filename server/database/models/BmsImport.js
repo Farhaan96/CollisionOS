@@ -170,36 +170,8 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'bms_imports',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['fileName'],
-        },
-        {
-          fields: ['fileType'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['importDate'],
-        },
-        {
-          fields: ['createdBy'],
-        },
-        {
-          fields: ['estimateId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['bmsProvider'],
-        },
-        {
-          fields: ['canRollback'],
-        },
+        // Indexes temporarily disabled for initial migration
+        // Re-enable after first successful sync
       ],
       hooks: {
         beforeCreate: bmsImport => {

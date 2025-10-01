@@ -374,61 +374,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'invoices',
       timestamps: true,
       indexes: [
-        {
-          unique: true,
-          fields: ['invoiceNumber'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['customerId'],
-        },
-        {
-          fields: ['vehicleId'],
-        },
-        {
-          fields: ['insuranceCompanyId'],
-        },
-        {
-          fields: ['invoiceDate'],
-        },
-        {
-          fields: ['dueDate'],
-        },
-        {
-          fields: ['paymentStatus'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['invoiceType'],
-        },
-        {
-          fields: ['claimNumber'],
-        },
-        {
-          fields: ['isDRP'],
-        },
-        {
-          fields: ['sentDate'],
-        },
-        {
-          fields: ['totalAmount'],
-        },
-        {
-          fields: ['amountDue'],
-        },
-        {
-          fields: ['daysOverdue'],
-        },
-        {
-          fields: ['originalInvoiceId'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: invoice => {

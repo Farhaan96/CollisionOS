@@ -451,27 +451,7 @@ module.exports = sequelize => {
       tableName: 'scheduling_capacity',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['scheduleDate'] },
-        { fields: ['department'] },
-        { fields: ['scheduleYear', 'scheduleMonth'] },
-        { fields: ['scheduleWeek', 'scheduleYear'] },
-        { fields: ['dayOfWeek'] },
-        { fields: ['shiftName'] },
-        { fields: ['scheduleStatus'] },
-        { fields: ['utilizationPercentage'] },
-        { fields: ['bayUtilization'] },
-        { fields: ['department', 'scheduleDate'] },
-        { fields: ['shopId', 'scheduleDate', 'department'] },
-        { fields: ['remainingCapacityHours'] },
-        { fields: ['flexibilityRating'] },
-        { fields: ['lastRecalculated'] },
-        { fields: ['isValid'] },
-        { fields: ['createdAt'] },
-        {
-          unique: true,
-          fields: ['shopId', 'scheduleDate', 'department', 'shiftName'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

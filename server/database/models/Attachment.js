@@ -296,66 +296,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'attachments',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shop_id'],
-        },
-        {
-          fields: ['job_id'],
-        },
-        {
-          fields: ['estimate_id'],
-        },
-        {
-          fields: ['customer_id'],
-        },
-        {
-          fields: ['vehicle_id'],
-        },
-        {
-          fields: ['parts_order_id'],
-        },
-        {
-          fields: ['file_name'],
-        },
-        {
-          fields: ['file_type'],
-        },
-        {
-          fields: ['category'],
-        },
-        {
-          fields: ['upload_date'],
-        },
-        {
-          fields: ['uploaded_by'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['is_required'],
-        },
-        {
-          fields: ['visible_to_customer'],
-        },
-        {
-          fields: ['visible_to_insurance'],
-        },
-        {
-          fields: ['access_level'],
-        },
-        {
-          fields: ['version'],
-        },
-        {
-          fields: ['parent_attachment_id'],
-        },
-        {
-          fields: ['is_latest_version'],
-        },
-        {
-          fields: ['archived'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: attachment => {

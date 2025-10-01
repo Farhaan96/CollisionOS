@@ -332,52 +332,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'parts_order_items',
       timestamps: true,
       indexes: [
-        {
-          fields: ['partsOrderId'],
-        },
-        {
-          fields: ['partId'],
-        },
-        {
-          fields: ['estimateLineItemId'],
-        },
-        {
-          fields: ['lineNumber'],
-        },
-        {
-          fields: ['partNumber'],
-        },
-        {
-          fields: ['vendorPartNumber'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['partType'],
-        },
-        {
-          fields: ['category'],
-        },
-        {
-          fields: ['expectedDate'],
-        },
-        {
-          fields: ['receivedDate'],
-        },
-        {
-          fields: ['binLocation'],
-        },
-        {
-          fields: ['condition'],
-        },
-        {
-          fields: ['installed'],
-        },
-        {
-          name: 'parts_order_line_composite',
-          fields: ['partsOrderId', 'lineNumber'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: item => {

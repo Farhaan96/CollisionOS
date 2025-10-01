@@ -414,70 +414,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'technician_performance',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['technicianId'],
-        },
-        {
-          fields: ['reportingPeriod'],
-        },
-        {
-          fields: ['periodStart'],
-        },
-        {
-          fields: ['periodEnd'],
-        },
-        {
-          fields: ['overallScore'],
-        },
-        {
-          fields: ['performanceGrade'],
-        },
-        {
-          fields: ['rankInShop'],
-        },
-        {
-          fields: ['qualityScore'],
-        },
-        {
-          fields: ['overallEfficiency'],
-        },
-        {
-          fields: ['utilizationRate'],
-        },
-        {
-          fields: ['customerRating'],
-        },
-        {
-          fields: ['safetyScore'],
-        },
-        {
-          fields: ['calculatedAt'],
-        },
-        {
-          name: 'technician_period_unique',
-          unique: true,
-          fields: ['technicianId', 'reportingPeriod', 'periodStart'],
-        },
-        {
-          name: 'shop_performance_ranking',
-          fields: ['shopId', 'reportingPeriod', 'overallScore'],
-        },
-        {
-          name: 'quality_performance',
-          fields: ['shopId', 'qualityScore', 'firstTimeRightRate'],
-        },
-        {
-          name: 'productivity_metrics',
-          fields: [
-            'shopId',
-            'overallEfficiency',
-            'utilizationRate',
-            'revenuePerHour',
-          ],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: performance => {

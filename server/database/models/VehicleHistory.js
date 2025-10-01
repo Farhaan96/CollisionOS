@@ -367,65 +367,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'vehicle_history',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['vehicleId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['serviceDate'],
-        },
-        {
-          fields: ['serviceType'],
-        },
-        {
-          fields: ['mileage'],
-        },
-        {
-          fields: ['technicianId'],
-        },
-        {
-          fields: ['warrantyProvided'],
-        },
-        {
-          fields: ['warrantyExpiry'],
-        },
-        {
-          fields: ['customerSatisfaction'],
-        },
-        {
-          fields: ['complaintsReceived'],
-        },
-        {
-          fields: ['followUpRequired'],
-        },
-        {
-          fields: ['insuranceClaim'],
-        },
-        {
-          fields: ['claimNumber'],
-        },
-        {
-          fields: ['insuranceCompanyId'],
-        },
-        {
-          fields: ['isReturnVisit'],
-        },
-        {
-          fields: ['originalServiceId'],
-        },
-        {
-          name: 'vehicle_service_date',
-          fields: ['vehicleId', 'serviceDate'],
-        },
-        {
-          name: 'vehicle_mileage_tracking',
-          fields: ['vehicleId', 'mileage', 'serviceDate'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: history => {

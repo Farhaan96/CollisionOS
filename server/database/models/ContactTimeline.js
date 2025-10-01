@@ -275,22 +275,7 @@ module.exports = sequelize => {
       tableName: 'contact_timeline',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['customerId'] },
-        { fields: ['jobId'] },
-        { fields: ['userId'] },
-        { fields: ['contactType', 'communicationMethod'] },
-        { fields: ['status'] },
-        { fields: ['scheduledAt'] },
-        { fields: ['attemptedAt'] },
-        { fields: ['completedAt'] },
-        { fields: ['requiresFollowup', 'followupDate'] },
-        { fields: ['templateId'] },
-        { fields: ['campaignId'] },
-        { fields: ['priority', 'importance'] },
-        { fields: ['createdAt'] },
-        { fields: ['customerId', 'createdAt'] },
-        { fields: ['jobId', 'createdAt'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

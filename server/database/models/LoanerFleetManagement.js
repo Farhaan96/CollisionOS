@@ -578,26 +578,7 @@ module.exports = sequelize => {
       tableName: 'loaner_fleet_management',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['currentRenterId'] },
-        { fields: ['unitId'], unique: true },
-        { fields: ['licensePlate'] },
-        { fields: ['vin'], unique: true },
-        { fields: ['currentStatus'] },
-        { fields: ['vehicleClass'] },
-        { fields: ['vehicleType'] },
-        { fields: ['canBeReserved'] },
-        { fields: ['currentLocation'] },
-        { fields: ['nextServiceDue'] },
-        { fields: ['nextSafetyInspectionDue'] },
-        { fields: ['insuranceExpiryDate'] },
-        { fields: ['registrationExpiryDate'] },
-        { fields: ['hasCurrentDamage'] },
-        { fields: ['requiresCleaning'] },
-        { fields: ['utilizationRate'] },
-        { fields: ['createdAt'] },
-        { fields: ['shopId', 'currentStatus'] },
-        { fields: ['shopId', 'vehicleClass', 'currentStatus'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

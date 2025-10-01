@@ -270,45 +270,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'production_stages',
       timestamps: true,
       indexes: [
-        {
-          unique: true,
-          fields: ['stageCode'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['stageType'],
-        },
-        {
-          fields: ['category'],
-        },
-        {
-          fields: ['stageOrder'],
-        },
-        {
-          fields: ['isRequired'],
-        },
-        {
-          fields: ['isActive'],
-        },
-        {
-          fields: ['customerNotificationRequired'],
-        },
-        {
-          fields: ['customerApprovalRequired'],
-        },
-        {
-          fields: ['requiresInspection'],
-        },
-        {
-          name: 'shop_stage_order',
-          fields: ['shopId', 'stageOrder'],
-        },
-        {
-          name: 'category_order',
-          fields: ['category', 'stageOrder'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: stage => {

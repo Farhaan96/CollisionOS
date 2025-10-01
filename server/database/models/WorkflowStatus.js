@@ -363,66 +363,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'workflow_status',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['stage'],
-        },
-        {
-          fields: ['stageOrder'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['technicianId'],
-        },
-        {
-          fields: ['startedAt'],
-        },
-        {
-          fields: ['completedAt'],
-        },
-        {
-          fields: ['bayNumber'],
-        },
-        {
-          fields: ['requiresInspection'],
-        },
-        {
-          fields: ['inspectionCompleted'],
-        },
-        {
-          fields: ['hasIssues'],
-        },
-        {
-          fields: ['requiresRework'],
-        },
-        {
-          fields: ['customerApprovalRequired'],
-        },
-        {
-          fields: ['customerApproved'],
-        },
-        {
-          fields: ['canStart'],
-        },
-        {
-          name: 'job_stage_composite',
-          fields: ['jobId', 'stage'],
-        },
-        {
-          name: 'job_workflow_order',
-          fields: ['jobId', 'stageOrder'],
-        },
-        {
-          name: 'technician_active_stages',
-          fields: ['technicianId', 'status', 'startedAt'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: workflow => {

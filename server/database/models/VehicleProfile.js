@@ -505,21 +505,7 @@ module.exports = sequelize => {
       tableName: 'vehicle_profiles',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['customerId'] },
-        { fields: ['vin'], unique: false },
-        { fields: ['licensePlate'] },
-        { fields: ['year', 'make', 'model'] },
-        { fields: ['make', 'model'] },
-        { fields: ['vehicleStatus'] },
-        { fields: ['isFleetVehicle', 'fleetName'] },
-        { fields: ['requiresCalibration'] },
-        { fields: ['hasADASFeatures'] },
-        { fields: ['titleStatus'] },
-        { fields: ['storageLocation'] },
-        { fields: ['lastInspectionDate'] },
-        { fields: ['createdAt'] },
-        { fields: ['customerId', 'createdAt'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

@@ -346,55 +346,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'parts_orders',
       timestamps: true,
       indexes: [
-        {
-          unique: true,
-          fields: ['orderNumber'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['estimateId'],
-        },
-        {
-          fields: ['vendorId'],
-        },
-        {
-          fields: ['orderDate'],
-        },
-        {
-          fields: ['expectedDate'],
-        },
-        {
-          fields: ['receivedDate'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['priority'],
-        },
-        {
-          fields: ['vendorOrderNumber'],
-        },
-        {
-          fields: ['paymentStatus'],
-        },
-        {
-          fields: ['requiresApproval'],
-        },
-        {
-          fields: ['approved'],
-        },
-        {
-          fields: ['createdBy'],
-        },
-        {
-          fields: ['isArchived'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: order => {

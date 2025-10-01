@@ -490,27 +490,7 @@ module.exports = sequelize => {
       tableName: 'vendor_api_configs',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['vendorId'] },
-        { fields: ['configName'] },
-        { fields: ['apiType'] },
-        { fields: ['environment'] },
-        { fields: ['isActive'] },
-        { fields: ['isDefault'] },
-        { fields: ['priority'] },
-        { fields: ['connectionStatus'] },
-        { fields: ['lastTestedAt'] },
-        { fields: ['lastSuccessfulConnectionAt'] },
-        { fields: ['consecutiveFailures'] },
-        { fields: ['createdAt'] },
-        // Composite indexes for common queries
-        { fields: ['shopId', 'isActive'] },
-        { fields: ['vendorId', 'isActive'] },
-        { fields: ['vendorId', 'isDefault'] },
-        { fields: ['vendorId', 'priority'] },
-        { fields: ['environment', 'isActive'] },
-        { fields: ['connectionStatus', 'isActive'] },
-        { fields: ['apiType', 'isActive'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

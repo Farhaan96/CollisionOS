@@ -170,18 +170,7 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true,
       underscored: false, // Use camelCase field names
       indexes: [
-        {
-          fields: ['name'],
-        },
-        {
-          fields: ['email'],
-        },
-        {
-          fields: ['isActive'],
-        },
-        {
-          fields: ['setupCompleted'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

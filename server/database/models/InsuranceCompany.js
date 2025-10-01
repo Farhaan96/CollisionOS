@@ -379,48 +379,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'insurance_companies',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          unique: true,
-          fields: ['code'],
-          where: {
-            code: {
-              [sequelize.Sequelize.Op.ne]: null,
-            },
-          },
-        },
-        {
-          fields: ['name'],
-        },
-        {
-          fields: ['type'],
-        },
-        {
-          fields: ['isDRP'],
-        },
-        {
-          fields: ['drpNumber'],
-        },
-        {
-          fields: ['paymentTerms'],
-        },
-        {
-          fields: ['relationshipStatus'],
-        },
-        {
-          fields: ['isActive'],
-        },
-        {
-          fields: ['lastClaimDate'],
-        },
-        {
-          fields: ['totalClaims'],
-        },
-        {
-          fields: ['overallRating'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: company => {

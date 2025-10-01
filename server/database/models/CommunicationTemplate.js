@@ -418,48 +418,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'communication_templates',
       timestamps: true,
       indexes: [
-        {
-          unique: true,
-          fields: ['templateCode'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['category'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['preferredChannel'],
-        },
-        {
-          fields: ['isDefault'],
-        },
-        {
-          fields: ['requiresApproval'],
-        },
-        {
-          fields: ['language'],
-        },
-        {
-          fields: ['parentTemplateId'],
-        },
-        {
-          fields: ['lastTested'],
-        },
-        {
-          fields: ['qualityScore'],
-        },
-        {
-          name: 'shop_category_active',
-          fields: ['shopId', 'category', 'status'],
-        },
-        {
-          name: 'template_performance',
-          fields: ['templateCode', 'openRate', 'clickRate'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: template => {

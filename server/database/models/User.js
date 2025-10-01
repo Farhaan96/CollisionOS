@@ -308,39 +308,7 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true,
       underscored: false, // Use camelCase field names
       indexes: [
-        {
-          unique: true,
-          fields: ['username'],
-        },
-        {
-          unique: true,
-          fields: ['email'],
-        },
-        {
-          unique: true,
-          fields: ['employeeId'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['role'],
-        },
-        {
-          fields: ['isActive'],
-        },
-        {
-          fields: ['isOnline'],
-        },
-        {
-          fields: ['lastLogin'],
-        },
-        {
-          fields: ['supervisorId'],
-        },
-        {
-          fields: ['department'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: user => {

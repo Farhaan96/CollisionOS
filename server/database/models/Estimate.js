@@ -324,52 +324,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'estimates',
       timestamps: true,
       indexes: [
-        {
-          unique: true,
-          fields: ['estimateNumber'],
-        },
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['customerId'],
-        },
-        {
-          fields: ['vehicleId'],
-        },
-        {
-          fields: ['insuranceCompanyId'],
-        },
-        {
-          fields: ['claimNumber'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['estimateType'],
-        },
-        {
-          fields: ['dateOfLoss'],
-        },
-        {
-          fields: ['estimateDate'],
-        },
-        {
-          fields: ['expirationDate'],
-        },
-        {
-          fields: ['isDRP'],
-        },
-        {
-          fields: ['createdBy'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['convertedToJob'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: estimate => {

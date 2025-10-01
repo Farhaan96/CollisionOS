@@ -294,46 +294,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'estimate_line_items',
       timestamps: true,
       indexes: [
-        {
-          fields: ['estimateId'],
-        },
-        {
-          fields: ['lineNumber'],
-        },
-        {
-          fields: ['type'],
-        },
-        {
-          fields: ['category'],
-        },
-        {
-          fields: ['operationCode'],
-        },
-        {
-          fields: ['partNumber'],
-        },
-        {
-          fields: ['vendorId'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['approvalRequired'],
-        },
-        {
-          fields: ['includedInOriginal'],
-        },
-        {
-          fields: ['supplementNumber'],
-        },
-        {
-          fields: ['isSublet'],
-        },
-        {
-          name: 'estimate_line_composite',
-          fields: ['estimateId', 'lineNumber'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: lineItem => {

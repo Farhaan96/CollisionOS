@@ -316,27 +316,7 @@ module.exports = sequelize => {
       tableName: 'parts_inventory_tracking',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['vendorId'] },
-        { fields: ['partId'] },
-        { fields: ['partNumber'] },
-        { fields: ['oemPartNumber'] },
-        { fields: ['vendorPartNumber'] },
-        { fields: ['partCategory'] },
-        { fields: ['brandType'] },
-        { fields: ['inventoryStatus'] },
-        { fields: ['availabilityStatus'] },
-        { fields: ['quantityAvailable'] },
-        { fields: ['lastCheckedAt'] },
-        { fields: ['currentPrice'] },
-        { fields: ['leadTimeAverage'] },
-        { fields: ['createdAt'] },
-        // Composite indexes for common queries
-        { fields: ['shopId', 'vendorId'] },
-        { fields: ['vendorId', 'partNumber'] },
-        { fields: ['partCategory', 'inventoryStatus'] },
-        { fields: ['inventoryStatus', 'lastCheckedAt'] },
-        { fields: ['availabilityStatus', 'quantityAvailable'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

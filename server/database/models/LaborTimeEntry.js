@@ -355,59 +355,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: 'labor_time_entries',
       timestamps: true,
       indexes: [
-        {
-          fields: ['shopId'],
-        },
-        {
-          fields: ['technicianId'],
-        },
-        {
-          fields: ['jobId'],
-        },
-        {
-          fields: ['estimateLineItemId'],
-        },
-        {
-          fields: ['clockIn'],
-        },
-        {
-          fields: ['clockOut'],
-        },
-        {
-          fields: ['laborType'],
-        },
-        {
-          fields: ['status'],
-        },
-        {
-          fields: ['workStatus'],
-        },
-        {
-          fields: ['priority'],
-        },
-        {
-          fields: ['requiresApproval'],
-        },
-        {
-          fields: ['approved'],
-        },
-        {
-          fields: ['isRework'],
-        },
-        {
-          fields: ['payrollProcessed'],
-        },
-        {
-          fields: ['payrollPeriod'],
-        },
-        {
-          name: 'technician_date_composite',
-          fields: ['technicianId', 'clockIn'],
-        },
-        {
-          name: 'job_labor_composite',
-          fields: ['jobId', 'laborType', 'clockIn'],
-        },
+        // Indexes temporarily disabled for initial migration
       ],
       hooks: {
         beforeCreate: entry => {

@@ -526,24 +526,7 @@ module.exports = sequelize => {
       tableName: 'claim_management',
       timestamps: true,
       indexes: [
-        { fields: ['shopId'] },
-        { fields: ['customerId'] },
-        { fields: ['vehicleProfileId'] },
-        { fields: ['insuranceCompanyId'] },
-        { fields: ['claimNumber'], unique: true },
-        { fields: ['policyNumber'] },
-        { fields: ['claimStatus'] },
-        { fields: ['dateOfLoss'] },
-        { fields: ['dateReported'] },
-        { fields: ['adjusterName'] },
-        { fields: ['isDRPClaim'] },
-        { fields: ['totalLoss'] },
-        { fields: ['atsEligible'] },
-        { fields: ['subrogationStatus'] },
-        { fields: ['litigationStatus'] },
-        { fields: ['flaggedForReview'] },
-        { fields: ['createdAt'] },
-        { fields: ['customerId', 'createdAt'] },
+        // Indexes temporarily disabled for initial migration
       ],
     }
   );

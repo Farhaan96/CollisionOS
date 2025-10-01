@@ -756,12 +756,20 @@ class BMSService {
         );
       }
 
-      // Import required services
-      const {
-        customerService,
-      } = require('../database/services/customerService');
-      const { jobService } = require('../database/services/jobService');
-      const { vehicleService } = require('../database/services/vehicleService');
+      // Import required services (use local if Supabase is disabled)
+      const useSupabase = process.env.ENABLE_SUPABASE === 'true';
+
+      const { customerService } = useSupabase
+        ? require('../database/services/customerService')
+        : require('../database/services/customerService-local');
+
+      const { jobService } = useSupabase
+        ? require('../database/services/jobService')
+        : require('../database/services/jobService-local');
+
+      const { vehicleService} = useSupabase
+        ? require('../database/services/vehicleService')
+        : require('../database/services/vehicleService-local');
 
       let customer = null;
       let vehicle = null;
