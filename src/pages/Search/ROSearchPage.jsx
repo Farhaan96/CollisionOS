@@ -55,7 +55,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CollisionRepairSearchBar from '../../components/Search/CollisionRepairSearchBar';
-import { supabase } from '../../config/supabaseClient';
+// import { supabase } from '../../config/supabaseClient'; // Disabled during local DB migration
 
 /**
  * ROSearchPage - Main search interface for collision repair workflows
@@ -87,40 +87,9 @@ const ROSearchPage = () => {
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Load recent repair orders
-      const { data: repairOrders, error: roError } = await supabase
-        .from('repair_orders')
-        .select(`
-          id,
-          ro_number,
-          status,
-          ro_type,
-          priority,
-          total_amount,
-          drop_off_date,
-          estimated_completion_date,
-          customers:customer_id (
-            first_name,
-            last_name,
-            phone
-          ),
-          vehicles:vehicle_id (
-            year,
-            make,
-            model,
-            color,
-            license_plate
-          ),
-          claims:claim_id (
-            claim_number,
-            insurance_companies:insurance_company_id (
-              short_name
-            )
-          )
-        `)
-        .eq('shop_id', shopId)
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // TODO: Load repair orders from local database API
+      const repairOrders = [];
+      const roError = null;
 
       if (!roError && repairOrders) {
         setRecentROs(repairOrders);

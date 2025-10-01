@@ -58,7 +58,7 @@ import {
   Error,
   Info,
 } from '@mui/icons-material';
-import { DataGrid } from '@mui/x-data-grid';
+// import { DataGrid } from '@mui/x-data-grid'; // Disabled - package not installed
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 
@@ -475,26 +475,10 @@ export default function MUIComponentTest() {
               </Typography>
 
               <Box sx={{ height: 400, width: '100%' }}>
-                <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
-                  checkboxSelection
-                  disableSelectionOnClick
-                  sx={{
-                    '& .MuiDataGrid-root': {
-                      border: 'none',
-                    },
-                    '& .MuiDataGrid-cell': {
-                      borderBottom: `1px solid ${theme.palette.divider}`,
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                      backgroundColor: theme.palette.grey[50],
-                      borderRadius: 0,
-                    },
-                  }}
-                />
+                {/* DataGrid disabled - @mui/x-data-grid package not installed */}
+                <Alert severity="info">
+                  DataGrid component disabled - @mui/x-data-grid package not installed
+                </Alert>
               </Box>
             </CardContent>
           </Card>

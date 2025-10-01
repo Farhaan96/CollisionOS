@@ -6,6 +6,14 @@ export function useSocket() {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    // Check if sockets are enabled (defaults to false during local DB migration)
+    const socketsEnabled = process.env.REACT_APP_ENABLE_SOCKETS === 'true';
+
+    if (!socketsEnabled) {
+      console.log('🔌 WebSocket disabled - running without real-time updates');
+      return;
+    }
+
     const token = localStorage.getItem('token');
 
     // Only attempt connection if we have a token (user is authenticated)
@@ -16,10 +24,10 @@ export function useSocket() {
     const socket = io('http://localhost:3005', {
       transports: ['websocket', 'polling'], // Fallback to polling if websocket fails
       auth: { token },
-      reconnection: true,
-      reconnectionAttempts: 3,
+      reconnection: false, // Disabled: don't retry if server doesn't exist
+      reconnectionAttempts: 1, // Reduced from 3
       reconnectionDelay: 2000,
-      timeout: 5000,
+      timeout: 2000, // Reduced from 5000 for faster failure
       forceNew: true,
     });
 
@@ -36,8 +44,9 @@ export function useSocket() {
     };
 
     const onConnectError = error => {
-      console.log('🔌 WebSocket connection error:', error.message);
+      console.log('🔌 WebSocket connection error (non-critical):', error.message);
       setIsConnected(false);
+      // Gracefully handle - don't crash the app
     };
 
     socket.on('connect', onConnect);

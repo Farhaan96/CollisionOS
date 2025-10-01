@@ -27,11 +27,20 @@ import {
 } from '@mui/icons-material';
 import { KPIChart } from './KPIChart';
 import { formatCurrency } from '../../utils/formatters';
+import { ResizableChart, ChartSettingsDialog } from '../Common';
 
 const AdvancedAnalytics = () => {
   const theme = useTheme();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [chartSettings, setChartSettings] = useState({
+    chartType: 'line',
+    colorScheme: 'default',
+    showLegend: true,
+    animated: true,
+    gradient: true,
+  });
 
   // Sample data - in real app this would come from API
   const analyticsData = {
@@ -380,8 +389,13 @@ const AdvancedAnalytics = () => {
       </Grid>
 
       {/* Main Chart */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
+      <Box sx={{ mb: 3 }}>
+        <ResizableChart
+          title={`${selectedMetricInfo?.label} Trend`}
+          defaultHeight={400}
+          chartId="advanced-analytics-main-chart"
+          onSettingsClick={() => setSettingsOpen(true)}
+        >
           <Box
             sx={{
               display: 'flex',
@@ -394,27 +408,37 @@ const AdvancedAnalytics = () => {
               {selectedMetricInfo?.label} Trend
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button size='small' variant='outlined' startIcon={<BarChart />}>
-                Bar Chart
+              <Button
+                size='small'
+                variant={chartSettings.chartType === 'bar' ? 'contained' : 'outlined'}
+                startIcon={<BarChart />}
+                onClick={() => setChartSettings(prev => ({ ...prev, chartType: 'bar' }))}
+              >
+                Bar
               </Button>
-              <Button size='small' variant='outlined' startIcon={<ShowChart />}>
-                Line Chart
+              <Button
+                size='small'
+                variant={chartSettings.chartType === 'line' ? 'contained' : 'outlined'}
+                startIcon={<ShowChart />}
+                onClick={() => setChartSettings(prev => ({ ...prev, chartType: 'line' }))}
+              >
+                Line
               </Button>
             </Box>
           </Box>
 
           <KPIChart
             data={currentData.chartData}
-            type='line'
+            type={chartSettings.chartType}
             height={300}
             title={selectedMetricInfo?.label}
             currency={selectedMetric === 'revenue'}
-            animated={true}
-            gradient={true}
+            animated={chartSettings.animated}
+            gradient={chartSettings.gradient}
             colors={[selectedMetricInfo?.color]}
           />
-        </CardContent>
-      </Card>
+        </ResizableChart>
+      </Box>
 
       {/* Department Performance */}
       <Card sx={{ mb: 3 }}>
@@ -529,6 +553,18 @@ const AdvancedAnalytics = () => {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Chart Settings Dialog */}
+      <ChartSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        chartId="advanced-analytics-main-chart"
+        defaultSettings={chartSettings}
+        onSettingsChange={(newSettings) => {
+          setChartSettings(newSettings);
+          setSettingsOpen(false);
+        }}
+      />
     </Box>
   );
 };

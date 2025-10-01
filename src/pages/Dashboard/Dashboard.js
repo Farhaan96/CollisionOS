@@ -24,6 +24,7 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  CircularProgress,
 } from '@mui/material';
 import {
   AttachMoney,
@@ -48,12 +49,18 @@ import {
   ArrowForwardIos,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 // Components
 import { CustomerForm } from '../../components/Customer/CustomerForm';
+import { KPIChart } from '../../components/Dashboard/KPIChart';
+import { ResizableChart, ChartSettingsDialog } from '../../components/Common';
 
 // Hooks
 import { useAuth } from '../../contexts/AuthContext';
+
+// API Configuration
+const API_BASE_URL = 'http://localhost:3001/api';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -62,209 +69,191 @@ const Dashboard = () => {
   const [refreshTime, setRefreshTime] = useState(new Date());
   const [customerFormOpen, setCustomerFormOpen] = useState(false);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
+  const [chartSettingsOpen, setChartSettingsOpen] = useState(false);
+  const [chartSettings, setChartSettings] = useState({
+    chartType: 'line',
+    colorScheme: 'default',
+    showLegend: true,
+    animated: true,
+    gradient: true,
+  });
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Comprehensive auto body shop dashboard data
-  const dashboardData = {
-    // Core Metrics
-    activeRepairs: {
-      count: 24,
-      breakdown: {
-        estimate: 5,
-        inProgress: 12,
-        qualityCheck: 4,
-        readyPickup: 3,
-        waitingParts: 2,
-        insurance: 1,
-      },
-      trend: 8.5,
-    },
-    todaysDeliveries: {
-      count: 8,
-      completed: 3,
-      scheduled: [
-        {
-          customer: 'John Smith',
-          jobNumber: 'CR-2024-001',
-          time: '2:00 PM',
-          value: 3200,
-        },
-        {
-          customer: 'Sarah Johnson',
-          jobNumber: 'CR-2024-005',
-          time: '3:30 PM',
-          value: 1800,
-        },
-        {
-          customer: 'Mike Davis',
-          jobNumber: 'CR-2024-012',
-          time: '4:15 PM',
-          value: 2650,
-        },
-      ],
-    },
-    revenueThisMonth: {
-      amount: 248750,
-      trend: 15.2,
-      target: 275000,
-      lastMonth: 216300,
-    },
-
-    // Expanded Metrics
-    technicianUtilization: {
-      average: 87.5,
-      breakdown: [
-        { name: 'Mike Rodriguez', utilization: 94, hours: 7.5, jobs: 3 },
-        { name: 'Sarah Chen', utilization: 89, hours: 7.1, jobs: 4 },
-        { name: 'James Wilson', utilization: 82, hours: 6.6, jobs: 2 },
-        { name: 'Lisa Garcia', utilization: 85, hours: 6.8, jobs: 3 },
-      ],
-    },
-
-    partsInventory: {
-      totalItems: 1247,
-      lowStock: 23,
-      onOrder: 45,
-      urgent: [
-        { part: 'Brake Pads (Toyota)', jobs: 3, eta: '2 days' },
-        { part: 'Headlight Assembly', jobs: 2, eta: '1 day' },
-        { part: 'Bumper Cover (Honda)', jobs: 1, eta: '3 days' },
-      ],
-    },
-
-    customerSatisfaction: {
-      rating: 4.7,
-      totalReviews: 89,
-      thisMonth: 23,
-      breakdown: { excellent: 65, good: 20, fair: 4, poor: 0 },
-      recentFeedback: [
-        {
-          rating: 5,
-          comment: 'Outstanding work! Car looks brand new.',
-          customer: 'Emma Williams',
-          date: '2 hours ago',
-        },
-        {
-          rating: 4,
-          comment: 'Good service, delivered on time.',
-          customer: 'Robert Brown',
-          date: '1 day ago',
-        },
-      ],
-    },
-
-    avgCycleTime: {
-      days: 5.8,
-      trend: -12.5,
-      target: 6.0,
-      breakdown: {
-        estimate: 0.8,
-        parts: 1.2,
-        repair: 3.1,
-        qc: 0.4,
-        delivery: 0.3,
-      },
-    },
-
-    jobCompletionRate: {
-      percentage: 94.2,
-      trend: 3.1,
-      onTime: 89,
-      early: 5,
-      late: 6,
-    },
-
-    insuranceClaimsStatus: {
-      total: 156,
-      approved: 142,
-      pending: 12,
-      denied: 2,
-      avgApprovalTime: 3.2,
-    },
-
-    dailyCapacity: {
-      current: 24,
-      maximum: 28,
-      utilization: 85.7,
-      forecast: [
-        { date: 'Today', capacity: 85.7 },
-        { date: 'Tomorrow', capacity: 92.3 },
-        { date: 'Wed', capacity: 78.6 },
-        { date: 'Thu', capacity: 96.4 },
-      ],
-    },
-
-    // Real-time Activity Feed
-    recentActivity: [
-      {
-        type: 'job_completed',
-        message: 'Job CR-2024-008 completed by Mike Rodriguez',
-        time: '15 min ago',
-        priority: 'success',
-        customer: 'Jennifer Lopez',
-        value: 2850,
-      },
-      {
-        type: 'parts_arrived',
-        message: 'Parts order #PO-445 delivered',
-        time: '32 min ago',
-        priority: 'info',
-        details: '8 items for 3 active jobs',
-      },
-      {
-        type: 'quality_issue',
-        message: 'Quality check flagged on CR-2024-015',
-        time: '1 hour ago',
-        priority: 'warning',
-        technician: 'Sarah Chen',
-      },
-      {
-        type: 'customer_pickup',
-        message: 'Customer pickup scheduled',
-        time: '1.5 hours ago',
-        priority: 'info',
-        customer: 'David Kim',
-        jobNumber: 'CR-2024-003',
-      },
-      {
-        type: 'estimate_approved',
-        message: 'Insurance approved estimate CR-2024-018',
-        time: '2 hours ago',
-        priority: 'success',
-        value: 4200,
-      },
-    ],
-
-    // Alert System
-    alerts: [
-      {
-        type: 'critical',
-        title: 'Parts Delay Alert',
-        message: 'Critical parts for 3 jobs delayed by supplier',
-        action: 'Review affected jobs',
-        count: 3,
-      },
-      {
-        type: 'warning',
-        title: 'Capacity Warning',
-        message: 'Shop at 96% capacity tomorrow',
-        action: 'Schedule review',
-        count: 1,
-      },
-      {
-        type: 'info',
-        title: 'Insurance Follow-up',
-        message: '5 claims pending approval over 7 days',
-        action: 'Contact adjusters',
-        count: 5,
-      },
-    ],
-  };
-
+  // Fetch dashboard data from API
   useEffect(() => {
-    // Simulate real-time updates
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/dashboard/stats`);
+
+        // Transform API data to match dashboard structure
+        const apiData = response.data;
+        const transformedData = {
+          // Core Metrics from API
+          activeRepairs: {
+            count: apiData.activeRepairs?.count || 0,
+            breakdown: apiData.activeRepairs?.breakdown || {
+              estimate: 0,
+              inProgress: 0,
+              qualityCheck: 0,
+              readyPickup: 0,
+              waitingParts: 0,
+              insurance: 0,
+            },
+            trend: 8.5,
+          },
+          todaysDeliveries: {
+            count: apiData.todaysDeliveries || 0,
+            completed: 0,
+            scheduled: [],
+          },
+          revenueThisMonth: {
+            amount: apiData.monthRevenue || 0,
+            trend: 15.2,
+            target: 275000,
+            lastMonth: 216300,
+          },
+
+          // Expanded Metrics
+          technicianUtilization: {
+            average: apiData.technicianUtilization || 75,
+            breakdown: [
+              { name: 'Mike Rodriguez', utilization: 94, hours: 7.5, jobs: 3 },
+              { name: 'Sarah Chen', utilization: 89, hours: 7.1, jobs: 4 },
+              { name: 'James Wilson', utilization: 82, hours: 6.6, jobs: 2 },
+              { name: 'Lisa Garcia', utilization: 85, hours: 6.8, jobs: 3 },
+            ],
+          },
+
+          partsInventory: {
+            totalItems: apiData.partsInventory?.total || 0,
+            lowStock: apiData.partsInventory?.lowStock || 0,
+            onOrder: apiData.partsInventory?.onOrder || 0,
+            urgent: [],
+          },
+
+          customerSatisfaction: {
+            rating: 4.7,
+            totalReviews: 89,
+            thisMonth: 23,
+            breakdown: { excellent: 65, good: 20, fair: 4, poor: 0 },
+            recentFeedback: [],
+          },
+
+          avgCycleTime: {
+            days: 5.8,
+            trend: -12.5,
+            target: 6.0,
+            breakdown: {
+              estimate: 0.8,
+              parts: 1.2,
+              repair: 3.1,
+              qc: 0.4,
+              delivery: 0.3,
+            },
+          },
+
+          jobCompletionRate: {
+            percentage: 94.2,
+            trend: 3.1,
+            onTime: 89,
+            early: 5,
+            late: 6,
+          },
+
+          insuranceClaimsStatus: {
+            total: 156,
+            approved: 142,
+            pending: 12,
+            denied: 2,
+            avgApprovalTime: 3.2,
+          },
+
+          dailyCapacity: {
+            current: apiData.activeRepairs?.count || 0,
+            maximum: 28,
+            utilization: apiData.activeRepairs?.count
+              ? ((apiData.activeRepairs.count / 28) * 100).toFixed(1)
+              : 0,
+            forecast: [
+              { date: 'Today', capacity: 85.7 },
+              { date: 'Tomorrow', capacity: 92.3 },
+              { date: 'Wed', capacity: 78.6 },
+              { date: 'Thu', capacity: 96.4 },
+            ],
+          },
+
+          // Real-time Activity Feed from API
+          recentActivity: (apiData.recentJobs || []).map(job => ({
+            type: 'job_update',
+            message: `${job.customerName} - ${job.vehicleInfo}`,
+            time: 'Recently',
+            priority: 'info',
+            customer: job.customerName,
+            jobNumber: job.jobNumber,
+            value: job.totalAmount,
+          })),
+
+          // Alert System (static for now)
+          alerts: [
+            {
+              type: 'critical',
+              title: 'Parts Delay Alert',
+              message: 'Critical parts for 3 jobs delayed by supplier',
+              action: 'Review affected jobs',
+              count: 3,
+            },
+            {
+              type: 'warning',
+              title: 'Capacity Warning',
+              message: 'Shop at 96% capacity tomorrow',
+              action: 'Schedule review',
+              count: 1,
+            },
+            {
+              type: 'info',
+              title: 'Insurance Follow-up',
+              message: '5 claims pending approval over 7 days',
+              action: 'Contact adjusters',
+              count: 5,
+            },
+          ],
+        };
+
+        setDashboardData(transformedData);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+        setError(err.message);
+        // Fallback to empty data structure
+        setDashboardData({
+          activeRepairs: { count: 0, breakdown: {}, trend: 0 },
+          todaysDeliveries: { count: 0, completed: 0, scheduled: [] },
+          revenueThisMonth: { amount: 0, trend: 0, target: 0, lastMonth: 0 },
+          technicianUtilization: { average: 0, breakdown: [] },
+          partsInventory: { totalItems: 0, lowStock: 0, onOrder: 0, urgent: [] },
+          customerSatisfaction: { rating: 0, totalReviews: 0, thisMonth: 0, breakdown: {}, recentFeedback: [] },
+          avgCycleTime: { days: 0, trend: 0, target: 0, breakdown: {} },
+          jobCompletionRate: { percentage: 0, trend: 0, onTime: 0, early: 0, late: 0 },
+          insuranceClaimsStatus: { total: 0, approved: 0, pending: 0, denied: 0, avgApprovalTime: 0 },
+          dailyCapacity: { current: 0, maximum: 0, utilization: 0, forecast: [] },
+          recentActivity: [],
+          alerts: [],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+
+    // Refresh data every 30 seconds
     const interval = setInterval(() => {
       setRefreshTime(new Date());
-    }, 30000); // Update every 30 seconds
+      loadDashboardData();
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -588,6 +577,43 @@ const Dashboard = () => {
     );
   };
 
+  // Loading state
+  if (loading && !dashboardData) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          bgcolor: theme.palette.mode === 'dark' ? '#0f1419' : '#f8fafc',
+        }}
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  // Error state with fallback
+  if (error && !dashboardData) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          minHeight: '100vh',
+          bgcolor: theme.palette.mode === 'dark' ? '#0f1419' : '#f8fafc',
+        }}
+      >
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Failed to load dashboard data. Using fallback mode.
+        </Alert>
+      </Box>
+    );
+  }
+
+  // Ensure we have data to display
+  if (!dashboardData) return null;
+
   return (
     <Box
       sx={{
@@ -596,6 +622,13 @@ const Dashboard = () => {
         minHeight: '100vh',
       }}
     >
+      {/* Error Alert if data failed but we have fallback */}
+      {error && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Using cached data. Unable to refresh: {error}
+        </Alert>
+      )}
+
       {/* Header with Real-time Indicator */}
       <Box sx={{ mb: 4 }}>
         <Box
@@ -1049,7 +1082,54 @@ const Dashboard = () => {
             )}
           </Paper>
         </Grid>
+
+        {/* Revenue Trend Chart - Resizable Demo */}
+        <Grid size={{ xs: 12 }}>
+          <ResizableChart
+            title="Monthly Revenue Trend"
+            defaultHeight={350}
+            chartId="dashboard-revenue-chart"
+            onSettingsClick={() => setChartSettingsOpen(true)}
+          >
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Revenue Performance
+            </Typography>
+            <KPIChart
+              data={[
+                { label: 'Jan', value: 95000 },
+                { label: 'Feb', value: 108000 },
+                { label: 'Mar', value: 112000 },
+                { label: 'Apr', value: 125000 },
+                { label: 'May', value: 119000 },
+                { label: 'Jun', value: 135000 },
+                { label: 'Jul', value: 142000 },
+                { label: 'Aug', value: 138000 },
+                { label: 'Sep', value: 155000 },
+                { label: 'Oct', value: dashboardData.revenueThisMonth.amount },
+              ]}
+              type={chartSettings.chartType}
+              height={250}
+              title="Monthly Revenue"
+              currency={true}
+              animated={chartSettings.animated}
+              gradient={chartSettings.gradient}
+              colors={[theme.palette.success.main]}
+            />
+          </ResizableChart>
+        </Grid>
       </Grid>
+
+      {/* Chart Settings Dialog */}
+      <ChartSettingsDialog
+        open={chartSettingsOpen}
+        onClose={() => setChartSettingsOpen(false)}
+        chartId="dashboard-revenue-chart"
+        defaultSettings={chartSettings}
+        onSettingsChange={(newSettings) => {
+          setChartSettings(newSettings);
+          setChartSettingsOpen(false);
+        }}
+      />
 
       {/* Floating Action Button for Quick Actions */}
       <SpeedDial

@@ -82,6 +82,181 @@ const getDateRanges = (timeframe = 'month') => {
   return ranges;
 };
 
+// GET /api/dashboard/stats - Core dashboard statistics
+router.get('/stats', async (req, res) => {
+  try {
+    const shopId = req.user?.shopId || '1';
+    const cacheKey = getCacheKey('stats', {}, shopId);
+    const cached = dashboardCache.get(cacheKey);
+
+    if (cached && isCacheValid(cached.timestamp)) {
+      return res.json(cached.data);
+    }
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Active repairs - jobs in progress
+    const activeRepairsData = await Job.findAll({
+      where: {
+        shopId,
+        status: {
+          [Op.in]: ['estimate', 'intake', 'blueprint', 'parts_ordering', 'parts_receiving', 'body_structure', 'paint_prep', 'paint_booth', 'reassembly', 'quality_control', 'calibration', 'detail']
+        }
+      },
+      attributes: ['id', 'status'],
+      raw: true,
+    });
+
+    const statusBreakdown = {};
+    activeRepairsData.forEach(job => {
+      statusBreakdown[job.status] = (statusBreakdown[job.status] || 0) + 1;
+    });
+
+    // Today's deliveries - ready for pickup
+    const todaysDeliveries = await Job.count({
+      where: {
+        shopId,
+        status: 'ready_pickup',
+      }
+    });
+
+    // Month revenue - sum of completed jobs this month
+    const monthRevenueData = await Job.findAll({
+      where: {
+        shopId,
+        status: 'delivered',
+        actualDeliveryDate: {
+          [Op.gte]: startOfMonth
+        }
+      },
+      attributes: ['totalAmount'],
+      raw: true,
+    });
+
+    const monthRevenue = monthRevenueData.reduce(
+      (sum, job) => sum + parseFloat(job.totalAmount || 0),
+      0
+    );
+
+    // Technician utilization (fallback to 75%)
+    let technicianUtilization = 75;
+    try {
+      const laborEntries = await LaborTimeEntry.findAll({
+        where: {
+          shopId,
+          clockIn: {
+            [Op.gte]: startOfMonth
+          }
+        },
+        attributes: ['hoursWorked', 'billableHours'],
+        raw: true,
+      });
+
+      if (laborEntries.length > 0) {
+        const totalHours = laborEntries.reduce((sum, entry) => sum + parseFloat(entry.hoursWorked || 0), 0);
+        const billableHours = laborEntries.reduce((sum, entry) => sum + parseFloat(entry.billableHours || 0), 0);
+        technicianUtilization = totalHours > 0 ? Math.round((billableHours / totalHours) * 100) : 75;
+      }
+    } catch (error) {
+      console.log('Labor data not available, using default utilization');
+    }
+
+    // Parts inventory status
+    let partsInventory = {
+      total: 0,
+      inStock: 0,
+      lowStock: 0,
+      outOfStock: 0,
+    };
+
+    try {
+      const parts = await Part.findAll({
+        where: { shopId },
+        attributes: ['id', 'quantityInStock', 'reorderLevel'],
+        raw: true,
+      });
+
+      partsInventory.total = parts.length;
+      parts.forEach(part => {
+        const qty = parseInt(part.quantityInStock || 0);
+        const reorder = parseInt(part.reorderLevel || 5);
+
+        if (qty === 0) {
+          partsInventory.outOfStock++;
+        } else if (qty <= reorder) {
+          partsInventory.lowStock++;
+        } else {
+          partsInventory.inStock++;
+        }
+      });
+    } catch (error) {
+      console.log('Parts inventory not available');
+    }
+
+    // Recent jobs with customer and vehicle info
+    const recentJobsData = await Job.findAll({
+      where: { shopId },
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['firstName', 'lastName'],
+        },
+        {
+          model: Vehicle,
+          as: 'vehicle',
+          attributes: ['year', 'make', 'model'],
+        },
+      ],
+      attributes: ['id', 'jobNumber', 'status', 'totalAmount', 'createdAt'],
+      order: [['createdAt', 'DESC']],
+      limit: 5,
+    });
+
+    const recentJobs = recentJobsData.map(job => ({
+      id: job.id,
+      jobNumber: job.jobNumber,
+      customerName: job.customer
+        ? `${job.customer.firstName} ${job.customer.lastName}`
+        : 'Unknown Customer',
+      vehicleInfo: job.vehicle
+        ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`
+        : 'Unknown Vehicle',
+      status: job.status,
+      totalAmount: parseFloat(job.totalAmount || 0),
+      createdAt: job.createdAt,
+    }));
+
+    const stats = {
+      activeRepairs: {
+        count: activeRepairsData.length,
+        breakdown: statusBreakdown,
+      },
+      todaysDeliveries,
+      monthRevenue: Math.round(monthRevenue),
+      technicianUtilization,
+      partsInventory,
+      recentJobs,
+    };
+
+    // Cache the result
+    dashboardCache.set(cacheKey, {
+      data: stats,
+      timestamp: Date.now(),
+    });
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({
+      error: 'Failed to fetch dashboard statistics',
+      message: error.message
+    });
+  }
+});
+
 // GET /api/dashboard/kpis - Enhanced with 12+ comprehensive KPIs
 router.get('/kpis', async (req, res) => {
   try {
@@ -796,6 +971,81 @@ router.get('/technician-performance', async (req, res) => {
   } catch (error) {
     console.error('Error fetching technician performance:', error);
     res.status(500).json({ error: 'Failed to fetch technician performance' });
+  }
+});
+
+// GET /api/dashboard/recent-activity - Alias for recent activity (last 10 items)
+router.get('/recent-activity', async (req, res) => {
+  try {
+    const shopId = req.user?.shopId || '1';
+    const cacheKey = getCacheKey('recent-activity', {}, shopId);
+    const cached = dashboardCache.get(cacheKey);
+
+    if (cached && isCacheValid(cached.timestamp)) {
+      return res.json(cached.data);
+    }
+
+    const activities = [];
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // Last 24 hours
+
+    // Recent job status changes
+    const recentJobs = await Job.findAll({
+      where: {
+        shopId,
+        updatedAt: { [Op.gte]: since },
+      },
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['firstName', 'lastName'],
+        },
+        {
+          model: Vehicle,
+          as: 'vehicle',
+          attributes: ['year', 'make', 'model'],
+        },
+      ],
+      attributes: ['id', 'jobNumber', 'status', 'updatedAt', 'totalAmount'],
+      order: [['updatedAt', 'DESC']],
+      limit: 10,
+    });
+
+    recentJobs.forEach(job => {
+      activities.push({
+        id: `job-${job.id}`,
+        type: 'job_update',
+        title: 'Job Status Updated',
+        message: `Job #${job.jobNumber} - ${job.status.replace(/_/g, ' ').toUpperCase()}`,
+        details: {
+          customer: job.customer
+            ? `${job.customer.firstName} ${job.customer.lastName}`
+            : 'Unknown',
+          vehicle: job.vehicle
+            ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`
+            : 'Unknown Vehicle',
+          value: parseFloat(job.totalAmount || 0),
+          status: job.status,
+        },
+        timestamp: job.updatedAt,
+        icon: 'wrench',
+        severity: 'info',
+      });
+    });
+
+    // Cache the result
+    dashboardCache.set(cacheKey, {
+      data: activities,
+      timestamp: Date.now(),
+    });
+
+    res.json(activities);
+  } catch (error) {
+    console.error('Error fetching recent activity:', error);
+    res.status(500).json({
+      error: 'Failed to fetch recent activity',
+      message: error.message
+    });
   }
 });
 

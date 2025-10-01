@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
 import Layout from './components/Layout/Layout';
 import { LoadingSpinner } from './components/Common/LoadingSpinner';
+import { ErrorBoundary, PageErrorBoundary } from './components/Common/ErrorBoundary';
 import AIFloatingButton from './components/AI/AIFloatingButton';
 
 // Lazy load components for better performance
@@ -95,137 +96,171 @@ const AppRoutes = () => {
         <Route
           path='search'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <ROSearchPage />
-            </Suspense>
+            <PageErrorBoundary pageName="RO Search">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ROSearchPage />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='ro/:id'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <RODetailPage />
-            </Suspense>
+            <PageErrorBoundary pageName="RO Detail">
+              <Suspense fallback={<LoadingSpinner />}>
+                <RODetailPage />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='analytics'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <BusinessIntelligenceDashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="Analytics">
+              <Suspense fallback={<LoadingSpinner />}>
+                <BusinessIntelligenceDashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='advanced-production'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <AdvancedProductionBoard />
-            </Suspense>
+            <PageErrorBoundary pageName="Advanced Production">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AdvancedProductionBoard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='purchase-orders'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <PODashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="Purchase Orders">
+              <Suspense fallback={<LoadingSpinner />}>
+                <PODashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='communications'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <CustomerCommunicationCenter />
-            </Suspense>
+            <PageErrorBoundary pageName="Communications">
+              <Suspense fallback={<LoadingSpinner />}>
+                <CustomerCommunicationCenter />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='bms-import'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <BMSImportPage />
-            </Suspense>
+            <PageErrorBoundary pageName="BMS Import">
+              <Suspense fallback={<LoadingSpinner />}>
+                <BMSImportPage />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='bms-dashboard'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <BMSDashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="BMS Dashboard">
+              <Suspense fallback={<LoadingSpinner />}>
+                <BMSDashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='customers'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <CustomerList />
-            </Suspense>
+            <PageErrorBoundary pageName="Customers">
+              <Suspense fallback={<LoadingSpinner />}>
+                <CustomerList />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='production'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <ProductionBoard />
-            </Suspense>
+            <PageErrorBoundary pageName="Production Board">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ProductionBoard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='parts'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <PartsManagement />
-            </Suspense>
+            <PageErrorBoundary pageName="Parts Management">
+              <Suspense fallback={<LoadingSpinner />}>
+                <PartsManagement />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='automated-sourcing'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <AutomatedSourcingDashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="Automated Sourcing">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AutomatedSourcingDashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='vendor-integration'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <VendorIntegrationMonitor />
-            </Suspense>
+            <PageErrorBoundary pageName="Vendor Integration">
+              <Suspense fallback={<LoadingSpinner />}>
+                <VendorIntegrationMonitor />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='technician'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <TechnicianDashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="Technician Dashboard">
+              <Suspense fallback={<LoadingSpinner />}>
+                <TechnicianDashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='quality-control'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <QualityControlDashboard />
-            </Suspense>
+            <PageErrorBoundary pageName="Quality Control">
+              <Suspense fallback={<LoadingSpinner />}>
+                <QualityControlDashboard />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='reports'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <ReportsManagement />
-            </Suspense>
+            <PageErrorBoundary pageName="Reports">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ReportsManagement />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route
           path='mui-test'
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <MUIComponentTest />
-            </Suspense>
+            <PageErrorBoundary pageName="MUI Test">
+              <Suspense fallback={<LoadingSpinner />}>
+                <MUIComponentTest />
+              </Suspense>
+            </PageErrorBoundary>
           }
         />
         <Route index element={<Navigate to='dashboard' replace />} />
@@ -237,21 +272,23 @@ const AppRoutes = () => {
 
 export default function App() {
   return (
-    <ThemeProvider enableScheduledSwitching={true}>
-      <CssBaseline />
-      <AuthProvider>
-        <Router
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <AppRoutes />
-          {/* AI Assistant available globally when authenticated */}
-          <AIAssistantWrapper />
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider enableScheduledSwitching={true}>
+        <CssBaseline />
+        <AuthProvider>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
+            <AppRoutes />
+            {/* AI Assistant available globally when authenticated */}
+            <AIAssistantWrapper />
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
