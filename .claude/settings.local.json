@@ -29,7 +29,25 @@
       "Read(/C:\\Users\\farha\\OneDrive\\Desktop\\CollisionOS/**)",
       "Bash(cat:*)",
       "Bash(supabase:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(grep:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(set PORT=3001)",
+      "Bash(npm cache clean:*)",
+      "Bash(yarn --version)",
+      "Bash(start http://localhost:3002)",
+      "Bash(dir C:UsersfarhaDesktopCollisionOS)",
+      "Bash(npx electron:*)",
+      "Bash(where electron)",
+      "Bash(dir /B C:UsersfarhaDesktopCollisionOS)",
+      "Bash(PORT=3003 node collision-repair-server.js)",
+      "Bash(npm:*)",
+      "Bash(dir:*)",
+      "Bash(del /F c:UsersfarhaDesktopCollisionOSdatacollisionos.db)",
+      "Bash(start http://localhost:3000)",
+      "Bash(git checkout:*)",
+      "Bash(test:*)"
     ]
   }
 }
