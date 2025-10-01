@@ -67,4 +67,59 @@ add-claude.ps1
 fix-git-simple.bat
 fix-git-tracking.ps1
 git-status.bat
-tatus --short
+
+# Temporary development files and documentation
+*-server.js
+*-app.js
+deploy-*.js
+init-*.js
+test-*.js
+reset-*.js
+quick-*.js
+systematic-*.js
+monitor-*.js
+generate-*.js
+cleanup-*.js
+disable-*.js
+desktop-app.js
+deploy-*.md
+health-report-*.json
+project-metrics-*.json
+application-startup-*.md
+
+# Documentation guides (temporary)
+*_GUIDE.md
+*_SUMMARY.md
+*_REPORT.md
+*_INSTRUCTIONS.md
+*_HANDOFF.md
+*_RESULTS.md
+*_FINDINGS.md
+*_ISSUES.md
+*_FIXES.md
+*_STATUS.md
+EDGE_FUNCTIONS.md
+RESEARCH_*.md
+START_LOCAL_*.md
+test-report-*.json
+functional-app-*.js
+
+# Temporary scripts and services
+scripts/configure-*.js
+scripts/create-*.js
+scripts/deploy-*.js
+scripts/test-*.js
+scripts/validate-*.js
+server/database/services/*-local.js
+
+# Supabase migration files (using local DB now)
+supabase-*.js
+src/config/supabaseClient.js
+supabase-migration/
+supabase/migrations/
+
+# Electron simple files
+electron/main-simple.js
+
+# Claude Code local settings
+.claude/settings.local.json
