@@ -12,6 +12,18 @@ const express = require('express');
 const router = express.Router();
 const { validationResult, body, param, query } = require('express-validator');
 const rateLimit = require('express-rate-limit');
+const { Op } = require('sequelize');
+const {
+  RepairOrderManagement,
+  ClaimManagement,
+  Customer,
+  VehicleProfile,
+  AdvancedPartsManagement,
+  PurchaseOrderSystem,
+  InsuranceCompany,
+  Vendor,
+  PartsOrder
+} = require('../database/models');
 
 // Rate limiting
 const roRateLimit = rateLimit({
@@ -276,7 +288,7 @@ router.get('/', [
 
 /**
  * GET /api/repair-orders/:id
- * Get single repair order with all related data
+ * Get single repair order with all related data using Sequelize
  */
 router.get('/:id', [
   param('id').isUUID().withMessage('Invalid RO ID format')
@@ -294,65 +306,63 @@ router.get('/:id', [
     const { id } = req.params;
     const { shopId } = req.user;
 
-    // Get repair order with related data
-    const roQuery = `
-      SELECT
-        ro.*,
-        c.first_name,
-        c.last_name,
-        c.phone,
-        c.email,
-        c.address,
-        v.vin,
-        v.year,
-        v.make,
-        v.model,
-        v.trim,
-        v.license_plate,
-        v.color,
-        cl.claim_number,
-        cl.claim_status,
-        cl.deductible,
-        cl.coverage_type,
-        ic.name as insurance_company,
-        ic.short_name as insurer_code
-      FROM repair_orders ro
-      LEFT JOIN customers c ON ro.customer_id = c.id
-      LEFT JOIN vehicles v ON ro.vehicle_id = v.id
-      LEFT JOIN insurance_claims cl ON ro.claim_id = cl.id
-      LEFT JOIN insurance_companies ic ON cl.insurance_company_id = ic.id
-      WHERE ro.id = $1 AND ro.shop_id = $2
-    `;
+    // Get repair order with all related data using Sequelize
+    const repairOrder = await RepairOrderManagement.findOne({
+      where: { id, shopId },
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email', 'address']
+        },
+        {
+          model: VehicleProfile,
+          as: 'vehicleProfile',
+          attributes: ['id', 'vin', 'year', 'make', 'model', 'trim', 'licensePlate', 'color']
+        },
+        {
+          model: ClaimManagement,
+          as: 'claimManagement',
+          attributes: ['id', 'claimNumber', 'claimStatus', 'deductibleAmount', 'coverageType'],
+          include: [
+            {
+              model: InsuranceCompany,
+              as: 'insuranceCompany',
+              attributes: ['id', 'name', 'shortName']
+            }
+          ]
+        }
+      ]
+    });
 
-    const roResult = await req.app.locals.db.query(roQuery, [id, shopId]);
-
-    if (roResult.rows.length === 0) {
+    if (!repairOrder) {
       return res.status(404).json({
         success: false,
         message: 'Repair order not found'
       });
     }
 
-    const repairOrder = roResult.rows[0];
-
-    // Get parts for this RO grouped by status
-    const partsQuery = `
-      SELECT
-        pl.*,
-        s.name as supplier_name,
-        po.po_number,
-        po.status as po_status
-      FROM part_lines pl
-      LEFT JOIN suppliers s ON pl.supplier_id = s.id
-      LEFT JOIN purchase_orders po ON pl.po_id = po.id
-      WHERE pl.repair_order_id = $1
-      ORDER BY pl.created_at
-    `;
-
-    const partsResult = await req.app.locals.db.query(partsQuery, [id]);
+    // Get parts for this RO with related data
+    const parts = await AdvancedPartsManagement.findAll({
+      where: { repairOrderId: id },
+      include: [
+        {
+          model: Vendor,
+          as: 'vendor',
+          attributes: ['id', 'name', 'vendorCode']
+        },
+        {
+          model: PartsOrder,
+          as: 'partsOrder',
+          attributes: ['id', 'orderNumber', 'status'],
+          required: false
+        }
+      ],
+      order: [['createdAt', 'ASC']]
+    });
 
     // Group parts by status for workflow display
-    const partsByStatus = partsResult.rows.reduce((acc, part) => {
+    const partsByStatus = parts.reduce((acc, part) => {
       const status = part.status || 'needed';
       if (!acc[status]) acc[status] = [];
       acc[status].push(part);
@@ -360,57 +370,105 @@ router.get('/:id', [
     }, {});
 
     // Get purchase orders for this RO
-    const posQuery = `
-      SELECT po.*, s.name as supplier_name
-      FROM purchase_orders po
-      LEFT JOIN suppliers s ON po.supplier_id = s.id
-      WHERE po.repair_order_id = $1
-      ORDER BY po.created_at DESC
-    `;
-
-    const posResult = await req.app.locals.db.query(posQuery, [id]);
-
-    // Get documents for this RO
-    const docsQuery = `
-      SELECT * FROM documents
-      WHERE entity_type = 'repair_order' AND entity_id = $1
-      ORDER BY created_at DESC
-    `;
-
-    const docsResult = await req.app.locals.db.query(docsQuery, [id]);
-
-    res.json({
-      success: true,
-      repair_order: repairOrder,
-      claim: {
-        claim_number: repairOrder.claim_number,
-        claim_status: repairOrder.claim_status,
-        deductible: repairOrder.deductible,
-        coverage_type: repairOrder.coverage_type,
-        insurance_company: repairOrder.insurance_company,
-        insurer_code: repairOrder.insurer_code
-      },
-      customer: {
-        first_name: repairOrder.first_name,
-        last_name: repairOrder.last_name,
-        phone: repairOrder.phone,
-        email: repairOrder.email,
-        address: repairOrder.address
-      },
-      vehicle: {
-        vin: repairOrder.vin,
-        year: repairOrder.year,
-        make: repairOrder.make,
-        model: repairOrder.model,
-        trim: repairOrder.trim,
-        license_plate: repairOrder.license_plate,
-        color: repairOrder.color
-      },
-      parts: partsResult.rows,
-      parts_by_status: partsByStatus,
-      purchase_orders: posResult.rows,
-      documents: docsResult.rows
+    const purchaseOrders = await PurchaseOrderSystem.findAll({
+      where: { repairOrderId: id },
+      include: [
+        {
+          model: Vendor,
+          as: 'vendor',
+          attributes: ['id', 'name', 'vendorCode']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
     });
+
+    // Build response with proper structure
+    const response = {
+      success: true,
+      data: {
+        id: repairOrder.id,
+        ro_number: repairOrder.roNumber,
+        status: repairOrder.status,
+        priority: repairOrder.priority,
+        ro_type: repairOrder.roType,
+        total_amount: repairOrder.totalAmount,
+        opened_at: repairOrder.openedAt,
+        estimated_completion_date: repairOrder.estimatedCompletion,
+        drop_off_date: repairOrder.dropOffDate,
+        created_at: repairOrder.createdAt,
+
+        // Customer data
+        customers: repairOrder.customer ? {
+          id: repairOrder.customer.id,
+          first_name: repairOrder.customer.firstName,
+          last_name: repairOrder.customer.lastName,
+          phone: repairOrder.customer.phone,
+          email: repairOrder.customer.email,
+          address: repairOrder.customer.address
+        } : null,
+
+        // Vehicle data
+        vehicles: repairOrder.vehicleProfile ? {
+          id: repairOrder.vehicleProfile.id,
+          vin: repairOrder.vehicleProfile.vin,
+          year: repairOrder.vehicleProfile.year,
+          make: repairOrder.vehicleProfile.make,
+          model: repairOrder.vehicleProfile.model,
+          trim: repairOrder.vehicleProfile.trim,
+          license_plate: repairOrder.vehicleProfile.licensePlate,
+          color: repairOrder.vehicleProfile.color
+        } : null,
+
+        // Claim data
+        claims: repairOrder.claimManagement ? {
+          id: repairOrder.claimManagement.id,
+          claim_number: repairOrder.claimManagement.claimNumber,
+          claim_status: repairOrder.claimManagement.claimStatus,
+          deductible: repairOrder.claimManagement.deductibleAmount,
+          coverage_type: repairOrder.claimManagement.coverageType,
+          insurance_companies: repairOrder.claimManagement.insuranceCompany ? {
+            name: repairOrder.claimManagement.insuranceCompany.name,
+            short_name: repairOrder.claimManagement.insuranceCompany.shortName,
+            is_drp: repairOrder.claimManagement.insuranceCompany.isDrp || false
+          } : null
+        } : null
+      },
+      parts: parts.map(p => ({
+        id: p.id,
+        part_number: p.partNumber,
+        description: p.partDescription,
+        operation: p.operation,
+        quantity_ordered: p.quantityOrdered,
+        quantity_received: p.quantityReceived,
+        quantity_installed: p.quantityInstalled,
+        unit_cost: p.unitCost,
+        status: p.status,
+        vendor: p.vendor ? {
+          id: p.vendor.id,
+          name: p.vendor.name,
+          code: p.vendor.vendorCode
+        } : null,
+        po: p.partsOrder ? {
+          id: p.partsOrder.id,
+          number: p.partsOrder.orderNumber,
+          status: p.partsOrder.status
+        } : null
+      })),
+      grouped: partsByStatus,
+      purchase_orders: purchaseOrders.map(po => ({
+        id: po.id,
+        po_number: po.poNumber,
+        status: po.status,
+        total_amount: po.totalAmount,
+        vendor: po.vendor ? {
+          id: po.vendor.id,
+          name: po.vendor.name,
+          code: po.vendor.vendorCode
+        } : null
+      }))
+    };
+
+    res.json(response);
 
   } catch (error) {
     console.error('Get RO error:', error);
@@ -558,6 +616,120 @@ router.put('/:id', [
     res.status(500).json({
       success: false,
       message: 'Failed to update repair order',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/repair-orders/:id/parts
+ * Get parts for a repair order grouped by status
+ */
+router.get('/:id/parts', [
+  param('id').isUUID().withMessage('Invalid RO ID format')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { shopId } = req.user;
+
+    // Verify RO exists and belongs to shop
+    const ro = await RepairOrderManagement.findOne({
+      where: { id, shopId },
+      attributes: ['id', 'roNumber']
+    });
+
+    if (!ro) {
+      return res.status(404).json({
+        success: false,
+        message: 'Repair order not found'
+      });
+    }
+
+    // Get parts for this RO with related data
+    const parts = await AdvancedPartsManagement.findAll({
+      where: { repairOrderId: id },
+      include: [
+        {
+          model: Vendor,
+          as: 'vendor',
+          attributes: ['id', 'name', 'vendorCode']
+        },
+        {
+          model: PartsOrder,
+          as: 'partsOrder',
+          attributes: ['id', 'orderNumber', 'status'],
+          required: false
+        }
+      ],
+      order: [['createdAt', 'ASC']]
+    });
+
+    // Group parts by status for workflow display
+    const partsByStatus = parts.reduce((acc, part) => {
+      const status = part.status || 'needed';
+      if (!acc[status]) acc[status] = [];
+      acc[status].push({
+        id: part.id,
+        part_number: part.partNumber,
+        description: part.partDescription,
+        operation: part.operation,
+        quantity_ordered: part.quantityOrdered,
+        quantity_received: part.quantityReceived,
+        unit_cost: part.unitCost,
+        status: part.status,
+        vendor: part.vendor ? {
+          id: part.vendor.id,
+          name: part.vendor.name
+        } : null
+      });
+      return acc;
+    }, {});
+
+    // Calculate summary stats
+    const summary = {
+      total: parts.length,
+      needed: (partsByStatus.needed || []).length,
+      sourcing: (partsByStatus.sourcing || []).length,
+      ordered: (partsByStatus.ordered || []).length,
+      backordered: (partsByStatus.backordered || []).length,
+      received: (partsByStatus.received || []).length,
+      installed: (partsByStatus.installed || []).length
+    };
+
+    res.json({
+      success: true,
+      data: parts.map(p => ({
+        id: p.id,
+        part_number: p.partNumber,
+        description: p.partDescription,
+        operation: p.operation,
+        quantity_ordered: p.quantityOrdered,
+        quantity_received: p.quantityReceived,
+        unit_cost: p.unitCost,
+        status: p.status,
+        vendor: p.vendor ? {
+          id: p.vendor.id,
+          name: p.vendor.name
+        } : null
+      })),
+      grouped_by_status: partsByStatus,
+      summary
+    });
+
+  } catch (error) {
+    console.error('Get RO parts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch RO parts',
       error: error.message
     });
   }

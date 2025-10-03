@@ -55,6 +55,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CollisionRepairSearchBar from '../../components/Search/CollisionRepairSearchBar';
+import roService from '../../services/roService';
+import { toast } from 'react-hot-toast';
 // import { supabase } from '../../config/supabaseClient'; // Disabled during local DB migration
 
 /**
@@ -87,31 +89,35 @@ const ROSearchPage = () => {
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: Load repair orders from local database API
-      const repairOrders = [];
-      const roError = null;
+      // Call real backend API
+      const result = await roService.getRepairOrders({
+        shopId,
+        limit: 50,
+        page: 1
+      });
 
-      if (!roError && repairOrders) {
-        setRecentROs(repairOrders);
+      if (result.success) {
+        setRecentROs(result.data);
+
+        // Calculate metrics
+        const metrics = {
+          totalROs: result.data.length,
+          inProgress: result.data.filter(ro => ro.status === 'in_progress').length,
+          estimate: result.data.filter(ro => ro.status === 'estimate').length,
+          partsPending: result.data.filter(ro => ro.status === 'parts_pending').length,
+          completed: result.data.filter(ro => ro.status === 'completed').length,
+          totalValue: result.data.reduce((sum, ro) => sum + (ro.total_amount || 0), 0),
+          avgAmount: result.data.length > 0
+            ? result.data.reduce((sum, ro) => sum + (ro.total_amount || 0), 0) / result.data.length
+            : 0,
+          urgent: result.data.filter(ro => ro.priority === 'urgent').length,
+        };
+
+        setDashboardMetrics(metrics);
       }
-
-      // Calculate dashboard metrics
-      const metrics = {
-        totalROs: repairOrders?.length || 0,
-        inProgress: repairOrders?.filter(ro => ro.status === 'in_progress').length || 0,
-        estimate: repairOrders?.filter(ro => ro.status === 'estimate').length || 0,
-        partsPending: repairOrders?.filter(ro => ro.status === 'parts_pending').length || 0,
-        completed: repairOrders?.filter(ro => ro.status === 'completed').length || 0,
-        totalValue: repairOrders?.reduce((sum, ro) => sum + (ro.total_amount || 0), 0) || 0,
-        avgAmount: repairOrders?.length > 0 ?
-          (repairOrders.reduce((sum, ro) => sum + (ro.total_amount || 0), 0) / repairOrders.length) : 0,
-        urgent: repairOrders?.filter(ro => ro.priority === 'urgent').length || 0,
-      };
-
-      setDashboardMetrics(metrics);
-
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      toast.error('Failed to load repair orders');
     } finally {
       setIsLoading(false);
     }
@@ -375,10 +381,10 @@ const ROSearchPage = () => {
       <TableCell>
         <Box>
           <Typography variant="body2" fontWeight="medium">
-            {ro.customers?.first_name} {ro.customers?.last_name}
+            {ro.customer?.first_name} {ro.customer?.last_name}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            {ro.customers?.phone}
+            {ro.customer?.phone}
           </Typography>
         </Box>
       </TableCell>
@@ -386,10 +392,10 @@ const ROSearchPage = () => {
       <TableCell>
         <Box>
           <Typography variant="body2" fontWeight="medium">
-            {ro.vehicles?.year} {ro.vehicles?.make} {ro.vehicles?.model}
+            {ro.vehicleProfile?.year} {ro.vehicleProfile?.make} {ro.vehicleProfile?.model}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            {ro.vehicles?.color} | {ro.vehicles?.license_plate}
+            {ro.vehicleProfile?.color} | {ro.vehicleProfile?.license_plate}
           </Typography>
         </Box>
       </TableCell>
@@ -450,13 +456,13 @@ const ROSearchPage = () => {
               <Edit fontSize="small" />
             </IconButton>
           </Tooltip>
-          {ro.customers?.phone && (
+          {ro.customer?.phone && (
             <Tooltip title="Call Customer">
               <IconButton
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`tel:${ro.customers.phone}`);
+                  window.open(`tel:${ro.customer.phone}`);
                 }}
               >
                 <Phone fontSize="small" />

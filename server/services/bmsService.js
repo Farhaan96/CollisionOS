@@ -47,8 +47,14 @@ class BMSService {
         vehicle: this.normalizeVehicleData(parsedData.vehicle),
         job: this.createJobFromEstimate(parsedData),
         documentInfo: parsedData.estimate,
-        claimInfo: parsedData.claim || {},
+        claimInfo: this.normalizeClaimInfo(parsedData),
+        adjuster: parsedData.adjuster || {},
         damage: this.normalizeDamageData(parsedData),
+        labor: parsedData.labor || {},
+        parts: parsedData.parts || [],
+        financial: parsedData.financial || {},
+        taxDetails: parsedData.taxDetails || {},
+        specialRequirements: parsedData.specialRequirements || {},
         validation: this.validateImportedData(parsedData),
         metadata: {
           ...parsedData.metadata,
@@ -139,8 +145,14 @@ class BMSService {
         vehicle: this.normalizeVehicleData(parsedData.vehicle),
         job: this.createJobFromEstimate(parsedData),
         documentInfo: parsedData.estimate,
-        claimInfo: parsedData.claim || {},
+        claimInfo: this.normalizeClaimInfo(parsedData),
+        adjuster: parsedData.adjuster || {},
         damage: this.normalizeDamageData(parsedData),
+        labor: parsedData.labor || {},
+        parts: parsedData.parts || [],
+        financial: parsedData.financial || {},
+        taxDetails: parsedData.taxDetails || {},
+        specialRequirements: parsedData.specialRequirements || {},
         validation: this.validateImportedData(parsedData),
         metadata: {
           ...parsedData.metadata,
@@ -358,8 +370,14 @@ class BMSService {
         vehicle: this.normalizeVehicleData(parsedData.vehicle),
         job: this.createJobFromEstimate(parsedData),
         documentInfo: parsedData.estimate,
-        claimInfo: parsedData.claim || {},
+        claimInfo: this.normalizeClaimInfo(parsedData),
+        adjuster: parsedData.adjuster || {},
         damage: this.normalizeDamageData(parsedData),
+        labor: parsedData.labor || {},
+        parts: parsedData.parts || [],
+        financial: parsedData.financial || {},
+        taxDetails: parsedData.taxDetails || {},
+        specialRequirements: parsedData.specialRequirements || {},
         validation: this.validateImportedData(parsedData),
         metadata: {
           ...parsedData.metadata,
@@ -374,12 +392,13 @@ class BMSService {
   }
 
   /**
-   * Normalize customer data to standard format
+   * Normalize customer data to standard format (ENHANCED - preserves ALL BMS fields)
    */
   normalizeCustomerData(customerData) {
     if (!customerData) return null;
 
     return {
+      // Basic customer info
       firstName:
         customerData.firstName || customerData.name?.split(' ')[0] || '',
       lastName:
@@ -389,32 +408,115 @@ class BMSService {
       name:
         customerData.name ||
         `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
-      phone: customerData.phone || '',
+
+      // Contact info - preserve multiple phone types
+      phone: customerData.phone || customerData.phones?.cell || customerData.phones?.home || customerData.phones?.work || '',
+      phones: customerData.phones || { home: '', work: '', cell: '' },
       email: customerData.email || '',
+
+      // Address - preserve full breakdown
       address: customerData.address || '',
+      address1: customerData.address1 || '',
+      address2: customerData.address2 || '',
       city: customerData.city || '',
       state: customerData.state || '',
+      province: customerData.province || customerData.state || '',
       zip: customerData.zip || '',
+      postalCode: customerData.postalCode || customerData.zip || '',
+      country: customerData.country || '',
+
+      // Insurance info
       insurance: customerData.insurance || '',
+      claimNumber: customerData.claimNumber || '',
+      policyNumber: customerData.policyNumber || '',
     };
   }
 
   /**
-   * Normalize vehicle data to standard format
+   * Normalize vehicle data to standard format (ENHANCED - preserves ALL BMS fields)
    */
   normalizeVehicleData(vehicleData) {
     if (!vehicleData) return null;
 
     return {
+      // Basic YMMT
       year: vehicleData.year || null,
       make: vehicleData.make || '',
       model: vehicleData.model || '',
+      trim: vehicleData.trim || '',
       vin: vehicleData.vin || '',
       license: vehicleData.license || '',
+      licensePlate: vehicleData.license || '',
+
+      // Odometer
       mileage: vehicleData.mileage || null,
+      currentOdometer: vehicleData.mileage || null,
+
+      // Color/Paint
       color: vehicleData.color || '',
+      exteriorColor: vehicleData.color || '',
+      paintCode: vehicleData.paintCode || '',
+
+      // Powertrain - preserve detailed breakdown
       engine: vehicleData.engine || '',
+      engineCode: vehicleData.engineCode || '',
+      engineSize: vehicleData.engine || '',
       transmission: vehicleData.transmission || '',
+      transmissionCode: vehicleData.transmissionCode || '',
+      drivetrain: vehicleData.drivetrain || '',
+      fuelType: vehicleData.fuelType || '',
+
+      // Valuation
+      valuation: vehicleData.valuation || null,
+      currentMarketValue: vehicleData.valuation || null,
+
+      // Condition/Status
+      drivable: vehicleData.drivable !== undefined ? vehicleData.drivable : null,
+
+      // ADAS/Special features (to be populated later from specialRequirements)
+      hasADASFeatures: null, // Will be set from specialRequirements
+      requiresCalibration: null,
+    };
+  }
+
+  /**
+   * Normalize claim information from BMS data (NEW - preserves insurance/claim data)
+   */
+  normalizeClaimInfo(parsedData) {
+    const estimate = parsedData.estimate || {};
+    const customer = parsedData.customer || {};
+    const adjuster = parsedData.adjuster || {};
+    const financial = parsedData.financial || {};
+    const vehicle = parsedData.vehicle || {};
+
+    return {
+      // Claim identification
+      claimNumber: estimate.claimNumber || customer.claimNumber || '',
+      policyNumber: estimate.policyNumber || customer.policyNumber || '',
+      roNumber: estimate.roNumber || '',
+
+      // Insurance company
+      insuranceCompany: customer.insurance || '',
+
+      // Adjuster information
+      adjusterName: adjuster.name || '',
+      adjusterEmail: adjuster.email || '',
+      adjusterPhone: adjuster.phone || '',
+
+      // Deductible information
+      deductibleAmount: financial.deductible || 0,
+      deductibleWaived: financial.deductibleWaived || false,
+      deductibleStatus: financial.deductibleStatus || '',
+
+      // Loss/Damage info
+      dateOfLoss: estimate.date || '',
+      lossDescription: vehicle.damageDescription || '',
+
+      // Estimate/Document info
+      estimateNumber: estimate.estimateNumber || '',
+      estimateDate: estimate.date || '',
+      estimatingSystem: estimate.estimatingSystem || '',
+      bmsVersion: estimate.bmsVersion || '',
     };
   }
 
@@ -466,8 +568,8 @@ class BMSService {
     }
 
     // Add labor as damage lines
-    if (parsedData.labor) {
-      parsedData.labor.forEach((labor, index) => {
+    if (parsedData.labor && parsedData.labor.lines) {
+      parsedData.labor.lines.forEach((labor, index) => {
         damageLines.push({
           id: uuidv4(),
           lineNumber:
@@ -540,8 +642,8 @@ class BMSService {
     }
 
     let total = 0;
-    if (parsedData.labor) {
-      parsedData.labor.forEach(labor => {
+    if (parsedData.labor && parsedData.labor.lines) {
+      parsedData.labor.lines.forEach(labor => {
         total += labor.extended || (labor.hours || 0) * (labor.rate || 0);
       });
     }
@@ -587,7 +689,7 @@ class BMSService {
 
     // Check parts and labor
     const hasPartsOrLabor =
-      parsedData.parts?.length > 0 || parsedData.labor?.length > 0;
+      parsedData.parts?.length > 0 || parsedData.labor?.lines?.length > 0;
     if (!hasPartsOrLabor) {
       validation.warnings.push('No parts or labor items found');
       validation.score -= 15;
@@ -744,6 +846,7 @@ class BMSService {
 
   /**
    * Process BMS file and automatically create/update customers and jobs
+   * ENHANCED: Creates complete ecosystem (customer, vehicle, claim, job, parts)
    */
   async processBMSWithAutoCreation(content, context = {}) {
     try {
@@ -771,26 +874,32 @@ class BMSService {
         ? require('../database/services/vehicleService')
         : require('../database/services/vehicleService-local');
 
+      const shopService = require('../database/services/shopService-local');
+
+      // Import models for claim and parts creation
+      const { ClaimManagement, AdvancedPartsManagement } = require('../database/models');
+
       let customer = null;
       let vehicle = null;
+      let claim = null;
       let job = null;
+      let parts = [];
 
       try {
-        // Extract shop context from context or use default UUID format
-        const shopId =
-          context.shopId ||
-          context.userId?.split('-shop')[0] ||
-          process.env.DEV_SHOP_ID ||
-          '00000000-0000-4000-8000-000000000001';
+        // Ensure default shop exists in database
+        const defaultShop = await shopService.getOrCreateDefaultShop();
 
-        // Check if customer exists (by email, phone, or name)
+        // Use shop ID from default shop
+        const shopId = defaultShop.id;
+
+        // STEP 1: Create/find customer
         customer = await this.findOrCreateCustomer(
           bmsResult.customer,
           customerService,
           shopId
         );
 
-        // Check if vehicle exists (by VIN) - pass shop context
+        // STEP 2: Create/find vehicle
         const vehicleWithShop = { ...bmsResult.vehicle, shopId: shopId };
         vehicle = await this.findOrCreateVehicle(
           vehicleWithShop,
@@ -798,7 +907,31 @@ class BMSService {
           vehicleService
         );
 
-        // Create job/repair order - pass shop context
+        // STEP 3: Create claim management record (NEW!)
+        if (bmsResult.claimInfo && bmsResult.claimInfo.claimNumber) {
+          try {
+            claim = await ClaimManagement.create({
+              shopId: shopId,
+              customerId: customer.id,
+              vehicleProfileId: vehicle.id,
+              claimNumber: bmsResult.claimInfo.claimNumber,
+              policyNumber: bmsResult.claimInfo.policyNumber || null,
+              adjusterName: bmsResult.claimInfo.adjusterName || null,
+              adjusterPhone: bmsResult.claimInfo.adjusterPhone || null,
+              adjusterEmail: bmsResult.claimInfo.adjusterEmail || null,
+              deductibleAmount: bmsResult.claimInfo.deductibleAmount || 0,
+              deductibleWaived: bmsResult.claimInfo.deductibleWaived || false,
+              dateClaimOpened: new Date(),
+              claimStatus: 'open',
+            });
+            console.log('✅ Created claim record:', claim.id);
+          } catch (claimError) {
+            console.error('⚠️ Claim creation failed:', claimError.message);
+            // Continue even if claim creation fails
+          }
+        }
+
+        // STEP 4: Create job/repair order
         const jobWithShop = { ...bmsResult, shopId: shopId };
         job = await this.createJobFromBMS(
           jobWithShop,
@@ -807,18 +940,55 @@ class BMSService {
           jobService
         );
 
-        console.log('BMS auto-creation successful:', {
+        // STEP 5: Create parts records with status='needed' (NEW!)
+        if (bmsResult.parts && Array.isArray(bmsResult.parts) && bmsResult.parts.length > 0) {
+          console.log(`Creating ${bmsResult.parts.length} parts records...`);
+
+          for (const part of bmsResult.parts) {
+            try {
+              const partRecord = await AdvancedPartsManagement.create({
+                shopId: shopId,
+                repairOrderId: job.id,
+                lineNumber: part.lineNumber || 0,
+                partDescription: part.description || part.partName || 'Unknown Part',
+                oemPartNumber: part.oemPartNumber || part.partNumber || null,
+                vendorPartNumber: part.partNumber || null,
+                quantityOrdered: part.quantity || 1,
+                unitPrice: part.price || 0,
+                extendedPrice: (part.price || 0) * (part.quantity || 1),
+                partStatus: 'needed', // THIS IS KEY - auto-populate as "needed"
+                partType: part.partType || 'oem',
+                taxable: part.taxable !== undefined ? part.taxable : true,
+              });
+              parts.push(partRecord);
+            } catch (partError) {
+              console.error(`⚠️ Failed to create part ${part.partNumber}:`, partError.message);
+              // Continue with next part even if one fails
+            }
+          }
+          console.log(`✅ Created ${parts.length} parts records with status='needed'`);
+        }
+
+        console.log('🎉 BMS auto-creation successful:', {
           customerId: customer.id,
           vehicleId: vehicle.id,
+          claimId: claim?.id,
           jobId: job.id,
+          partsCount: parts.length,
         });
 
         return {
           ...bmsResult,
           createdCustomer: customer,
           createdVehicle: vehicle,
+          createdClaim: claim,
           createdJob: job,
+          createdParts: parts,
           autoCreationSuccess: true,
+          ecosystemComplete: true,
+          readyForScheduling: true,
+          readyForCommunication: customer.email || customer.phone,
+          readyForPartsSourcing: parts.length > 0,
         };
       } catch (dbError) {
         console.error(
@@ -901,6 +1071,11 @@ class BMSService {
 
       // Filter out fields that don't exist in the database schema
       const { zip, insurance, ...customerDataForDB } = customerData;
+
+      // Fix email validation - convert empty string to null
+      if (customerDataForDB.email === '' || customerDataForDB.email === 'N/A') {
+        customerDataForDB.email = null;
+      }
 
       const customerWithShop = {
         ...customerDataForDB,

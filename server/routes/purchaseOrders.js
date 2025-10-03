@@ -16,6 +16,7 @@
 const express = require('express');
 const router = express.Router();
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 const {
   PurchaseOrderSystem,
   AdvancedPartsManagement,
@@ -117,19 +118,28 @@ router.post('/', poRateLimit, async (req, res) => {
       estimated_margin += (sell - cost) * partLine.quantity;
     }
 
-    // Create purchase order
+    // Create purchase order with proper field names matching the model
     const purchaseOrder = await PurchaseOrderSystem.create({
-      po_number: poNumber,
+      purchaseOrderNumber: poNumber,
+      roNumber: ro_number,
+      yearMonth: poNumber.split('-')[1], // Extract YYMM from PO number
+      vendorCode: vendor.vendor_code || generateVendorCode(vendor.name),
+      sequenceNumber: parseInt(poNumber.split('-')[3]), // Extract sequence from PO number
       repairOrderId: partLines[0].repairOrderId,
       vendorId: vendor_id,
-      status: 'draft',
-      subtotal,
-      tax_amount: subtotal * 0.08, // Default 8% tax
-      total_amount: subtotal * 1.08,
-      estimated_margin,
-      requested_delivery_date: delivery_date,
-      po_notes: notes,
-      expedite,
+      vendorName: vendor.name,
+      vendorEmail: vendor.contact_email || vendor.email,
+      vendorPhone: vendor.phone,
+      poStatus: 'draft',
+      poDate: new Date(),
+      subtotalAmount: subtotal,
+      taxAmount: subtotal * 0.08, // Default 8% tax
+      totalAmount: subtotal * 1.08,
+      totalLineItems: partLines.length,
+      totalQuantity: partLines.reduce((sum, p) => sum + p.quantity, 0),
+      requestedDeliveryDate: delivery_date,
+      poNotes: notes,
+      isRushOrder: expedite || false,
       shopId,
       createdBy: userId,
       updatedBy: userId,
@@ -298,12 +308,14 @@ router.post('/:id/receive', poRateLimit, async (req, res) => {
     }
 
     // Update PO status based on receiving results
-    let po_status = all_received ? 'received' : 'partial';
+    let po_status = all_received ? 'fully_received' : 'partial_received';
     await PurchaseOrderSystem.update(
       {
-        status: po_status,
-        received_date: all_received ? new Date() : null,
-        receiving_notes: `Partial receiving by ${userId}`,
+        poStatus: po_status,
+        receivingStatus: all_received ? 'complete' : 'partial',
+        actualDeliveryDate: all_received ? new Date() : null,
+        lastReceiptDate: new Date(),
+        receivingNotes: `Partial receiving by ${userId}`,
         updatedBy: userId,
       },
       {
@@ -430,7 +442,7 @@ router.get('/vendor/:vendorId', async (req, res) => {
     // Date range filter
     const dateFrom = new Date();
     dateFrom.setDate(dateFrom.getDate() - parseInt(date_range));
-    whereClause.created_at = { [Op.gte]: dateFrom };
+    whereClause.createdAt = { [Op.gte]: dateFrom };
 
     const purchaseOrders = await PurchaseOrderSystem.findAll({
       where: whereClause,
@@ -607,7 +619,7 @@ function generateVendorCode(vendorName) {
 async function getNextSequence(vendorCode, yearMonth) {
   const count = await PurchaseOrderSystem.count({
     where: {
-      po_number: {
+      purchaseOrderNumber: {
         [Op.like]: `%-${yearMonth}-${vendorCode}-%`,
       },
     },
@@ -624,34 +636,35 @@ function calculateVendorMetrics(purchaseOrders) {
 
   const on_time = purchaseOrders.filter(
     po =>
-      po.status === 'received' &&
-      new Date(po.received_date) <= new Date(po.requested_delivery_date)
+      po.poStatus === 'fully_received' &&
+      po.actualDeliveryDate &&
+      new Date(po.actualDeliveryDate) <= new Date(po.requestedDeliveryDate)
   ).length;
 
   const avg_delivery_days =
     purchaseOrders
-      .filter(po => po.status === 'received')
+      .filter(po => po.poStatus === 'fully_received' && po.actualDeliveryDate)
       .reduce((sum, po) => {
         const days = Math.ceil(
-          (new Date(po.received_date) - new Date(po.created_at)) /
+          (new Date(po.actualDeliveryDate) - new Date(po.poDate)) /
             (1000 * 60 * 60 * 24)
         );
         return sum + days;
       }, 0) /
-    Math.max(1, purchaseOrders.filter(po => po.status === 'received').length);
+    Math.max(1, purchaseOrders.filter(po => po.poStatus === 'fully_received').length);
 
   const total_value = purchaseOrders.reduce(
-    (sum, po) => sum + po.total_amount,
+    (sum, po) => sum + parseFloat(po.totalAmount || 0),
     0
   );
 
   return {
     total_pos: total,
     on_time_delivery_rate: ((on_time / total) * 100).toFixed(1),
-    avg_delivery_days: Math.round(avg_delivery_days),
+    avg_delivery_days: Math.round(avg_delivery_days) || 0,
     total_value: total_value.toFixed(2),
     status_breakdown: purchaseOrders.reduce((acc, po) => {
-      acc[po.status] = (acc[po.status] || 0) + 1;
+      acc[po.poStatus] = (acc[po.poStatus] || 0) + 1;
       return acc;
     }, {}),
   };

@@ -1,5 +1,9 @@
+// Electron main process entry point
+// When launched via Electron binary, this runs in Electron's Node environment
+
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
+
 // Force development mode for now to ensure it loads from localhost:3003
 const isDev = true; // process.env.NODE_ENV === 'development';
 
@@ -90,7 +94,7 @@ function createWindow() {
     console.log('DOM is ready');
     mainWindow.webContents.executeJavaScript(`
       console.log('CollisionOS: DOM loaded, enabling interactions');
-      
+
       // Clean overlay removal without debug logging
       function removeOverlays() {
         const overlays = document.querySelectorAll('.MuiBackdrop-root, .MuiModal-backdrop, [data-rht-toaster]');
@@ -98,7 +102,7 @@ function createWindow() {
           overlay.style.pointerEvents = 'none';
           overlay.style.zIndex = '-1';
         });
-        
+
         // Remove webpack dev server overlay
         const webpackOverlay = document.getElementById('webpack-dev-server-client-overlay');
         if (webpackOverlay) {
@@ -107,10 +111,10 @@ function createWindow() {
           webpackOverlay.style.zIndex = '-1';
         }
       }
-      
+
       // Remove overlays immediately
       removeOverlays();
-      
+
       // Watch for new overlays and remove them
       const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -119,12 +123,12 @@ function createWindow() {
           }
         });
       });
-      
+
       observer.observe(document.body, {
         childList: true,
         subtree: true
       });
-      
+
       // Ensure all interactive elements are properly clickable
       function enableInteractions() {
         const interactiveElements = document.querySelectorAll('button, [role="button"], a, .MuiButton-root, .MuiCard-root, input, textarea, select');
@@ -135,10 +139,10 @@ function createWindow() {
           }
         });
       }
-      
+
       // Enable interactions after a short delay to ensure DOM is ready
       setTimeout(enableInteractions, 100);
-      
+
       console.log('Interactions enabled successfully');
     `);
   });

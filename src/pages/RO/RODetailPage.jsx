@@ -346,7 +346,7 @@ const RODetailPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6" fontWeight="medium">
-                    {ro.customers?.first_name} {ro.customers?.last_name}
+                    {ro.customer?.first_name} {ro.customer?.last_name}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Customer
@@ -356,11 +356,11 @@ const RODetailPage = () => {
               <Stack spacing={0.5}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Phone fontSize="small" color="action" />
-                  <Typography variant="body2">{ro.customers?.phone}</Typography>
+                  <Typography variant="body2">{ro.customer?.phone}</Typography>
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Email fontSize="small" color="action" />
-                  <Typography variant="body2">{ro.customers?.email}</Typography>
+                  <Typography variant="body2">{ro.customer?.email}</Typography>
                 </Box>
               </Stack>
             </Grid>
@@ -373,7 +373,7 @@ const RODetailPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6" fontWeight="medium">
-                    {ro.vehicles?.year} {ro.vehicles?.make} {ro.vehicles?.model}
+                    {ro.vehicleProfile?.year} {ro.vehicleProfile?.make} {ro.vehicleProfile?.model}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Vehicle
@@ -382,13 +382,13 @@ const RODetailPage = () => {
               </Box>
               <Stack spacing={0.5}>
                 <Typography variant="body2">
-                  <strong>VIN:</strong> {ro.vehicles?.vin}
+                  <strong>VIN:</strong> {ro.vehicleProfile?.vin}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Color:</strong> {ro.vehicles?.color}
+                  <strong>Color:</strong> {ro.vehicleProfile?.color}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Plate:</strong> {ro.vehicles?.license_plate}
+                  <strong>Plate:</strong> {ro.vehicleProfile?.license_plate}
                 </Typography>
               </Stack>
             </Grid>
@@ -430,7 +430,7 @@ const RODetailPage = () => {
             <Button
               variant="outlined"
               startIcon={<Phone />}
-              onClick={() => window.open(`tel:${ro.customers?.phone}`)}
+              onClick={() => window.open(`tel:${ro.customer?.phone}`)}
             >
               Call Customer
             </Button>
@@ -558,7 +558,7 @@ const RODetailPage = () => {
 
   // Render claim information
   const renderClaimInfo = () => {
-    if (!ro?.claims) return null;
+    if (!ro?.claimManagement) return null;
 
     return (
       <Card>
@@ -582,7 +582,7 @@ const RODetailPage = () => {
                 Claim Number
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {ro.claims.claim_number}
+                {ro.claimManagement.claim_number}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -590,8 +590,8 @@ const RODetailPage = () => {
                 Insurance Company
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {ro.claims.insurance_companies?.name}
-                {ro.claims.insurance_companies?.is_drp && (
+                {ro.claimManagement.insuranceCompany?.name}
+                {ro.claimManagement.insuranceCompany?.is_drp && (
                   <Chip label="DRP" size="small" color="success" sx={{ ml: 1 }} />
                 )}
               </Typography>
@@ -601,7 +601,7 @@ const RODetailPage = () => {
                 Policy Number
               </Typography>
               <Typography variant="body1">
-                {ro.claims.policy_number}
+                {ro.claimManagement.policy_number}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -609,7 +609,7 @@ const RODetailPage = () => {
                 Deductible
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                ${ro.claims.deductible?.toFixed(2)}
+                ${ro.claimManagement.deductible_amount?.toFixed(2)}
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -618,22 +618,22 @@ const RODetailPage = () => {
               </Typography>
               <Box display="flex" alignItems="center" gap={2} mt={1}>
                 <Typography variant="body1">
-                  {ro.claims.adjuster_name}
+                  {ro.claimManagement.adjuster_name}
                 </Typography>
-                {ro.claims.adjuster_phone && (
+                {ro.claimManagement.adjuster_phone && (
                   <Button
                     size="small"
                     startIcon={<Phone />}
-                    onClick={() => window.open(`tel:${ro.claims.adjuster_phone}`)}
+                    onClick={() => window.open(`tel:${ro.claimManagement.adjuster_phone}`)}
                   >
-                    {ro.claims.adjuster_phone}
+                    {ro.claimManagement.adjuster_phone}
                   </Button>
                 )}
-                {ro.claims.adjuster_email && (
+                {ro.claimManagement.adjuster_email && (
                   <Button
                     size="small"
                     startIcon={<Email />}
-                    onClick={() => window.open(`mailto:${ro.claims.adjuster_email}`)}
+                    onClick={() => window.open(`mailto:${ro.claimManagement.adjuster_email}`)}
                   >
                     Email
                   </Button>
@@ -645,7 +645,7 @@ const RODetailPage = () => {
                 Incident Description
               </Typography>
               <Typography variant="body2" sx={{ mt: 1 }}>
-                {ro.claims.incident_description}
+                {ro.claimManagement.incident_description}
               </Typography>
             </Grid>
           </Grid>

@@ -71,9 +71,12 @@ class EnhancedBMSParser {
         customer: this.extractCustomerInfo(root),
         vehicle: this.extractVehicleInfo(root),
         estimate: this.extractEstimateInfo(root),
+        adjuster: this.extractAdjusterInfo(root),
         parts: this.extractPartsInfo(root),
         labor: this.extractLaborInfo(root),
         financial: this.extractFinancialInfo(root),
+        taxDetails: this.extractTaxDetails(root),
+        specialRequirements: this.extractSpecialRequirements(root),
         metadata: this.extractMetadata(root, estimateType),
       };
 
@@ -88,9 +91,15 @@ class EnhancedBMSParser {
   }
 
   extractCustomerInfo(root) {
-    const customer = {};
+    const customer = {
+      phones: {
+        home: '',
+        work: '',
+        cell: '',
+      }
+    };
     const isMitchell = this.isMitchellFormat(root);
-    
+
     // Log format detection for debugging
     if (isMitchell) {
       console.log('Mitchell BMS format detected - prioritizing Owner section for customer data');
@@ -156,22 +165,48 @@ class EnhancedBMSParser {
           : [owner.ContactInfo.Communications];
 
         communications.forEach(comm => {
-          // Mitchell uses CP for customer phone, HP for home phone, WP for work phone
-          if ((comm.CommQualifier === 'CP' || comm.CommQualifier === 'HP' || comm.CommQualifier === 'WP') && comm.CommPhone) {
-            customer.phone = this.formatPhoneNumber(comm.CommPhone);
+          // Mitchell uses specific qualifiers for different phone types
+          if (comm.CommPhone) {
+            const phoneNumber = this.formatPhoneNumber(comm.CommPhone);
+            switch (comm.CommQualifier) {
+              case 'HP': // Home Phone
+                customer.phones.home = phoneNumber;
+                break;
+              case 'WP': // Work Phone
+                customer.phones.work = phoneNumber;
+                break;
+              case 'CP': // Cell Phone
+              case 'MP': // Mobile Phone
+                customer.phones.cell = phoneNumber;
+                break;
+              default:
+                // Fallback: if no primary phone set, use first found
+                if (!customer.phone) {
+                  customer.phone = phoneNumber;
+                }
+            }
+            // Also set primary phone if not already set
+            if (!customer.phone && phoneNumber) {
+              customer.phone = phoneNumber;
+            }
           } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
             customer.email = this.getTextValue(comm.CommEmail);
           }
         });
       }
 
-      // Handle address from PersonInfo Communications
+      // Handle address from PersonInfo Communications (enhanced breakdown)
       if (owner.PersonInfo && owner.PersonInfo.Communications && owner.PersonInfo.Communications.Address) {
         const address = owner.PersonInfo.Communications.Address;
-        customer.address = this.getTextValue(address.Address1);
+        customer.address1 = this.getTextValue(address.Address1);
+        customer.address2 = this.getTextValue(address.Address2);
+        customer.address = customer.address1 + (customer.address2 ? ' ' + customer.address2 : '');
         customer.city = this.getTextValue(address.City);
         customer.state = this.getTextValue(address.StateProvince);
+        customer.province = this.getTextValue(address.StateProvince); // Alias for Canadian addresses
         customer.zip = this.getTextValue(address.PostalCode);
+        customer.postalCode = this.getTextValue(address.PostalCode); // Alias
+        customer.country = this.getTextValue(address.Country);
       }
     }
 
@@ -194,10 +229,31 @@ class EnhancedBMSParser {
 
         communications.forEach(comm => {
           // Support multiple phone qualifiers for PolicyHolder as well
-          if ((comm.CommQualifier === 'CP' || comm.CommQualifier === 'HP' || comm.CommQualifier === 'WP') && comm.CommPhone) {
-            customer.phone = this.formatPhoneNumber(comm.CommPhone);
+          if (comm.CommPhone) {
+            const phoneNumber = this.formatPhoneNumber(comm.CommPhone);
+            switch (comm.CommQualifier) {
+              case 'HP': // Home Phone
+                if (!customer.phones.home) customer.phones.home = phoneNumber;
+                break;
+              case 'WP': // Work Phone
+                if (!customer.phones.work) customer.phones.work = phoneNumber;
+                break;
+              case 'CP': // Cell Phone
+              case 'MP': // Mobile Phone
+                if (!customer.phones.cell) customer.phones.cell = phoneNumber;
+                break;
+              default:
+                // Fallback: if no primary phone set, use first found
+                if (!customer.phone) {
+                  customer.phone = phoneNumber;
+                }
+            }
+            // Also set primary phone if not already set
+            if (!customer.phone && phoneNumber) {
+              customer.phone = phoneNumber;
+            }
           } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
-            customer.email = this.getTextValue(comm.CommEmail);
+            if (!customer.email) customer.email = this.getTextValue(comm.CommEmail);
           }
         });
       }
@@ -205,10 +261,15 @@ class EnhancedBMSParser {
       if (policyHolder.PersonInfo && policyHolder.PersonInfo.Communications) {
         const address = policyHolder.PersonInfo.Communications.Address;
         if (address) {
-          customer.address = this.getTextValue(address.Address1);
-          customer.city = this.getTextValue(address.City);
-          customer.state = this.getTextValue(address.StateProvince);
-          customer.zip = this.getTextValue(address.PostalCode);
+          if (!customer.address1) customer.address1 = this.getTextValue(address.Address1);
+          if (!customer.address2) customer.address2 = this.getTextValue(address.Address2);
+          if (!customer.address) customer.address = customer.address1 + (customer.address2 ? ' ' + customer.address2 : '');
+          if (!customer.city) customer.city = this.getTextValue(address.City);
+          if (!customer.state) customer.state = this.getTextValue(address.StateProvince);
+          if (!customer.province) customer.province = this.getTextValue(address.StateProvince);
+          if (!customer.zip) customer.zip = this.getTextValue(address.PostalCode);
+          if (!customer.postalCode) customer.postalCode = this.getTextValue(address.PostalCode);
+          if (!customer.country) customer.country = this.getTextValue(address.Country);
         }
       }
     }
@@ -252,7 +313,13 @@ class EnhancedBMSParser {
       vehicle.license = this.getTextValue(vehicleInfo.license);
       vehicle.color = this.getTextValue(vehicleInfo.color);
       vehicle.engine = this.getTextValue(vehicleInfo.engine);
+      vehicle.engineCode = this.getTextValue(vehicleInfo.engineCode);
       vehicle.transmission = this.getTextValue(vehicleInfo.transmission);
+      vehicle.transmissionCode = this.getTextValue(vehicleInfo.transmissionCode);
+      vehicle.drivetrain = this.getTextValue(vehicleInfo.drivetrain);
+      vehicle.fuelType = this.getTextValue(vehicleInfo.fuelType);
+      vehicle.valuation = this.getNumericValue(vehicleInfo.valuation);
+      vehicle.drivable = this.getBooleanValue(vehicleInfo.drivable);
       vehicle.mileage =
         parseInt(this.getTextValue(vehicleInfo.mileage)) || null;
     }
@@ -303,14 +370,31 @@ class EnhancedBMSParser {
         }
       }
 
-      // Powertrain
+      // Powertrain (Enhanced with codes and additional details)
       if (vehicleData.Powertrain) {
         vehicle.engine = this.getTextValue(vehicleData.Powertrain.EngineDesc);
+        vehicle.engineCode = this.getTextValue(vehicleData.Powertrain.EngineCode);
+        vehicle.drivetrain = this.getTextValue(vehicleData.Powertrain.DrivetrainDesc);
+        vehicle.fuelType = this.getTextValue(vehicleData.Powertrain.FuelType);
+
         if (vehicleData.Powertrain.TransmissionInfo) {
           vehicle.transmission = this.getTextValue(
             vehicleData.Powertrain.TransmissionInfo.TransmissionDesc
           );
+          vehicle.transmissionCode = this.getTextValue(
+            vehicleData.Powertrain.TransmissionInfo.TransmissionCode
+          );
         }
+      }
+
+      // Valuation
+      if (vehicleData.ValuationInfo) {
+        vehicle.valuation = this.getDecimalValue(vehicleData.ValuationInfo.ValuationAmt);
+      }
+
+      // Drivable indicator
+      if (vehicleData.DrivableInd !== undefined) {
+        vehicle.drivable = this.getBooleanValue(vehicleData.DrivableInd);
       }
 
       // Paint/Color
@@ -339,16 +423,31 @@ class EnhancedBMSParser {
       estimate.type = this.getTextValue(root.DocumentInfo.DocumentType);
       estimate.bmsVersion = this.getTextValue(root.DocumentInfo.BMSVer);
       estimate.vendorCode = this.getTextValue(root.DocumentInfo.VendorCode);
-      
+
       // Handle currency info (Mitchell supports CAD and USD)
       if (root.DocumentInfo.CurrencyInfo) {
         estimate.currency = this.getTextValue(root.DocumentInfo.CurrencyInfo.CurCode);
       }
     }
 
-    if (root.RqUID) {
-      estimate.roNumber = this.getTextValue(root.RqUID);
-    }
+    // Extract RO number with multiple fallback paths (as in Airtable script)
+    estimate.roNumber = this.getTextValue(root.RqUID) ||
+                       this.getTextValue(root.RepairOrderNum) ||
+                       this.getTextValue(root.DocumentInfo?.RepairOrderNum) ||
+                       '';
+
+    // Extract claim number with multiple fallback paths
+    estimate.claimNumber = this.getTextValue(root.RefClaimNum) ||
+                          this.getTextValue(root.ClaimInfo?.ClaimNum) ||
+                          this.getTextValue(root.ClaimNumber) ||
+                          '';
+    if (estimate.claimNumber === 'N/A') estimate.claimNumber = '';
+
+    // Extract policy number with multiple fallback paths
+    estimate.policyNumber = this.getTextValue(root.ClaimInfo?.PolicyInfo?.PolicyNum) ||
+                           this.getTextValue(root.PolicyNumber) ||
+                           this.getTextValue(root.PolicyNum) ||
+                           '';
 
     // Handle Mitchell application info
     if (root.ApplicationInfo) {
@@ -371,6 +470,115 @@ class EnhancedBMSParser {
     }
 
     return estimate;
+  }
+
+  extractAdjusterInfo(root) {
+    const adjuster = {};
+
+    // Extract from AdminInfo.Adjuster
+    if (root.AdminInfo && root.AdminInfo.Adjuster) {
+      const adjusterData = root.AdminInfo.Adjuster.Party;
+
+      // Adjuster name
+      if (adjusterData.PersonInfo && adjusterData.PersonInfo.PersonName) {
+        const personName = adjusterData.PersonInfo.PersonName;
+        adjuster.firstName = this.getTextValue(personName.FirstName);
+        adjuster.lastName = this.getTextValue(personName.LastName);
+        adjuster.name = `${adjuster.firstName} ${adjuster.lastName}`.trim();
+      }
+
+      // Adjuster contact info
+      if (adjusterData.ContactInfo && adjusterData.ContactInfo.Communications) {
+        const communications = Array.isArray(adjusterData.ContactInfo.Communications)
+          ? adjusterData.ContactInfo.Communications
+          : [adjusterData.ContactInfo.Communications];
+
+        communications.forEach(comm => {
+          if ((comm.CommQualifier === 'CP' || comm.CommQualifier === 'WP') && comm.CommPhone) {
+            adjuster.phone = this.formatPhoneNumber(comm.CommPhone);
+          } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
+            adjuster.email = this.getTextValue(comm.CommEmail);
+          }
+        });
+      }
+    }
+
+    return adjuster;
+  }
+
+  extractTaxDetails(root) {
+    const taxDetails = {
+      gstRate: 0,
+      pstRate: 0,
+      gstAmount: 0,
+      pstAmount: 0,
+    };
+
+    // Extract from RepairTotalsInfo.Adjustments
+    if (root.RepairTotalsInfo && root.RepairTotalsInfo.Adjustments) {
+      const adjustments = Array.isArray(root.RepairTotalsInfo.Adjustments)
+        ? root.RepairTotalsInfo.Adjustments
+        : [root.RepairTotalsInfo.Adjustments];
+
+      adjustments.forEach(adjustment => {
+        const adjustmentType = this.getTextValue(adjustment.AdjustmentType);
+        const adjustmentDesc = this.getTextValue(adjustment.AdjustmentDesc);
+        const adjustmentAmt = this.getDecimalValue(adjustment.AdjustmentAmt);
+        const adjustmentRate = this.getDecimalValue(adjustment.AdjustmentRate);
+
+        // GST/Federal Tax
+        if (adjustmentType === 'Tax' && (adjustmentDesc.includes('GST') || adjustmentDesc.includes('Federal'))) {
+          taxDetails.gstAmount = adjustmentAmt;
+          taxDetails.gstRate = adjustmentRate;
+        }
+
+        // PST/Provincial Tax
+        if (adjustmentType === 'Tax' && (adjustmentDesc.includes('PST') || adjustmentDesc.includes('Provincial'))) {
+          taxDetails.pstAmount = adjustmentAmt;
+          taxDetails.pstRate = adjustmentRate;
+        }
+      });
+    }
+
+    return taxDetails;
+  }
+
+  extractSpecialRequirements(root) {
+    const requirements = {
+      adasCalibration: false,
+      postScan: false,
+      fourWheelAlignment: false,
+    };
+
+    // Check DamageLineInfo for special operations
+    if (root.DamageLineInfo) {
+      const damageLines = Array.isArray(root.DamageLineInfo)
+        ? root.DamageLineInfo
+        : [root.DamageLineInfo];
+
+      damageLines.forEach(line => {
+        const lineDesc = this.getTextValue(line.LineDesc).toLowerCase();
+
+        if (lineDesc.includes('adas') || lineDesc.includes('calibration')) {
+          requirements.adasCalibration = true;
+        }
+        if (lineDesc.includes('scan') || lineDesc.includes('diagnostic')) {
+          requirements.postScan = true;
+        }
+        if (lineDesc.includes('alignment') || lineDesc.includes('4 wheel align')) {
+          requirements.fourWheelAlignment = true;
+        }
+      });
+    }
+
+    // Also check for special flags if present
+    if (root.SpecialRequirements) {
+      requirements.adasCalibration = this.getBooleanValue(root.SpecialRequirements.ADASCalibration) || requirements.adasCalibration;
+      requirements.postScan = this.getBooleanValue(root.SpecialRequirements.PostScan) || requirements.postScan;
+      requirements.fourWheelAlignment = this.getBooleanValue(root.SpecialRequirements.FourWheelAlignment) || requirements.fourWheelAlignment;
+    }
+
+    return requirements;
   }
 
   extractPartsInfo(root) {
@@ -405,27 +613,40 @@ class EnhancedBMSParser {
       });
     }
 
-    // Handle BMS format with DamageLineInfo
+    // Handle BMS format with DamageLineInfo (Mitchell format)
     if (root.DamageLineInfo) {
       const damageLines = Array.isArray(root.DamageLineInfo)
         ? root.DamageLineInfo
         : [root.DamageLineInfo];
 
       damageLines.forEach((line, index) => {
-        if (line.LineType === 'Part' && line.PartInfo) {
+        // Mitchell stores parts in PartInfo, even when LineType is not explicitly "Part"
+        // Check if line has PartInfo to identify it as a part line
+        if (line.PartInfo) {
           const partInfo = line.PartInfo;
-          parts.push({
+          const part = {
             lineNumber: this.getNumericValue(line.LineNum),
             partNumber: this.getTextValue(partInfo.PartNum),
             oemPartNumber: this.getTextValue(partInfo.OEMPartNum),
             description: this.getTextValue(line.LineDesc),
-            quantity: this.getNumericValue(partInfo.Quantity),
+            quantity: this.getNumericValue(partInfo.Quantity) || 1,
             price: this.getDecimalValue(partInfo.PartPrice),
             oemPrice: this.getDecimalValue(partInfo.OEMPartPrice),
             partType: this.getTextValue(partInfo.PartType),
             sourceCode: this.getTextValue(partInfo.PartSourceCode),
             taxable: this.getBooleanValue(partInfo.TaxableInd),
-          });
+          };
+
+          // Also extract labor info if present on the same line (Mitchell combines parts and labor)
+          if (line.LaborInfo) {
+            const laborInfo = line.LaborInfo;
+            part.laborType = this.getTextValue(laborInfo.LaborType);
+            part.laborOperation = this.getTextValue(laborInfo.LaborOperation);
+            part.laborHours = this.getDecimalValue(laborInfo.LaborHours);
+            part.databaseLaborHours = this.getDecimalValue(laborInfo.DatabaseLaborHours);
+          }
+
+          parts.push(part);
         }
       });
     }
@@ -434,7 +655,16 @@ class EnhancedBMSParser {
   }
 
   extractLaborInfo(root) {
-    const labor = [];
+    const labor = {
+      lines: [],
+      summary: {
+        bodyHours: 0,
+        refinishHours: 0,
+        mechanicalHours: 0,
+        fpbHours: 0, // Frame/Paint/Body
+        totalHours: 0,
+      }
+    };
 
     // Handle BMS format with DamageLineInfo
     if (root.DamageLineInfo) {
@@ -443,20 +673,54 @@ class EnhancedBMSParser {
         : [root.DamageLineInfo];
 
       damageLines.forEach((line, index) => {
-        if (line.LineType === 'Labor' && line.LaborInfo) {
+        // Mitchell stores labor in LaborInfo, sometimes combined with parts
+        // Extract standalone labor lines (no PartInfo) or labor-only lines
+        if (line.LaborInfo) {
           const laborInfo = line.LaborInfo;
-          labor.push({
+          const laborType = this.getTextValue(laborInfo.LaborType);
+          const hours = this.getDecimalValue(laborInfo.LaborHours);
+
+          const laborLine = {
             lineNumber: this.getNumericValue(line.LineNum),
             operation: this.getTextValue(line.LineDesc),
-            laborType: this.getTextValue(laborInfo.LaborType),
+            laborType: laborType,
             laborOperation: this.getTextValue(laborInfo.LaborOperation),
-            hours: this.getDecimalValue(laborInfo.LaborHours),
+            hours: hours,
             databaseHours: this.getDecimalValue(laborInfo.DatabaseLaborHours),
             calculatedHours: this.getDecimalValue(laborInfo.LaborHoursCalc),
             taxable: this.getBooleanValue(laborInfo.TaxableInd),
-          });
+          };
+
+          // Only add to lines array if it's a standalone labor line (not combined with parts)
+          if (!line.PartInfo) {
+            labor.lines.push(laborLine);
+          }
+
+          // Categorize labor hours for summary
+          const laborTypeUpper = laborType.toUpperCase();
+          if (laborTypeUpper.includes('BODY') || laborTypeUpper.includes('STRUCTURAL')) {
+            labor.summary.bodyHours += parseFloat(hours) || 0;
+          } else if (laborTypeUpper.includes('REFINISH') || laborTypeUpper.includes('PAINT')) {
+            labor.summary.refinishHours += parseFloat(hours) || 0;
+          } else if (laborTypeUpper.includes('MECHANICAL') || laborTypeUpper.includes('MECH')) {
+            labor.summary.mechanicalHours += parseFloat(hours) || 0;
+          } else if (laborTypeUpper.includes('FPB') || laborTypeUpper.includes('FRAME')) {
+            labor.summary.fpbHours += parseFloat(hours) || 0;
+          }
+
+          labor.summary.totalHours += parseFloat(hours) || 0;
         }
       });
+    }
+
+    // Also extract from RepairTotalsInfo.LaborTotalsInfo if available
+    if (root.RepairTotalsInfo && root.RepairTotalsInfo.LaborTotalsInfo) {
+      const laborTotals = root.RepairTotalsInfo.LaborTotalsInfo;
+
+      // If totals exist but we haven't calculated from lines, use these
+      if (labor.summary.totalHours === 0 && laborTotals.TotalHours) {
+        labor.summary.totalHours = this.getDecimalValue(laborTotals.TotalHours);
+      }
     }
 
     return labor;
@@ -544,7 +808,7 @@ class EnhancedBMSParser {
       }
     }
 
-    // Handle deductible from ClaimInfo
+    // Handle deductible from ClaimInfo (enhanced with waived detection)
     if (
       root.ClaimInfo &&
       root.ClaimInfo.PolicyInfo &&
@@ -552,13 +816,34 @@ class EnhancedBMSParser {
     ) {
       const coverage = root.ClaimInfo.PolicyInfo.CoverageInfo.Coverage;
       if (coverage && coverage.DeductibleInfo) {
-        financial.deductible = this.getDecimalValue(
-          coverage.DeductibleInfo.DeductibleAmt
-        );
-        financial.deductibleStatus = this.getTextValue(
-          coverage.DeductibleInfo.DeductibleStatus
-        );
+        const deductibleAmt = this.getDecimalValue(coverage.DeductibleInfo.DeductibleAmt);
+        const deductibleStatus = this.getTextValue(coverage.DeductibleInfo.DeductibleStatus);
+
+        financial.deductible = deductibleAmt;
+        financial.deductibleStatus = deductibleStatus;
+
+        // Check if deductible is waived
+        financial.deductibleWaived = deductibleStatus.toLowerCase().includes('waived') ||
+                                     deductibleStatus.toLowerCase().includes('waive') ||
+                                     (deductibleAmt == 0 && deductibleStatus.toLowerCase().includes('no deductible'));
       }
+    }
+
+    // Also check for deductible in summary totals adjustments
+    if (root.RepairTotalsInfo && root.RepairTotalsInfo.Adjustments) {
+      const adjustments = Array.isArray(root.RepairTotalsInfo.Adjustments)
+        ? root.RepairTotalsInfo.Adjustments
+        : [root.RepairTotalsInfo.Adjustments];
+
+      adjustments.forEach(adjustment => {
+        const adjustmentDesc = this.getTextValue(adjustment.AdjustmentDesc);
+        if (adjustmentDesc.toLowerCase().includes('deductible')) {
+          const deductibleAmt = this.getDecimalValue(adjustment.AdjustmentAmt);
+          if (!financial.deductible) {
+            financial.deductible = Math.abs(deductibleAmt); // Deductible is usually negative in adjustments
+          }
+        }
+      });
     }
 
     return financial;
@@ -567,11 +852,24 @@ class EnhancedBMSParser {
   extractMetadata(root, estimateType = 'unknown') {
     const metadata = {};
 
-    metadata.parserVersion = '3.3-mitchell-enhanced';
+    metadata.parserVersion = '4.0-comprehensive-airtable-parity';
     metadata.parseDate = new Date().toISOString();
     metadata.sourceFormat = 'BMS XML';
     metadata.estimateType = estimateType;
     metadata.unknownTags = Array.from(this.unknownTags);
+
+    // Document comprehensive extraction capabilities
+    metadata.extractedSections = [
+      'customer (with phone breakdown)',
+      'vehicle (with powertrain details)',
+      'estimate (with multiple fallbacks)',
+      'adjuster',
+      'parts',
+      'labor (with type breakdown)',
+      'financial (with deductible details)',
+      'taxDetails (GST/PST)',
+      'specialRequirements (ADAS/scan/alignment)'
+    ];
 
     // Add Mitchell-specific metadata
     if (estimateType === 'mitchell_bms') {

@@ -922,4 +922,252 @@ function generateWorkOrderRecommendations(workOrder, job) {
   return recommendations;
 }
 
+// GET /api/labor/technician/:technicianId/current - Get current status for technician
+router.get('/technician/:technicianId/current', async (req, res) => {
+  try {
+    const { technicianId } = req.params;
+    const shopId = req.user?.shopId || 1;
+
+    // Find clock-in session
+    const clockInSession = await LaborTimeEntry.findOne({
+      where: {
+        technicianId,
+        shopId,
+        operation: LABOR_OPERATIONS.CLOCK_IN,
+        endTime: null,
+      },
+      order: [['startTime', 'DESC']],
+    });
+
+    // Find active job work
+    const activeJob = await LaborTimeEntry.findOne({
+      where: {
+        technicianId,
+        shopId,
+        operation: LABOR_OPERATIONS.START_JOB,
+        endTime: null,
+      },
+      order: [['startTime', 'DESC']],
+      include: [
+        {
+          model: Job,
+          as: 'job',
+          attributes: ['id', 'jobNumber'],
+        },
+      ],
+    });
+
+    // Find active break
+    const activeBreak = await LaborTimeEntry.findOne({
+      where: {
+        technicianId,
+        shopId,
+        operation: {
+          [require('sequelize').Op.in]: [
+            LABOR_OPERATIONS.BREAK_START,
+            LABOR_OPERATIONS.LUNCH_START,
+          ],
+        },
+        endTime: null,
+      },
+      order: [['startTime', 'DESC']],
+    });
+
+    // Get shift summary
+    const shiftSummary = await calculateShiftSummary(technicianId, shopId);
+
+    res.json({
+      clockedIn: !!clockInSession,
+      session: clockInSession,
+      activeJob,
+      activeBreak,
+      shiftSummary,
+    });
+  } catch (error) {
+    console.error('Error fetching current status:', error);
+    res.status(500).json({ error: 'Failed to fetch current status' });
+  }
+});
+
+// GET /api/labor/entries/:jobId - Get time entries for a job
+router.get('/entries/:jobId', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const shopId = req.user?.shopId || 1;
+
+    const entries = await LaborTimeEntry.findAll({
+      where: {
+        jobId,
+        shopId,
+        operation: LABOR_OPERATIONS.START_JOB,
+      },
+      include: [
+        {
+          model: User,
+          as: 'technician',
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
+      order: [['startTime', 'DESC']],
+    });
+
+    res.json({
+      success: true,
+      entries,
+    });
+  } catch (error) {
+    console.error('Error fetching time entries:', error);
+    res.status(500).json({ error: 'Failed to fetch time entries' });
+  }
+});
+
+// PUT /api/labor/entries/:id - Edit a time entry (supervisor only)
+router.put('/entries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { duration, notes, laborCost } = req.body;
+    const userRole = req.user?.role || 'technician';
+
+    if (!['supervisor', 'admin', 'owner', 'manager'].includes(userRole)) {
+      return res
+        .status(403)
+        .json({ error: 'Only supervisors can edit time entries' });
+    }
+
+    const entry = await LaborTimeEntry.findByPk(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    await entry.update({
+      duration: duration || entry.duration,
+      notes: notes !== undefined ? notes : entry.notes,
+      laborCost: laborCost || entry.laborCost,
+    });
+
+    // Audit logging
+    auditLogger.info('Time entry edited', {
+      entryId: id,
+      editedBy: req.user?.id,
+      changes: { duration, notes, laborCost },
+    });
+
+    res.json({
+      success: true,
+      entry,
+    });
+  } catch (error) {
+    console.error('Error editing time entry:', error);
+    res.status(500).json({ error: 'Failed to edit time entry' });
+  }
+});
+
+// DELETE /api/labor/entries/:id - Delete a time entry (supervisor only)
+router.delete('/entries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userRole = req.user?.role || 'technician';
+
+    if (!['supervisor', 'admin', 'owner', 'manager'].includes(userRole)) {
+      return res
+        .status(403)
+        .json({ error: 'Only supervisors can delete time entries' });
+    }
+
+    const entry = await LaborTimeEntry.findByPk(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    await entry.destroy();
+
+    // Audit logging
+    auditLogger.info('Time entry deleted', {
+      entryId: id,
+      deletedBy: req.user?.id,
+    });
+
+    res.json({
+      success: true,
+      message: 'Time entry deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting time entry:', error);
+    res.status(500).json({ error: 'Failed to delete time entry' });
+  }
+});
+
+// GET /api/labor/job-costing/:jobId - Get job costing comparison
+router.get('/job-costing/:jobId', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const shopId = req.user?.shopId || 1;
+
+    const job = await Job.findByPk(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Get all time entries for this job
+    const entries = await LaborTimeEntry.findAll({
+      where: {
+        jobId,
+        shopId,
+        operation: LABOR_OPERATIONS.START_JOB,
+        endTime: { [require('sequelize').Op.ne]: null },
+      },
+    });
+
+    // Calculate totals
+    let actualHours = 0;
+    let actualCost = 0;
+
+    entries.forEach(entry => {
+      if (entry.duration) {
+        actualHours += entry.duration / 60; // Convert minutes to hours
+        actualCost += entry.laborCost || 0;
+      }
+    });
+
+    // Get estimated hours from job/estimate
+    const estimatedHours = job.estimatedHours || 0;
+    const estimatedCost = job.estimatedLaborCost || 0;
+
+    res.json({
+      jobId,
+      jobNumber: job.jobNumber,
+      estimatedHours,
+      actualHours,
+      estimatedCost,
+      actualCost,
+      variance: actualHours - estimatedHours,
+      costVariance: actualCost - estimatedCost,
+      isOverBudget: actualHours > estimatedHours,
+      efficiency:
+        estimatedHours > 0 ? (estimatedHours / actualHours) * 100 : 0,
+    });
+  } catch (error) {
+    console.error('Error fetching job costing:', error);
+    res.status(500).json({ error: 'Failed to fetch job costing' });
+  }
+});
+
+// GET /api/labor/technician/:technicianId/shift-summary - Get current shift summary
+router.get('/technician/:technicianId/shift-summary', async (req, res) => {
+  try {
+    const { technicianId } = req.params;
+    const shopId = req.user?.shopId || 1;
+
+    const summary = await calculateShiftSummary(technicianId, shopId);
+
+    res.json({
+      success: true,
+      summary,
+    });
+  } catch (error) {
+    console.error('Error fetching shift summary:', error);
+    res.status(500).json({ error: 'Failed to fetch shift summary' });
+  }
+});
+
 module.exports = router;

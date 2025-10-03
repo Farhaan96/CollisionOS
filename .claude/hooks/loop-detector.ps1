@@ -22,18 +22,18 @@ if (Test-Path $settingsFile) {
     }
 }
 
-# Enhanced loop control settings - Agent coordination friendly
+# Optimized for Claude Sonnet 4.5 multi-agent orchestration (30+ hour sessions)
 $loopControl = @{
-    maxRestartsPerMinute = 8                    # Higher for multi-agent operations
-    hookCooldownMs = 800                        # Reduced for faster agent coordination
+    maxRestartsPerMinute = 15                   # Increased for parallel agent execution
+    hookCooldownMs = 300                        # Reduced for faster coordination
     enableLoopDetection = $true
-    maxConsecutiveFailures = 6                  # Higher threshold for legitimate failures
-    maxFailuresInWindow = 12                    # Max failures in time window
-    failureWindowMs = 300000                    # 5-minute failure window
-    stabilizationDelayMs = 2000                 # Reduced delay
-    agentOperationThreshold = 20                # Allow many operations for agent coordination
+    maxConsecutiveFailures = 10                 # Higher threshold for complex tasks
+    maxFailuresInWindow = 20                    # More lenient for long sessions
+    failureWindowMs = 600000                    # 10-minute window for sustained work
+    stabilizationDelayMs = 1000                 # Minimal delay for responsiveness
+    agentOperationThreshold = 50                # Allow extensive operations for 30hr sessions
     enableProgressiveRestrictions = $true       # Enable graduated responses
-    warningThreshold = 4                        # Warn at 4 consecutive failures
+    warningThreshold = 6                        # Warn at 6 consecutive failures
     
     # Legitimate agent operation patterns (these bypass strict failure counting)
     agentOperationPatterns = @(

@@ -1,6 +1,7 @@
 ---
 name: test-runner
 description: Run tests and fix failing tests while preserving test intent. Use proactively after edits.
+model: claude-sonnet-4-5-20250929
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 ## Initial Context Gathering

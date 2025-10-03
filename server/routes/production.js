@@ -130,6 +130,18 @@ const PRODUCTION_STAGES = {
   },
 };
 
+// Simple 8-stage mapping for production board
+const SIMPLE_STAGES = {
+  estimating: 'intake',
+  scheduled: 'intake',
+  disassembly: 'disassembly',
+  parts_pending: 'waiting_parts',
+  in_repair: 'body_structure',
+  reassembly: 'reassembly',
+  qc: 'qc_calibration',
+  complete: 'delivered',
+};
+
 // GET /api/production/stages - Get production stage configuration
 router.get('/stages', async (req, res) => {
   try {
@@ -819,6 +831,378 @@ function generateTechnicianRecommendations(assignments) {
   }
 
   return recommendations;
+}
+
+// ============================================================
+// SIMPLE PRODUCTION BOARD API ENDPOINTS
+// ============================================================
+
+/**
+ * GET /api/production/board
+ * Get all jobs for the simple 8-stage production board
+ */
+router.get('/board', async (req, res) => {
+  try {
+    const shopId = req.user?.shopId || 1;
+
+    // Get all active jobs
+    const jobs = await Job.findAll({
+      where: {
+        shopId,
+        status: { [require('sequelize').Op.notIn]: ['cancelled', 'archived'] },
+      },
+      include: [
+        { model: Customer, as: 'customer' },
+        { model: Vehicle, as: 'vehicle' },
+        { model: User, as: 'technician' },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+
+    // Transform jobs for frontend
+    const transformedJobs = jobs.map(job => ({
+      id: job.id,
+      roNumber: job.jobNumber || `RO-${job.id}`,
+      customerName: job.customer
+        ? `${job.customer.firstName || ''} ${job.customer.lastName || ''}`
+        : 'Unknown Customer',
+      vehicle: job.vehicle
+        ? `${job.vehicle.year || ''} ${job.vehicle.make || ''} ${job.vehicle.model || ''}`
+        : 'Unknown Vehicle',
+      vin: job.vehicle?.vin || '',
+      stage: mapToSimpleStage(job.status),
+      priority: job.priority || 'normal',
+      technician: job.technician?.name || null,
+      technicianId: job.technicianId || null,
+      daysInShop: calculateDaysInStage(job.createdAt),
+      progress: calculateProgress(job),
+      estimatedValue: parseFloat(job.estimatedTotal || 0),
+      photo: null, // TODO: Add photo support
+    }));
+
+    res.json({
+      success: true,
+      jobs: transformedJobs,
+      metadata: {
+        total: transformedJobs.length,
+        shopId,
+        generatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching production board:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch production board',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/production/board/:jobId/status
+ * Update job status (drag-and-drop handler)
+ */
+router.put('/board/:jobId/status', productionUpdateLimit, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Status is required',
+      });
+    }
+
+    // Map simple stage to detailed stage
+    const detailedStage = SIMPLE_STAGES[status] || status;
+
+    // Find and update job
+    const job = await Job.findByPk(jobId, {
+      include: [
+        { model: Customer, as: 'customer' },
+        { model: Vehicle, as: 'vehicle' },
+        { model: User, as: 'technician' },
+      ],
+    });
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found',
+      });
+    }
+
+    const previousStatus = job.status;
+
+    // Update job
+    await job.update({
+      status: detailedStage,
+      lastUpdated: new Date(),
+    });
+
+    // Audit logging
+    auditLogger.info('Production board status update', {
+      jobId,
+      from: previousStatus,
+      to: detailedStage,
+      userId: req.user?.id,
+      timestamp: new Date(),
+    });
+
+    // Real-time WebSocket broadcast
+    if (realtimeService) {
+      realtimeService.broadcastToShop(job.shopId, 'production_board_update', {
+        jobId,
+        from: previousStatus,
+        to: detailedStage,
+        timestamp: new Date(),
+      });
+    }
+
+    res.json({
+      success: true,
+      job: {
+        id: job.id,
+        status: detailedStage,
+        simpleStage: status,
+        previousStatus,
+      },
+      message: 'Job status updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating job status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update job status',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/production/board/metrics
+ * Get production board metrics
+ */
+router.get('/board/metrics', async (req, res) => {
+  try {
+    const shopId = req.user?.shopId || 1;
+
+    // Get all active jobs
+    const jobs = await Job.findAll({
+      where: {
+        shopId,
+        status: { [require('sequelize').Op.notIn]: ['cancelled', 'archived'] },
+      },
+      include: [{ model: Customer, as: 'customer' }],
+    });
+
+    // Calculate metrics
+    const totalJobs = jobs.length;
+    const avgCycleTime = jobs.length > 0
+      ? Math.round(
+          jobs.reduce((sum, job) => sum + calculateDaysInStage(job.createdAt), 0) /
+            jobs.length
+        )
+      : 0;
+
+    // Get completed jobs this week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const completedThisWeek = await Job.count({
+      where: {
+        shopId,
+        status: 'delivered',
+        updatedAt: { [require('sequelize').Op.gte]: oneWeekAgo },
+      },
+    });
+
+    const completedJobs = await Job.findAll({
+      where: {
+        shopId,
+        status: 'delivered',
+        updatedAt: { [require('sequelize').Op.gte]: oneWeekAgo },
+      },
+    });
+
+    const revenueThisWeek = completedJobs.reduce(
+      (sum, job) => sum + parseFloat(job.invoicedTotal || 0),
+      0
+    );
+
+    res.json({
+      success: true,
+      metrics: {
+        totalJobs,
+        avgCycleTime,
+        completedThisWeek,
+        revenueThisWeek,
+      },
+      metadata: {
+        shopId,
+        generatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching board metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch metrics',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/production/board/:jobId/assign
+ * Assign technician to job
+ */
+router.put('/board/:jobId/assign', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { technicianId } = req.body;
+
+    const job = await Job.findByPk(jobId);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found',
+      });
+    }
+
+    await job.update({
+      technicianId,
+      lastUpdated: new Date(),
+    });
+
+    // Real-time broadcast
+    if (realtimeService) {
+      realtimeService.broadcastToShop(job.shopId, 'technician_assigned', {
+        jobId,
+        technicianId,
+        timestamp: new Date(),
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Technician assigned successfully',
+    });
+  } catch (error) {
+    console.error('Error assigning technician:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to assign technician',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/production/board/:jobId/priority
+ * Change job priority
+ */
+router.put('/board/:jobId/priority', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { priority } = req.body;
+
+    if (!['normal', 'urgent', 'rush'].includes(priority)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid priority. Must be normal, urgent, or rush',
+      });
+    }
+
+    const job = await Job.findByPk(jobId);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found',
+      });
+    }
+
+    await job.update({
+      priority,
+      lastUpdated: new Date(),
+    });
+
+    // Real-time broadcast
+    if (realtimeService) {
+      realtimeService.broadcastToShop(job.shopId, 'priority_changed', {
+        jobId,
+        priority,
+        timestamp: new Date(),
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Priority updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating priority:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update priority',
+      message: error.message,
+    });
+  }
+});
+
+// Helper function to map detailed stage to simple stage
+function mapToSimpleStage(detailedStage) {
+  // Reverse mapping
+  const reverseMap = {
+    intake: 'estimating',
+    estimate: 'estimating',
+    disassembly: 'disassembly',
+    parts_ordered: 'parts_pending',
+    waiting_parts: 'parts_pending',
+    parts_received: 'parts_pending',
+    body_structure: 'in_repair',
+    mechanical: 'in_repair',
+    electrical: 'in_repair',
+    paint_prep: 'in_repair',
+    paint_booth: 'in_repair',
+    paint_finish: 'in_repair',
+    reassembly: 'reassembly',
+    qc_calibration: 'qc',
+    detail: 'qc',
+    ready_pickup: 'complete',
+    delivered: 'complete',
+  };
+
+  return reverseMap[detailedStage] || 'estimating';
+}
+
+// Helper function to calculate progress
+function calculateProgress(job) {
+  const stageProgress = {
+    intake: 5,
+    estimate: 10,
+    disassembly: 20,
+    parts_ordered: 25,
+    waiting_parts: 30,
+    parts_received: 35,
+    body_structure: 50,
+    mechanical: 55,
+    electrical: 60,
+    paint_prep: 65,
+    paint_booth: 75,
+    paint_finish: 80,
+    reassembly: 85,
+    qc_calibration: 90,
+    detail: 95,
+    ready_pickup: 98,
+    delivered: 100,
+  };
+
+  return stageProgress[job.status] || 0;
 }
 
 module.exports = router;

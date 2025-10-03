@@ -44,6 +44,7 @@ const communicationRoutes = require('./routes/communication');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const repairOrderRoutes = require('./routes/repairOrders');
 const partsWorkflowRoutes = require('./routes/partsWorkflow');
+const partsStatusUpdateRoutes = require('./routes/partsStatusUpdate'); // Parts status workflow API
 const schedulingRoutes = require('./routes/scheduling');
 const loanerFleetRoutes = require('./routes/loanerFleet');
 const customerCommunicationRoutes = require('./routes/customerCommunication');
@@ -307,6 +308,7 @@ app.use(
 );
 app.use('/api/estimates', authenticateToken(), estimateRoutes);
 app.use('/api/parts', authenticateToken(), partsRoutes);
+app.use('/api/parts', authenticateToken(), partsStatusUpdateRoutes); // Parts status update endpoints
 app.use('/api/inventory', authenticateToken(), inventoryRoutes);
 app.use('/api/vendors', authenticateToken(), vendorRoutes);
 app.use('/api/financial', authenticateToken(), financialRoutes);

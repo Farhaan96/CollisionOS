@@ -48,12 +48,19 @@ const BusinessIntelligenceDashboard = lazy(
 const AdvancedProductionBoard = lazy(
   () => import('./components/Production/AdvancedProductionBoard')
 );
+const SimpleProductionBoard = lazy(
+  () => import('./components/Production/SimpleProductionBoard')
+);
 const PODashboard = lazy(
   () => import('./components/PurchaseOrder/PODashboard')
 );
 const CustomerCommunicationCenter = lazy(
   () => import('./components/Communication/CustomerCommunicationCenter')
 );
+const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
+const JobsListPage = lazy(() => import('./pages/Jobs/JobsListPage'));
+const InvoicingPage = lazy(() => import('./pages/Invoicing/InvoicingPage'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -194,6 +201,16 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path='production-board'
+          element={
+            <PageErrorBoundary pageName="Production Board">
+              <Suspense fallback={<LoadingSpinner />}>
+                <SimpleProductionBoard />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
           path='parts'
           element={
             <PageErrorBoundary pageName="Parts Management">
@@ -259,6 +276,66 @@ const AppRoutes = () => {
             <PageErrorBoundary pageName="MUI Test">
               <Suspense fallback={<LoadingSpinner />}>
                 <MUIComponentTest />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='profile'
+          element={
+            <PageErrorBoundary pageName="Profile">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ProfilePage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='settings'
+          element={
+            <PageErrorBoundary pageName="Settings">
+              <Suspense fallback={<LoadingSpinner />}>
+                <SettingsPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='jobs'
+          element={
+            <PageErrorBoundary pageName="Jobs">
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobsListPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='jobs/:id'
+          element={
+            <PageErrorBoundary pageName="Job Detail">
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobsListPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='jobs/new'
+          element={
+            <PageErrorBoundary pageName="New Job">
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobsListPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='invoicing'
+          element={
+            <PageErrorBoundary pageName="Invoicing">
+              <Suspense fallback={<LoadingSpinner />}>
+                <InvoicingPage />
               </Suspense>
             </PageErrorBoundary>
           }

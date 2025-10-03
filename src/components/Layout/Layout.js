@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -56,9 +56,14 @@ const navigationItems = [
   { path: '/search', label: 'RO Search', icon: <Search /> },
   { path: '/analytics', label: 'Analytics', icon: <Analytics /> },
   {
-    path: '/production',
+    path: '/production-board',
     label: 'Production Board',
     icon: <Timeline />,
+  },
+  {
+    path: '/advanced-production',
+    label: '18-Stage Production',
+    icon: <Engineering />,
   },
   {
     path: '/purchase-orders',
@@ -78,6 +83,7 @@ export default function Layout() {
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -483,14 +489,24 @@ export default function Layout() {
           </Typography>
         </Box>
 
-        <MenuItem onClick={handleProfileMenuClose}>
+        <MenuItem
+          onClick={() => {
+            navigate('/profile');
+            handleProfileMenuClose();
+          }}
+        >
           <ListItemIcon>
             <AccountCircle fontSize='small' />
           </ListItemIcon>
           Profile
         </MenuItem>
 
-        <MenuItem onClick={handleProfileMenuClose}>
+        <MenuItem
+          onClick={() => {
+            navigate('/settings');
+            handleProfileMenuClose();
+          }}
+        >
           <ListItemIcon>
             <Settings fontSize='small' />
           </ListItemIcon>

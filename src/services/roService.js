@@ -189,12 +189,12 @@ export const updateROWorkflowStatus = async (roId, status, notes = '') => {
  */
 export const getROParts = async (roId) => {
   try {
-    const endpoint = ENDPOINTS.PARTS.replace(':id', roId);
-    const response = await api.get(endpoint);
+    // Use the new endpoint structure
+    const response = await api.get(`/api/repair-orders/${roId}/parts`);
 
     return {
       success: true,
-      data: response.data.parts || [],
+      data: response.data.data || [],
       grouped: response.data.grouped_by_status || {},
       summary: response.data.summary || {}
     };
