@@ -3,7 +3,7 @@
   "maxTokens": 8192,
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
