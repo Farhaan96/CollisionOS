@@ -1,20 +1,23 @@
 # 🚀 QUICK START - Copy & Paste This
 
-**I'm working on CollisionOS - an auto body shop management desktop app (React + Node.js + Electron + SQLite/Supabase).**
+**I'm working on CollisionOS - a comprehensive auto body shop management system (React + Node.js + Electron + SQLite/Supabase).**
+
+**Current Status**: ✅ 70% Complete - Production-Ready Foundation Built
+**Next Phase**: Phase 1 Stabilization (2-4 hours) → Get app 100% operational
 
 ## IMMEDIATE ACTIONS:
-1. **Read project status**: `Read all files in .claude/project_updates/`
-2. **Contact architect for task assignment**: Use this exact message:
-   ```
-   I need a task assignment. I've read the project updates and understand the current status. 
-   Please assign me the highest priority task that matches my capabilities.
-   ```
-3. **Follow agent protocols**: Update your progress file after ANY code change
+1. **Read comprehensive plan**: `Read CLAUDE.md` and `Read COMPREHENSIVE_IMPLEMENTATION_ROADMAP.md`
+2. **Review current status**: `Read .claude/project_updates/orchestrator_completion_status.md`
+3. **Start Phase 1 Tasks**: Fix frontend/backend integration issues
+4. **Follow agent protocols**: Update your progress file after ANY code change
 
-## CURRENT CRITICAL ISSUES:
-- **Backend**: TypeScript errors in `server/services/import/bms_parser.ts` (Decimal/XMLParser type issues)
-- **Frontend**: Missing `@mui/x-data-grid` and `@mui/x-date-pickers` dependencies
-- **App**: Won't start due to compilation errors
+## PHASE 1 TASKS (IMMEDIATE - 2-4 HOURS):
+1. **Fix frontend field mappings** in `src/pages/RO/RODetailPage.jsx`
+   - Update `ro.customers` → `ro.customer` (lines 349, 378, 388)
+   - Update `ro.vehicleProfile` references
+2. **Connect ROSearchPage to backend** in `src/pages/Search/ROSearchPage.jsx`
+   - Replace mock data with `roService.getRepairOrders()` call
+3. **Test end-to-end workflow**: BMS import → RO detail → Parts drag-drop → PO creation
 
 ## AGENT ROLES & CAPABILITIES:
 - **architect**: Lead coordinator & task delegator (`.claude/project_updates/architect_progress.md`)

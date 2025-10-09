@@ -3,8 +3,7 @@
   "maxTokens": 8192,
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nStreamline agent architecture and enhance production workflow\n\nMajor Changes:\n- Consolidated 12 agents to 8 core agents (removed fragmented backend-api, frontend-ui, db-architect, devops)\n- Enhanced orchestrator and code-generator for full-stack capabilities\n- Updated CLAUDE.md with simplified decision tree and agent guidelines\n- Optimized loop detector hook for 62.5% faster cooldown (300ms)\n\nBackend:\n- Added comprehensive labor tracking routes and production board APIs\n- Enhanced BMS parser with robust error handling and validation\n- Extended repair order routes with labor, production, and parts integration\n- Added parts status update endpoint\n\nFrontend:\n- Integrated Technician Dashboard with production board\n- Enhanced Dashboard with real-time data and interactive charts\n- Updated Layout with new navigation for Labor and Production sections\n- Improved RO search and detail pages with better data integration\n\nConfiguration:\n- Updated Claude Code settings for extended autonomous sessions (30+ hours)\n- Configured parallel agent execution (4 concurrent agents)\n- Added checkpoints and memory tools for unlimited context\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
@@ -15,8 +14,20 @@
     "NODE_ENV": "development"
   },
   "hooks": {
-    "PostToolUse": {
-      "Write": "git add ."
-    }
+    "PostToolUse": [
+      {
+        "matcher": {
+          "tools": [
+            "Write"
+          ]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git add ."
+          }
+        ]
+      }
+    ]
   }
 }
