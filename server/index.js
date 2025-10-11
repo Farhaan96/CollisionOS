@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
 // Load environment variables
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 
 // Initialize Supabase configuration
 const {
@@ -39,6 +39,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const productionRoutes = require('./routes/production');
 const laborRoutes = require('./routes/labor');
 const communicationRoutes = require('./routes/communication');
+const timeclockRoutes = require('./routes/timeclock');
 
 // Phase 2 Backend Development Routes
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
@@ -50,6 +51,15 @@ const loanerFleetRoutes = require('./routes/loanerFleet');
 const customerCommunicationRoutes = require('./routes/customerCommunication');
 const qualityControlRoutes = require('./routes/qualityControl');
 const aiRoutes = require('./routes/ai');
+
+// Phase 2 Financial Integration Routes
+const paymentsRoutes = require('./routes/payments');
+const expensesRoutes = require('./routes/expenses');
+const invoicesRoutes = require('./routes/invoices');
+const quickbooksRoutes = require('./routes/quickbooks');
+
+// Digital Signature Routes
+const signaturesRoutes = require('./routes/signatures');
 
 const {
   authenticateToken,
@@ -276,6 +286,7 @@ app.use('/api/v1/dashboard', optionalAuth, dashboardRoutes); // Dashboard endpoi
 app.use('/api/v1/production', authenticateToken(), productionRoutes);
 app.use('/api/v1/labor', authenticateToken(), laborRoutes);
 app.use('/api/v1/communication', authenticateToken(), communicationRoutes);
+app.use('/api/v1/timeclock', authenticateToken(), timeclockRoutes);
 
 // Phase 2 Backend Development API Routes (v1)
 app.use('/api/v1/purchase-orders', authenticateToken(), purchaseOrderRoutes);
@@ -294,6 +305,13 @@ app.use(
 app.use('/api/v1/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/v1/quality-control', authenticateToken(), qualityControlRoutes); // Full name alias
 app.use('/api/v1/ai', authenticateToken(), aiRoutes);
+
+// Phase 2 Financial Integration API Routes (v1)
+app.use('/api/v1/payments', authenticateToken(), paymentsRoutes);
+app.use('/api/v1/expenses', authenticateToken(), expensesRoutes);
+app.use('/api/v1/invoices', authenticateToken(), invoicesRoutes);
+app.use('/api/v1/quickbooks', authenticateToken(), quickbooksRoutes);
+app.use('/api/v1/signatures', authenticateToken(), signaturesRoutes);
 
 // Maintain backward compatibility with unversioned routes
 app.use('/api/auth', authRoutes);
@@ -318,12 +336,13 @@ app.use('/api/integrations', authenticateToken(), integrationRoutes);
 app.use('/api/notifications', authenticateToken(), notificationRoutes);
 app.use('/api/attachments', authenticateToken(), attachmentRoutes);
 app.use('/api/import', optionalAuth, importRoutes);
-app.use('/api/bms', authenticateToken(), bmsApiRoutes);
+app.use('/api/bms', optionalAuth, bmsApiRoutes);
 app.use('/api/dashboard', optionalAuth, dashboardRoutes); // Dashboard endpoints with optional auth
 // IMEX-Level Enhancement API Routes (legacy)
 app.use('/api/production', authenticateToken(), productionRoutes);
 app.use('/api/labor', authenticateToken(), laborRoutes);
 app.use('/api/communication', authenticateToken(), communicationRoutes);
+app.use('/api/timeclock', authenticateToken(), timeclockRoutes);
 
 // Phase 2 Backend Development API Routes (legacy)
 app.use('/api/purchase-orders', authenticateToken(), purchaseOrderRoutes);
@@ -342,6 +361,13 @@ app.use(
 app.use('/api/qc', authenticateToken(), qualityControlRoutes);
 app.use('/api/quality-control', authenticateToken(), qualityControlRoutes);
 app.use('/api/ai', aiRoutes);
+
+// Phase 2 Financial Integration API Routes (legacy)
+app.use('/api/payments', authenticateToken(), paymentsRoutes);
+app.use('/api/expenses', authenticateToken(), expensesRoutes);
+app.use('/api/invoices', authenticateToken(), invoicesRoutes);
+app.use('/api/quickbooks', authenticateToken(), quickbooksRoutes);
+app.use('/api/signatures', authenticateToken(), signaturesRoutes);
 
 // Socket.io connection handling
 const socketAuth = require('./middleware/socketAuth');

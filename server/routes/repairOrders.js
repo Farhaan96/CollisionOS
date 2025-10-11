@@ -78,18 +78,37 @@ router.get('/search', [
         ro.opened_at,
         ro.estimated_completion,
         ro.created_at,
-        c.first_name,
-        c.last_name,
-        c.phone,
-        c.email,
-        v.vin,
-        v.year,
-        v.make,
-        v.model,
-        v.license_plate,
-        cl.claim_number,
-        ic.name as insurance_company,
-        ic.short_name as insurer_code
+        JSON_BUILD_OBJECT(
+          'id', c.id,
+          'first_name', c.first_name,
+          'last_name', c.last_name,
+          'phone', c.phone,
+          'email', c.email
+        ) as customer,
+        JSON_BUILD_OBJECT(
+          'id', v.id,
+          'vin', v.vin,
+          'year', v.year,
+          'make', v.make,
+          'model', v.model,
+          'license_plate', v.license_plate
+        ) as vehicle,
+        JSON_BUILD_OBJECT(
+          'id', cl.id,
+          'claim_number', cl.claim_number,
+          'status', cl.claim_status,
+          'incident_date', cl.incident_date,
+          'adjuster_name', cl.adjuster_name,
+          'adjuster_phone', cl.adjuster_phone,
+          'adjuster_email', cl.adjuster_email,
+          'deductible', cl.deductible
+        ) as claim,
+        JSON_BUILD_OBJECT(
+          'id', ic.id,
+          'name', ic.name,
+          'code', ic.code,
+          'is_drp', ic.is_drp
+        ) as insurance_company
       FROM repair_orders ro
       LEFT JOIN customers c ON ro.customer_id = c.id
       LEFT JOIN vehicles v ON ro.vehicle_id = v.id
@@ -216,15 +235,37 @@ router.get('/', [
     let sql = `
       SELECT
         ro.*,
-        c.first_name,
-        c.last_name,
-        c.phone,
-        v.vin,
-        v.year,
-        v.make,
-        v.model,
-        cl.claim_number,
-        ic.name as insurance_company
+        JSON_BUILD_OBJECT(
+          'id', c.id,
+          'first_name', c.first_name,
+          'last_name', c.last_name,
+          'phone', c.phone,
+          'email', c.email
+        ) as customer,
+        JSON_BUILD_OBJECT(
+          'id', v.id,
+          'vin', v.vin,
+          'year', v.year,
+          'make', v.make,
+          'model', v.model,
+          'license_plate', v.license_plate
+        ) as vehicle,
+        JSON_BUILD_OBJECT(
+          'id', cl.id,
+          'claim_number', cl.claim_number,
+          'status', cl.claim_status,
+          'incident_date', cl.incident_date,
+          'adjuster_name', cl.adjuster_name,
+          'adjuster_phone', cl.adjuster_phone,
+          'adjuster_email', cl.adjuster_email,
+          'deductible', cl.deductible
+        ) as claim,
+        JSON_BUILD_OBJECT(
+          'id', ic.id,
+          'name', ic.name,
+          'code', ic.code,
+          'is_drp', ic.is_drp
+        ) as insurance_company
       FROM repair_orders ro
       LEFT JOIN customers c ON ro.customer_id = c.id
       LEFT JOIN vehicles v ON ro.vehicle_id = v.id

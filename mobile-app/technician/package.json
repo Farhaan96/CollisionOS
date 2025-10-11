@@ -1,0 +1,33 @@
+
+{
+  "name": "collisionos-technician-mobile",
+  "version": "1.0.0",
+  "description": "CollisionOS Technician Mobile App",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build:android": "expo build:android",
+    "build:ios": "expo build:ios"
+  },
+  "dependencies": {
+    "expo": "~49.0.0",
+    "react": "18.2.0",
+    "react-native": "0.72.6",
+    "@react-navigation/native": "^6.1.7",
+    "@react-navigation/bottom-tabs": "^6.5.8",
+    "@expo/vector-icons": "^13.0.0",
+    "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-community/netinfo": "9.3.10",
+    "expo-camera": "~13.4.4",
+    "expo-image-picker": "~14.3.2",
+    "expo-location": "~16.1.0",
+    "expo-barcode-scanner": "~12.4.2",
+    "react-native-qrcode-scanner": "^1.5.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  }
+}

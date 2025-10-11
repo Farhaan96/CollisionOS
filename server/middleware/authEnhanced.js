@@ -1,13 +1,17 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../database/models');
 
-// JWT Secret from environment variables
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  'collisionos_super_secret_jwt_key_2024_make_it_long_and_random_for_production';
-const JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET ||
-  'collisionos_refresh_secret_key_2024_make_it_long_and_random_for_production';
+// JWT Secret from environment variables - NO FALLBACKS IN PRODUCTION
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+// Validate required environment variables
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+if (!JWT_REFRESH_SECRET) {
+  throw new Error('JWT_REFRESH_SECRET environment variable is required');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 

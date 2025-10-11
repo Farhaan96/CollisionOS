@@ -23,6 +23,7 @@ echo Waiting for frontend to build...
 timeout /t 10 /nobreak > nul
 
 echo Opening browser...
+REM Only open browser if not already running
 start http://localhost:3000
 
 echo.

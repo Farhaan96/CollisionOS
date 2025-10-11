@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-10-11T04:48:35.237Z",
+  "summary": {
+    "totalTests": 10,
+    "passedTests": 9,
+    "failedTests": 1,
+    "successRate": 90,
+    "duration": 145
+  },
+  "categories": {
+    "Environment Setup": [
+      {
+        "name": "Environment Variables Check",
+        "category": "Environment Setup",
+        "status": "failed",
+        "duration": 0,
+        "error": "Missing required environment variable: JWT_REFRESH_SECRET"
+      }
+    ],
+    "Database Operations": [
+      {
+        "name": "Database Connection Check",
+        "category": "Database Operations",
+        "status": "passed",
+        "duration": 0,
+        "details": {
+          "path": "./data/collisionos.db",
+          "size": "804.00 KB",
+          "status": "connected"
+        }
+      }
+    ],
+    "BMS Import Testing": [
+      {
+        "name": "BMS Import - BMS File 1",
+        "category": "BMS Import Testing",
+        "status": "passed",
+        "duration": 17,
+        "details": {
+          "fileSize": 64606,
+          "structure": "valid",
+          "claimNumber": "CX52401-1-A"
+        }
+      },
+      {
+        "name": "BMS Import - BMS File 2",
+        "category": "BMS Import Testing",
+        "status": "passed",
+        "duration": 9,
+        "details": {
+          "fileSize": 56783,
+          "structure": "valid",
+          "claimNumber": "CX73342-5-A"
+        }
+      },
+      {
+        "name": "BMS Import - BMS File 3",
+        "category": "BMS Import Testing",
+        "status": "passed",
+        "duration": 7,
+        "details": {
+          "fileSize": 40663,
+          "structure": "valid",
+          "claimNumber": 15938539
+        }
+      }
+    ],
+    "API Endpoints": [],
+    "Search Functionality": [
+      {
+        "name": "Search Functionality Test",
+        "category": "Search Functionality",
+        "status": "passed",
+        "duration": 0,
+        "details": {
+          "searchTests": 4,
+          "status": "functional"
+        }
+      }
+    ],
+    "Dashboard Testing": [
+      {
+        "name": "Dashboard Metrics Test",
+        "category": "Dashboard Testing",
+        "status": "passed",
+        "duration": 0,
+        "details": {
+          "metrics": {
+            "todayJobs": 0,
+            "todayRevenue": 0,
+            "monthTotalJobs": 0,
+            "monthTotalRevenue": 0,
+            "capacityUtilization": 85,
+            "technicianEfficiency": 95
+          },
+          "status": "calculated"
+        }
+      }
+    ],
+    "Performance Testing": [
+      {
+        "name": "Performance Metrics Test",
+        "category": "Performance Testing",
+        "status": "passed",
+        "duration": 104,
+        "details": {
+          "loadTime": 103,
+          "target": "<100ms",
+          "status": "warning"
+        }
+      }
+    ],
+    "Security Testing": [
+      {
+        "name": "Security Validation Test",
+        "category": "Security Testing",
+        "status": "passed",
+        "duration": 0,
+        "details": {
+          "securityTests": 4,
+          "status": "validated"
+        }
+      }
+    ],
+    "Error Handling": [
+      {
+        "name": "Error Handling Test",
+        "category": "Error Handling",
+        "status": "passed",
+        "duration": 0,
+        "details": {
+          "errorTests": 4,
+          "status": "handled"
+        }
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "Environment Variables Check",
+      "category": "Environment Setup",
+      "status": "failed",
+      "duration": 0,
+      "error": "Missing required environment variable: JWT_REFRESH_SECRET"
+    },
+    {
+      "name": "Database Connection Check",
+      "category": "Database Operations",
+      "status": "passed",
+      "duration": 0,
+      "details": {
+        "path": "./data/collisionos.db",
+        "size": "804.00 KB",
+        "status": "connected"
+      }
+    },
+    {
+      "name": "BMS Import - BMS File 1",
+      "category": "BMS Import Testing",
+      "status": "passed",
+      "duration": 17,
+      "details": {
+        "fileSize": 64606,
+        "structure": "valid",
+        "claimNumber": "CX52401-1-A"
+      }
+    },
+    {
+      "name": "BMS Import - BMS File 2",
+      "category": "BMS Import Testing",
+      "status": "passed",
+      "duration": 9,
+      "details": {
+        "fileSize": 56783,
+        "structure": "valid",
+        "claimNumber": "CX73342-5-A"
+      }
+    },
+    {
+      "name": "BMS Import - BMS File 3",
+      "category": "BMS Import Testing",
+      "status": "passed",
+      "duration": 7,
+      "details": {
+        "fileSize": 40663,
+        "structure": "valid",
+        "claimNumber": 15938539
+      }
+    },
+    {
+      "name": "Search Functionality Test",
+      "category": "Search Functionality",
+      "status": "passed",
+      "duration": 0,
+      "details": {
+        "searchTests": 4,
+        "status": "functional"
+      }
+    },
+    {
+      "name": "Dashboard Metrics Test",
+      "category": "Dashboard Testing",
+      "status": "passed",
+      "duration": 0,
+      "details": {
+        "metrics": {
+          "todayJobs": 0,
+          "todayRevenue": 0,
+          "monthTotalJobs": 0,
+          "monthTotalRevenue": 0,
+          "capacityUtilization": 85,
+          "technicianEfficiency": 95
+        },
+        "status": "calculated"
+      }
+    },
+    {
+      "name": "Performance Metrics Test",
+      "category": "Performance Testing",
+      "status": "passed",
+      "duration": 104,
+      "details": {
+        "loadTime": 103,
+        "target": "<100ms",
+        "status": "warning"
+      }
+    },
+    {
+      "name": "Security Validation Test",
+      "category": "Security Testing",
+      "status": "passed",
+      "duration": 0,
+      "details": {
+        "securityTests": 4,
+        "status": "validated"
+      }
+    },
+    {
+      "name": "Error Handling Test",
+      "category": "Error Handling",
+      "status": "passed",
+      "duration": 0,
+      "details": {
+        "errorTests": 4,
+        "status": "handled"
+      }
+    }
+  ]
+}

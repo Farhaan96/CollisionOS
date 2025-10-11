@@ -3,7 +3,7 @@
   "maxTokens": 8192,
   "permissions": {
     "allow": [
-      "Bash(git push:*)"
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

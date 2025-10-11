@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-10-11T02:49:55.973Z",
+  "phase": "Phase 5: Financial Integration",
+  "summary": {
+    "totalFinancial": 3,
+    "completedFinancial": 1,
+    "failedFinancial": 2,
+    "successRate": 33.33,
+    "totalDuration": "0s"
+  },
+  "results": [
+    {
+      "name": "Integrate Stripe Payments",
+      "status": "failed",
+      "duration": 0,
+      "error": "amount is not defined"
+    },
+    {
+      "name": "Build Expense Tracking",
+      "status": "failed",
+      "duration": 0,
+      "error": "expense is not defined"
+    },
+    {
+      "name": "Integrate QuickBooks",
+      "status": "completed",
+      "duration": 1,
+      "result": {
+        "message": "QuickBooks integration completed",
+        "files": 1
+      }
+    }
+  ],
+  "recommendations": [
+    "⚠️ Some financial integration had issues:",
+    "❌ Integrate Stripe Payments: amount is not defined",
+    "❌ Build Expense Tracking: expense is not defined",
+    "🔧 Review and fix the failed financial integrations"
+  ]
+}

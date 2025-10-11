@@ -778,4 +778,260 @@ When working with BMS integration:
 
 ---
 
+## 🎨 Part 2: User Interface and User Experience Design
+
+This section covers the UI/UX design strategy for CollisionOS, ensuring that despite the broad functionality, the application remains intuitive and easy to use for all user types. A well-designed interface is critical for adoption in a busy shop environment – the software should streamline work, not complicate it.
+
+### 2.1 Design Principles and Aesthetics
+
+**Clarity and Simplicity**:
+- Clean dashboard approach for home screen highlighting critical info and alerts
+- Logical navigation grouping with clear labels
+- Shallow menu hierarchy – frequent actions 1-2 clicks away
+- Consistent design language (colors, typography, iconography) across web and mobile
+- Modern design trends (flat design, intuitive icons, responsive layouts)
+- Minimal training required for non-tech-savvy shop staff
+
+**Role-Based Interfaces**:
+- Tailored UI per user role to reduce clutter
+- **Technician**: Focused view with assigned jobs, clock in/out, status updates
+- **Receptionist**: Calendar, appointments, quick customer/check-in links
+- **Admin/Owner**: KPI dashboard with full menu access
+- Show users only what they need for their job
+
+**Responsive and Platform-Appropriate Design**:
+- Web app responsive to various screen sizes
+- Desktop/large monitor: Multi-column layouts, data tables, charts
+- Tablet touchscreen: Readable buttons and text
+- Dedicated mobile apps: Native design conventions (Material Design/iOS HIG)
+- Mobile-specific screens for focused tasks (not shrunk web UI)
+
+**Visual Hierarchy and Emphasis**:
+- Color-code work order status (green = on track, yellow = delayed, red = urgent)
+- Highlight important alerts with badges/notification icons
+- Emphasize required fields on forms
+- Use modals/wizards for multi-step processes (e.g., estimate creation)
+- Prominent primary action buttons, smaller secondary actions
+- Professional look with shop's branding (logo, customizable colors)
+
+**Performance and Feedback**:
+- Snappy UI with loading indicators/skeleton screens
+- Confirmation messages for actions (toast notifications)
+- Clear error messages
+- Visual feedback on actions (checkmarks, progress indicators)
+- Caching frequently used data (parts list)
+- Local storage for temporary mobile data when offline
+
+### 2.2 Web Application UI (Shop Owner/Manager & Office Staff)
+
+The web app is the control center for managers and office staff, used on desktop computers.
+
+**Main Dashboard**:
+- Summary widgets: cars in progress, avg cycle time, monthly sales, unpaid invoices
+- Interactive shop status board
+- Charts for trends (sales over time, profits)
+- Notification area (appointments today, parts awaiting approval)
+- One-glance health check of business
+
+**Top/Side Navigation**:
+- Clear navigation scheme (left sidebar or top bar with dropdowns)
+- Icons with text labels (calendar for Schedule, car for ROs, dollar for Invoicing)
+- Collapsible sidebar for larger screens
+- Breadcrumbs for multi-level navigation
+
+**Scheduling Calendar UI**:
+- Calendar view (day/week/month toggles)
+- Color-coded entries (customer appointments vs. production milestones)
+- Drag-and-drop appointment moving
+- List/agenda view option
+- Online bookings flagged as "unconfirmed"
+- Click appointment to view/edit details
+
+**Repair Order List & Detail UI**:
+- Grid/list with sortable columns (RO#, customer, vehicle, status, dates, tech)
+- Filters (status, insurance company)
+- Search bar (by name or RO#)
+- **RO Detail Page** (central hub):
+  - Tabs/sections: Overview, Parts, Labor/Tasks, Attachments, Messages, Invoices/Payments
+  - Expandable panels for clean UI
+  - Image thumbnails (click to enlarge)
+  - Clear action buttons (+ Add Part, Edit RO, Order)
+
+**Estimate & Invoice Editors**:
+- Form with vehicle selection (VIN decoder integration)
+- Line items categorized (labor, parts, misc)
+- Integration with labor time databases (Mitchell, MOTOR)
+- Parts search (internal price list or catalog)
+- Auto-calculate totals, taxes, markups, discounts
+- Wizard option for new users
+- "Convert to Invoice" button from estimates
+- WYSIWYG preview for printing/emailing
+
+**Inventory/Parts UI**:
+- Table of parts with quantities
+- Low-stock alert highlighting
+- Barcode scanning support (optional)
+- **Order Parts Dialog**:
+  - Supplier selection (Keystone, CollisionLink, etc.)
+  - Integration confirmations ("Part ordered, expected in 2 days")
+  - Smooth workflow for parts ordering
+
+**Reporting UI**:
+- Report selection (Monthly P/L, Tech Efficiency, Inventory Usage)
+- Filters and date ranges
+- On-screen charts/tables (data visualization libraries)
+- Export functionality
+- Consistent design with dashboard
+
+**Settings & Configuration**:
+- Admin area for configuration
+- Submenus: General Settings, User Management, Integration Settings
+- Drop-down list configuration (labor rates, part categories)
+- User account management
+- Integration credentials (QuickBooks API keys)
+
+**Additional Considerations**:
+- Touch-friendly for tablets on shop floor
+- Dark mode option
+- Ensure buttons not too small for touch
+
+### 2.3 Mobile App UI (Technicians and Customers)
+
+Two distinct mobile interfaces: technician app and customer app.
+
+#### Technician Mobile App
+
+**Job List & Details**:
+- List of assigned jobs after login (Face/Touch ID or PIN)
+- Essential info per job: RO#, customer/car, status, icons for notes/parts
+- **Job Detail View**:
+  - Vehicle info
+  - Task list
+  - One-tap "Start Job" (clock in) button
+  - Start/Pause/Stop timing
+  - Mark tasks complete
+  - Add notes
+
+**Photos and Inspections**:
+- **Digital Inspection Forms**: Pre-defined templates with checklists
+- Camera integration with "Add Photo" button
+- Photo captioning and markup (draw/circle damage)
+- Free-form notes via voice dictation or typing
+- Quick multiple photo uploads
+- Thumbnails confirm upload
+- Example: Teardown finds hidden damage → take pic → note "Additional rad support damage" → flags office for supplement
+
+**Parts Status & Requests**:
+- List of required parts with status icons (✅ received, 🕗 pending, ❌ backorder)
+- "Request Part" feature: form with description + optional photo
+- Notifies parts staff
+
+**Notifications**:
+- Push notifications (part arrived, RO approved to start)
+- Notifications screen/icon
+
+**Offline Capability**:
+- Cache data for spotty Wi-Fi
+- Save notes/photos offline, sync later
+- Indicate offline status
+
+**Design Philosophy**:
+- Minimalist and robust
+- Large buttons, easy reading (possibly dark background)
+- Straightforward navigation (few tabs: Jobs, Messages, Profile)
+- Fewer taps = better (techs need focus on cars)
+
+#### Customer Mobile App/Portal
+
+**Login/Authentication**:
+- Simple account creation or order-specific link
+- Lookup via order number + last name
+- No complex authentication to avoid frustration
+
+**Repair Status Tracking**:
+- Current repair status display
+- Example: "Your vehicle is in Paint – expected ready Oct 10, 5:00 PM"
+- Progress bar or timeline view of repair stages
+- Checkmarks on completed steps
+- Manages expectations, reduces "status update" calls
+
+**Photos & Updates**:
+- Display photos uploaded by techs/advisors
+- Gallery with captions and dates
+- Timeline feed of updates
+- Before/after photos for impressive customer experience
+
+**Communication**:
+- Simple messaging/chat feature
+- Display advisor contact info
+- SMS integration option
+- Differentiate automated vs. personal messages
+
+**Approvals & Payments**:
+- Approve estimates/supplements via app
+- Push notification: "New Supplement: $500 – Approve/Decline"
+- View PDF, tap Approve (digital signature/authorization)
+- Credit card payment integration (pay deductible before pickup)
+- Simple e-commerce-style checkout
+
+**Appointment Booking & History**:
+- Schedule appointments (select service, date/time)
+- View service history (past repairs, dates, services)
+- Loyalty program/referral coupons (optional)
+
+**Design and Branding**:
+- Shop's branding/logo
+- Friendly tone
+- Extremely easy navigation (occasional users)
+- Big "Track My Repair" button
+- Mobile-responsive web portal option with secure token link
+
+### 2.4 UI Research and Best-Look Considerations
+
+**Modern, Flat Design**:
+- Clean flat design with vibrant accent colors
+- Lots of white space
+- Dark mode options
+- Emulate contemporary style (CCC, Mitchell, AutoLeap, Shopmonkey)
+- Avoid tiny text or outdated skeuomorphic elements
+- Flat icons, crisp typography, good padding
+
+**Intuitive Icons & Labels**:
+- Well-known icon library (familiar icons)
+- Always pair with text labels
+- Calendar for scheduling, clipboard for work orders, dollar for accounting, gear for settings
+
+**Consistency**:
+- Consistent layout template across screens
+- Header bar with page title and key actions
+- Global color scheme for statuses (green = Completed everywhere)
+- Helps users predict and learn interface
+
+**High Contrast & Readability**:
+- High-contrast text (dark on light or vice versa)
+- Medium-large font sizes
+- Avoid problematic color combinations for colorblind users
+- Use icons/text along with color for status
+- Test dark mode readability carefully
+
+**UI for Attachments**:
+- Lightbox gallery for photos (click to enlarge, swipe through)
+- Embedded PDF viewer or quick download
+- Support pinch-zoom, easy scrolling (for showing customers on tablets)
+
+**Guided Flows for Complex Tasks**:
+- Onboarding tips/tutorials for first-time users
+- Tooltips or help sidebar
+- Accessible help (help icon → documentation or support chat)
+- Reduces learning curve
+
+**Testing with Real Users**:
+- Test prototypes with actual shop staff
+- Gather feedback on terminology and layouts
+- Iterative improvement for user-centered design
+
+**Summary**: Professional yet approachable UI that instills confidence. Leverage common design patterns from enterprise SaaS combined with automotive workflow tweaks (timeline views, image galleries). Research top solutions (AutoLeap 4.7/5 UI rating) to align with user expectations.
+
+---
+
 **This configuration ensures coordinated collision repair development with clear task ownership, insurance workflow focus, and progress tracking across all specialized agents.**

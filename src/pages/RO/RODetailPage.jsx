@@ -93,6 +93,9 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import roService from '../../services/roService';
 import { toast } from 'react-hot-toast';
 import POCreationDialog from '../../components/PurchaseOrder/POCreationDialog';
+import SignatureModal from '../../components/Signature/SignatureModal';
+import SignatureDisplay from '../../components/Signature/SignatureDisplay';
+import signatureService from '../../services/signatureService';
 
 /**
  * RODetailPage - Complete collision repair workflow interface
@@ -120,6 +123,9 @@ const RODetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPODialog, setShowPODialog] = useState(false);
   const [showPhotoDialog, setShowPhotoDialog] = useState(false);
+  const [showSignatureDialog, setShowSignatureDialog] = useState(false);
+  const [signatureFieldName, setSignatureFieldName] = useState('');
+  const [signatures, setSignatures] = useState([]);
   const [workflowProgress, setWorkflowProgress] = useState(0);
   const [shopId] = useState('550e8400-e29b-41d4-a716-446655440000'); // TODO: Get from auth context
 
@@ -145,10 +151,18 @@ const RODetailPage = () => {
         throw new Error(result.error);
       }
 
-      setRO(result.data);
+      // Map backend response to frontend format
+      const roData = {
+        ...result.data,
+        customer: result.data.customers || result.data.customer,
+        vehicleProfile: result.data.vehicles || result.data.vehicleProfile,
+        claimManagement: result.data.claims || result.data.claimManagement,
+      };
+
+      setRO(roData);
 
       // Calculate workflow progress
-      const progress = calculateWorkflowProgress(result.data);
+      const progress = calculateWorkflowProgress(roData);
       setWorkflowProgress(progress);
 
     } catch (error) {
@@ -191,10 +205,25 @@ const RODetailPage = () => {
     }
   }, [roId]);
 
+  // Load signatures
+  const loadSignatures = useCallback(async () => {
+    if (!roId) return;
+
+    try {
+      const result = await signatureService.getRepairOrderSignatures(roId, true);
+      if (result.success) {
+        setSignatures(result.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load signatures:', error);
+    }
+  }, [roId]);
+
   useEffect(() => {
     loadRODetails();
     loadParts();
-  }, [loadRODetails, loadParts]);
+    loadSignatures();
+  }, [loadRODetails, loadParts, loadSignatures]);
 
   // Calculate workflow progress
   const calculateWorkflowProgress = (roData) => {
@@ -289,6 +318,41 @@ const RODetailPage = () => {
     // Show success message already handled in dialog
     toast.success(`Purchase order created successfully!`);
   }, [loadParts]);
+
+  // Handle signature capture
+  const handleRequestSignature = (fieldName) => {
+    setSignatureFieldName(fieldName);
+    setShowSignatureDialog(true);
+  };
+
+  // Handle signature save
+  const handleSignatureSave = async (signatureData) => {
+    try {
+      await signatureService.createRepairOrderSignature({
+        roId: roId,
+        fieldName: signatureFieldName,
+        signatureData: signatureData.signatureData,
+        width: signatureData.width,
+        height: signatureData.height,
+        signedBy: signatureData.signedBy,
+        signerRole: signatureData.signerRole,
+        signerEmail: signatureData.signerEmail,
+        signerPhone: signatureData.signerPhone,
+        shopId: shopId,
+        customerId: ro?.customer?.id || null,
+        consentText: signatureData.consentText,
+        signatureNotes: signatureData.signatureNotes,
+      });
+
+      toast.success('Signature saved successfully!');
+      loadSignatures();
+      setShowSignatureDialog(false);
+    } catch (error) {
+      console.error('Failed to save signature:', error);
+      toast.error('Failed to save signature');
+      throw error;
+    }
+  };
 
   // Get status color
   const getStatusColor = (status) => {
@@ -558,7 +622,12 @@ const RODetailPage = () => {
 
   // Render claim information
   const renderClaimInfo = () => {
-    if (!ro?.claimManagement) return null;
+    if (!ro?.claimManagement) return (
+      <Alert severity="info">No claim information associated with this repair order.</Alert>
+    );
+
+    const claim = ro.claimManagement;
+    const insurance = claim.insurance_companies || claim.insuranceCompany;
 
     return (
       <Card>
@@ -582,7 +651,7 @@ const RODetailPage = () => {
                 Claim Number
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {ro.claimManagement.claim_number}
+                {claim.claim_number}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -590,8 +659,8 @@ const RODetailPage = () => {
                 Insurance Company
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {ro.claimManagement.insuranceCompany?.name}
-                {ro.claimManagement.insuranceCompany?.is_drp && (
+                {insurance?.name}
+                {insurance?.is_drp && (
                   <Chip label="DRP" size="small" color="success" sx={{ ml: 1 }} />
                 )}
               </Typography>
@@ -601,7 +670,7 @@ const RODetailPage = () => {
                 Policy Number
               </Typography>
               <Typography variant="body1">
-                {ro.claimManagement.policy_number}
+                {claim.policy_number || 'N/A'}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -609,43 +678,66 @@ const RODetailPage = () => {
                 Deductible
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                ${ro.claimManagement.deductible_amount?.toFixed(2)}
+                ${(claim.deductible || claim.deductible_amount || 0).toFixed(2)}
               </Typography>
             </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="textSecondary">
-                Adjuster
-              </Typography>
-              <Box display="flex" alignItems="center" gap={2} mt={1}>
-                <Typography variant="body1">
-                  {ro.claimManagement.adjuster_name}
+            {claim.adjuster_name && (
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Adjuster
                 </Typography>
-                {ro.claimManagement.adjuster_phone && (
-                  <Button
-                    size="small"
-                    startIcon={<Phone />}
-                    onClick={() => window.open(`tel:${ro.claimManagement.adjuster_phone}`)}
-                  >
-                    {ro.claimManagement.adjuster_phone}
-                  </Button>
-                )}
-                {ro.claimManagement.adjuster_email && (
-                  <Button
-                    size="small"
-                    startIcon={<Email />}
-                    onClick={() => window.open(`mailto:${ro.claimManagement.adjuster_email}`)}
-                  >
-                    Email
-                  </Button>
-                )}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
+                <Box display="flex" alignItems="center" gap={2} mt={1}>
+                  <Typography variant="body1">
+                    {claim.adjuster_name}
+                  </Typography>
+                  {claim.adjuster_phone && (
+                    <Button
+                      size="small"
+                      startIcon={<Phone />}
+                      onClick={() => window.open(`tel:${claim.adjuster_phone}`)}
+                    >
+                      {claim.adjuster_phone}
+                    </Button>
+                  )}
+                  {claim.adjuster_email && (
+                    <Button
+                      size="small"
+                      startIcon={<Email />}
+                      onClick={() => window.open(`mailto:${claim.adjuster_email}`)}
+                    >
+                      Email
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            )}
+            {claim.incident_description && (
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Incident Description
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  {claim.incident_description}
+                </Typography>
+              </Grid>
+            )}
+            <Grid item xs={12} md={6}>
               <Typography variant="subtitle2" color="textSecondary">
-                Incident Description
+                Claim Status
               </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                {ro.claimManagement.incident_description}
+              <Chip
+                label={(claim.claim_status || 'open').toUpperCase()}
+                size="small"
+                color={claim.claim_status === 'approved' ? 'success' : claim.claim_status === 'denied' ? 'error' : 'warning'}
+                sx={{ mt: 0.5 }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="textSecondary">
+                Coverage Type
+              </Typography>
+              <Typography variant="body1">
+                {claim.coverage_type || 'N/A'}
               </Typography>
             </Grid>
           </Grid>
@@ -683,6 +775,7 @@ const RODetailPage = () => {
         >
           <Tab label="Parts Workflow" />
           <Tab label="Claim Info" />
+          <Tab label="Signatures" />
           <Tab label="Timeline" />
           <Tab label="Photos" />
           <Tab label="Documents" />
@@ -722,6 +815,55 @@ const RODetailPage = () => {
 
           {selectedTab === 2 && (
             <Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h6" fontWeight="medium">
+                  Digital Signatures
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleRequestSignature('Customer Authorization')}
+                  >
+                    Request Customer Signature
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleRequestSignature('Work Authorization')}
+                  >
+                    Work Authorization
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleRequestSignature('Delivery Receipt')}
+                  >
+                    Delivery Receipt
+                  </Button>
+                </Stack>
+              </Box>
+
+              {signatures.length === 0 ? (
+                <Alert severity="info">
+                  No signatures have been captured yet. Use the buttons above to request a signature.
+                </Alert>
+              ) : (
+                <Grid container spacing={2}>
+                  {signatures.map((signature) => (
+                    <Grid item xs={12} md={6} key={signature.id}>
+                      <SignatureDisplay
+                        signature={signature}
+                        showDetails={true}
+                        allowZoom={true}
+                        variant="detailed"
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </Box>
+          )}
+
+          {selectedTab === 3 && (
+            <Box>
               <Typography variant="h6" fontWeight="medium" gutterBottom>
                 Repair Timeline
               </Typography>
@@ -732,7 +874,7 @@ const RODetailPage = () => {
             </Box>
           )}
 
-          {selectedTab === 3 && (
+          {selectedTab === 4 && (
             <Box>
               <Typography variant="h6" fontWeight="medium" gutterBottom>
                 Photos & Media
@@ -744,7 +886,7 @@ const RODetailPage = () => {
             </Box>
           )}
 
-          {selectedTab === 4 && (
+          {selectedTab === 5 && (
             <Box>
               <Typography variant="h6" fontWeight="medium" gutterBottom>
                 Documents
@@ -766,6 +908,28 @@ const RODetailPage = () => {
         roNumber={ro?.ro_number}
         shopId={shopId}
         onPOCreated={handlePOCreated}
+      />
+
+      {/* Signature Capture Dialog */}
+      <SignatureModal
+        open={showSignatureDialog}
+        onClose={() => setShowSignatureDialog(false)}
+        onSave={handleSignatureSave}
+        title={`${signatureFieldName} - ${ro?.ro_number || 'Repair Order'}`}
+        fieldName={signatureFieldName}
+        defaultSignerName={ro?.customer ? `${ro.customer.first_name} ${ro.customer.last_name}` : ''}
+        defaultSignerEmail={ro?.customer?.email || ''}
+        defaultSignerPhone={ro?.customer?.phone || ''}
+        defaultSignerRole="customer"
+        requireEmail={false}
+        requirePhone={false}
+        consentText={
+          signatureFieldName === 'Work Authorization'
+            ? 'I authorize the repair work as outlined in the estimate and agree to pay the total amount due.'
+            : signatureFieldName === 'Delivery Receipt'
+            ? 'I acknowledge receipt of my vehicle and certify that all work has been completed to my satisfaction.'
+            : 'I acknowledge and agree to the terms outlined in this document.'
+        }
       />
     </Container>
   );

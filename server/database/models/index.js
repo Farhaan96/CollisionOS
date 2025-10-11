@@ -50,6 +50,19 @@ const VendorApiMetricsModel = require('./VendorApiMetrics');
 const PartsInventoryTrackingModel = require('./PartsInventoryTracking');
 const AutomatedPurchaseOrderModel = require('./AutomatedPurchaseOrder');
 
+// Phase 2 Financial Integration Models
+const PaymentModel = require('./Payment');
+const ExpenseModel = require('./Expense');
+const InvoiceEnhancedModel = require('./InvoiceEnhanced');
+const QuickBooksConnectionModel = require('./QuickBooksConnection');
+const QuickBooksSyncLogModel = require('./QuickBooksSyncLog');
+
+// Digital Signature Model
+const SignatureModel = require('./Signature');
+
+// Time Clock Model
+const TimeClockModel = require('./TimeClock');
+
 const User = UserModel(sequelize);
 const Job = JobModel(sequelize);
 const Shop = ShopModel(sequelize);
@@ -98,6 +111,19 @@ const VendorApiConfig = VendorApiConfigModel(sequelize);
 const VendorApiMetrics = VendorApiMetricsModel(sequelize);
 const PartsInventoryTracking = PartsInventoryTrackingModel(sequelize);
 const AutomatedPurchaseOrder = AutomatedPurchaseOrderModel(sequelize);
+
+// Phase 2 Financial Integration Models
+const Payment = PaymentModel(sequelize);
+const Expense = ExpenseModel(sequelize);
+const InvoiceEnhanced = InvoiceEnhancedModel(sequelize);
+const QuickBooksConnection = QuickBooksConnectionModel(sequelize);
+const QuickBooksSyncLog = QuickBooksSyncLogModel(sequelize);
+
+// Digital Signature Model
+const Signature = SignatureModel(sequelize);
+
+// Time Clock Model
+const TimeClock = TimeClockModel(sequelize);
 
 // Define associations
 
@@ -199,6 +225,19 @@ Shop.hasMany(AutomatedPurchaseOrder, {
   foreignKey: 'shopId',
   as: 'automatedPurchaseOrders',
 });
+
+// Phase 2 Financial Integration Associations
+Shop.hasMany(Payment, { foreignKey: 'shopId', as: 'payments' });
+Shop.hasMany(Expense, { foreignKey: 'shopId', as: 'expenses' });
+Shop.hasMany(InvoiceEnhanced, { foreignKey: 'shopId', as: 'invoicesEnhanced' });
+Shop.hasMany(QuickBooksConnection, { foreignKey: 'shopId', as: 'quickbooksConnections' });
+Shop.hasMany(QuickBooksSyncLog, { foreignKey: 'shopId', as: 'quickbooksSyncLogs' });
+
+// Digital Signature Associations
+Shop.hasMany(Signature, { foreignKey: 'shopId', as: 'signatures' });
+
+// Time Clock Associations
+Shop.hasMany(TimeClock, { foreignKey: 'shopId', as: 'timeClocks' });
 
 User.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
 Customer.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
@@ -1081,6 +1120,70 @@ User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'createdBy', as: 'createdAuto
 User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'approvedBy', as: 'approvedAutomatedPOs' });
 User.hasMany(AutomatedPurchaseOrder, { foreignKey: 'sentBy', as: 'sentAutomatedPOs' });
 
+// =====================================================================
+// PHASE 2 FINANCIAL INTEGRATION ASSOCIATIONS
+// =====================================================================
+
+// Payment Associations
+Payment.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+Payment.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+Payment.belongsTo(InvoiceEnhanced, { foreignKey: 'invoiceId', as: 'invoice' });
+Payment.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+RepairOrderManagement.hasMany(Payment, { foreignKey: 'repairOrderId', as: 'payments' });
+InvoiceEnhanced.hasMany(Payment, { foreignKey: 'invoiceId', as: 'payments' });
+User.hasMany(Payment, { foreignKey: 'createdBy', as: 'createdPayments' });
+
+// Expense Associations
+Expense.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+Expense.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+Expense.belongsTo(Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+Expense.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+Expense.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+
+RepairOrderManagement.hasMany(Expense, { foreignKey: 'repairOrderId', as: 'expenses' });
+Vendor.hasMany(Expense, { foreignKey: 'vendorId', as: 'expenses' });
+User.hasMany(Expense, { foreignKey: 'createdBy', as: 'createdExpenses' });
+User.hasMany(Expense, { foreignKey: 'approvedBy', as: 'approvedExpenses' });
+
+// Invoice Enhanced Associations
+InvoiceEnhanced.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+InvoiceEnhanced.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+InvoiceEnhanced.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+InvoiceEnhanced.belongsTo(InsuranceCompany, { foreignKey: 'insuranceCompanyId', as: 'insuranceCompany' });
+InvoiceEnhanced.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+RepairOrderManagement.hasMany(InvoiceEnhanced, { foreignKey: 'repairOrderId', as: 'invoicesEnhanced' });
+Customer.hasMany(InvoiceEnhanced, { foreignKey: 'customerId', as: 'invoicesEnhanced' });
+InsuranceCompany.hasMany(InvoiceEnhanced, { foreignKey: 'insuranceCompanyId', as: 'invoicesEnhanced' });
+User.hasMany(InvoiceEnhanced, { foreignKey: 'createdBy', as: 'createdInvoicesEnhanced' });
+
+// QuickBooks Associations
+QuickBooksConnection.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+QuickBooksSyncLog.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+
+// Digital Signature Associations
+Signature.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+Signature.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Signature.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+Signature.belongsTo(RepairOrderManagement, { foreignKey: 'repairOrderId', as: 'repairOrder' });
+
+User.hasMany(Signature, { foreignKey: 'userId', as: 'signatures' });
+Customer.hasMany(Signature, { foreignKey: 'customerId', as: 'signatures' });
+RepairOrderManagement.hasMany(Signature, { foreignKey: 'repairOrderId', as: 'signatures' });
+
+// Time Clock Associations
+TimeClock.belongsTo(Shop, { foreignKey: 'shopId', as: 'shop' });
+TimeClock.belongsTo(User, { foreignKey: 'technicianId', as: 'technician' });
+TimeClock.belongsTo(Job, { foreignKey: 'roId', as: 'ro' });
+TimeClock.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+TimeClock.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+TimeClock.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
+
+User.hasMany(TimeClock, { foreignKey: 'technicianId', as: 'timeClocks' });
+User.hasMany(TimeClock, { foreignKey: 'approvedBy', as: 'approvedTimeClocks' });
+Job.hasMany(TimeClock, { foreignKey: 'roId', as: 'timeClocks' });
+
 module.exports = {
   sequelize,
   User,
@@ -1126,4 +1229,14 @@ module.exports = {
   VendorApiMetrics,
   PartsInventoryTracking,
   AutomatedPurchaseOrder,
+  // Phase 2 Financial Integration Models
+  Payment,
+  Expense,
+  InvoiceEnhanced,
+  QuickBooksConnection,
+  QuickBooksSyncLog,
+  // Digital Signature Model
+  Signature,
+  // Time Clock Model
+  TimeClock,
 };

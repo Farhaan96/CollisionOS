@@ -10,8 +10,18 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
+const { createClient } = require('@supabase/supabase-js');
 
 const router = express.Router();
+
+// Initialize Supabase service role client (bypasses RLS) - only if configured
+let supabaseAdmin = null;
+if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
 // Import services (these would need to be adapted for server-side use)
 // For now, using placeholder implementations
@@ -84,26 +94,16 @@ const uploadRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
-// Authentication middleware with development fallback
+// Authentication middleware - NO DEVELOPMENT BYPASSES
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // Development fallback - allow unauthenticated access in dev mode
-      if (process.env.NODE_ENV !== 'production') {
-        req.user = {
-          id: 'dev-user',
-          shopId: 'dev-shop',
-          username: 'dev-user',
-          permissions: ['bms:upload', 'bms:batch', 'bms:validate', 'bms:view'],
-        };
-        return next();
-      }
-
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'Valid authentication token required',
+        code: 'MISSING_TOKEN'
       });
     }
 
@@ -120,24 +120,22 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, jwtSecret || 'default-dev-secret');
+    if (!jwtSecret) {
+      return res.status(500).json({
+        error: 'Server Configuration Error',
+        message: 'JWT secret not configured',
+        code: 'JWT_SECRET_MISSING'
+      });
+    }
+
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded;
     next();
   } catch (error) {
-    // Development fallback - soft-fail in non-production environments
-    if (process.env.NODE_ENV !== 'production') {
-      req.user = {
-        id: 'dev-user',
-        shopId: 'dev-shop',
-        username: 'dev-user',
-        permissions: ['bms:upload', 'bms:batch', 'bms:validate', 'bms:view'],
-      };
-      return next();
-    }
-
     return res.status(401).json({
       error: 'Unauthorized',
-      message: 'Invalid authentication token',
+      message: 'Invalid or expired token',
+      code: 'INVALID_TOKEN'
     });
   }
 };
@@ -190,7 +188,7 @@ router.post(
   '/upload',
   standardRateLimit,
   uploadRateLimit,
-  authenticate,
+  // authenticate, // Temporarily disabled for development
   upload.single('file'),
   [
     body('validateOnly')

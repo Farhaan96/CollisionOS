@@ -25,7 +25,6 @@ import {
   CloudUpload,
   Description,
   CheckCircle,
-  Error,
   ExpandMore,
   ExpandLess,
   Delete,
@@ -146,11 +145,11 @@ const BMSFileUpload = ({
       const isBMS = fileName.endsWith('.xml');
       const isEMS = fileName.endsWith('.txt') || fileName.endsWith('.ems');
 
-      let endpoint = '/import/bms';
+      let endpoint = '/bms/upload';
       let fileType = 'BMS';
 
       if (isEMS) {
-        endpoint = '/import/ems';
+        endpoint = '/ems/upload';
         fileType = 'EMS';
       }
 
@@ -160,16 +159,13 @@ const BMSFileUpload = ({
       setUploadProgress(25);
       setProcessingFile(`Processing ${fileType} file: ${file.name}`);
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}${endpoint}`,
-        {
-          method: 'POST',
-          body: formData,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
+      const response = await fetch(`/api${endpoint}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
       const result = await response.json();
 

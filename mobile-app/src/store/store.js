@@ -6,9 +6,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import { api } from './api/apiSlice';
 import authSlice from './slices/authSlice';
 import jobsSlice from './slices/jobsSlice';
-import partsSlice from './slices/partsSlice';
-import syncSlice from './slices/syncSlice';
-import notificationSlice from './slices/notificationSlice';
+import timeClockSlice from './slices/timeClockSlice';
 
 const persistConfig = {
   key: 'root',
@@ -17,16 +15,14 @@ const persistConfig = {
   // Don't persist API cache to avoid stale data
   blacklist: ['api'],
   // Persist critical app state
-  whitelist: ['auth', 'jobs', 'parts', 'sync', 'notifications']
+  whitelist: ['auth', 'jobs', 'timeClock']
 };
 
 const rootReducer = combineReducers({
   api: api.reducer,
   auth: authSlice,
   jobs: jobsSlice,
-  parts: partsSlice,
-  sync: syncSlice,
-  notifications: notificationSlice,
+  timeClock: timeClockSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -414,15 +414,11 @@ class BMSService {
       phones: customerData.phones || { home: '', work: '', cell: '' },
       email: customerData.email || '',
 
-      // Address - preserve full breakdown
-      address: customerData.address || '',
-      address1: customerData.address1 || '',
-      address2: customerData.address2 || '',
+      // Address - combine address fields for Supabase schema
+      address: customerData.address || customerData.address1 || '',
       city: customerData.city || '',
-      state: customerData.state || '',
-      province: customerData.province || customerData.state || '',
-      zip: customerData.zip || '',
-      postalCode: customerData.postalCode || customerData.zip || '',
+      state: customerData.state || customerData.province || '',
+      zip_code: customerData.zip || customerData.postalCode || '',
       country: customerData.country || '',
 
       // Insurance info
@@ -862,6 +858,9 @@ class BMSService {
       // Import required services (use local if Supabase is disabled)
       const useSupabase = process.env.ENABLE_SUPABASE === 'true';
 
+      // Import Supabase admin client for BMS operations (bypasses RLS)
+      const { supabaseAdmin } = require('../config/supabase');
+
       const { customerService } = useSupabase
         ? require('../database/services/customerService')
         : require('../database/services/customerService-local');
@@ -892,19 +891,19 @@ class BMSService {
         // Use shop ID from default shop
         const shopId = defaultShop.id;
 
-        // STEP 1: Create/find customer
-        customer = await this.findOrCreateCustomer(
+        // STEP 1: Create/find customer using admin client
+        customer = await this.findOrCreateCustomerWithAdmin(
           bmsResult.customer,
-          customerService,
+          supabaseAdmin,
           shopId
         );
 
-        // STEP 2: Create/find vehicle
-        const vehicleWithShop = { ...bmsResult.vehicle, shopId: shopId };
-        vehicle = await this.findOrCreateVehicle(
+        // STEP 2: Create/find vehicle using admin client
+        const vehicleWithShop = { ...bmsResult.vehicle, shop_id: shopId };
+        vehicle = await this.findOrCreateVehicleWithAdmin(
           vehicleWithShop,
           customer.id,
-          vehicleService
+          supabaseAdmin
         );
 
         // STEP 3: Create claim management record (NEW!)
@@ -931,13 +930,13 @@ class BMSService {
           }
         }
 
-        // STEP 4: Create job/repair order
-        const jobWithShop = { ...bmsResult, shopId: shopId };
-        job = await this.createJobFromBMS(
+        // STEP 4: Create job/repair order using admin client
+        const jobWithShop = { ...bmsResult, shop_id: shopId };
+        job = await this.createJobFromBMSWithAdmin(
           jobWithShop,
           customer.id,
           vehicle.id,
-          jobService
+          supabaseAdmin
         );
 
         // STEP 5: Create parts records with status='needed' (NEW!)
@@ -1006,6 +1005,193 @@ class BMSService {
       }
     } catch (error) {
       console.error('BMS processing with auto-creation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find existing customer or create new one using legacy database
+   */
+  async findOrCreateCustomerLegacy(customerData, shopId = null) {
+    try {
+      const { Customer } = require('../database/models');
+      
+      // Try to find existing customer by email first
+      if (customerData.email) {
+        const existingCustomer = await Customer.findOne({
+          where: { email: customerData.email }
+        });
+        
+        if (existingCustomer) {
+          console.log('Found existing customer by email:', existingCustomer.id);
+          return existingCustomer;
+        }
+      }
+
+      // Try to find by phone
+      if (customerData.phone) {
+        const existingCustomer = await Customer.findOne({
+          where: { phone: customerData.phone }
+        });
+        
+        if (existingCustomer) {
+          console.log('Found existing customer by phone:', existingCustomer.id);
+          return existingCustomer;
+        }
+      }
+
+      // Try to find by name (exact match)
+      if (customerData.firstName && customerData.lastName) {
+        const existingCustomer = await Customer.findOne({
+          where: {
+            firstName: customerData.firstName,
+            lastName: customerData.lastName
+          }
+        });
+        
+        if (existingCustomer) {
+          console.log('Found existing customer by name:', existingCustomer.id);
+          return existingCustomer;
+        }
+      }
+
+      // Create new customer
+      console.log('Creating new customer:', customerData.firstName, customerData.lastName);
+      
+      const newCustomer = await Customer.create({
+        firstName: customerData.firstName || '',
+        lastName: customerData.lastName || '',
+        email: customerData.email || null,
+        phone: customerData.phone || null,
+        address: customerData.address || null,
+        city: customerData.city || null,
+        state: customerData.state || null,
+        zip: customerData.zip || null,
+        shopId: shopId || 'default-shop'
+      });
+
+      console.log('Created new customer:', newCustomer.id);
+      return newCustomer;
+      
+    } catch (error) {
+      console.error('Error in findOrCreateCustomerLegacy:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find existing customer or create new one using admin client (bypasses RLS)
+   */
+  async findOrCreateCustomerWithAdmin(customerData, supabaseAdmin, shopId = null) {
+    try {
+      // Use legacy database when Supabase is not available
+      if (!supabaseAdmin) {
+        return await this.findOrCreateCustomerLegacy(customerData, shopId);
+      }
+
+      // Try to find existing customer by email first
+      if (customerData.email) {
+        const { data: existingCustomers } = await supabaseAdmin
+          .from('customers')
+          .select('*')
+          .eq('shop_id', shopId)
+          .eq('email', customerData.email);
+        
+        if (existingCustomers && existingCustomers.length > 0) {
+          console.log('Found existing customer by email:', existingCustomers[0].id);
+          return existingCustomers[0];
+        }
+      }
+
+      // Try to find by phone
+      if (customerData.phone) {
+        const { data: existingCustomers } = await supabaseAdmin
+          .from('customers')
+          .select('*')
+          .eq('shop_id', shopId)
+          .eq('phone', customerData.phone);
+        
+        if (existingCustomers && existingCustomers.length > 0) {
+          console.log('Found existing customer by phone:', existingCustomers[0].id);
+          return existingCustomers[0];
+        }
+      }
+
+      // Try to find by name (exact match)
+      if (customerData.firstName && customerData.lastName) {
+        const { data: existingCustomers } = await supabaseAdmin
+          .from('customers')
+          .select('*')
+          .eq('shop_id', shopId)
+          .eq('first_name', customerData.firstName)
+          .eq('last_name', customerData.lastName);
+        
+        if (existingCustomers && existingCustomers.length > 0) {
+          console.log('Found existing customer by name:', existingCustomers[0].id);
+          return existingCustomers[0];
+        }
+      }
+
+      // Create new customer with shop context
+      console.log('Creating new customer:', customerData.firstName, customerData.lastName, 'for shop:', shopId);
+
+      // Filter out fields that don't exist in the database schema
+      const { 
+        zip,           // Removed - use zip_code instead
+        insurance,     // Not in customers table
+        phones,        // Not in customers table (stored as phone/mobile)
+        claimNumber,   // Not in customers table
+        policyNumber,  // Not in customers table
+        deductible,    // In vehicles table, not customers
+        address1,      // Combined into address field
+        address2,      // Combined into address field
+        province,      // Mapped to state field
+        postalCode,    // Mapped to zip_code field
+        name,          // Redundant - using first_name/last_name
+        ...restData    // Everything else (but we need to map carefully)
+      } = customerData;
+
+      // Map fields to match exact Supabase schema (lines 247-281 of 01_initial_schema.sql)
+      const mappedCustomerData = {
+        customer_number: `CUST-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`, // Unique number
+        first_name: customerData.firstName || '',
+        last_name: customerData.lastName || '',
+        email: customerData.email || null,  // NULL not empty string
+        phone: customerData.phone || null,
+        mobile: customerData.mobile || null,
+        address: customerData.address || null,
+        city: customerData.city || null,
+        state: customerData.state || null,
+        zip_code: customerData.zip_code || null,  // Use normalized field
+        country: customerData.country || 'Canada',  // Default from schema
+        customer_type: 'individual',  // From enum: individual, business, insurance, fleet
+        customer_status: 'active',    // From enum: active, inactive, prospect, vip
+        is_active: true,
+        shop_id: shopId
+      };
+
+      // Remove empty strings - convert to null for database
+      Object.keys(mappedCustomerData).forEach(key => {
+        if (mappedCustomerData[key] === '' || mappedCustomerData[key] === 'N/A') {
+          mappedCustomerData[key] = null;
+        }
+      });
+
+      const { data: newCustomer, error } = await supabaseAdmin
+        .from('customers')
+        .insert([mappedCustomerData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating customer:', error);
+        throw error;
+      }
+
+      console.log('Created new customer:', newCustomer.id);
+      return newCustomer;
+    } catch (error) {
+      console.error('Error in findOrCreateCustomerWithAdmin:', error);
       throw error;
     }
   }
@@ -1089,6 +1275,66 @@ class BMSService {
   }
 
   /**
+   * Find existing vehicle or create new one using admin client (bypasses RLS)
+   */
+  async findOrCreateVehicleWithAdmin(vehicleData, customerId, supabaseAdmin) {
+    try {
+      // Try to find existing vehicle by VIN first
+      if (vehicleData.vin) {
+        const { data: existingVehicles } = await supabaseAdmin
+          .from('vehicles')
+          .select('*')
+          .eq('shop_id', vehicleData.shop_id)
+          .eq('vin', vehicleData.vin);
+        
+        if (existingVehicles && existingVehicles.length > 0) {
+          console.log('Found existing vehicle by VIN:', existingVehicles[0].id);
+          return existingVehicles[0];
+        }
+      }
+
+      // Try to find by license plate
+      if (vehicleData.license_plate) {
+        const { data: existingVehicles } = await supabaseAdmin
+          .from('vehicles')
+          .select('*')
+          .eq('shop_id', vehicleData.shop_id)
+          .eq('license_plate', vehicleData.license_plate);
+        
+        if (existingVehicles && existingVehicles.length > 0) {
+          console.log('Found existing vehicle by license plate:', existingVehicles[0].id);
+          return existingVehicles[0];
+        }
+      }
+
+      // Create new vehicle
+      console.log('Creating new vehicle:', vehicleData.year, vehicleData.make, vehicleData.model);
+
+      const vehicleWithCustomer = {
+        ...vehicleData,
+        customer_id: customerId,
+      };
+
+      const { data: newVehicle, error } = await supabaseAdmin
+        .from('vehicles')
+        .insert([vehicleWithCustomer])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating vehicle:', error);
+        throw error;
+      }
+
+      console.log('Created new vehicle:', newVehicle.id);
+      return newVehicle;
+    } catch (error) {
+      console.error('Error in findOrCreateVehicleWithAdmin:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Find existing vehicle or create new one
    */
   async findOrCreateVehicle(vehicleData, customerId, vehicleService) {
@@ -1096,6 +1342,47 @@ class BMSService {
       return await vehicleService.findOrCreateVehicle(vehicleData, customerId);
     } catch (error) {
       console.error('Error in findOrCreateVehicle:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create job from BMS data using admin client (bypasses RLS)
+   */
+  async createJobFromBMSWithAdmin(bmsResult, customerId, vehicleId, supabaseAdmin) {
+    try {
+      // Generate RO number
+      const roNumber = `RO-${Date.now()}`;
+      
+      // Create job/repair order
+      const jobData = {
+        shop_id: bmsResult.shop_id,
+        customer_id: customerId,
+        vehicle_id: vehicleId,
+        ro_number: roNumber,
+        status: 'estimate',
+        priority: 'normal',
+        total_amount: bmsResult.financial?.total || 0,
+        opened_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: newJob, error } = await supabaseAdmin
+        .from('jobs')
+        .insert([jobData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating job:', error);
+        throw error;
+      }
+
+      console.log('Created new job:', newJob.id);
+      return newJob;
+    } catch (error) {
+      console.error('Error in createJobFromBMSWithAdmin:', error);
       throw error;
     }
   }

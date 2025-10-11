@@ -20,6 +20,7 @@ import {
   TableHead,
   TableRow,
   TablePagination,
+  TableSortLabel,
   Tabs,
   Tab,
   Badge,
@@ -27,6 +28,15 @@ import {
   useTheme,
   Alert,
   Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Assignment,
@@ -52,6 +62,7 @@ import {
   Analytics,
   TrendingUp,
   Timeline,
+  Close,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CollisionRepairSearchBar from '../../components/Search/CollisionRepairSearchBar';
@@ -81,6 +92,15 @@ const ROSearchPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState('opened_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: '',
+    priority: '',
+    dateFrom: '',
+    dateTo: ''
+  });
 
   // Mock shop ID - in real app, get from auth context
   const shopId = '550e8400-e29b-41d4-a716-446655440000';
@@ -232,6 +252,68 @@ const ROSearchPage = () => {
     return priorityColors[priority] || 'default';
   };
 
+  // Handle sort
+  const handleSort = (column) => {
+    const isAsc = sortBy === column && sortOrder === 'asc';
+    setSortOrder(isAsc ? 'desc' : 'asc');
+    setSortBy(column);
+  };
+
+  // Apply filters
+  const handleApplyFilters = () => {
+    setFilterDialogOpen(false);
+    loadDashboardData();
+  };
+
+  // Clear filters
+  const handleClearFilters = () => {
+    setFilters({
+      status: '',
+      priority: '',
+      dateFrom: '',
+      dateTo: ''
+    });
+  };
+
+  // Sort ROs
+  const sortedROs = React.useMemo(() => {
+    const sorted = [...recentROs];
+    sorted.sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortBy) {
+        case 'ro_number':
+          aVal = a.ro_number || '';
+          bVal = b.ro_number || '';
+          break;
+        case 'customer':
+          aVal = `${a.first_name || ''} ${a.last_name || ''}`.trim();
+          bVal = `${b.first_name || ''} ${b.last_name || ''}`.trim();
+          break;
+        case 'status':
+          aVal = a.status || '';
+          bVal = b.status || '';
+          break;
+        case 'amount':
+          aVal = a.total_amount || 0;
+          bVal = b.total_amount || 0;
+          break;
+        case 'opened_at':
+        default:
+          aVal = new Date(a.opened_at || 0);
+          bVal = new Date(b.opened_at || 0);
+      }
+
+      if (sortOrder === 'asc') {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+
+    return sorted;
+  }, [recentROs, sortBy, sortOrder]);
+
   // Render dashboard metrics
   const renderDashboardMetrics = () => (
     <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -355,124 +437,132 @@ const ROSearchPage = () => {
   );
 
   // Render RO table row
-  const renderROTableRow = (ro) => (
-    <TableRow
-      key={ro.id}
-      hover
-      sx={{ cursor: 'pointer' }}
-      onClick={() => navigate(`/ro/${ro.id}`)}
-    >
-      <TableCell>
-        <Box display="flex" alignItems="center" gap={2}>
-          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 32, height: 32 }}>
-            <Assignment fontSize="small" />
-          </Avatar>
+  const renderROTableRow = (ro) => {
+    // Map field names to handle both snake_case from API and camelCase
+    const customer = ro.customer || (ro.first_name ? { first_name: ro.first_name, last_name: ro.last_name, phone: ro.phone } : null);
+    const vehicle = ro.vehicleProfile || ro.vehicle || (ro.year ? { year: ro.year, make: ro.make, model: ro.model, color: ro.color, license_plate: ro.license_plate } : null);
+
+    return (
+      <TableRow
+        key={ro.id}
+        hover
+        sx={{ cursor: 'pointer' }}
+        onClick={() => navigate(`/ro/${ro.id}`)}
+      >
+        <TableCell>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 32, height: 32 }}>
+              <Assignment fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" fontWeight="medium">
+                {ro.ro_number}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {ro.ro_type || 'Collision Repair'}
+              </Typography>
+            </Box>
+          </Box>
+        </TableCell>
+
+        <TableCell>
           <Box>
-            <Typography variant="subtitle2" fontWeight="medium">
-              {ro.ro_number}
+            <Typography variant="body2" fontWeight="medium">
+              {customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'N/A' : 'N/A'}
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {ro.ro_type}
+              {customer?.phone || 'No phone'}
             </Typography>
           </Box>
-        </Box>
-      </TableCell>
+        </TableCell>
 
-      <TableCell>
-        <Box>
-          <Typography variant="body2" fontWeight="medium">
-            {ro.customer?.first_name} {ro.customer?.last_name}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {ro.customer?.phone}
-          </Typography>
-        </Box>
-      </TableCell>
+        <TableCell>
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {vehicle ? `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim() || 'N/A' : 'N/A'}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {vehicle ? `${vehicle.color || 'N/A'} | ${vehicle.license_plate || 'N/A'}` : 'N/A'}
+            </Typography>
+          </Box>
+        </TableCell>
 
-      <TableCell>
-        <Box>
-          <Typography variant="body2" fontWeight="medium">
-            {ro.vehicleProfile?.year} {ro.vehicleProfile?.make} {ro.vehicleProfile?.model}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {ro.vehicleProfile?.color} | {ro.vehicleProfile?.license_plate}
-          </Typography>
-        </Box>
-      </TableCell>
-
-      <TableCell>
-        <Stack direction="row" spacing={1}>
-          <Chip
-            label={ro.status.replace('_', ' ').toUpperCase()}
-            size="small"
-            color={getStatusColor(ro.status)}
-          />
-          {ro.priority !== 'normal' && (
+        <TableCell>
+          <Stack direction="row" spacing={1}>
             <Chip
-              label={ro.priority.toUpperCase()}
+              label={(ro.status || 'unknown').replace('_', ' ').toUpperCase()}
               size="small"
-              color={getPriorityColor(ro.priority)}
+              color={getStatusColor(ro.status)}
             />
-          )}
-        </Stack>
-      </TableCell>
+            {ro.priority && ro.priority !== 'normal' && (
+              <Chip
+                label={ro.priority.toUpperCase()}
+                size="small"
+                color={getPriorityColor(ro.priority)}
+              />
+            )}
+          </Stack>
+        </TableCell>
 
-      <TableCell>
-        <Typography variant="body2" fontWeight="medium">
-          ${ro.total_amount?.toLocaleString() || 'TBD'}
-        </Typography>
-      </TableCell>
+        <TableCell>
+          <Typography variant="body2" fontWeight="medium">
+            ${ro.total_amount?.toLocaleString() || 'TBD'}
+          </Typography>
+        </TableCell>
 
-      <TableCell>
-        <Typography variant="body2">
-          {ro.estimated_completion_date ?
-            new Date(ro.estimated_completion_date).toLocaleDateString() :
-            'TBD'
-          }
-        </Typography>
-      </TableCell>
+        <TableCell>
+          <Typography variant="body2">
+            {ro.estimated_completion_date ?
+              new Date(ro.estimated_completion_date).toLocaleDateString() :
+              ro.estimated_completion ?
+                new Date(ro.estimated_completion).toLocaleDateString() :
+                'TBD'
+            }
+          </Typography>
+        </TableCell>
 
-      <TableCell>
-        <Box display="flex" gap={0.5}>
-          <Tooltip title="View Details">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/ro/${ro.id}`);
-              }}
-            >
-              <Visibility fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Edit RO">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/ro/${ro.id}/edit`);
-              }}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          {ro.customer?.phone && (
-            <Tooltip title="Call Customer">
+        <TableCell>
+          <Box display="flex" gap={0.5}>
+            <Tooltip title="View Details">
               <IconButton
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`tel:${ro.customer.phone}`);
+                  navigate(`/ro/${ro.id}`);
                 }}
               >
-                <Phone fontSize="small" />
+                <Visibility fontSize="small" />
               </IconButton>
             </Tooltip>
-          )}
-        </Box>
-      </TableCell>
-    </TableRow>
-  );
+            <Tooltip title="Edit RO">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/ro/${ro.id}/edit`);
+                }}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            {(customer?.phone || ro.phone) && (
+              <Tooltip title="Call Customer">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(`tel:${customer?.phone || ro.phone}`);
+                  }}
+                >
+                  <Phone fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -561,12 +651,16 @@ const ROSearchPage = () => {
                   Recent Repair Orders
                 </Typography>
                 <Box display="flex" gap={1}>
-                  <IconButton size="small">
-                    <FilterList />
-                  </IconButton>
-                  <IconButton size="small">
-                    <Sort />
-                  </IconButton>
+                  <Tooltip title="Filter Results">
+                    <IconButton size="small" onClick={() => setFilterDialogOpen(true)}>
+                      <FilterList />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Sort Options">
+                    <IconButton size="small">
+                      <Sort />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Box>
 
@@ -574,12 +668,52 @@ const ROSearchPage = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>RO Number</TableCell>
-                      <TableCell>Customer</TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortBy === 'ro_number'}
+                          direction={sortBy === 'ro_number' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('ro_number')}
+                        >
+                          RO Number
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortBy === 'customer'}
+                          direction={sortBy === 'customer' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('customer')}
+                        >
+                          Customer
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell>Vehicle</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Est. Completion</TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortBy === 'status'}
+                          direction={sortBy === 'status' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('status')}
+                        >
+                          Status
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortBy === 'amount'}
+                          direction={sortBy === 'amount' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('amount')}
+                        >
+                          Amount
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortBy === 'opened_at'}
+                          direction={sortBy === 'opened_at' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('opened_at')}
+                        >
+                          Est. Completion
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -595,7 +729,7 @@ const ROSearchPage = () => {
                         </TableRow>
                       ))
                     ) : (
-                      recentROs
+                      sortedROs
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map(renderROTableRow)
                     )}
@@ -682,6 +816,92 @@ const ROSearchPage = () => {
           )}
         </Box>
       </Paper>
+
+      {/* Filter Dialog */}
+      <Dialog
+        open={filterDialogOpen}
+        onClose={() => setFilterDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight="medium">
+              Filter Repair Orders
+            </Typography>
+            <IconButton size="small" onClick={() => setFilterDialogOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            {/* Status Filter */}
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.status}
+                label="Status"
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              >
+                <MenuItem value="">All Statuses</MenuItem>
+                <MenuItem value="estimate">Estimate</MenuItem>
+                <MenuItem value="in_progress">In Progress</MenuItem>
+                <MenuItem value="parts_pending">Parts Pending</MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="delivered">Delivered</MenuItem>
+                <MenuItem value="cancelled">Cancelled</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Priority Filter */}
+            <FormControl fullWidth>
+              <InputLabel>Priority</InputLabel>
+              <Select
+                value={filters.priority}
+                label="Priority"
+                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+              >
+                <MenuItem value="">All Priorities</MenuItem>
+                <MenuItem value="low">Low</MenuItem>
+                <MenuItem value="normal">Normal</MenuItem>
+                <MenuItem value="high">High</MenuItem>
+                <MenuItem value="urgent">Urgent</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Date Range Filters */}
+            <TextField
+              fullWidth
+              type="date"
+              label="Date From"
+              value={filters.dateFrom}
+              onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <TextField
+              fullWidth
+              type="date"
+              label="Date To"
+              value={filters.dateTo}
+              onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClearFilters} color="secondary">
+            Clear Filters
+          </Button>
+          <Button onClick={() => setFilterDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleApplyFilters} variant="contained">
+            Apply Filters
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
