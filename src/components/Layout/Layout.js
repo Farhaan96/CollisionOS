@@ -53,30 +53,13 @@ import { ThemeSwitcher } from '../Theme/ThemeSwitcher';
 
 const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <Dashboard /> },
-  { path: '/search', label: 'RO Search', icon: <Search /> },
-  { path: '/analytics', label: 'Analytics', icon: <Analytics /> },
-  {
-    path: '/production-board',
-    label: 'Production Board',
-    icon: <Timeline />,
-  },
-  {
-    path: '/advanced-production',
-    label: '18-Stage Production',
-    icon: <Engineering />,
-  },
-  {
-    path: '/purchase-orders',
-    label: 'Purchase Orders',
-    icon: <ShoppingCart />,
-  },
-  { path: '/communications', label: 'Communications', icon: <Message /> },
-  { path: '/bms-import', label: 'BMS Import', icon: <Inventory /> },
+  { path: '/jobs', label: 'Jobs', icon: <Build /> },
   { path: '/customers', label: 'Customers', icon: <People /> },
-  { path: '/parts', label: 'Parts', icon: <Handyman /> },
-  { path: '/automated-sourcing', label: 'Auto Sourcing', icon: <AutoMode /> },
-  { path: '/vendor-integration', label: 'Vendor Integration', icon: <Insights /> },
-  { path: '/quality-control', label: 'QC', icon: <VerifiedUser /> },
+  { path: '/parts', label: 'Parts & Vendors', icon: <Handyman /> },
+  { path: '/schedule', label: 'Schedule', icon: <Timeline /> },
+  { path: '/courtesy-cars', label: 'Courtesy Cars', icon: <DirectionsCar /> },
+  { path: '/reports', label: 'Reports', icon: <Assessment /> },
+  { path: '/settings', label: 'Settings', icon: <Settings /> },
 ];
 
 export default function Layout() {
@@ -278,51 +261,10 @@ export default function Layout() {
             🔧 CollisionOS
           </Typography>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Hidden, using sidebar only */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {navigationItems.map(item => (
-                <Tooltip key={item.path} title={item.label}>
-                  <Button
-                    component={Link}
-                    to={item.path}
-                    startIcon={item.icon}
-                    sx={{
-                      color: isActiveRoute(item.path)
-                        ? 'primary.main'
-                        : muiTheme.palette.mode === 'light'
-                          ? '#374151'
-                          : 'rgba(255, 255, 255, 0.85)',
-                      bgcolor: isActiveRoute(item.path)
-                        ? 'rgba(99, 102, 241, 0.1)'
-                        : 'transparent',
-                      borderRadius: 2,
-                      px: 2,
-                      py: 1,
-                      textTransform: 'none',
-                      fontWeight: isActiveRoute(item.path) ? 600 : 500,
-                      '&:hover': {
-                        bgcolor: isActiveRoute(item.path)
-                          ? 'rgba(99, 102, 241, 0.15)'
-                          : muiTheme.palette.mode === 'light'
-                            ? 'rgba(0, 0, 0, 0.05)'
-                            : 'rgba(255, 255, 255, 0.05)',
-                        transform: 'translateY(-1px)',
-                        boxShadow:
-                          muiTheme.palette.mode === 'light'
-                            ? '0 4px 12px rgba(0,0,0,0.1)'
-                            : '0 4px 12px rgba(0,0,0,0.3)',
-                      },
-                      transition: 'all 0.2s ease',
-                      pointerEvents: 'auto',
-                      position: 'relative',
-                      zIndex: 1,
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                </Tooltip>
-              ))}
+              {/* Navigation moved to sidebar for cleaner look */}
             </Box>
           )}
 

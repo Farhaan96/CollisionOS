@@ -85,3 +85,4 @@ The RLS bypass is implemented using the service role client, which is the proper
 
 **Status**: ✅ COMPLETE - BMS Upload functionality fully restored and working
 
+

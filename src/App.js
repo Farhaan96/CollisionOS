@@ -60,6 +60,8 @@ const CustomerCommunicationCenter = lazy(
 const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage'));
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const JobsListPage = lazy(() => import('./pages/Jobs/JobsListPage'));
+const JobsListPageClean = lazy(() => import('./pages/Jobs/JobsListPageClean'));
+const DashboardClean = lazy(() => import('./pages/Dashboard/DashboardClean'));
 const InvoicingPage = lazy(() => import('./pages/Invoicing/InvoicingPage'));
 
 // Protected Route Component
@@ -99,7 +101,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path='dashboard' element={<Dashboard />} />
+        <Route path='dashboard' element={
+          <PageErrorBoundary pageName="Dashboard">
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardClean />
+            </Suspense>
+          </PageErrorBoundary>
+        } />
+        <Route path='dashboard-old' element={<Dashboard />} />
         <Route
           path='search'
           element={
@@ -304,6 +313,16 @@ const AppRoutes = () => {
           path='jobs'
           element={
             <PageErrorBoundary pageName="Jobs">
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobsListPageClean />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='jobs-old'
+          element={
+            <PageErrorBoundary pageName="Jobs Old">
               <Suspense fallback={<LoadingSpinner />}>
                 <JobsListPage />
               </Suspense>
