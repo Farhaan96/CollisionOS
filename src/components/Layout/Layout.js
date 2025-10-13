@@ -261,10 +261,43 @@ export default function Layout() {
             🔧 CollisionOS
           </Typography>
 
-          {/* Desktop Navigation - Hidden, using sidebar only */}
+          {/* Desktop Navigation */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {/* Navigation moved to sidebar for cleaner look */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {navigationItems.slice(0, -1).map(item => (
+                <Button
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  sx={{
+                    color: isActiveRoute(item.path)
+                      ? 'primary.main'
+                      : muiTheme.palette.mode === 'light'
+                        ? '#374151'
+                        : 'rgba(255, 255, 255, 0.85)',
+                    bgcolor: isActiveRoute(item.path)
+                      ? 'rgba(99, 102, 241, 0.1)'
+                      : 'transparent',
+                    borderRadius: 1,
+                    px: 2,
+                    py: 0.75,
+                    textTransform: 'none',
+                    fontWeight: isActiveRoute(item.path) ? 600 : 500,
+                    fontSize: '0.875rem',
+                    minWidth: 'auto',
+                    '&:hover': {
+                      bgcolor: isActiveRoute(item.path)
+                        ? 'rgba(99, 102, 241, 0.15)'
+                        : muiTheme.palette.mode === 'light'
+                          ? 'rgba(0, 0, 0, 0.04)'
+                          : 'rgba(255, 255, 255, 0.05)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
             </Box>
           )}
 
