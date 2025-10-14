@@ -121,35 +121,8 @@ const PART_STATUSES = {
   returned: { label: 'Returned', color: '#607d8b', icon: Error },
 };
 
-const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
-  const theme = useTheme();
-  const _barcodeRef = useRef();
-
-  // Use static sample data references (moved to be constants)
-  // eslint-disable-next-line no-use-before-define
-  const samplePartsRef = sampleParts;
-  // eslint-disable-next-line no-use-before-define
-  const sampleInventoryRef = sampleInventory;
-
-  const [activeTab, setActiveTab] = useState(0);
-  const [parts, setParts] = useState([]);
-  const [inventory, setInventory] = useState([]);
-  const [_orders, _setOrders] = useState([]);
-  const [_selectedPart, _setSelectedPart] = useState(null);
-  const [_dialogOpen, _setDialogOpen] = useState(false);
-  const [searchDialog, setSearchDialog] = useState(false);
-  const [_priceComparisonDialog, _setPriceComparisonDialog] = useState(false);
-  const [_inventoryDialog, _setInventoryDialog] = useState(false);
-  const [_orderDialog, _setOrderDialog] = useState(false);
-  const [_loading, setLoading] = useState(false);
-  const [_searchTerm, _setSearchTerm] = useState('');
-  const [_selectedSupplier, _setSelectedSupplier] = useState('');
-  const [_filterCategory, _setFilterCategory] = useState('');
-  const [_scannerActive, setScannerActive] = useState(false);
-  const [realtimeUpdates, setRealtimeUpdates] = useState(false);
-
-  // Sample parts data
-  const sampleParts = [
+// Sample parts data (moved outside component to avoid hoisting issues)
+const SAMPLE_PARTS = [
     {
       id: '1',
       jobId: 'JOB-001',
@@ -184,10 +157,10 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
       warranty: '12 months',
       damageLineId: 'DL-002',
     },
-  ];
+];
 
-  // Sample inventory data
-  const sampleInventory = [
+// Sample inventory data (moved outside component to avoid hoisting issues)
+const SAMPLE_INVENTORY = [
     {
       id: '1',
       partNumber: 'UNIV-PAINT-001',
@@ -214,7 +187,28 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
       lastUpdated: '2024-01-15',
       supplier: 'parts_trader',
     },
-  ];
+];
+
+const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
+  const theme = useTheme();
+  const _barcodeRef = useRef();
+
+  const [activeTab, setActiveTab] = useState(0);
+  const [parts, setParts] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [_orders, _setOrders] = useState([]);
+  const [_selectedPart, _setSelectedPart] = useState(null);
+  const [_dialogOpen, _setDialogOpen] = useState(false);
+  const [searchDialog, setSearchDialog] = useState(false);
+  const [_priceComparisonDialog, _setPriceComparisonDialog] = useState(false);
+  const [_inventoryDialog, _setInventoryDialog] = useState(false);
+  const [_orderDialog, _setOrderDialog] = useState(false);
+  const [_loading, setLoading] = useState(false);
+  const [_searchTerm, _setSearchTerm] = useState('');
+  const [_selectedSupplier, _setSelectedSupplier] = useState('');
+  const [_filterCategory, _setFilterCategory] = useState('');
+  const [_scannerActive, setScannerActive] = useState(false);
+  const [realtimeUpdates, setRealtimeUpdates] = useState(false);
 
   // Load parts data from service
   const loadPartsData = useCallback(async () => {
@@ -226,8 +220,8 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
         partsService.getPurchaseOrders(),
       ]);
 
-      setParts(partsData || samplePartsRef);
-      setInventory(inventoryData || sampleInventoryRef);
+      setParts(partsData || SAMPLE_PARTS);
+      setInventory(inventoryData || SAMPLE_INVENTORY);
       _setOrders(_ordersData || []);
     } catch (error) {
       // Log error for debugging (replace with proper logging service)
@@ -236,18 +230,18 @@ const PartsManagementSystem = ({ jobId, onPartsUpdate }) => {
         console.error('Failed to load parts data:', error);
       }
       // Fallback to sample data
-      setParts(samplePartsRef);
-      setInventory(sampleInventoryRef);
+      setParts(SAMPLE_PARTS);
+      setInventory(SAMPLE_INVENTORY);
     } finally {
       setLoading(false);
     }
-  }, [jobId, samplePartsRef, sampleInventoryRef]);
+  }, [jobId]);
 
   useEffect(() => {
-    setParts(samplePartsRef);
-    setInventory(sampleInventoryRef);
+    setParts(SAMPLE_PARTS);
+    setInventory(SAMPLE_INVENTORY);
     loadPartsData();
-  }, [loadPartsData, samplePartsRef, sampleInventoryRef]);
+  }, [loadPartsData]);
 
   // Handle parts updates
   const handlePartsChange = () => {

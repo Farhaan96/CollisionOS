@@ -46,6 +46,7 @@ import {
   Insights,
   DirectionsCar,
   Receipt,
+  CloudUpload,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
@@ -55,6 +56,7 @@ const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <Dashboard /> },
   { path: '/jobs', label: 'Jobs', icon: <Build /> },
   { path: '/customers', label: 'Customers', icon: <People /> },
+  { path: '/bms-import', label: 'Import Estimates', icon: <CloudUpload /> },
   { path: '/parts', label: 'Parts & Vendors', icon: <Handyman /> },
   { path: '/schedule', label: 'Schedule', icon: <Timeline /> },
   { path: '/courtesy-cars', label: 'Courtesy Cars', icon: <DirectionsCar /> },

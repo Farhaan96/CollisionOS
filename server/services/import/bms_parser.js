@@ -96,6 +96,15 @@ class EnhancedBMSParser {
         home: '',
         work: '',
         cell: '',
+      },
+      addresses: {
+        home: '',
+        work: '',
+        mailing: ''
+      },
+      emails: {
+        primary: '',
+        secondary: ''
       }
     };
     const isMitchell = this.isMitchellFormat(root);

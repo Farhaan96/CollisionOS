@@ -13,7 +13,7 @@ import Login from './pages/Auth/Login';
 import Layout from './components/Layout/Layout';
 import { LoadingSpinner } from './components/Common/LoadingSpinner';
 import { ErrorBoundary, PageErrorBoundary } from './components/Common/ErrorBoundary';
-import AIFloatingButton from './components/AI/AIFloatingButton';
+import BMSUploadButton from './components/BMS/BMSUploadButton';
 
 // Lazy load components for better performance
 const BMSImportPage = lazy(() => import('./pages/BMSImport/BMSImportPage'));
@@ -32,8 +32,11 @@ const QualityControlDashboard = lazy(
   () => import('./pages/QualityControl/QualityControlDashboard')
 );
 const ReportsManagement = lazy(
-  () => import('./pages/Reports/ReportsManagement')
+  () => import('./pages/Reports/EnhancedReportsManagement')
 );
+const SchedulePage = lazy(() => import('./pages/Schedule/SchedulePage'));
+const CourtesyCarsPage = lazy(() => import('./pages/CourtesyCars/CourtesyCarsPage'));
+const JobCreatePage = lazy(() => import('./pages/Jobs/JobCreatePage'));
 const MUIComponentTest = lazy(
   () => import('./components/Testing/MUIComponentTest')
 );
@@ -270,6 +273,36 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path='schedule'
+          element={
+            <PageErrorBoundary pageName="Schedule">
+              <Suspense fallback={<LoadingSpinner />}>
+                <SchedulePage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='courtesy-cars'
+          element={
+            <PageErrorBoundary pageName="Courtesy Cars">
+              <Suspense fallback={<LoadingSpinner />}>
+                <CourtesyCarsPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='jobs/new'
+          element={
+            <PageErrorBoundary pageName="Create Job">
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobCreatePage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
           path='reports'
           element={
             <PageErrorBoundary pageName="Reports">
@@ -380,7 +413,7 @@ export default function App() {
           >
             <AppRoutes />
             {/* AI Assistant available globally when authenticated */}
-            <AIAssistantWrapper />
+            <BMSUploadWrapper />
           </Router>
         </AuthProvider>
       </ThemeProvider>
@@ -388,11 +421,11 @@ export default function App() {
   );
 }
 
-// Wrapper component to only show AI assistant when authenticated
-const AIAssistantWrapper = () => {
+// Wrapper component to only show BMS upload button when authenticated
+const BMSUploadWrapper = () => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return null;
 
-  return <AIFloatingButton />;
+  return <BMSUploadButton />;
 };

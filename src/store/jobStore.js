@@ -59,7 +59,7 @@ const useJobStore = create((set, get) => ({
 
     // Optimistically update UI
     const updatedJobs = jobs.map(job =>
-      job.id === jobId ? { ...job, status: newStatus } : job
+      job.id === jobId ? { ...job, status: newStatus, lastUpdated: new Date() } : job
     );
     set({ jobs: updatedJobs });
 
@@ -72,6 +72,11 @@ const useJobStore = create((set, get) => ({
         set({ jobs });
         return { success: false, error: result.error || 'Failed to update job status' };
       }
+
+      // Emit real-time event for other clients
+      window.dispatchEvent(new CustomEvent('jobStatusChanged', {
+        detail: { jobId, from: originalStatus, to: newStatus, job: updatedJobs.find(j => j.id === jobId) }
+      }));
 
       return { success: true };
     } catch (error) {
@@ -195,4 +200,5 @@ const useJobStore = create((set, get) => ({
   },
 }));
 
+export { useJobStore };
 export default useJobStore;

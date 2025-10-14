@@ -12,15 +12,21 @@ import {
   useTheme,
   alpha,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
   Refresh,
+  Close,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import JobDetailModal from '../../components/Jobs/JobDetailModal';
+import { useRealtimeJobs } from '../../hooks/useRealtimeData';
+import { useJobStore } from '../../store/jobStore';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
@@ -38,6 +44,8 @@ const DashboardClean = () => {
   const [loading, setLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobModal, setShowJobModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
 
   // Dashboard stats
   const [stats, setStats] = useState({
@@ -50,49 +58,100 @@ const DashboardClean = () => {
     revenueTrend: 18,
   });
 
-  // Job board data by status
-  const [jobBoard, setJobBoard] = useState({
-    intake: [],
-    estimating: [
-      {
-        id: 1,
-        roNumber: 'RO-2025-001',
-        customer: 'Sarah Johnson',
-        vehicle: '2020 Toyota Camry',
-        insurer: 'ICBC',
-        status: 'Estimating',
-        priority: 'Medium',
-        dueDate: 'No due date',
-        estimator: 'Test Estimator',
-        claimNumber: 'CLMwfU7QQ',
-        rentalCoverage: false,
-      },
-    ],
-    awaitingParts: [
-      {
-        id: 2,
-        roNumber: 'RO-2025-002',
-        customer: 'Sarah Johnson',
-        phone: '604-555-1212',
-        vehicle: '2020 Toyota Camry',
-        insurer: 'ICBC',
-        status: 'Awaiting Parts',
-        priority: 'Medium',
-        dueDate: 'No due date',
-        estimator: 'Test Estimator',
-        claimNumber: 'CLMwfU7QQ',
-        rentalCoverage: false,
-      },
-    ],
-    inProduction: [],
-    ready: [],
-  });
+  // Use real-time jobs data from the store
+  const jobs = useJobStore(state => state.jobs);
+  const fetchJobs = useJobStore(state => state.fetchJobs);
+  const moveJob = useJobStore(state => state.moveJob);
 
-  // Job board status tabs with counts
+  // Load jobs on mount
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  // Listen for BMS import events
+  useEffect(() => {
+    const handleBMSImport = async (event) => {
+      const { jobId } = event.detail;
+      
+      // Refresh jobs list
+      await fetchJobs();
+      
+      // Find and open the newly created job
+      if (jobId) {
+        // Wait a bit for the job store to update
+        setTimeout(() => {
+          const newJob = jobs.find(j => j.id === jobId);
+          if (newJob) {
+            setSelectedJob(newJob);
+            setShowJobModal(true);
+          }
+        }, 500);
+      }
+    };
+    
+    window.addEventListener('bmsImported', handleBMSImport);
+    return () => window.removeEventListener('bmsImported', handleBMSImport);
+  }, [fetchJobs, jobs]);
+
+  // Organize jobs by status
+  const jobBoard = {
+    intake: jobs.filter(job => job.status === 'Intake' || job.status === 'intake'),
+    estimating: jobs.filter(job => job.status === 'Estimating' || job.status === 'estimating'),
+    awaitingParts: jobs.filter(job => job.status === 'Awaiting Parts' || job.status === 'awaiting_parts'),
+    inProduction: jobs.filter(job => job.status === 'In Production' || job.status === 'in_production'),
+    ready: jobs.filter(job => job.status === 'Ready' || job.status === 'ready'),
+  };
+
+  // Get filtered jobs based on notification type
+  const getFilteredJobs = (filterKey) => {
+    const allJobs = [
+      ...jobBoard.intake,
+      ...jobBoard.estimating,
+      ...jobBoard.awaitingParts,
+      ...jobBoard.inProduction,
+      ...jobBoard.ready,
+    ];
+
+    switch (filterKey) {
+      case 'lateJobs':
+        // Filter jobs that are late (past due date)
+        return allJobs.filter(
+          (job) => job.dueDate && job.dueDate !== 'No due date' && new Date(job.dueDate) < new Date()
+        );
+      case 'awaitingParts':
+        // Filter jobs in "Awaiting Parts" status
+        return allJobs.filter((job) => job.status === 'Awaiting Parts');
+      case 'rentalRequired':
+        // Filter jobs that have rental coverage
+        return allJobs.filter((job) => job.rentalCoverage === true);
+      default:
+        return [];
+    }
+  };
+
+  // Job board status tabs with DYNAMIC counts calculated from actual filtered jobs
   const statusTabs = [
-    { label: 'Late Jobs', count: 2, color: 'error', badgeColor: '#ef4444' },
-    { label: 'Awaiting Parts', count: 1, color: 'warning', badgeColor: '#f59e0b' },
-    { label: 'Rental Required', count: 2, color: 'info', badgeColor: '#3b82f6' },
+    {
+      label: 'Late Jobs',
+      count: getFilteredJobs('lateJobs').length,
+      color: 'error',
+      badgeColor: '#ef4444',
+      filterKey: 'lateJobs',
+    },
+    {
+      label: 'Awaiting Parts',
+      count: getFilteredJobs('awaitingParts').length,
+      color: 'warning',
+      badgeColor: '#f59e0b',
+      filterKey: 'awaitingParts',
+    },
+    {
+      label: 'Rental Required',
+      count: getFilteredJobs('rentalRequired').length,
+      color: 'info',
+      badgeColor: '#3b82f6',
+      filterKey: 'rentalRequired',
+    },
   ];
 
   // Status columns for job board
@@ -131,6 +190,44 @@ const DashboardClean = () => {
   const handleJobModalClose = () => {
     setShowJobModal(false);
     setSelectedJob(null);
+  };
+
+  // Handle job status change - move job between columns
+  const handleJobStatusChange = async (jobId, newStatus) => {
+    console.log('Dashboard: handleJobStatusChange called', { jobId, newStatus });
+
+    try {
+      const result = await moveJob(jobId, newStatus);
+
+      if (result.success) {
+        console.log(`Job ${jobId} moved to ${newStatus} successfully`);
+        // The job store will handle the UI update automatically via Zustand reactivity
+      } else {
+        console.error('Failed to move job:', result.error);
+        alert(`Failed to move job: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error moving job:', error);
+      alert(`Error moving job: ${error.message}`);
+    }
+  };
+
+  // Update status counts
+  const updateStatusCounts = () => {
+    // This would normally update the statusColumns state
+    // For now, counts are recalculated in render
+  };
+
+  // Handle notification badge click
+  const handleNotificationClick = (notification) => {
+    setSelectedNotification(notification);
+    setShowNotificationModal(true);
+  };
+
+  // Handle notification modal close
+  const handleNotificationModalClose = () => {
+    setShowNotificationModal(false);
+    setSelectedNotification(null);
   };
 
   // Simple KPI Card Component
@@ -250,18 +347,32 @@ const DashboardClean = () => {
               Welcome back, Farhaan
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            sx={{
-              textTransform: 'none',
-              fontWeight: 600,
-              borderRadius: 2,
-              px: 3,
-            }}
-            onClick={() => navigate('/jobs/new')}
-          >
-            New Job
-          </Button>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 2,
+                px: 3,
+              }}
+              onClick={() => navigate('/bms-import')}
+            >
+              Import Estimates
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 2,
+                px: 3,
+              }}
+              onClick={() => navigate('/jobs/new')}
+            >
+              New Job
+            </Button>
+          </Box>
         </Box>
 
         {/* KPI Cards */}
@@ -342,55 +453,100 @@ const DashboardClean = () => {
                     }
                     variant="outlined"
                     size="small"
-                    sx={{ fontWeight: 600 }}
+                    onClick={() => handleNotificationClick(tab)}
+                    sx={{
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        borderColor: tab.badgeColor,
+                        bgcolor: alpha(tab.badgeColor, 0.08),
+                      },
+                    }}
                   />
                 ))}
               </Box>
             </Box>
 
             {/* Job Board Columns */}
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={2}>
-                {statusColumns.map((column) => (
-                  <Grid item xs={12} sm={6} md={2.4} key={column.id}>
-                    <Box>
-                      {/* Column Header */}
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          mb: 2,
-                        }}
+            <Box sx={{ p: 3, display: 'flex', gap: 2 }}>
+              {statusColumns.map((column) => {
+                const columnJobs = jobBoard[column.id] || [];
+                return (
+                  <Box
+                    key={column.id}
+                    sx={{
+                      flex: 1,
+                      bgcolor:
+                        theme.palette.mode === 'light'
+                          ? '#f8fafc'
+                          : 'rgba(255,255,255,0.02)',
+                      borderRadius: 2,
+                      p: 2.5,
+                      minHeight: 500,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor:
+                          theme.palette.mode === 'light'
+                            ? alpha(theme.palette.primary.main, 0.04)
+                            : 'rgba(255,255,255,0.04)',
+                      },
+                    }}
+                  >
+                    {/* Column Header */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 2.5,
+                        pb: 2,
+                        borderBottom: 2,
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 700, fontSize: '0.9rem' }}
                       >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700 }}
-                        >
-                          {column.label}
-                        </Typography>
-                        <Chip
-                          label={column.count}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            minWidth: 20,
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
-                          }}
-                        />
-                      </Box>
-
-                      {/* Job Cards */}
-                      <Box sx={{ minHeight: 300 }}>
-                        {jobBoard[column.id]?.map((job) => (
-                          <JobCard key={job.id} job={job} />
-                        ))}
-                      </Box>
+                        {column.label}
+                      </Typography>
+                      <Chip
+                        label={columnJobs.length}
+                        size="small"
+                        sx={{
+                          height: 22,
+                          minWidth: 22,
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          bgcolor:
+                            theme.palette.mode === 'light'
+                              ? 'white'
+                              : 'rgba(255,255,255,0.1)',
+                        }}
+                      />
                     </Box>
-                  </Grid>
-                ))}
-              </Grid>
+
+                    {/* Job Cards */}
+                    <Box sx={{ flex: 1 }}>
+                      {columnJobs.map((job) => (
+                        <JobCard key={job.id} job={job} />
+                      ))}
+                      {columnJobs.length === 0 && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ textAlign: 'center', py: 6, mt: 4 }}
+                        >
+                          No jobs
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
             </Box>
           </CardContent>
         </Card>
@@ -408,11 +564,127 @@ const DashboardClean = () => {
         </Box>
       </Container>
 
+      {/* Notification Modal - Shows filtered jobs */}
+      <Dialog
+        open={showNotificationModal}
+        onClose={handleNotificationModalClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            bgcolor: 'background.default',
+          },
+        }}
+      >
+        <DialogTitle>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {selectedNotification?.label}
+              </Typography>
+              <Chip
+                label={
+                  selectedNotification
+                    ? getFilteredJobs(selectedNotification.filterKey).length
+                    : 0
+                }
+                size="small"
+                sx={{
+                  bgcolor: selectedNotification?.badgeColor,
+                  color: 'white',
+                  fontWeight: 700,
+                }}
+              />
+            </Box>
+            <IconButton onClick={handleNotificationModalClose} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2}>
+            {selectedNotification &&
+            getFilteredJobs(selectedNotification.filterKey).length > 0 ? (
+              getFilteredJobs(selectedNotification.filterKey).map((job) => (
+                <Card
+                  key={job.id}
+                  variant="outlined"
+                  onClick={() => {
+                    handleNotificationModalClose();
+                    handleJobClick(job);
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      boxShadow: 2,
+                      borderColor: 'primary.main',
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="start"
+                      mb={1.5}
+                    >
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {job.roNumber}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {job.customer}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={job.status}
+                        size="small"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </Box>
+                    <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                      {job.vehicle}
+                    </Typography>
+                    <Box display="flex" gap={2} flexWrap="wrap">
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Insurer:</strong> {job.insurer}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Priority:</strong> {job.priority}
+                      </Typography>
+                      {job.dueDate && (
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Due:</strong> {job.dueDate}
+                        </Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Box py={4} textAlign="center">
+                <Typography color="text.secondary">
+                  No jobs found for this notification
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+      </Dialog>
+
       {/* Job Detail Modal */}
       <JobDetailModal
         open={showJobModal}
         onClose={handleJobModalClose}
         job={selectedJob}
+        onStatusChange={handleJobStatusChange}
       />
     </Box>
   );

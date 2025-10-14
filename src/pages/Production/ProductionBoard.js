@@ -13,12 +13,14 @@ import {
   Add,
   Refresh,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import ProductionBoardTable from '../../components/Production/ProductionBoardTable';
 import { CustomerForm } from '../../components/Customer/CustomerForm';
 import useJobStore from '../../store/jobStore';
 
 const ProductionBoard = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { jobs, loading, error, fetchJobs, moveJob, createJob } = useJobStore();
   const [customerFormOpen, setCustomerFormOpen] = useState(false);
 
@@ -142,10 +144,7 @@ const ProductionBoard = () => {
         <SpeedDialAction
           icon={<Add />}
           tooltipTitle="New Job"
-          onClick={() => {
-            // TODO: Implement direct job creation functionality
-            // This would open a job creation dialog
-          }}
+          onClick={() => navigate('/jobs/new')}
         />
         <SpeedDialAction
           icon={<Refresh />}

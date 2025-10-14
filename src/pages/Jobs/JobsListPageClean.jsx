@@ -19,6 +19,7 @@ import {
   FormControl,
   InputLabel,
   Stack,
+  useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import JobDetailModal from '../../components/Jobs/JobDetailModal';
@@ -32,6 +33,7 @@ import JobDetailModal from '../../components/Jobs/JobDetailModal';
  * - Search and filter controls
  */
 const JobsListPageClean = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobModal, setShowJobModal] = useState(false);
@@ -104,7 +106,12 @@ const JobsListPageClean = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'background.default',
+        minHeight: '100vh',
+      }}
+    >
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
         <Box

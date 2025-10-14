@@ -143,11 +143,22 @@ router.post('/bms', upload.single('file'), async (req, res) => {
       result: processedData,
     });
 
+    // Emit real-time event to refresh customer list
+    if (processedData.createdCustomer) {
+      // Trigger frontend refresh via WebSocket or polling
+      req.app.emit('customer_created', {
+        customerId: processedData.createdCustomer.id,
+        shopId: processedData.createdCustomer.shop_id
+      });
+    }
+
     res.status(200).json({
       success: true,
       importId,
       message: 'BMS file processed successfully',
       data: processedData,
+      jobId: processedData.createdJob?.id,
+      customerId: processedData.createdCustomer?.id,
     });
   } catch (error) {
     console.error('BMS import error:', error);
