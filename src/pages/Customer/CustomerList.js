@@ -76,7 +76,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
 // Utils
-import { getCustomerFullName } from '../../utils/fieldTransformers';
+import { getCustomerFullName, formatPhoneNumber } from '../../utils/fieldTransformers';
 
 const CustomerList = () => {
   const theme = useTheme();
@@ -346,7 +346,6 @@ const CustomerList = () => {
               <TableRow>
                 <TableCell>Customer</TableCell>
                 <TableCell>Contact</TableCell>
-                <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Vehicles</TableCell>
                 <TableCell>Last Visit</TableCell>
@@ -379,6 +378,24 @@ const CustomerList = () => {
                           <Typography variant='caption' color='text.secondary'>
                             {customer.customerNumber}
                           </Typography>
+                          {customer.vehicles && customer.vehicles.length > 0 && (
+                            <Typography
+                              variant='caption'
+                              display='block'
+                              color='text.secondary'
+                            >
+                              🚗 {customer.vehicles[0].year} {customer.vehicles[0].make} {customer.vehicles[0].model}
+                            </Typography>
+                          )}
+                          {customer.claimNumber && (
+                            <Typography
+                              variant='caption'
+                              display='block'
+                              color='text.secondary'
+                            >
+                              📋 Claim: {customer.claimNumber}
+                            </Typography>
+                          )}
                           {customer.companyName && (
                             <Typography
                               variant='caption'
@@ -404,7 +421,7 @@ const CustomerList = () => {
                           >
                             <Phone fontSize='small' />
                             <Typography variant='body2'>
-                              {customer.phone}
+                              {formatPhoneNumber(customer.phone)}
                             </Typography>
                           </Box>
                         )}
@@ -423,14 +440,6 @@ const CustomerList = () => {
                           </Box>
                         )}
                       </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        icon={getTypeIcon(customer.customerType)}
-                        label={customer.customerType}
-                        size='small'
-                        variant='outlined'
-                      />
                     </TableCell>
                     <TableCell>
                       <Chip

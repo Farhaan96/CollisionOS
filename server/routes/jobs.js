@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { mapJobToFrontend } = require('../utils/fieldMapper');
+const { getSupabaseClient } = require('../config/supabase');
+const { authenticateToken } = require('../middleware/authSupabase');
 
 // Enhanced query parameter handling for dashboard navigation
 const parseJobFilters = req => {
@@ -258,47 +260,119 @@ const generateMockJobs = () => {
 };
 
 // Enhanced GET endpoint with dashboard navigation support
-router.get('/', (req, res) => {
+router.get('/', authenticateToken(), async (req, res) => {
   try {
+    const supabase = getSupabaseClient();
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
     // Parse query parameters for dashboard navigation
     const filters = parseJobFilters(req);
 
-    // Generate base job data
-    let jobs = generateMockJobs();
+    // Query real jobs from database
+    let query = supabase
+      .from('repair_orders')
+      .select(`
+        *,
+        customers:customer_id(first_name, last_name, phone, email),
+        vehicles:vehicle_id(year, make, model, vin),
+        claims:claim_id(claim_number, insurance_company)
+      `)
+      .eq('shop_id', shopId);
 
-    // Apply view-specific and other filters
-    jobs = applyJobViewFilters(jobs, filters);
+    // Apply status filter if provided
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    // Apply priority filter if provided
+    if (filters.priority) {
+      query = query.eq('priority', filters.priority);
+    }
+
+    // Execute query
+    const { data: jobs, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching jobs:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch jobs',
+        details: error.message,
+      });
+    }
+
+    // Transform database jobs to match expected format
+    let transformedJobs = (jobs || []).map(job => ({
+      id: job.id,
+      jobNumber: job.ro_number,
+      status: job.status || 'estimate',
+      priority: job.priority || 'normal',
+      customer: {
+        name: job.customers ? `${job.customers.first_name} ${job.customers.last_name}`.trim() : 'Unknown',
+        phone: job.customers?.phone || '',
+        email: job.customers?.email || '',
+      },
+      vehicle: job.vehicles ? {
+        year: job.vehicles.year,
+        make: job.vehicles.make,
+        model: job.vehicles.model,
+        vin: job.vehicles.vin,
+      } : null,
+      assignedTechnician: null, // TODO: Add technician relationship
+      daysInShop: job.created_at ? Math.floor((Date.now() - new Date(job.created_at)) / (1000 * 60 * 60 * 24)) : 0,
+      daysInCurrentStatus: 0, // TODO: Calculate from status history
+      progressPercentage: 10, // TODO: Calculate based on status
+      targetDate: job.estimated_completion_date || null,
+      partsStatus: 'pending', // TODO: Calculate from parts
+      insurance: {
+        company: job.claims?.insurance_company || '',
+        claimNumber: job.claims?.claim_number || '',
+      },
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+      lastUpdated: job.updated_at,
+    }));
+
+    // Apply view-specific and other filters to transformed jobs
+    transformedJobs = applyJobViewFilters(transformedJobs, filters);
 
     // Apply highlighting if requested
     if (filters.highlight) {
-      jobs = applyJobHighlighting(jobs, filters.highlight);
+      transformedJobs = applyJobHighlighting(transformedJobs, filters.highlight);
     }
 
     // Sort based on view context
     if (filters.view === 'capacity') {
-      jobs.sort((a, b) => b.daysInShop - a.daysInShop);
+      transformedJobs.sort((a, b) => b.daysInShop - a.daysInShop);
     } else if (filters.urgent) {
-      jobs.sort((a, b) => {
+      transformedJobs.sort((a, b) => {
         const urgencyOrder = { rush: 0, urgent: 1, high: 2, normal: 3, low: 4 };
         return urgencyOrder[a.priority] - urgencyOrder[b.priority];
       });
     } else {
-      jobs.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+      transformedJobs.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
     }
 
     // Calculate capacity metrics if requested
     let capacityMetrics = null;
     if (filters.view === 'capacity' || filters.forecast) {
-      const stageDistribution = jobs.reduce((acc, job) => {
+      const stageDistribution = transformedJobs.reduce((acc, job) => {
         acc[job.status] = (acc[job.status] || 0) + 1;
         return acc;
       }, {});
 
       const avgCycleTime =
-        jobs.reduce((sum, job) => sum + job.daysInShop, 0) / jobs.length || 0;
+        transformedJobs.reduce((sum, job) => sum + job.daysInShop, 0) / transformedJobs.length || 0;
 
       capacityMetrics = {
-        totalActiveJobs: jobs.filter(
+        totalActiveJobs: transformedJobs.filter(
           j => !['delivered', 'cancelled'].includes(j.status)
         ).length,
         stageDistribution,
@@ -307,12 +381,12 @@ router.get('/', (req, res) => {
           .sort(([, a], [, b]) => b - a)
           .slice(0, 2)
           .map(([stage, count]) => ({ stage, count })),
-        utilizationRate: Math.min(95, Math.round((jobs.length / 30) * 100)), // Assume 30 job capacity
+        utilizationRate: Math.min(95, Math.round((transformedJobs.length / 30) * 100)), // Assume 30 job capacity
       };
     }
 
     // Map jobs to frontend format
-    const mappedJobs = jobs.map(job => {
+    const mappedJobs = transformedJobs.map(job => {
       // Convert mock data structure to proper format
       return {
         id: job.id,
@@ -356,7 +430,7 @@ router.get('/', (req, res) => {
 
     // Add forecast data if requested
     if (filters.forecast) {
-      const nextWeekJobs = jobs.filter(job => {
+      const nextWeekJobs = transformedJobs.filter(job => {
         const targetDate = new Date(job.targetDate);
         const nextWeek = new Date();
         nextWeek.setDate(nextWeek.getDate() + 7);
@@ -365,8 +439,8 @@ router.get('/', (req, res) => {
 
       response.forecast = {
         nextWeekDeliveries: nextWeekJobs.length,
-        upcomingPickups: jobs.filter(j => j.status === 'ready_pickup').length,
-        overdueJobs: jobs.filter(j => j.daysInShop > 14).length,
+        upcomingPickups: transformedJobs.filter(j => j.status === 'ready_pickup').length,
+        overdueJobs: transformedJobs.filter(j => j.daysInShop > 14).length,
       };
     }
 

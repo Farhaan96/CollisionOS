@@ -108,6 +108,33 @@ export const getCustomerFullName = customer => {
 };
 
 /**
+ * Format phone number to (604) 000-0000 format
+ * @param {string} phone - Raw phone number (can include country code, dashes, spaces, etc.)
+ * @returns {string} Formatted phone number or original if invalid
+ */
+export const formatPhoneNumber = phone => {
+  if (!phone) return '';
+
+  // Remove all non-digit characters
+  const cleaned = phone.replace(/\D/g, '');
+
+  // Handle different phone number lengths
+  if (cleaned.length === 10) {
+    // Standard 10-digit number: 6045551234 → (604) 555-1234
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  } else if (cleaned.length === 11 && cleaned[0] === '1') {
+    // 11-digit with country code: 16045551234 → (604) 555-1234
+    return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  } else if (cleaned.length === 7) {
+    // 7-digit local number: 5551234 → 555-1234
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+  }
+
+  // Return original if we can't format it
+  return phone;
+};
+
+/**
  * Generic field transformer that handles both directions
  * @param {Object|Array} data - Data to transform
  * @param {'frontend'|'backend'} direction - Direction of transformation

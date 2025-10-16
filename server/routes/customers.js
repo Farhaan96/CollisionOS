@@ -57,13 +57,13 @@ router.get('/', authenticateToken(), async (req, res) => {
         customer_status,
         is_active,
         created_at,
-        updated_at
+        updated_at,
+        vehicles:vehicles(id, year, make, model, vin),
+        repair_orders:repair_orders(id, ro_number, claims:claims(claim_number))
       `
       )
-      .eq('shop_id', shopId);
-
-    // Only filter by is_active if the column exists and has explicit false values
-    // This makes the query more robust for development
+      .eq('shop_id', shopId)
+      .eq('is_active', true); // Only show active customers (filter out soft-deleted)
 
     // Add search filter
     if (search) {
@@ -104,6 +104,17 @@ router.get('/', authenticateToken(), async (req, res) => {
 
     console.log('✅ Found', customers?.length || 0, 'customers');
 
+    // Transform customers to add claim_number at top level for easier frontend access
+    const transformedCustomers = (customers || []).map(customer => {
+      // Extract claim number from first repair order (if any)
+      const claimNumber = customer.repair_orders?.[0]?.claims?.claim_number;
+
+      return {
+        ...customer,
+        claimNumber: claimNumber || null,
+      };
+    });
+
     // Calculate pagination
     const totalPages = Math.ceil(
       (count || customers?.length || 0) / parseInt(limit)
@@ -111,7 +122,7 @@ router.get('/', authenticateToken(), async (req, res) => {
 
     res.json({
       success: true,
-      data: customers || [],
+      data: transformedCustomers,
       pagination: {
         total: count || customers?.length || 0,
         page: parseInt(page),
@@ -346,6 +357,99 @@ router.delete('/:id', authenticateToken(), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to delete customer',
+    });
+  }
+});
+
+// Get customer vehicles
+router.get('/:id/vehicles', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    const { data: vehicles, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('customer_id', id)
+      .eq('shop_id', shopId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching customer vehicles:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customer vehicles',
+        details: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: vehicles || [],
+      message: 'Customer vehicles retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Error fetching customer vehicles:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customer vehicles',
+    });
+  }
+});
+
+// Get customer jobs/repair orders
+router.get('/:id/jobs', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    const { data: jobs, error } = await supabase
+      .from('repair_orders')
+      .select(`
+        *,
+        vehicles:vehicle_id(year, make, model, vin),
+        claims:claim_id(claim_number, insurance_company)
+      `)
+      .eq('customer_id', id)
+      .eq('shop_id', shopId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching customer jobs:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customer jobs',
+        details: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: jobs || [],
+      message: 'Customer jobs retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Error fetching customer jobs:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customer jobs',
     });
   }
 });
