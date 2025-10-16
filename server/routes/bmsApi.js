@@ -140,6 +140,58 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Optional authentication middleware - allows requests without auth in development
+const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    // If no auth header, allow in development mode
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      if (process.env.NODE_ENV === 'development') {
+        req.user = {
+          id: 'dev-user',
+          shopId: '00000000-0000-4000-8000-000000000001',
+          username: 'developer'
+        };
+        return next();
+      }
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Valid authentication token required',
+        code: 'MISSING_TOKEN'
+      });
+    }
+
+    const token = authHeader.substring(7);
+    const jwtSecret = process.env.JWT_SECRET || 'collisionos_super_secret_jwt_key_2024_make_it_long_and_random_for_production';
+
+    try {
+      const decoded = jwt.verify(token, jwtSecret);
+      req.user = decoded;
+    } catch (error) {
+      // If token verification fails, fall back to dev user in development
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('JWT verification failed, using dev user:', error.message);
+        req.user = {
+          id: 'dev-user',
+          shopId: '00000000-0000-4000-8000-000000000001',
+          username: 'developer'
+        };
+      } else {
+        throw error;
+      }
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid or expired token',
+      code: 'INVALID_TOKEN'
+    });
+  }
+};
+
 // Authorization middleware
 const authorize = (permissions = []) => {
   return (req, res, next) => {
@@ -188,7 +240,7 @@ router.post(
   '/upload',
   standardRateLimit,
   uploadRateLimit,
-  // authenticate, // Temporarily disabled for development
+  optionalAuth, // Use optional authentication for development support
   upload.single('file'),
   [
     body('validateOnly')
@@ -283,6 +335,7 @@ router.post(
           ...result,
           status: 'completed',
           message: 'BMS file processed successfully',
+          jobId: processedData.createdJob?.id || processedData.createdJob?.jobNumber || null,
           data: processedData,
           autoCreation: {
             success: processedData.autoCreationSuccess || false,

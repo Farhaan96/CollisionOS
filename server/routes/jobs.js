@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { mapJobToFrontend } = require('../utils/fieldMapper');
 
 // Enhanced query parameter handling for dashboard navigation
 const parseJobFilters = req => {
@@ -310,14 +311,35 @@ router.get('/', (req, res) => {
       };
     }
 
+    // Map jobs to frontend format
+    const mappedJobs = jobs.map(job => {
+      // Convert mock data structure to proper format
+      return {
+        id: job.id,
+        roNumber: job.jobNumber,
+        customer: job.customer?.name || 'Unknown',
+        phone: job.customer?.phone || '',
+        vehicle: job.vehicle
+          ? `${job.vehicle.year} ${job.vehicle.make} ${job.vehicle.model}`.trim()
+          : 'Unknown Vehicle',
+        status: job.status,
+        priority: job.priority,
+        dueDate: job.targetDate,
+        insurer: job.insurance?.company || '',
+        estimator: job.assignedTechnician?.name || '',
+        claimNumber: job.insurance?.claimNumber || '',
+        rentalCoverage: false, // Default value
+      };
+    });
+
     // Prepare response with metadata
     const response = {
       success: true,
-      data: jobs,
+      data: mappedJobs,
       pagination: {
-        total: jobs.length,
+        total: mappedJobs.length,
         page: 1,
-        limit: jobs.length,
+        limit: mappedJobs.length,
         hasMore: false,
       },
       filters: {

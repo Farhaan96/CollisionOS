@@ -229,7 +229,46 @@ router.get('/stats', async (req, res) => {
       createdAt: job.createdAt,
     }));
 
+    // Calculate trends (compare to previous period for now)
+    const activeJobsTrend = 0; // Placeholder - could calculate from historical data
+    const cycleTimeTrend = 0; // Placeholder
+    const revenueTrend = 0; // Placeholder
+
+    // Calculate capacity today (percentage of active jobs vs typical capacity)
+    const typicalCapacity = 30; // Assume 30 jobs is full capacity
+    const capacityToday = Math.min(100, Math.round((activeRepairsData.length / typicalCapacity) * 100));
+
+    // Calculate average cycle time
+    let avgCycleTime = 0;
+    const completedJobsThisMonth = await Job.findAll({
+      where: {
+        shopId,
+        status: 'delivered',
+        actualDeliveryDate: {
+          [Op.gte]: startOfMonth
+        },
+        cycleTime: {
+          [Op.ne]: null
+        }
+      },
+      attributes: ['cycleTime'],
+      raw: true,
+    });
+
+    if (completedJobsThisMonth.length > 0) {
+      avgCycleTime = completedJobsThisMonth.reduce((sum, job) => sum + parseFloat(job.cycleTime || 0), 0) / completedJobsThisMonth.length;
+    }
+
     const stats = {
+      activeJobs: activeRepairsData.length,
+      activeJobsTrend,
+      capacityToday,
+      avgCycleTime: Math.round(avgCycleTime * 10) / 10,
+      cycleTimeTrend,
+      revenueMTD: Math.round(monthRevenue),
+      revenueTrend,
+
+      // Extended data (for compatibility)
       activeRepairs: {
         count: activeRepairsData.length,
         breakdown: statusBreakdown,
