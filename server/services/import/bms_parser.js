@@ -36,6 +36,10 @@ class EnhancedBMSParser {
         root = parsed.BMS_ESTIMATE;
         estimateType = 'generic_bms';
         console.log('Detected generic BMS format');
+      } else if (parsed.Estimate) {
+        root = parsed.Estimate;
+        estimateType = 'simple_estimate';
+        console.log('Detected simple estimate format (Estimate with capital E)');
       } else if (parsed.estimate) {
         root = parsed.estimate;
         estimateType = 'simple_estimate';
@@ -67,10 +71,18 @@ class EnhancedBMSParser {
       }
 
       // Extract all data
+      const vehicle = this.extractVehicleInfo(root);
+      const estimate = this.extractEstimateInfo(root);
+
+      // If shop RO number found in vehicle memo, add it to estimate
+      if (vehicle.shopRoNumber && !estimate.shopRoNumber) {
+        estimate.shopRoNumber = vehicle.shopRoNumber;
+      }
+
       const result = {
         customer: this.extractCustomerInfo(root),
-        vehicle: this.extractVehicleInfo(root),
-        estimate: this.extractEstimateInfo(root),
+        vehicle: vehicle,
+        estimate: estimate,
         adjuster: this.extractAdjusterInfo(root),
         parts: this.extractPartsInfo(root),
         labor: this.extractLaborInfo(root),
@@ -114,19 +126,29 @@ class EnhancedBMSParser {
       console.log('Mitchell BMS format detected - prioritizing Owner section for customer data');
     }
 
-    // Handle simple test format: <estimate><customer>...</customer></estimate>
-    if (root.customer) {
-      const customerInfo = root.customer;
-      customer.firstName = this.getTextValue(customerInfo.firstName);
-      customer.lastName = this.getTextValue(customerInfo.lastName);
+    // Handle simple test format: <estimate><customer>...</customer></estimate> (with case variations)
+    const customerInfo = root.Customer || root.customer;
+    if (customerInfo) {
+      customer.firstName = this.getTextValue(customerInfo.FirstName || customerInfo.firstName);
+      customer.lastName = this.getTextValue(customerInfo.LastName || customerInfo.lastName);
       customer.name =
         `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
-      customer.phone = this.getTextValue(customerInfo.phone);
-      customer.email = this.getTextValue(customerInfo.email);
-      customer.address = this.getTextValue(customerInfo.address);
-      customer.city = this.getTextValue(customerInfo.city);
-      customer.state = this.getTextValue(customerInfo.state);
-      customer.zip = this.getTextValue(customerInfo.zip);
+      customer.phone = this.getTextValue(customerInfo.Phone || customerInfo.phone);
+      customer.email = this.getTextValue(customerInfo.Email || customerInfo.email);
+
+      // Handle nested Address object or flat address fields
+      const addressInfo = customerInfo.Address || customerInfo.address;
+      if (addressInfo && typeof addressInfo === 'object') {
+        customer.address = this.getTextValue(addressInfo.Street || addressInfo.street);
+        customer.city = this.getTextValue(addressInfo.City || addressInfo.city);
+        customer.state = this.getTextValue(addressInfo.State || addressInfo.state);
+        customer.zip = this.getTextValue(addressInfo.Zip || addressInfo.zip);
+      } else {
+        customer.address = this.getTextValue(customerInfo.address);
+        customer.city = this.getTextValue(customerInfo.city);
+        customer.state = this.getTextValue(customerInfo.state);
+        customer.zip = this.getTextValue(customerInfo.zip);
+      }
     }
 
     // Handle our test BMS_ESTIMATE format
@@ -154,6 +176,13 @@ class EnhancedBMSParser {
       customer.claimNumber = this.getTextValue(claimInfo.CLAIM_NUMBER);
       customer.policyNumber = this.getTextValue(claimInfo.POLICY_NUMBER);
       customer.insurance = this.getTextValue(claimInfo.INSURANCE_COMPANY);
+    }
+
+    // Handle Insurance section (simple test format)
+    if (root.Insurance) {
+      customer.insurance = customer.insurance || this.getTextValue(root.Insurance.Company);
+      customer.claimNumber = customer.claimNumber || this.getTextValue(root.Insurance.ClaimNumber);
+      customer.policyNumber = customer.policyNumber || this.getTextValue(root.Insurance.PolicyNumber);
     }
 
     // Handle BMS format with Owner (Primary extraction - Mitchell stores customer in Owner)
@@ -311,26 +340,34 @@ class EnhancedBMSParser {
   extractVehicleInfo(root) {
     const vehicle = {};
 
-    // Handle simple test format: <estimate><vehicle>...</vehicle></estimate>
-    if (root.vehicle) {
-      const vehicleInfo = root.vehicle;
-      vehicle.year = parseInt(this.getTextValue(vehicleInfo.year)) || null;
-      vehicle.make = this.getTextValue(vehicleInfo.make);
-      vehicle.model = this.getTextValue(vehicleInfo.model);
-      vehicle.trim = this.getTextValue(vehicleInfo.trim);
-      vehicle.vin = this.getTextValue(vehicleInfo.vin);
-      vehicle.license = this.getTextValue(vehicleInfo.license);
-      vehicle.color = this.getTextValue(vehicleInfo.color);
-      vehicle.engine = this.getTextValue(vehicleInfo.engine);
+    // Handle simple test format: <estimate><vehicle>...</vehicle></estimate> (with case variations)
+    const vehicleInfo = root.Vehicle || root.vehicle;
+    if (vehicleInfo) {
+      vehicle.year = parseInt(this.getTextValue(vehicleInfo.Year || vehicleInfo.year)) || null;
+      vehicle.make = this.getTextValue(vehicleInfo.Make || vehicleInfo.make);
+      vehicle.model = this.getTextValue(vehicleInfo.Model || vehicleInfo.model);
+      vehicle.trim = this.getTextValue(vehicleInfo.Trim || vehicleInfo.trim);
+      vehicle.vin = this.getTextValue(vehicleInfo.VIN || vehicleInfo.vin);
+      vehicle.license = this.getTextValue(vehicleInfo.LicensePlate || vehicleInfo.license);
+      vehicle.licensePlate = vehicle.license; // Alias
+      vehicle.color = this.getTextValue(vehicleInfo.Color || vehicleInfo.color);
+      vehicle.exteriorColor = vehicle.color; // Alias
+      vehicle.engine = this.getTextValue(vehicleInfo.EngineType || vehicleInfo.engine);
       vehicle.engineCode = this.getTextValue(vehicleInfo.engineCode);
-      vehicle.transmission = this.getTextValue(vehicleInfo.transmission);
+      vehicle.engineSize = this.getTextValue(vehicleInfo.EngineType || vehicleInfo.engine);
+      vehicle.transmission = this.getTextValue(vehicleInfo.Transmission || vehicleInfo.transmission);
       vehicle.transmissionCode = this.getTextValue(vehicleInfo.transmissionCode);
       vehicle.drivetrain = this.getTextValue(vehicleInfo.drivetrain);
       vehicle.fuelType = this.getTextValue(vehicleInfo.fuelType);
       vehicle.valuation = this.getNumericValue(vehicleInfo.valuation);
       vehicle.drivable = this.getBooleanValue(vehicleInfo.drivable);
-      vehicle.mileage =
-        parseInt(this.getTextValue(vehicleInfo.mileage)) || null;
+      vehicle.mileage = parseInt(this.getTextValue(vehicleInfo.Mileage || vehicleInfo.mileage)) || null;
+      vehicle.currentOdometer = vehicle.mileage; // Alias
+
+      // Additional fields from test XML
+      vehicle.paintCode = this.getTextValue(vehicleInfo.paintCode);
+      vehicle.hasADASFeatures = this.getBooleanValue(vehicleInfo.hasADASFeatures);
+      vehicle.requiresCalibration = this.getBooleanValue(vehicleInfo.requiresCalibration);
     }
 
     // Handle our test BMS_ESTIMATE format
@@ -376,6 +413,17 @@ class EnhancedBMSParser {
           vehicle.mileage = this.getNumericValue(
             desc.OdometerInfo.OdometerReading
           );
+        }
+
+        // Extract RO number from VehicleDescMemo (shop's local RO number)
+        if (desc.VehicleDescMemo) {
+          const memo = this.getTextValue(desc.VehicleDescMemo);
+          // Look for pattern like "RO: 12345" or "RO:12345"
+          const roMatch = memo.match(/RO\s*:\s*(\d+)/i);
+          if (roMatch) {
+            vehicle.shopRoNumber = roMatch[1];
+            console.log('Extracted shop RO number from VehicleDescMemo:', vehicle.shopRoNumber);
+          }
         }
       }
 
@@ -424,12 +472,23 @@ class EnhancedBMSParser {
   extractEstimateInfo(root) {
     const estimate = {};
 
+    // Handle simple test format with <EstimateInfo> (case variations)
+    const estimateInfo = root.EstimateInfo || root.estimateInfo;
+    if (estimateInfo) {
+      estimate.estimateNumber = this.getTextValue(estimateInfo.EstimateNumber || estimateInfo.estimateNumber);
+      estimate.claimNumber = this.getTextValue(estimateInfo.ClaimNumber || estimateInfo.claimNumber);
+      estimate.date = this.getTextValue(estimateInfo.EstimateDate || estimateInfo.estimateDate);
+      estimate.accidentDate = this.getTextValue(estimateInfo.AccidentDate || estimateInfo.accidentDate);
+      estimate.type = this.getTextValue(estimateInfo.EstimateType || estimateInfo.estimateType);
+      estimate.status = this.getTextValue(estimateInfo.Status || estimateInfo.status);
+    }
+
     // Handle BMS format
     if (root.DocumentInfo) {
-      estimate.estimateNumber = this.getTextValue(root.DocumentInfo.DocumentID);
-      estimate.date = this.getTextValue(root.DocumentInfo.CreateDateTime);
-      estimate.status = this.getTextValue(root.DocumentInfo.DocumentStatus);
-      estimate.type = this.getTextValue(root.DocumentInfo.DocumentType);
+      estimate.estimateNumber = estimate.estimateNumber || this.getTextValue(root.DocumentInfo.DocumentID);
+      estimate.date = estimate.date || this.getTextValue(root.DocumentInfo.CreateDateTime);
+      estimate.status = estimate.status || this.getTextValue(root.DocumentInfo.DocumentStatus);
+      estimate.type = estimate.type || this.getTextValue(root.DocumentInfo.DocumentType);
       estimate.bmsVersion = this.getTextValue(root.DocumentInfo.BMSVer);
       estimate.vendorCode = this.getTextValue(root.DocumentInfo.VendorCode);
 
@@ -445,8 +504,9 @@ class EnhancedBMSParser {
                        this.getTextValue(root.DocumentInfo?.RepairOrderNum) ||
                        '';
 
-    // Extract claim number with multiple fallback paths
-    estimate.claimNumber = this.getTextValue(root.RefClaimNum) ||
+    // Extract claim number with multiple fallback paths (if not already set)
+    estimate.claimNumber = estimate.claimNumber ||
+                          this.getTextValue(root.RefClaimNum) ||
                           this.getTextValue(root.ClaimInfo?.ClaimNum) ||
                           this.getTextValue(root.ClaimNumber) ||
                           '';
@@ -456,6 +516,7 @@ class EnhancedBMSParser {
     estimate.policyNumber = this.getTextValue(root.ClaimInfo?.PolicyInfo?.PolicyNum) ||
                            this.getTextValue(root.PolicyNumber) ||
                            this.getTextValue(root.PolicyNum) ||
+                           this.getTextValue(root.Insurance?.PolicyNumber) ||
                            '';
 
     // Handle Mitchell application info
@@ -475,6 +536,65 @@ class EnhancedBMSParser {
       const facility = root.AdminInfo.RepairFacility.Party;
       if (facility.OrgInfo) {
         estimate.repairFacilityName = this.getTextValue(facility.OrgInfo.CompanyName);
+
+        // Extract facility contact info
+        if (facility.OrgInfo.Communications) {
+          const comms = Array.isArray(facility.OrgInfo.Communications)
+            ? facility.OrgInfo.Communications
+            : [facility.OrgInfo.Communications];
+
+          comms.forEach(comm => {
+            if (comm.Address) {
+              estimate.repairFacilityAddress = this.getTextValue(comm.Address.Address1);
+              estimate.repairFacilityCity = this.getTextValue(comm.Address.City);
+              estimate.repairFacilityState = this.getTextValue(comm.Address.StateProvince);
+              estimate.repairFacilityZip = this.getTextValue(comm.Address.PostalCode);
+            }
+          });
+        }
+
+        // Extract facility contact from ContactInfo
+        if (facility.ContactInfo && facility.ContactInfo.Communications) {
+          const comms = Array.isArray(facility.ContactInfo.Communications)
+            ? facility.ContactInfo.Communications
+            : [facility.ContactInfo.Communications];
+
+          comms.forEach(comm => {
+            if (comm.CommQualifier === 'WP' && comm.CommPhone) {
+              estimate.repairFacilityPhone = this.formatPhoneNumber(comm.CommPhone);
+            } else if (comm.CommQualifier === 'FX' && comm.CommPhone) {
+              estimate.repairFacilityFax = this.formatPhoneNumber(comm.CommPhone);
+            } else if (comm.CommQualifier === 'EM' && comm.CommEmail) {
+              estimate.repairFacilityEmail = this.getTextValue(comm.CommEmail);
+            }
+          });
+        }
+      }
+    }
+
+    // Handle estimator info
+    if (root.AdminInfo && root.AdminInfo.Estimator) {
+      const estimator = root.AdminInfo.Estimator.Party;
+      if (estimator.PersonInfo && estimator.PersonInfo.PersonName) {
+        const personName = estimator.PersonInfo.PersonName;
+        estimate.estimatorFirstName = this.getTextValue(personName.FirstName);
+        estimate.estimatorLastName = this.getTextValue(personName.LastName);
+        estimate.estimatorName = `${estimate.estimatorFirstName} ${estimate.estimatorLastName}`.trim();
+      }
+
+      // Extract estimator contact info
+      if (estimator.ContactInfo && estimator.ContactInfo.Communications) {
+        const comms = Array.isArray(estimator.ContactInfo.Communications)
+          ? estimator.ContactInfo.Communications
+          : [estimator.ContactInfo.Communications];
+
+        comms.forEach(comm => {
+          if (comm.CommQualifier === 'EM' && comm.CommEmail) {
+            estimate.estimatorEmail = this.getTextValue(comm.CommEmail);
+          } else if (comm.CommPhone) {
+            estimate.estimatorPhone = this.formatPhoneNumber(comm.CommPhone);
+          }
+        });
       }
     }
 
@@ -483,6 +603,15 @@ class EnhancedBMSParser {
 
   extractAdjusterInfo(root) {
     const adjuster = {};
+
+    // Handle simple test format with <Insurance><Adjuster>
+    if (root.Insurance && root.Insurance.Adjuster) {
+      const adjusterInfo = root.Insurance.Adjuster;
+      adjuster.name = this.getTextValue(adjusterInfo.Name || adjusterInfo.name);
+      adjuster.phone = this.formatPhoneNumber(adjusterInfo.Phone || adjusterInfo.phone);
+      adjuster.email = this.getTextValue(adjusterInfo.Email || adjusterInfo.email);
+      adjuster.company = this.getTextValue(root.Insurance.Company);
+    }
 
     // Extract from AdminInfo.Adjuster
     if (root.AdminInfo && root.AdminInfo.Adjuster) {
@@ -593,6 +722,35 @@ class EnhancedBMSParser {
   extractPartsInfo(root) {
     const parts = [];
 
+    // Handle simple test format with <LineItems>
+    if (root.LineItems && root.LineItems.LineItem) {
+      const lineItems = Array.isArray(root.LineItems.LineItem)
+        ? root.LineItems.LineItem
+        : [root.LineItems.LineItem];
+
+      lineItems.forEach((line, index) => {
+        const lineType = this.getTextValue(line.Type || line.type);
+
+        // Only process Part and Material types (not Labor)
+        if (lineType === 'Part' || lineType === 'Material') {
+          parts.push({
+            lineNumber: parseInt(this.getTextValue(line.LineNumber || line.lineNumber)) || index + 1,
+            partName: this.getTextValue(line.Description || line.description),
+            description: this.getTextValue(line.Description || line.description),
+            partNumber: this.getTextValue(line.PartNumber || line.partNumber),
+            operation: this.getTextValue(line.Operation || line.operation),
+            partType: lineType,
+            quantity: parseFloat(this.getTextValue(line.Quantity || line.quantity)) || 1,
+            unitPrice: parseFloat(this.getTextValue(line.UnitPrice || line.unitPrice)) || 0,
+            partCost: parseFloat(this.getTextValue(line.PartsAmount || line.partsAmount)) || 0,
+            laborHours: parseFloat(this.getTextValue(line.LaborHours || line.laborHours)) || 0,
+            laborRate: parseFloat(this.getTextValue(line.LaborRate || line.laborRate)) || 0,
+            laborAmount: parseFloat(this.getTextValue(line.LaborAmount || line.laborAmount)) || 0,
+          });
+        }
+      });
+    }
+
     // Handle our test BMS_ESTIMATE format with DAMAGE_LINES
     if (root.DAMAGE_ASSESSMENT && root.DAMAGE_ASSESSMENT.DAMAGE_LINES) {
       const damageLines = root.DAMAGE_ASSESSMENT.DAMAGE_LINES.LINE_ITEM;
@@ -629,9 +787,11 @@ class EnhancedBMSParser {
         : [root.DamageLineInfo];
 
       damageLines.forEach((line, index) => {
-        // Mitchell stores parts in PartInfo, even when LineType is not explicitly "Part"
-        // Check if line has PartInfo to identify it as a part line
+        // Mitchell stores parts in PartInfo, materials in MaterialType or OtherChargesInfo
+        // Extract BOTH parts and materials/other charges as line items
+
         if (line.PartInfo) {
+          // Part line item
           const partInfo = line.PartInfo;
           const part = {
             lineNumber: this.getNumericValue(line.LineNum),
@@ -656,6 +816,24 @@ class EnhancedBMSParser {
           }
 
           parts.push(part);
+        } else if (line.MaterialType || line.OtherChargesInfo) {
+          // Material/Other charges line item (e.g., Shop Materials, Paint Materials, etc.)
+          const otherCharges = line.OtherChargesInfo;
+          const materialType = this.getTextValue(line.MaterialType);
+
+          const material = {
+            lineNumber: this.getNumericValue(line.LineNum),
+            partNumber: materialType || 'Material',
+            description: this.getTextValue(line.LineDesc),
+            quantity: 1,
+            price: otherCharges ? this.getDecimalValue(otherCharges.Price) : 0,
+            partType: materialType || 'MATERIAL',
+            sourceCode: '99', // Material/other charges
+            taxable: otherCharges ? this.getBooleanValue(otherCharges.TaxableInd) : true,
+            isMaterial: true, // Flag to distinguish from parts
+          };
+
+          parts.push(material);
         }
       });
     }
@@ -738,29 +916,47 @@ class EnhancedBMSParser {
   extractFinancialInfo(root) {
     const financial = {};
 
+    // Handle simple test format with <Totals>
+    if (root.Totals || root.totals) {
+      const totals = root.Totals || root.totals;
+      financial.partsTotal = parseFloat(this.getTextValue(totals.PartsTotal || totals.partsTotal)) || 0;
+      financial.laborTotal = parseFloat(this.getTextValue(totals.LaborTotal || totals.laborTotal)) || 0;
+      financial.materialsTotal = parseFloat(this.getTextValue(totals.MaterialsTotal || totals.materialsTotal)) || 0;
+      financial.subletTotal = parseFloat(this.getTextValue(totals.SubletTotal || totals.subletTotal)) || 0;
+      financial.subtotal = parseFloat(this.getTextValue(totals.Subtotal || totals.subtotal)) || 0;
+      financial.taxTotal = parseFloat(this.getTextValue(totals.Tax || totals.tax)) || 0;
+      financial.total = parseFloat(this.getTextValue(totals.GrandTotal || totals.grandTotal)) || 0;
+      financial.grandTotal = financial.total; // Alias
+    }
+
+    // Handle deductible from Insurance section
+    if (root.Insurance && root.Insurance.Deductible) {
+      financial.deductible = parseFloat(this.getTextValue(root.Insurance.Deductible)) || 0;
+    }
+
     // Handle our test BMS_ESTIMATE format
     if (root.DAMAGE_ASSESSMENT) {
       const assessment = root.DAMAGE_ASSESSMENT;
       financial.totalEstimate =
         parseFloat(this.getTextValue(assessment.TOTAL_ESTIMATE)) || 0;
-      financial.laborTotal =
+      financial.laborTotal = financial.laborTotal ||
         parseFloat(this.getTextValue(assessment.LABOR_TOTAL)) || 0;
-      financial.partsTotal =
+      financial.partsTotal = financial.partsTotal ||
         parseFloat(this.getTextValue(assessment.PARTS_TOTAL)) || 0;
       financial.paintMaterialsTotal =
         parseFloat(this.getTextValue(assessment.PAINT_MATERIALS_TOTAL)) || 0;
-      financial.taxTotal =
+      financial.taxTotal = financial.taxTotal ||
         parseFloat(this.getTextValue(assessment.TAX_TOTAL)) || 0;
 
       if (assessment.TOTALS_BREAKDOWN) {
         const breakdown = assessment.TOTALS_BREAKDOWN;
-        financial.subtotal =
+        financial.subtotal = financial.subtotal ||
           parseFloat(this.getTextValue(breakdown.SUBTOTAL)) || 0;
         financial.laborTax =
           parseFloat(this.getTextValue(breakdown.LABOR_TAX)) || 0;
         financial.partsTax =
           parseFloat(this.getTextValue(breakdown.PARTS_TAX)) || 0;
-        financial.deductible =
+        financial.deductible = financial.deductible ||
           parseFloat(this.getTextValue(breakdown.DEDUCTIBLE)) || 0;
         financial.finalTotal =
           parseFloat(this.getTextValue(breakdown.FINAL_TOTAL)) || 0;
@@ -801,17 +997,34 @@ class EnhancedBMSParser {
         );
       }
 
-      // Summary totals
+      // Summary totals - Mitchell uses TotalType="TOT" with TotalSubType to differentiate
       if (totals.SummaryTotalsInfo) {
         const summaryTotals = Array.isArray(totals.SummaryTotalsInfo)
           ? totals.SummaryTotalsInfo
           : [totals.SummaryTotalsInfo];
 
         summaryTotals.forEach(total => {
-          if (total.TotalType === 'GrossTotal') {
-            financial.total = this.getDecimalValue(total.TotalAmt);
-          } else if (total.TotalType === 'NetTotal') {
-            financial.insuranceTotal = this.getDecimalValue(total.TotalAmt);
+          const totalType = this.getTextValue(total.TotalType);
+          const totalSubType = this.getTextValue(total.TotalSubType);
+
+          // Mitchell format uses TotalType="TOT" with different subtypes
+          if (totalType === 'TOT') {
+            if (totalSubType === 'CE') {
+              // Gross Total (before adjustments)
+              financial.grossTotal = this.getDecimalValue(total.TotalAmt);
+            } else if (totalSubType === 'TT') {
+              // Net Total (final amount) - This is the main total to use
+              financial.total = this.getDecimalValue(total.TotalAmt);
+              financial.netTotal = this.getDecimalValue(total.TotalAmt);
+            }
+          } else if (totalType === 'GrossTotal') {
+            financial.grossTotal = this.getDecimalValue(total.TotalAmt);
+          } else if (totalType === 'NetTotal') {
+            financial.netTotal = this.getDecimalValue(total.TotalAmt);
+            // Use NetTotal as main total if not already set
+            if (!financial.total) {
+              financial.total = this.getDecimalValue(total.TotalAmt);
+            }
           }
         });
       }

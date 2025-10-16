@@ -1,6 +1,7 @@
 const EnhancedBMSParser = require('./import/bms_parser.js');
 const EMSParser = require('./import/ems_parser.js');
 const { AutomatedPartsSourcingService } = require('./automatedPartsSourcing');
+const estimateDiffService = require('./estimateDiffService');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 
@@ -1032,20 +1033,57 @@ class BMSService {
 
           for (const part of bmsResult.parts) {
             try {
-              const partRecord = await AdvancedPartsManagement.create({
-                shopId: shopId,
-                repairOrderId: job.id,
-                lineNumber: part.lineNumber || 0,
-                partDescription: part.description || part.partName || 'Unknown Part',
-                oemPartNumber: part.oemPartNumber || part.partNumber || null,
-                vendorPartNumber: part.partNumber || null,
-                quantityOrdered: part.quantity || 1,
-                unitPrice: part.price || 0,
-                extendedPrice: (part.price || 0) * (part.quantity || 1),
-                partStatus: 'needed', // THIS IS KEY - auto-populate as "needed"
-                partType: part.partType || 'oem',
-                taxable: part.taxable !== undefined ? part.taxable : true,
-              });
+              // Map part type to valid Supabase enum value
+              // Valid: PAN (OEM), PAA (Aftermarket), PAR (Recycled/Used), PAL (Reconditioned), PAM (Alternate), PAE (Existing), PAC (Non-Genuine), SUBLET
+              let partType = 'PAN'; // Default to OEM
+              const partTypeUpper = (part.partType || '').toUpperCase();
+
+              if (partTypeUpper === 'PAE' || partTypeUpper.includes('EXISTING')) {
+                partType = 'PAE';
+              } else if (partTypeUpper === 'SUBLET' || partTypeUpper.includes('SUBLET')) {
+                partType = 'SUBLET';
+              } else if (partTypeUpper === 'PAA') {
+                partType = 'PAA';
+              } else if (partTypeUpper === 'PAR') {
+                partType = 'PAR';
+              } else if (partTypeUpper === 'PAL') {
+                partType = 'PAL';
+              } else if (partTypeUpper === 'PAM') {
+                partType = 'PAM';
+              } else if (partTypeUpper === 'PAC') {
+                partType = 'PAC';
+              }
+
+              // Create part using Supabase with correct field names from 001_mitchell_collision_repair_schema.sql
+              const partData = {
+                ro_id: job.id, // Changed from job_id to ro_id (repair order ID)
+                line_number: part.lineNumber || 0,
+                description: part.description || part.partName || 'Unknown Part',
+                part_number: part.partNumber || null,
+                part_type: partType, // Enum type, not string
+                part_source_code: part.sourceCode || null,
+                quantity: part.quantity || 1,
+                part_price: part.price || 0,
+                oem_part_price: part.oemPrice || null,
+                labor_type: part.laborType || null,
+                labor_operation: part.laborOperation || null,
+                labor_hours: part.laborHours || 0,
+                database_labor_hours: part.databaseLaborHours || null,
+                status: 'needed', // THIS IS KEY - auto-populate as "needed"
+                is_taxable: part.taxable !== undefined ? part.taxable : true,
+                is_sublet: partType === 'SUBLET',
+              };
+
+              const { data: partRecord, error: partError } = await supabaseAdmin
+                .from('parts')
+                .insert([partData])
+                .select()
+                .single();
+
+              if (partError) {
+                throw partError;
+              }
+
               parts.push(partRecord);
             } catch (partError) {
               console.error(`⚠️ Failed to create part ${part.partNumber}:`, partError.message);
@@ -1486,40 +1524,236 @@ class BMSService {
   }
 
   /**
-   * Create job from BMS data using admin client (bypasses RLS)
+   * Find or create insurance company
    */
-  async createJobFromBMSWithAdmin(bmsResult, customerId, vehicleId, supabaseAdmin) {
+  async findOrCreateInsuranceCompany(insuranceCompanyName, shopId, supabaseAdmin) {
     try {
-      // Generate RO number
-      const roNumber = `RO-${Date.now()}`;
-      
-      // Create job/repair order
-      const jobData = {
-        shop_id: bmsResult.shop_id,
-        customer_id: customerId,
-        vehicle_id: vehicleId,
-        ro_number: roNumber,
-        status: 'intake',
-        priority: 'normal',
-        total_amount: bmsResult.financial?.total || 0,
-        opened_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+      // Try to find existing insurance company by name
+      const { data: existingInsuranceCompanies } = await supabaseAdmin
+        .from('insurance_companies')
+        .select('*')
+        .eq('shop_id', shopId)
+        .eq('name', insuranceCompanyName);
+
+      if (existingInsuranceCompanies && existingInsuranceCompanies.length > 0) {
+        console.log('Found existing insurance company:', existingInsuranceCompanies[0].id);
+        return existingInsuranceCompanies[0];
+      }
+
+      // Create new insurance company
+      console.log('Creating new insurance company:', insuranceCompanyName);
+      const insuranceCompanyData = {
+        shop_id: shopId,
+        name: insuranceCompanyName,
+        short_name: insuranceCompanyName,
+        is_active: true,
       };
 
-      const { data: newJob, error } = await supabaseAdmin
-        .from('jobs')
-        .insert([jobData])
+      const { data: newInsuranceCompany, error } = await supabaseAdmin
+        .from('insurance_companies')
+        .insert([insuranceCompanyData])
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating job:', error);
+        console.error('Error creating insurance company:', error);
         throw error;
       }
 
-      console.log('Created new job:', newJob.id);
-      return newJob;
+      console.log('✅ Created insurance company:', newInsuranceCompany.id);
+      return newInsuranceCompany;
+    } catch (error) {
+      console.error('Error in findOrCreateInsuranceCompany:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create repair order from BMS data using admin client (bypasses RLS)
+   * NOTE: Supabase uses repair_orders table (NOT jobs)
+   * repair_orders requires a claim_id reference to claims table
+   */
+  async createJobFromBMSWithAdmin(bmsResult, customerId, vehicleId, supabaseAdmin) {
+    try {
+      // STEP 0: Find or create insurance company
+      const insuranceCompanyName = bmsResult.claimInfo?.insuranceCompany || 'ICBC';
+      const insuranceCompany = await this.findOrCreateInsuranceCompany(
+        insuranceCompanyName,
+        bmsResult.shop_id,
+        supabaseAdmin
+      );
+
+      // STEP 1: Check if this claim already exists (for version tracking)
+      const claimNumber = bmsResult.claimInfo?.claimNumber || `CLAIM-${Date.now()}`;
+
+      let existingClaim = null;
+      let isRevision = false;
+      let previousVersionData = null;
+
+      // Try to find existing claim by claim_number
+      const { data: existingClaims } = await supabaseAdmin
+        .from('claims')
+        .select('*')
+        .eq('claim_number', claimNumber);
+
+      if (existingClaims && existingClaims.length > 0) {
+        existingClaim = existingClaims[0];
+        isRevision = true;
+        console.log(`📝 Found existing claim ${claimNumber} - This is a REVISION/SUPPLEMENT`);
+
+        // Get the previous version's BMS data for comparison
+        const { data: latestVersion } = await supabaseAdmin
+          .from('estimate_versions')
+          .select('*')
+          .eq('claim_id', existingClaim.id)
+          .order('version_number', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (latestVersion) {
+          previousVersionData = latestVersion.bms_data;
+          console.log(`📊 Found previous version ${latestVersion.version_number} for comparison`);
+        }
+      }
+
+      // STEP 2: Create or update insurance claim record
+      let newClaim;
+
+      if (isRevision) {
+        // Update existing claim (keep the original record, just update dates)
+        const { data: updatedClaim, error: updateError } = await supabaseAdmin
+          .from('claims')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', existingClaim.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating insurance claim:', updateError);
+          throw updateError;
+        }
+
+        newClaim = updatedClaim;
+        console.log('Updated existing claim:', newClaim.id);
+      } else {
+        // Create new claim in the `claims` table (not `insurance_claims`)
+        // The claims table requires shop_id and insurance_company_id
+        const claimData = {
+          shop_id: bmsResult.shop_id,
+          claim_number: claimNumber,
+          insurance_company_id: insuranceCompany.id, // Use the insurance company we just found/created
+          customer_id: customerId,
+          vehicle_id: vehicleId,
+          incident_date: bmsResult.claimInfo?.dateOfLoss ? new Date(bmsResult.claimInfo.dateOfLoss).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          reported_date: new Date().toISOString().split('T')[0],
+          claim_status: 'open',
+          policy_number: bmsResult.claimInfo?.policyNumber || null,
+          deductible: bmsResult.claimInfo?.deductibleAmount || 0,
+          adjuster_name: bmsResult.claimInfo?.adjusterName || null,
+          adjuster_email: bmsResult.claimInfo?.adjusterEmail || null,
+          adjuster_phone: bmsResult.claimInfo?.adjusterPhone || null,
+          incident_description: bmsResult.claimInfo?.lossDescription || null,
+        };
+
+        const { data: createdClaim, error: claimError } = await supabaseAdmin
+          .from('claims')
+          .insert([claimData])
+          .select()
+          .single();
+
+        if (claimError) {
+          console.error('Error creating insurance claim:', claimError);
+          throw claimError;
+        }
+
+        newClaim = createdClaim;
+        console.log('Created new insurance claim:', newClaim.id);
+      }
+
+      // STEP 3: Now create the repair order (linked to the claim)
+      // Use the shop RO number from BMS if available, otherwise generate one
+      const roNumber = bmsResult.documentInfo?.shopRoNumber ||
+                       bmsResult.claimInfo?.roNumber ||
+                       bmsResult.documentInfo?.roNumber ||
+                       `RO-${Date.now()}`;
+
+      // Ultra-minimal roData - only REQUIRED fields that MUST exist in Supabase
+      // The Supabase repair_orders table is extremely bare-bones
+      const roData = {
+        claim_id: newClaim.id, // REQUIRED FK
+        customer_id: customerId,
+        vehicle_id: vehicleId,
+        ro_number: roNumber,
+        shop_id: bmsResult.shop_id, // REQUIRED - shop context
+      };
+
+      const { data: newRO, error: roError } = await supabaseAdmin
+        .from('repair_orders')
+        .insert([roData])
+        .select()
+        .single();
+
+      if (roError) {
+        console.error('Error creating repair order:', roError);
+        throw roError;
+      }
+
+      console.log('Created new repair order:', newRO.id);
+
+      // STEP 3: Save estimate version and calculate diff if this is a revision
+      try {
+        let diff = null;
+        let revisionReason = 'initial';
+
+        if (isRevision && previousVersionData) {
+          // This is a supplement/revision - compare with previous version
+          diff = estimateDiffService.compareBMSEstimates(bmsResult, previousVersionData);
+          revisionReason = 'supplement';
+
+          console.log(`📊 Estimate diff calculated:`, {
+            totalChange: diff.summary.totalChange,
+            percentChange: diff.summary.percentChange.toFixed(2) + '%',
+            lineItemsAdded: diff.summary.lineItemsAdded,
+            lineItemsRemoved: diff.summary.lineItemsRemoved,
+            lineItemsModified: diff.summary.lineItemsModified,
+          });
+        }
+
+        // Save the estimate version to database
+        const versionResult = await estimateDiffService.saveEstimateVersion(
+          newClaim.id,
+          newRO.id,
+          bmsResult,
+          diff,
+          revisionReason
+        );
+
+        if (versionResult.success) {
+          console.log(`✅ Saved estimate version ${versionResult.versionNumber} for claim ${newClaim.id}`);
+
+          if (diff) {
+            console.log(`📝 Version ${versionResult.versionNumber} is a ${revisionReason}:`);
+            console.log(`   Total change: $${diff.summary.totalChange.toFixed(2)} (${diff.summary.percentChange.toFixed(1)}%)`);
+            console.log(`   Parts added: ${diff.parts.added.length}`);
+            console.log(`   Parts removed: ${diff.parts.removed.length}`);
+            console.log(`   Parts modified: ${diff.parts.modified.length}`);
+          }
+        }
+
+        // Attach version info to the RO object for API response
+        newRO.estimateVersion = {
+          versionNumber: versionResult.versionNumber,
+          isRevision: isRevision,
+          revisionReason: revisionReason,
+          diff: diff ? diff.summary : null,
+        };
+
+      } catch (versionError) {
+        console.error('⚠️ Failed to save estimate version (non-fatal):', versionError.message);
+        // Don't fail the whole upload if version tracking fails
+      }
+
+      return newRO;
     } catch (error) {
       console.error('Error in createJobFromBMSWithAdmin:', error);
       throw error;
