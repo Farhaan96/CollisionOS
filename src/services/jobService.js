@@ -165,6 +165,46 @@ export const jobService = {
       return { success: false, error: error.message };
     }
   },
+
+  async updateStatus(jobId, newStatus, notes = '') {
+    try {
+      const response = await fetch(`${API_BASE}/jobs/${jobId}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          status: newStatus,
+          notes,
+        }),
+      });
+
+      const data = await handleResponse(response);
+      return {
+        success: true,
+        job: data.data || data,
+        message: data.message || 'Status updated successfully'
+      };
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async getJobHistory(jobId) {
+    try {
+      const response = await fetch(`${API_BASE}/jobs/${jobId}/history`, {
+        headers: getAuthHeaders(),
+      });
+
+      const data = await handleResponse(response);
+      return {
+        success: true,
+        history: data.data || data
+      };
+    } catch (error) {
+      console.error('Error fetching job history:', error);
+      return { success: false, error: error.message, history: [] };
+    }
+  },
 };
 
 // Helper function to get valid status transitions

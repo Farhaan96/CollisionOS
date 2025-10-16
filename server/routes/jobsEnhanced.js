@@ -562,6 +562,252 @@ router.post(
 );
 
 /**
+ * @swagger
+ * /jobs/{id}/status:
+ *   patch:
+ *     summary: Update job status with validation and history tracking
+ *     tags: [Jobs]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: New status for the job
+ *               notes:
+ *                 type: string
+ *                 description: Optional notes about the status change
+ *     responses:
+ *       200:
+ *         description: Job status updated successfully
+ *       400:
+ *         description: Invalid status transition
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch(
+  '/:id/status',
+  authenticateToken(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    if (!status) {
+      throw errors.validationError('Status is required');
+    }
+
+    // Valid status transitions map
+    const validTransitions = {
+      estimate: ['intake', 'estimating', 'cancelled'],
+      estimating: ['awaiting_approval', 'cancelled'],
+      awaiting_approval: ['approved', 'rejected', 'cancelled'],
+      approved: ['awaiting_parts', 'in_production', 'cancelled'],
+      intake: ['estimating', 'awaiting_parts', 'in_production', 'cancelled'],
+      awaiting_parts: ['in_production', 'cancelled'],
+      in_production: [
+        'body_structure',
+        'paint_prep',
+        'paint_booth',
+        'reassembly',
+        'quality_check',
+        'ready',
+        'cancelled',
+      ],
+      body_structure: ['paint_prep', 'quality_check', 'cancelled'],
+      paint_prep: ['paint_booth', 'quality_check', 'cancelled'],
+      paint_booth: ['reassembly', 'quality_check', 'cancelled'],
+      reassembly: ['quality_check', 'ready', 'cancelled'],
+      quality_check: ['ready', 'in_production', 'cancelled'],
+      ready: ['delivered'],
+      delivered: ['closed'],
+      cancelled: [],
+      closed: [],
+    };
+
+    try {
+      // Get current job
+      const jobs = await databaseService.query('jobs', {
+        where: { id, shop_id: req.user.shopId },
+      });
+
+      if (!jobs || jobs.length === 0) {
+        throw errors.notFound('Job not found');
+      }
+
+      const currentJob = jobs[0];
+      const previousStatus = currentJob.status;
+
+      // Validate status transition
+      const allowedTransitions = validTransitions[previousStatus] || [];
+      if (!allowedTransitions.includes(status)) {
+        throw errors.validationError(
+          `Invalid transition from ${previousStatus} to ${status}. Allowed: ${allowedTransitions.join(', ')}`
+        );
+      }
+
+      // Update job status
+      const updateData = {
+        status,
+        updated_at: new Date(),
+        updated_by: req.user.id,
+        status_changed_at: new Date(),
+      };
+
+      // Add completion timestamp for final statuses
+      if (status === 'delivered') {
+        updateData.delivered_at = new Date();
+      } else if (status === 'closed') {
+        updateData.closed_at = new Date();
+      }
+
+      const updatedJob = await databaseService.update('jobs', updateData, {
+        id,
+        shop_id: req.user.shopId,
+      });
+
+      // Log status change in history table
+      try {
+        await databaseService.insert('job_status_history', {
+          job_id: id,
+          previous_status: previousStatus,
+          new_status: status,
+          changed_by: req.user.id,
+          notes,
+          changed_at: new Date(),
+          shop_id: req.user.shopId,
+        });
+      } catch (auditError) {
+        console.warn('Failed to log status change:', auditError.message);
+      }
+
+      // Broadcast real-time update
+      realtimeService.broadcastJobUpdate(
+        {
+          jobId: id,
+          previousStatus,
+          newStatus: status,
+          jobNumber: updatedJob.job_number || updatedJob.jobNumber,
+          updatedBy: req.user.username || req.user.email,
+          notes,
+        },
+        req.user.shopId
+      );
+
+      successResponse(
+        res,
+        {
+          ...updatedJob,
+          status_history: [
+            {
+              previous_status: previousStatus,
+              new_status: status,
+              changed_at: new Date(),
+              notes,
+            },
+          ],
+        },
+        `Job status updated to ${status} successfully`
+      );
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      if (
+        error.message === 'Job not found' ||
+        error.message.includes('Invalid transition')
+      ) {
+        throw error;
+      }
+      throw errors.databaseError('Failed to update job status');
+    }
+  })
+);
+
+/**
+ * @swagger
+ * /jobs/{id}/history:
+ *   get:
+ *     summary: Get job status history timeline
+ *     tags: [Jobs]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID
+ *     responses:
+ *       200:
+ *         description: Job history retrieved successfully
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.get(
+  '/:id/history',
+  authenticateToken(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      // Verify job exists and belongs to shop
+      const jobs = await databaseService.query('jobs', {
+        where: { id, shop_id: req.user.shopId },
+      });
+
+      if (!jobs || jobs.length === 0) {
+        throw errors.notFound('Job not found');
+      }
+
+      // Get status history
+      let history = [];
+      try {
+        history = await databaseService.query('job_status_history', {
+          where: { job_id: id },
+          order: [['changed_at', 'desc']],
+        });
+      } catch (historyError) {
+        console.warn('Failed to retrieve status history:', historyError.message);
+        // Return empty history if table doesn't exist yet
+        history = [];
+      }
+
+      // Transform history for frontend
+      const transformedHistory = history.map(entry => ({
+        id: entry.id,
+        previousStatus: entry.previous_status,
+        newStatus: entry.new_status,
+        changedAt: entry.changed_at,
+        changedBy: entry.changed_by,
+        notes: entry.notes,
+        duration: calculateStatusDuration(entry),
+      }));
+
+      successResponse(res, transformedHistory, 'Job history retrieved successfully');
+    } catch (error) {
+      console.error('Error fetching job history:', error);
+      if (error.message === 'Job not found') {
+        throw error;
+      }
+      throw errors.databaseError('Failed to fetch job history');
+    }
+  })
+);
+
+/**
  * Calculate progress percentage based on job status
  * @param {string} status - Current job status
  * @returns {number} Progress percentage (0-100)
@@ -586,6 +832,17 @@ function getProgressFromStatus(status) {
     delivered: 100,
   };
   return statusProgressMap[status] || 0;
+}
+
+/**
+ * Calculate duration spent in a status
+ * @param {object} historyEntry - Status history entry
+ * @returns {string} Duration string
+ */
+function calculateStatusDuration(historyEntry) {
+  // This would need the next status change time to calculate duration
+  // For now, return a placeholder
+  return 'N/A';
 }
 
 /**

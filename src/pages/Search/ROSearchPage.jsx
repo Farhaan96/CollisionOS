@@ -113,41 +113,96 @@ const ROSearchPage = () => {
       const result = await roService.getRepairOrders({
         shopId,
         limit: 50,
-        page: 1
+        page: 1,
+        ...(filters.status && { status: filters.status }),
+        ...(filters.priority && { priority: filters.priority }),
+        ...(filters.dateFrom && filters.dateTo && {
+          dateRange: { from: filters.dateFrom, to: filters.dateTo }
+        })
       });
 
       if (result.success) {
         setRecentROs(result.data);
 
-        // Calculate metrics
+        // Calculate metrics from the actual data
         const metrics = {
           totalROs: result.data.length,
           inProgress: result.data.filter(ro => ro.status === 'in_progress').length,
           estimate: result.data.filter(ro => ro.status === 'estimate').length,
           partsPending: result.data.filter(ro => ro.status === 'parts_pending').length,
           completed: result.data.filter(ro => ro.status === 'completed').length,
-          totalValue: result.data.reduce((sum, ro) => sum + (ro.total_amount || 0), 0),
+          totalValue: result.data.reduce((sum, ro) => sum + (parseFloat(ro.total_amount) || 0), 0),
           avgAmount: result.data.length > 0
-            ? result.data.reduce((sum, ro) => sum + (ro.total_amount || 0), 0) / result.data.length
+            ? result.data.reduce((sum, ro) => sum + (parseFloat(ro.total_amount) || 0), 0) / result.data.length
             : 0,
           urgent: result.data.filter(ro => ro.priority === 'urgent').length,
         };
 
         setDashboardMetrics(metrics);
+      } else {
+        toast.error(result.error || 'Failed to load repair orders');
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      toast.error('Failed to load repair orders');
+      toast.error('Failed to load repair orders: ' + error.message);
     } finally {
       setIsLoading(false);
     }
-  }, [shopId]);
+  }, [shopId, filters]);
 
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Handle search results
+  // Handle search with backend API
+  const handleSearch = useCallback(async (searchTerm) => {
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const result = await roService.searchRepairOrders(searchTerm, {
+        limit: 50,
+        page: 1
+      });
+
+      if (result.success) {
+        // Transform search results to match expected format
+        const transformedResults = result.data.map(ro => ({
+          id: ro.id,
+          type: 'repair_order',
+          label: ro.ro_number,
+          subtitle: ro.customer ?
+            `${ro.customer.first_name || ''} ${ro.customer.last_name || ''}`.trim() +
+            (ro.vehicle ? ` - ${ro.vehicle.year} ${ro.vehicle.make} ${ro.vehicle.model}` : '') :
+            'No customer info',
+          status: ro.status,
+          data: ro,
+          icon: Assignment
+        }));
+
+        setSearchResults(transformedResults);
+        if (transformedResults.length > 0) {
+          setSelectedTab(1); // Switch to search results tab
+        } else {
+          toast.info('No results found for "' + searchTerm + '"');
+        }
+      } else {
+        toast.error(result.error || 'Search failed');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast.error('Search failed: ' + error.message);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Handle search results from CollisionRepairSearchBar component
   const handleSearchResults = useCallback((results) => {
     setSearchResults(results);
     if (results.length > 0) {

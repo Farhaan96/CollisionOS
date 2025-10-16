@@ -151,12 +151,37 @@ const RODetailPage = () => {
         throw new Error(result.error);
       }
 
-      // Map backend response to frontend format
+      // Map backend response with comprehensive field mapping
       const roData = {
-        ...result.data,
-        customer: result.data.customers || result.data.customer,
-        vehicleProfile: result.data.vehicles || result.data.vehicleProfile,
-        claimManagement: result.data.claims || result.data.claimManagement,
+        // Core RO fields
+        id: result.data.id,
+        ro_number: result.data.ro_number,
+        roNumber: result.data.ro_number, // Alias for compatibility
+        status: result.data.status,
+        priority: result.data.priority,
+        ro_type: result.data.ro_type || 'insurance',
+        roType: result.data.ro_type || 'insurance',
+        total_amount: result.data.total_amount || 0,
+        totalAmount: result.data.total_amount || 0,
+        opened_at: result.data.opened_at,
+        openedAt: result.data.opened_at,
+        delivered_at: result.data.delivered_at,
+        deliveredAt: result.data.delivered_at,
+        estimated_completion_date: result.data.estimated_completion_date,
+        estimatedCompletionDate: result.data.estimated_completion_date,
+        drop_off_date: result.data.drop_off_date,
+        dropOffDate: result.data.drop_off_date,
+        created_at: result.data.created_at,
+        createdAt: result.data.created_at,
+
+        // Customer data (normalized from snake_case backend)
+        customer: result.data.customers || result.data.customer || null,
+
+        // Vehicle data (normalized from snake_case backend)
+        vehicleProfile: result.data.vehicles || result.data.vehicleProfile || null,
+
+        // Claim data (normalized from snake_case backend)
+        claimManagement: result.data.claims || result.data.claimManagement || null,
       };
 
       setRO(roData);
@@ -168,6 +193,9 @@ const RODetailPage = () => {
     } catch (error) {
       console.error('Failed to load RO details:', error);
       toast.error(`Failed to load repair order: ${error.message}`);
+
+      // Set error state to prevent infinite loading
+      setRO(null);
     } finally {
       setIsLoading(false);
     }
@@ -184,24 +212,73 @@ const RODetailPage = () => {
         throw new Error(result.error);
       }
 
-      const partsData = result.data || [];
+      // Map part fields from snake_case to camelCase with proper fallbacks
+      const partsData = (result.data || []).map(part => ({
+        id: part.id,
+        description: part.description || part.part_description || 'Unknown Part',
+        part_description: part.description || part.part_description,
+        part_number: part.part_number || part.partNumber || '',
+        partNumber: part.part_number || part.partNumber,
+        quantity: part.quantity_ordered || part.quantity || 1,
+        quantity_ordered: part.quantity_ordered || part.quantity || 1,
+        quantityOrdered: part.quantity_ordered || part.quantity || 1,
+        quantity_received: part.quantity_received || 0,
+        quantityReceived: part.quantity_received || 0,
+        unit_cost: parseFloat(part.unit_cost || part.unitCost || 0),
+        unitCost: parseFloat(part.unit_cost || part.unitCost || 0),
+        extended_price: part.extended_price || part.extendedPrice || (parseFloat(part.unit_cost || 0) * (part.quantity_ordered || 1)),
+        extendedPrice: part.extended_price || part.extendedPrice || (parseFloat(part.unit_cost || 0) * (part.quantity_ordered || 1)),
+        status: part.status || 'needed',
+        operation: part.operation || '',
+        vendor_id: part.vendor_id || part.vendorId || null,
+        vendorId: part.vendor_id || part.vendorId || null,
+        po_id: part.po_id || part.poId || null,
+        poId: part.po_id || part.poId || null,
+        vendor: part.vendor || null,
+        po: part.po || null,
+      }));
+
       setParts(partsData);
 
       // Use grouped data from backend if available, otherwise group locally
-      const grouped = result.grouped || partsData.reduce((acc, part) => {
-        const status = part.status || 'needed';
-        if (!acc[status]) {
-          acc[status] = [];
-        }
-        acc[status].push(part);
-        return acc;
-      }, {});
+      let grouped;
+      if (result.grouped_by_status) {
+        // Backend already grouped - map to camelCase
+        grouped = Object.keys(result.grouped_by_status).reduce((acc, status) => {
+          acc[status] = result.grouped_by_status[status].map(part => ({
+            id: part.id,
+            description: part.description || part.part_description || 'Unknown Part',
+            part_description: part.description || part.part_description,
+            part_number: part.part_number || part.partNumber || '',
+            quantity_ordered: part.quantity_ordered || part.quantity || 1,
+            unit_cost: parseFloat(part.unit_cost || part.unitCost || 0),
+            status: part.status || 'needed',
+            operation: part.operation || '',
+            vendor: part.vendor || null,
+          }));
+          return acc;
+        }, {});
+      } else {
+        // Group locally
+        grouped = partsData.reduce((acc, part) => {
+          const status = part.status || 'needed';
+          if (!acc[status]) {
+            acc[status] = [];
+          }
+          acc[status].push(part);
+          return acc;
+        }, {});
+      }
 
       setPartsByStatus(grouped);
 
     } catch (error) {
       console.error('Failed to load parts:', error);
       toast.error(`Failed to load parts: ${error.message}`);
+
+      // Set empty state on error
+      setParts([]);
+      setPartsByStatus({});
     }
   }, [roId]);
 
@@ -253,6 +330,10 @@ const RODetailPage = () => {
 
     if (!part) return;
 
+    // Store original state for rollback on error
+    const originalParts = [...parts];
+    const originalGrouped = { ...partsByStatus };
+
     // Optimistically update UI
     const updatedParts = parts.map(p => {
       if (p.id === draggableId) {
@@ -276,25 +357,28 @@ const RODetailPage = () => {
 
     // Update backend
     try {
-      const result = await roService.updatePartStatus(
+      const updateResult = await roService.updatePartStatus(
         draggableId,
         newStatus,
         `Status changed from ${source.droppableId} to ${newStatus}`
       );
 
-      if (!result.success) {
-        throw new Error(result.error);
+      if (!updateResult.success) {
+        throw new Error(updateResult.error || 'Failed to update part status');
       }
 
-      toast.success(`Part moved to ${newStatus}`);
+      // Show success message with readable status name
+      const statusLabel = partsStatuses.find(s => s.id === newStatus)?.label || newStatus;
+      toast.success(`Part moved to ${statusLabel}`);
     } catch (error) {
       console.error('Failed to update part status:', error);
       toast.error(`Failed to update part status: ${error.message}`);
 
-      // Revert optimistic update on error
-      loadParts();
+      // Rollback optimistic update
+      setParts(originalParts);
+      setPartsByStatus(originalGrouped);
     }
-  }, [parts, loadParts]);
+  }, [parts, partsByStatus, partsStatuses]);
 
   // Handle part selection for PO creation
   const handlePartSelect = useCallback((partId) => {
@@ -410,7 +494,7 @@ const RODetailPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6" fontWeight="medium">
-                    {ro.customer?.first_name} {ro.customer?.last_name}
+                    {ro.customer?.first_name || ''} {ro.customer?.last_name || ''}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Customer
@@ -420,11 +504,11 @@ const RODetailPage = () => {
               <Stack spacing={0.5}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Phone fontSize="small" color="action" />
-                  <Typography variant="body2">{ro.customer?.phone}</Typography>
+                  <Typography variant="body2">{ro.customer?.phone || 'N/A'}</Typography>
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Email fontSize="small" color="action" />
-                  <Typography variant="body2">{ro.customer?.email}</Typography>
+                  <Typography variant="body2">{ro.customer?.email || 'N/A'}</Typography>
                 </Box>
               </Stack>
             </Grid>
@@ -437,7 +521,7 @@ const RODetailPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6" fontWeight="medium">
-                    {ro.vehicleProfile?.year} {ro.vehicleProfile?.make} {ro.vehicleProfile?.model}
+                    {ro.vehicleProfile?.year || ''} {ro.vehicleProfile?.make || ''} {ro.vehicleProfile?.model || ''}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Vehicle
@@ -446,13 +530,13 @@ const RODetailPage = () => {
               </Box>
               <Stack spacing={0.5}>
                 <Typography variant="body2">
-                  <strong>VIN:</strong> {ro.vehicleProfile?.vin}
+                  <strong>VIN:</strong> {ro.vehicleProfile?.vin || 'N/A'}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Color:</strong> {ro.vehicleProfile?.color}
+                  <strong>Color:</strong> {ro.vehicleProfile?.color || 'N/A'}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Plate:</strong> {ro.vehicleProfile?.license_plate}
+                  <strong>Plate:</strong> {ro.vehicleProfile?.license_plate || 'N/A'}
                 </Typography>
               </Stack>
             </Grid>
@@ -627,7 +711,7 @@ const RODetailPage = () => {
     );
 
     const claim = ro.claimManagement;
-    const insurance = claim.insurance_companies || claim.insuranceCompany;
+    const insurance = claim.insurance_companies || claim.insuranceCompany || null;
 
     return (
       <Card>
@@ -659,7 +743,7 @@ const RODetailPage = () => {
                 Insurance Company
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {insurance?.name}
+                {insurance?.name || 'N/A'}
                 {insurance?.is_drp && (
                   <Chip label="DRP" size="small" color="success" sx={{ ml: 1 }} />
                 )}
@@ -678,7 +762,7 @@ const RODetailPage = () => {
                 Deductible
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                ${(claim.deductible || claim.deductible_amount || 0).toFixed(2)}
+                ${parseFloat(claim.deductible || claim.deductible_amount || 0).toFixed(2)}
               </Typography>
             </Grid>
             {claim.adjuster_name && (

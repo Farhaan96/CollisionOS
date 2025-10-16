@@ -153,6 +153,7 @@ const POCreationDialog = ({
   };
 
   const handleCreatePO = async () => {
+    // Validation
     if (!selectedVendor) {
       toast.error('Please select a vendor');
       return;
@@ -163,7 +164,18 @@ const POCreationDialog = ({
       return;
     }
 
-    const partLineIds = selectedParts.map(part => part.id);
+    if (!selectedParts || selectedParts.length === 0) {
+      toast.error('No parts selected for PO');
+      return;
+    }
+
+    // Extract part line IDs
+    const partLineIds = selectedParts.map(part => part.id).filter(id => id);
+
+    if (partLineIds.length === 0) {
+      toast.error('Selected parts are missing IDs');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -178,19 +190,30 @@ const POCreationDialog = ({
       });
 
       if (!result.success) {
-        throw new Error(result.error);
+        throw new Error(result.error || 'Failed to create purchase order');
       }
 
-      toast.success(`Purchase order ${result.po_number} created successfully`);
+      // Success notification
+      const poNumber = result.po_number || result.data?.po_number || 'PO';
+      toast.success(`Purchase order ${poNumber} created successfully!`, {
+        duration: 4000,
+      });
 
+      // Notify parent component with the created PO data
       if (onPOCreated) {
-        onPOCreated(result.data);
+        onPOCreated({
+          ...result.data,
+          po_number: poNumber,
+          part_count: partLineIds.length,
+        });
       }
 
       handleClose();
     } catch (error) {
       console.error('Failed to create PO:', error);
-      toast.error(`Failed to create PO: ${error.message}`);
+      toast.error(error.message || 'Failed to create PO. Please try again.', {
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }

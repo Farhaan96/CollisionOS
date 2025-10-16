@@ -27,6 +27,8 @@ import axios from 'axios';
 import JobDetailModal from '../../components/Jobs/JobDetailModal';
 import { useRealtimeJobs } from '../../hooks/useRealtimeData';
 import { useJobStore } from '../../store/jobStore';
+import { dashboardService } from '../../services/dashboardService';
+import { toast } from 'react-hot-toast';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
@@ -47,15 +49,15 @@ const DashboardClean = () => {
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
 
-  // Dashboard stats
+  // Dashboard stats - fetched from backend
   const [stats, setStats] = useState({
-    activeJobs: 2,
-    activeJobsTrend: 12,
-    capacityToday: 26,
-    avgCycleTime: 8.5,
-    cycleTimeTrend: 5,
-    revenueMTD: 89200,
-    revenueTrend: 18,
+    activeJobs: 0,
+    activeJobsTrend: 0,
+    capacityToday: 0,
+    avgCycleTime: 0,
+    cycleTimeTrend: 0,
+    revenueMTD: 0,
+    revenueTrend: 0,
   });
 
   // Use real-time jobs data from the store
@@ -154,24 +156,39 @@ const DashboardClean = () => {
     },
   ];
 
-  // Status columns for job board
+  // Status columns for job board - with dynamic counts
   const statusColumns = [
-    { id: 'intake', label: 'Intake', count: 0, color: 'default' },
-    { id: 'estimating', label: 'Estimating', count: 1, color: 'warning' },
-    { id: 'awaitingParts', label: 'Awaiting Parts', count: 1, color: 'info' },
-    { id: 'inProduction', label: 'In Production', count: 0, color: 'primary' },
-    { id: 'ready', label: 'Ready', count: 0, color: 'success' },
+    { id: 'intake', label: 'Intake', count: jobBoard.intake.length, color: 'default' },
+    { id: 'estimating', label: 'Estimating', count: jobBoard.estimating.length, color: 'warning' },
+    { id: 'awaitingParts', label: 'Awaiting Parts', count: jobBoard.awaitingParts.length, color: 'info' },
+    { id: 'inProduction', label: 'In Production', count: jobBoard.inProduction.length, color: 'primary' },
+    { id: 'ready', label: 'Ready', count: jobBoard.ready.length, color: 'success' },
   ];
 
-  // Load dashboard data
+  // Load dashboard data from backend
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        // API calls would go here
-        // For now using mock data
+
+        // Fetch dashboard stats from backend API
+        const statsData = await dashboardService.getKPIs('month');
+
+        if (statsData) {
+          // Map backend response to dashboard stats
+          setStats({
+            activeJobs: statsData.totalJobs?.current || 0,
+            activeJobsTrend: statsData.totalJobs?.change || 0,
+            capacityToday: Math.min(100, Math.round((statsData.totalJobs?.inProgress || 0) / 30 * 100)), // Assume 30 is max capacity
+            avgCycleTime: statsData.cycleTime?.current || 0,
+            cycleTimeTrend: statsData.cycleTime?.change || 0,
+            revenueMTD: statsData.revenue?.current || 0,
+            revenueTrend: statsData.revenue?.change || 0,
+          });
+        }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
+        toast.error('Failed to load dashboard statistics');
       } finally {
         setLoading(false);
       }
