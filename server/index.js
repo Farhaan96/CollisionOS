@@ -93,7 +93,7 @@ const { swaggerUi, specs } = require('./docs/swagger');
 const { realtimeService } = require('./services/realtimeService');
 
 const app = express();
-const PORT = process.env.SERVER_PORT || 3001;
+const PORT = process.env.SERVER_PORT || 3002; // Standardized on 3002 for frontend-backend connectivity
 
 // Debug environment variables
 console.log('🔍 Environment Variables Debug:');

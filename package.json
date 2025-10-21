@@ -4,11 +4,11 @@
   "description": "Complete Auto Body Shop Management Desktop Application",
   "main": "electron/main.js",
   "homepage": "./",
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3002",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "dev": "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:3000 && electron .\"",
-    "dev:debug": "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:3001 && electron . --inspect\"",
+    "dev:debug": "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:3002 && electron . --inspect\"",
     "dev:ui": "npm run client",
     "dev:server": "npm run server",
     "server": "nodemon server/index.js",
