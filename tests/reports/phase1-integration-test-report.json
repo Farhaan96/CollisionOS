@@ -1,0 +1,448 @@
+{
+  "timestamp": "2025-10-21T15:12:12.023Z",
+  "summary": {
+    "totalTests": 67,
+    "passed": 66,
+    "failed": 0,
+    "warnings": 1
+  },
+  "categories": {
+    "Syntax Validation": {
+      "tests": [
+        {
+          "test": "server/services/syncConfig.js - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.029Z"
+        },
+        {
+          "test": "server/services/syncQueue.js - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.030Z"
+        },
+        {
+          "test": "server/services/databaseServiceHybrid.js - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.030Z"
+        },
+        {
+          "test": "server/routes/sync.js - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.030Z"
+        },
+        {
+          "test": "src/services/syncService.js - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.031Z"
+        },
+        {
+          "test": "src/pages/Settings/CloudSyncSettings.jsx - file structure valid",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.031Z"
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "warnings": 0
+    },
+    "File Structure": {
+      "tests": [
+        {
+          "test": "syncConfig.js - DEFAULT_SYNC_CONFIG defined",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - FEATURE_COSTS defined",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - SyncConfigService class",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - initialize() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - getShopConfig() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - updateShopConfig() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncConfig.js - validateCredentials() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.032Z"
+        },
+        {
+          "test": "syncQueue.js - OPERATION_TYPES defined",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "syncQueue.js - SYNC_STATUS defined",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "syncQueue.js - SyncQueueService class",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "syncQueue.js - enqueue() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "syncQueue.js - processQueue() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "syncQueue.js - retry logic",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - HybridDatabaseService class",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - create() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - update() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - delete() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - bulkCreate() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - queueCloudSync() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "databaseServiceHybrid.js - writeToLocal() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - GET /status endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - GET /config endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - PUT /config endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - GET /queue endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - POST /trigger endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - POST /test-connection endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - POST /enable endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        },
+        {
+          "test": "sync.js - POST /disable endpoint",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.033Z"
+        }
+      ],
+      "passed": 28,
+      "failed": 0,
+      "warnings": 0
+    },
+    "SQL Migrations": {
+      "tests": [
+        {
+          "test": "supabase/migrations/20250121000001_initial_core_tables.sql - file exists and readable",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000001_initial_core_tables.sql - has CREATE TABLE statements",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000001_initial_core_tables.sql - UUID extension enabled",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000002_claims_estimates_repair_orders.sql - file exists and readable",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000002_claims_estimates_repair_orders.sql - has CREATE TABLE statements",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000003_parts_and_purchase_orders.sql - file exists and readable",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.034Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000003_parts_and_purchase_orders.sql - has CREATE TABLE statements",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.035Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000004_remaining_tables.sql - file exists and readable",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.035Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000004_remaining_tables.sql - has CREATE TABLE statements",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.035Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000005_row_level_security.sql - file exists and readable",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.035Z"
+        },
+        {
+          "test": "supabase/migrations/20250121000005_row_level_security.sql - has CREATE TABLE statements",
+          "status": "WARN",
+          "details": "No CREATE TABLE found",
+          "timestamp": "2025-10-21T15:12:12.035Z"
+        }
+      ],
+      "passed": 10,
+      "failed": 0,
+      "warnings": 1
+    },
+    "Frontend": {
+      "tests": [
+        {
+          "test": "CloudSyncSettings.jsx - React imports",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - Material-UI imports",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - syncService import",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - useState hook",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - useEffect hook",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - feature toggles",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "CloudSyncSettings.jsx - cost breakdown",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - SyncService class",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - getStatus() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - getConfig() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - updateConfig() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - triggerSync() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - testConnection() method",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "syncService.js - exports singleton",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        }
+      ],
+      "passed": 14,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Configuration": {
+      "tests": [
+        {
+          "test": ".env.example - SUPABASE_URL",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": ".env.example - SUPABASE_ANON_KEY",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": ".env.example - SUPABASE_SERVICE_ROLE_KEY",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": ".env.example - ENABLE_SUPABASE",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": ".env.example - SYNC_ENABLED",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.036Z"
+        },
+        {
+          "test": "package.json - @supabase/supabase-js dependency",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.037Z"
+        },
+        {
+          "test": "package.json - sequelize dependency",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.037Z"
+        },
+        {
+          "test": "package.json - express dependency",
+          "status": "PASS",
+          "details": "",
+          "timestamp": "2025-10-21T15:12:12.037Z"
+        }
+      ],
+      "passed": 8,
+      "failed": 0,
+      "warnings": 0
+    }
+  }
+}
