@@ -2,17 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
-  Card,
-  CardContent,
   Typography,
   useTheme,
   Paper,
-  Chip,
   List,
   ListItem,
   ListItemText,
-  LinearProgress,
-  IconButton,
   CircularProgress,
   Button,
   Avatar,
@@ -21,14 +16,13 @@ import {
   AttachMoney,
   AccessTime,
   DirectionsCar,
-  TrendingUp,
-  TrendingDown,
   Build,
   ArrowForward,
   FileUpload,
   AddCircle,
   Dashboard as DashboardIcon,
   Receipt,
+  Schedule,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -44,6 +38,7 @@ import {
   LineElement,
   Filler,
 } from 'chart.js';
+import { KPICard, ChartCard, StatusBadge } from '../../components/ui';
 
 // Register Chart.js components
 ChartJS.register(
@@ -118,103 +113,7 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Premium KPI Card Component
-  const PremiumKPICard = ({ title, value, subtitle, trend, icon, color, onClick }) => (
-    <Card
-      onClick={onClick}
-      sx={{
-        height: '100%',
-        background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%)'
-          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 1) 100%)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 4,
-        border: `1px solid ${theme.palette.divider}`,
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': onClick ? {
-          transform: 'translateY(-4px)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 20px 40px rgba(0, 0, 0, 0.4)'
-            : '0 20px 40px rgba(0, 0, 0, 0.08)',
-          borderColor: color,
-        } : {},
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box>
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.text.secondary,
-                fontWeight: 600,
-                mb: 1,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                fontSize: '0.75rem',
-              }}
-            >
-              {title}
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 800,
-                mb: 0.5,
-                background: `linear-gradient(135deg, ${color} 0%, ${color}CC 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {value}
-            </Typography>
-            {subtitle && (
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 3,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: `linear-gradient(135deg, ${color}15 0%, ${color}25 100%)`,
-            }}
-          >
-            {React.cloneElement(icon, {
-              sx: { fontSize: 28, color },
-            })}
-          </Box>
-        </Box>
-
-        {trend !== undefined && (
-          <Box display="flex" alignItems="center" mt={2}>
-            {trend > 0 ? (
-              <TrendingUp sx={{ color: '#10B981', fontSize: 20, mr: 0.5 }} />
-            ) : (
-              <TrendingDown sx={{ color: '#EF4444', fontSize: 20, mr: 0.5 }} />
-            )}
-            <Typography
-              variant="caption"
-              sx={{
-                color: trend > 0 ? '#10B981' : '#EF4444',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-              }}
-            >
-              {Math.abs(trend)}% {trend > 0 ? 'increase' : 'decrease'}
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
-  );
+  // Note: Using new KPICard component from ui library
 
   // Production Status Chart Component
   const ProductionStatusChart = () => {
@@ -350,72 +249,124 @@ const Dashboard = () => {
     >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 800,
-            mb: 0.5,
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)'
-              : 'linear-gradient(135deg, #1e293b 0%, #64748b 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Collision Repair Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Real-time overview of your collision shop performance
-        </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)'
+                  : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Dashboard
+            </Typography>
+            <Box display="flex" alignItems="center" gap={2} mt={1}>
+              <Typography variant="body1" color="text.secondary">
+                Real-time overview of your collision shop performance
+              </Typography>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1,
+                  backgroundColor: `${theme.palette.success.main}20`,
+                  border: `1px solid ${theme.palette.success.main}40`,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.success.main,
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0.5 },
+                    },
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600 }}>
+                  Live
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={<Schedule />}
+              onClick={() => navigate('/schedule')}
+              sx={{
+                borderWidth: 2,
+                '&:hover': { borderWidth: 2 },
+              }}
+            >
+              Schedule
+            </Button>
+          </Box>
+        </Box>
       </Box>
 
       {/* Top KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} lg={3}>
-          <PremiumKPICard
+          <KPICard
             title="Active Jobs"
             value={dashboardData.activeJobs}
             subtitle="Currently in shop"
             trend={dashboardData.trends.activeJobs}
+            trendLabel="vs last week"
             icon={<DirectionsCar />}
-            color="#1976d2"
+            color={theme.palette.primary.main}
             onClick={() => navigate('/production')}
           />
         </Grid>
 
         <Grid item xs={12} sm={6} lg={3}>
-          <PremiumKPICard
+          <KPICard
             title="This Week Revenue"
             value={`$${(dashboardData.weekRevenue / 1000).toFixed(1)}K`}
             subtitle="Last 7 days total"
             trend={dashboardData.trends.weekRevenue}
+            trendLabel="vs last week"
             icon={<AttachMoney />}
-            color="#10B981"
+            color={theme.palette.success.main}
             onClick={() => navigate('/reports')}
           />
         </Grid>
 
         <Grid item xs={12} sm={6} lg={3}>
-          <PremiumKPICard
+          <KPICard
             title="Avg Cycle Time"
             value={`${dashboardData.avgCycleTime} days`}
             subtitle="Check-in to delivery"
             trend={dashboardData.trends.avgCycleTime}
+            trendLabel="vs last month"
             icon={<AccessTime />}
-            color="#F59E0B"
+            color={theme.palette.warning.main}
             onClick={() => navigate('/reports')}
           />
         </Grid>
 
         <Grid item xs={12} sm={6} lg={3}>
-          <PremiumKPICard
+          <KPICard
             title="Capacity"
             value={`${dashboardData.capacity}%`}
             subtitle="Shop utilization"
             trend={dashboardData.trends.capacity}
+            trendLabel="vs last week"
             icon={<Build />}
-            color="#EF4444"
+            color={theme.palette.secondary.main}
             onClick={() => navigate('/production')}
           />
         </Grid>
@@ -425,68 +376,39 @@ const Dashboard = () => {
       <Grid container spacing={3}>
         {/* Production Status Chart */}
         <Grid item xs={12} lg={6}>
-          <Paper
-            sx={{
-              p: 3,
-              height: 400,
-              borderRadius: 4,
-              background: theme.palette.mode === 'dark'
-                ? 'rgba(30, 41, 59, 0.8)'
-                : 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${theme.palette.divider}`,
-            }}
+          <ChartCard
+            title="Production Status"
+            subtitle="Current distribution of repair orders by stage"
+            height={400}
+            chartHeight={300}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Production Status
-              </Typography>
-              <IconButton size="small" onClick={() => navigate('/production')}>
-                <ArrowForward />
-              </IconButton>
-            </Box>
-            <Box sx={{ height: 300 }}>
-              {productionData.length > 0 ? (
-                <ProductionStatusChart />
-              ) : (
-                <Box display="flex" alignItems="center" justifyContent="center" height="100%">
-                  <Typography color="text.secondary">No production data</Typography>
-                </Box>
-              )}
-            </Box>
-          </Paper>
+            {productionData.length > 0 ? (
+              <ProductionStatusChart />
+            ) : (
+              <Box display="flex" alignItems="center" justifyContent="center" height="100%">
+                <Typography color="text.secondary">No production data available</Typography>
+              </Box>
+            )}
+          </ChartCard>
         </Grid>
 
         {/* Revenue Trend Chart */}
         <Grid item xs={12} lg={6}>
-          <Paper
-            sx={{
-              p: 3,
-              height: 400,
-              borderRadius: 4,
-              background: theme.palette.mode === 'dark'
-                ? 'rgba(30, 41, 59, 0.8)'
-                : 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${theme.palette.divider}`,
-            }}
+          <ChartCard
+            title="Revenue Trend"
+            subtitle="Daily revenue over the past month"
+            timeRange="Last 30 Days"
+            height={400}
+            chartHeight={300}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Revenue Trend
-              </Typography>
-              <Chip label="Last 30 Days" size="small" sx={{ fontWeight: 600 }} />
-            </Box>
-            <Box sx={{ height: 300 }}>
-              {revenueData.length > 0 ? (
-                <RevenueTrendChart />
-              ) : (
-                <Box display="flex" alignItems="center" justifyContent="center" height="100%">
-                  <Typography color="text.secondary">No revenue data</Typography>
-                </Box>
-              )}
-            </Box>
-          </Paper>
+            {revenueData.length > 0 ? (
+              <RevenueTrendChart />
+            ) : (
+              <Box display="flex" alignItems="center" justifyContent="center" height="100%">
+                <Typography color="text.secondary">No revenue data available</Typography>
+              </Box>
+            )}
+          </ChartCard>
         </Grid>
 
         {/* Recent Jobs */}
@@ -543,11 +465,13 @@ const Dashboard = () => {
                           <Typography variant="body2" color="text.secondary">
                             {job.vehicle || 'Unknown Vehicle'}
                           </Typography>
-                          <Chip
-                            label={job.status || 'In Progress'}
-                            size="small"
-                            sx={{ mt: 0.5, fontSize: '0.7rem', height: 20 }}
-                          />
+                          <Box mt={0.5}>
+                            <StatusBadge
+                              status={job.status || 'in-progress'}
+                              size="small"
+                              variant="pill"
+                            />
+                          </Box>
                         </Box>
                       }
                     />
