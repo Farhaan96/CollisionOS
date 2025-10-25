@@ -23,8 +23,16 @@ playwright-report/
 test-results/
 test-results.json
 
-# Uploads and data
-uploads/
+# Uploads and data (but keep directory structure)
+uploads/**/*
+!uploads/.gitkeep
+!uploads/README.md
+!uploads/bms/
+!uploads/bms/.gitkeep
+!uploads/bms/processed/
+!uploads/bms/processed/.gitkeep
+!uploads/bms/failed/
+!uploads/bms/failed/.gitkeep
 data/collisionos.db
 data/*.db
 

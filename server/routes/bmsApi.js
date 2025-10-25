@@ -20,9 +20,17 @@ const bmsValidator = require('../services/bmsValidator');
 const batchProcessor = require('../services/bmsBatchProcessor');
 const errorReporter = require('../services/bmsErrorReporter');
 
-// Ensure upload directory exists
+// Ensure upload directories exist
 const uploadDir = path.join(__dirname, '../../uploads/bms');
-fs.mkdir(uploadDir, { recursive: true }).catch(console.error);
+const processedDir = path.join(uploadDir, 'processed');
+const failedDir = path.join(uploadDir, 'failed');
+
+// Create all required directories
+Promise.all([
+  fs.mkdir(uploadDir, { recursive: true }),
+  fs.mkdir(processedDir, { recursive: true }),
+  fs.mkdir(failedDir, { recursive: true })
+]).catch(console.error);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -292,12 +300,16 @@ router.post(
           });
 
           if (!validateOnly) {
-            await fs.unlink(filePath); // Cleanup temp file
+            // Move failed file to failed directory
+            const failedPath = path.join(failedDir, req.file.filename);
+            await fs.rename(filePath, failedPath);
+
             return res.status(400).json({
               ...result,
               status: 'validation_failed',
               error: 'File validation failed',
               message: validation.summary.message,
+              savedPath: failedPath,
             });
           }
         }
@@ -305,11 +317,15 @@ router.post(
 
       // If validation only, return validation results
       if (validateOnly) {
-        await fs.unlink(filePath); // Cleanup temp file
+        // Move validated file to processed directory
+        const processedPath = path.join(processedDir, req.file.filename);
+        await fs.rename(filePath, processedPath);
+
         return res.status(200).json({
           ...result,
           status: 'validated',
           message: 'File validation completed',
+          savedPath: processedPath,
         });
       }
 
@@ -396,8 +412,19 @@ router.post(
         }
       }
 
-      // Cleanup temp file
-      await fs.unlink(filePath);
+      // Move file to appropriate directory based on result
+      const targetDir = result.status === 'completed' ? processedDir : failedDir;
+      const targetPath = path.join(targetDir, req.file.filename);
+
+      try {
+        await fs.rename(filePath, targetPath);
+        result.savedPath = targetPath;
+        console.log(`[BMS Upload] File saved to: ${targetPath}`);
+      } catch (moveError) {
+        console.error(`[BMS Upload] Failed to move file:`, moveError);
+        // Don't fail the whole request if file move fails
+        result.fileStorageWarning = 'File processed but not saved permanently';
+      }
 
       const statusCode =
         result.status === 'completed'
@@ -410,9 +437,16 @@ router.post(
     } catch (error) {
       console.error('BMS upload error:', error);
 
-      // Cleanup temp file if exists
+      // Move failed file to failed directory if it exists
       if (req.file?.path) {
-        await fs.unlink(req.file.path).catch(() => {});
+        try {
+          const failedPath = path.join(failedDir, req.file.filename);
+          await fs.rename(req.file.path, failedPath);
+          console.log(`[BMS Upload] Failed file saved to: ${failedPath}`);
+        } catch (moveError) {
+          // If move fails, just delete it
+          await fs.unlink(req.file.path).catch(() => {});
+        }
       }
 
       const errorReport = errorReporter.reportError(error, {
