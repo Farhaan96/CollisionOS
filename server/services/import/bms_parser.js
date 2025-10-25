@@ -746,6 +746,9 @@ class EnhancedBMSParser {
             laborHours: parseFloat(this.getTextValue(line.LaborHours || line.laborHours)) || 0,
             laborRate: parseFloat(this.getTextValue(line.LaborRate || line.laborRate)) || 0,
             laborAmount: parseFloat(this.getTextValue(line.LaborAmount || line.laborAmount)) || 0,
+            // Supplier information (if available)
+            supplierRefNum: this.getTextValue(line.SupplierRefNum || line.supplierRefNum),
+            sourceCode: this.getTextValue(line.SourceCode || line.sourceCode),
           });
         }
       });
@@ -805,6 +808,20 @@ class EnhancedBMSParser {
             sourceCode: this.getTextValue(partInfo.PartSourceCode),
             taxable: this.getBooleanValue(partInfo.TaxableInd),
           };
+
+          // Extract supplier information from NonOEM section (if present)
+          if (partInfo.NonOEM) {
+            part.supplierRefNum = this.getTextValue(partInfo.NonOEM.SupplierRefNum);
+            part.nonOEMPartNum = this.getTextValue(partInfo.NonOEM.NonOEMPartNum);
+            part.nonOEMPartPrice = this.getDecimalValue(partInfo.NonOEM.NonOEMPartPrice);
+            part.partSelectedInd = this.getBooleanValue(partInfo.NonOEM.PartSelectedInd);
+
+            // If non-OEM part is selected, use its information
+            if (part.partSelectedInd) {
+              if (!part.partNumber) part.partNumber = part.nonOEMPartNum;
+              if (!part.price || part.price.equals(0)) part.price = part.nonOEMPartPrice;
+            }
+          }
 
           // Also extract labor info if present on the same line (Mitchell combines parts and labor)
           if (line.LaborInfo) {

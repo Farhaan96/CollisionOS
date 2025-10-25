@@ -26,6 +26,7 @@ const notificationRoutes = require('./routes/notifications');
 const attachmentRoutes = require('./routes/attachments');
 const importRoutes = require('./api/import');
 const bmsApiRoutes = require('./routes/bmsApi');
+const bmsImportRoutes = require('./routes/bmsImport');
 const dashboardRoutes = require('./routes/dashboard');
 // IMEX-Level Enhancement Routes
 const productionRoutes = require('./routes/production');
@@ -290,6 +291,7 @@ app.use('/api/v1/notifications', authenticateToken(), notificationRoutes);
 app.use('/api/v1/attachments', authenticateToken(), attachmentRoutes);
 app.use('/api/v1/import', optionalAuth, importRoutes);
 app.use('/api/v1/bms', authenticateToken(), bmsApiRoutes);
+app.use('/api/v1/bms-import', optionalAuth, bmsImportRoutes);
 app.use('/api/v1/dashboard', optionalAuth, dashboardRoutes); // Dashboard endpoints with optional auth
 // IMEX-Level Enhancement API Routes (v1)
 app.use('/api/v1/production', authenticateToken(), productionRoutes);
@@ -346,6 +348,7 @@ app.use('/api/notifications', authenticateToken(), notificationRoutes);
 app.use('/api/attachments', authenticateToken(), attachmentRoutes);
 app.use('/api/import', optionalAuth, importRoutes);
 app.use('/api/bms', optionalAuth, bmsApiRoutes);
+app.use('/api/bms-import', optionalAuth, bmsImportRoutes);
 app.use('/api/dashboard', optionalAuth, dashboardRoutes); // Dashboard endpoints with optional auth
 // IMEX-Level Enhancement API Routes (legacy)
 app.use('/api/production', authenticateToken(), productionRoutes);

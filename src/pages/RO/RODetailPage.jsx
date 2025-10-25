@@ -67,6 +67,7 @@ import POCreationDialog from '../../components/PurchaseOrder/POCreationDialog';
 import SignatureModal from '../../components/Signature/SignatureModal';
 import SignatureDisplay from '../../components/Signature/SignatureDisplay';
 import signatureService from '../../services/signatureService';
+import PartsStatusIndicator from '../../components/Parts/PartsStatusIndicator';
 
 /**
  * RODetailPage (Redesigned) - Beautiful, comprehensive RO detail interface
@@ -393,9 +394,11 @@ const RODetailPage = () => {
           >
             <CardHeader
               avatar={
-                <Avatar sx={{ bgcolor: theme.palette[statusColor].main }}>
-                  <StatusIcon />
-                </Avatar>
+                <PartsStatusIndicator
+                  status={statusId}
+                  size="large"
+                  variant="circle"
+                />
               }
               title={
                 <Box display="flex" alignItems="center" gap={1}>
@@ -441,9 +444,16 @@ const RODetailPage = () => {
                         }}
                         onClick={() => handlePartSelect(part.id)}
                       >
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          {part.description}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1} mb={1}>
+                          <PartsStatusIndicator
+                            status={part.status}
+                            size="small"
+                            variant="circle"
+                          />
+                          <Typography variant="subtitle2" fontWeight={600} flex={1}>
+                            {part.description}
+                          </Typography>
+                        </Box>
                         <Typography variant="body2" color="text.secondary">
                           {part.part_number}
                         </Typography>
