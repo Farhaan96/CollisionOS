@@ -478,6 +478,50 @@ class CustomerService {
       throw error;
     }
   }
+
+  // Get customer communications
+  async getCustomerCommunications(customerId) {
+    try {
+      const response = await this.api.get(`/${customerId}/communications`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching customer communications:', error);
+      throw error;
+    }
+  }
+
+  // Send communication to customer
+  async sendCommunication(customerId, communicationData) {
+    try {
+      const response = await this.api.post(`/${customerId}/communications`, communicationData);
+      return response;
+    } catch (error) {
+      console.error('Error sending communication:', error);
+      throw error;
+    }
+  }
+
+  // Get customer repair orders
+  async getCustomerRepairOrders(customerId) {
+    try {
+      const response = await this.api.get(`/${customerId}/repair-orders`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching customer repair orders:', error);
+      throw error;
+    }
+  }
+
+  // Get customer invoices
+  async getCustomerInvoices(customerId) {
+    try {
+      const response = await this.api.get(`/${customerId}/invoices`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching customer invoices:', error);
+      throw error;
+    }
+  }
 }
 
 // Create and export singleton instance

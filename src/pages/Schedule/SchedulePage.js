@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -20,20 +20,13 @@ import {
   ListItemAvatar,
   ListItemSecondaryAction,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {
   CalendarToday,
-  Schedule,
+  Schedule as ScheduleIcon,
   Person,
   DirectionsCar,
   Add,
@@ -43,6 +36,11 @@ import {
   Warning,
   Info,
 } from '@mui/icons-material';
+import CalendarView from '../../components/Calendar/CalendarView';
+import AppointmentDialog from '../../components/Calendar/AppointmentDialog';
+import { schedulingService } from '../../services/schedulingService';
+import { customerService } from '../../services/customerService';
+import { vehicleService } from '../../services/vehicleService';
 
 const SchedulePage = () => {
   const theme = useTheme();
@@ -50,51 +48,50 @@ const SchedulePage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [appointments, setAppointments] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [calendarView, setCalendarView] = useState('week');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // Mock data for demonstration
+  // Fetch data from backend
   useEffect(() => {
-    setAppointments([
-      {
-        id: 1,
-        customer: 'Sarah Johnson',
-        vehicle: '2020 Toyota Camry',
-        type: 'Drop-off',
-        scheduledTime: '2024-01-15T09:00:00',
-        technician: 'Mike Wilson',
-        status: 'scheduled',
-        notes: 'Front end damage assessment',
-      },
-      {
-        id: 2,
-        customer: 'John Smith',
-        vehicle: '2019 Honda Civic',
-        type: 'Pickup',
-        scheduledTime: '2024-01-15T14:00:00',
-        technician: 'Lisa Chen',
-        status: 'completed',
-        notes: 'Paint job completed',
-      },
-      {
-        id: 3,
-        customer: 'Emily Davis',
-        vehicle: '2021 Ford F-150',
-        type: 'Inspection',
-        scheduledTime: '2024-01-16T10:30:00',
-        technician: 'Mike Wilson',
-        status: 'scheduled',
-        notes: 'Insurance inspection',
-      },
-    ]);
-
-    setTechnicians([
-      { id: 1, name: 'Mike Wilson', specialty: 'Body Work', availability: 'available' },
-      { id: 2, name: 'Lisa Chen', specialty: 'Paint', availability: 'busy' },
-      { id: 3, name: 'Tom Brown', specialty: 'Mechanical', availability: 'available' },
-    ]);
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      // Fetch appointments for the current month
+      const today = new Date();
+      const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+      const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
+      const [appointmentsData, techniciansData, customersData, vehiclesData] = await Promise.all([
+        schedulingService.getAppointments({ startDate, endDate }).catch(() => []),
+        schedulingService.getTechnicians().catch(() => []),
+        customerService.getCustomers().catch(() => []),
+        vehicleService.getVehicles().catch(() => []),
+      ]);
+
+      setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
+      setTechnicians(Array.isArray(techniciansData) ? techniciansData : []);
+      setCustomers(Array.isArray(customersData) ? customersData : []);
+      setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+    } catch (error) {
+      console.error('Error loading schedule data:', error);
+      showSnackbar('Error loading schedule data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show snackbar notification
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -108,6 +105,97 @@ const SchedulePage = () => {
   const handleEditAppointment = (appointment) => {
     setSelectedAppointment(appointment);
     setDialogOpen(true);
+  };
+
+  // Handle appointment selection from calendar
+  const handleSelectAppointment = useCallback((appointment) => {
+    setSelectedAppointment(appointment);
+    setDialogOpen(true);
+  }, []);
+
+  // Handle time slot selection on calendar
+  const handleSelectSlot = useCallback((slotInfo) => {
+    setSelectedAppointment({
+      scheduledTime: slotInfo.start,
+      endTime: slotInfo.end,
+    });
+    setDialogOpen(true);
+  }, []);
+
+  // Handle drag-and-drop rescheduling
+  const handleEventDrop = useCallback(async ({ appointmentId, newStartDate, newEndDate, appointment }) => {
+    try {
+      await schedulingService.rescheduleAppointment(appointmentId, {
+        newStartDate: newStartDate.toISOString(),
+        newEndDate: newEndDate.toISOString(),
+      });
+
+      // Update local state
+      setAppointments(prev => prev.map(apt =>
+        apt.id === appointmentId
+          ? { ...apt, scheduledTime: newStartDate, endTime: newEndDate }
+          : apt
+      ));
+
+      showSnackbar('Appointment rescheduled successfully');
+    } catch (error) {
+      console.error('Error rescheduling appointment:', error);
+      showSnackbar('Error rescheduling appointment', 'error');
+      // Reload data to revert
+      loadData();
+    }
+  }, []);
+
+  // Save appointment (create or update)
+  const handleSaveAppointment = async (appointmentData, appointmentId) => {
+    setLoading(true);
+    try {
+      if (appointmentId) {
+        // Update existing appointment
+        const updated = await schedulingService.updateAppointment(appointmentId, appointmentData);
+        setAppointments(prev => prev.map(apt => apt.id === appointmentId ? updated : apt));
+        showSnackbar('Appointment updated successfully');
+      } else {
+        // Create new appointment
+        const created = await schedulingService.bookAppointment(appointmentData);
+        setAppointments(prev => [...prev, created]);
+        showSnackbar('Appointment created successfully');
+      }
+      setDialogOpen(false);
+      setSelectedAppointment(null);
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      showSnackbar(error.response?.data?.error || 'Error saving appointment', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete appointment
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to delete this appointment?')) {
+      return;
+    }
+
+    try {
+      await schedulingService.deleteAppointment(appointmentId);
+      setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
+      showSnackbar('Appointment deleted successfully');
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      showSnackbar('Error deleting appointment', 'error');
+    }
+  };
+
+  // Check for scheduling conflicts
+  const handleCheckConflicts = async (appointmentData) => {
+    try {
+      const result = await schedulingService.checkConflicts(appointmentData);
+      return result;
+    } catch (error) {
+      console.error('Error checking conflicts:', error);
+      return { conflicts: [], capacityWarning: null };
+    }
   };
 
   const getStatusColor = (status) => {
@@ -257,6 +345,7 @@ const SchedulePage = () => {
             variant={isMobile ? 'scrollable' : 'standard'}
             scrollButtons="auto"
           >
+            <Tab label="Calendar View" />
             <Tab label="Today's Schedule" />
             <Tab label="Technician Availability" />
             <Tab label="Upcoming Appointments" />
@@ -265,6 +354,18 @@ const SchedulePage = () => {
 
         {/* Tab Content */}
         {selectedTab === 0 && (
+          <CalendarView
+            appointments={appointments}
+            onSelectAppointment={handleSelectAppointment}
+            onSelectSlot={handleSelectSlot}
+            onEventDrop={handleEventDrop}
+            loading={loading}
+            view={calendarView}
+            onViewChange={setCalendarView}
+          />
+        )}
+
+        {selectedTab === 1 && (
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -321,7 +422,7 @@ const SchedulePage = () => {
           </Card>
         )}
 
-        {selectedTab === 1 && (
+        {selectedTab === 2 && (
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -359,7 +460,7 @@ const SchedulePage = () => {
           </Card>
         )}
 
-        {selectedTab === 2 && (
+        {selectedTab === 3 && (
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -412,77 +513,25 @@ const SchedulePage = () => {
         )}
 
         {/* Appointment Dialog */}
-        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {selectedAppointment ? 'Edit Appointment' : 'New Appointment'}
-          </DialogTitle>
-          <DialogContent>
-            <Box sx={{ pt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Customer"
-                    defaultValue={selectedAppointment?.customer || ''}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Vehicle"
-                    defaultValue={selectedAppointment?.vehicle || ''}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Type</InputLabel>
-                    <Select defaultValue={selectedAppointment?.type || 'Drop-off'}>
-                      <MenuItem value="Drop-off">Drop-off</MenuItem>
-                      <MenuItem value="Pickup">Pickup</MenuItem>
-                      <MenuItem value="Inspection">Inspection</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Scheduled Time"
-                    type="datetime-local"
-                    defaultValue={selectedAppointment?.scheduledTime?.slice(0, 16) || ''}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Technician</InputLabel>
-                    <Select defaultValue={selectedAppointment?.technician || ''}>
-                      {technicians.map((tech) => (
-                        <MenuItem key={tech.id} value={tech.name}>
-                          {tech.name} - {tech.specialty}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Notes"
-                    multiline
-                    rows={3}
-                    defaultValue={selectedAppointment?.notes || ''}
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant="contained">
-              {selectedAppointment ? 'Update' : 'Create'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <AppointmentDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onSave={handleSaveAppointment}
+          appointment={selectedAppointment}
+          technicians={technicians}
+          customers={customers}
+          vehicles={vehicles}
+          onCheckConflicts={handleCheckConflicts}
+          loading={loading}
+        />
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          message={snackbar.message}
+        />
       </Container>
     </Box>
   );
