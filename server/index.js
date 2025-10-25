@@ -7,13 +7,6 @@ const fs = require('fs');
 // Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 
-// Initialize Supabase configuration
-const {
-  testSupabaseConnection,
-  isSupabaseEnabled,
-  closeSupabaseConnections,
-} = require('./config/supabase');
-
 const { sequelize, Shop, User } = require('./database/models');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -21,7 +14,6 @@ const customerRoutes = require('./routes/customers');
 const vehicleRoutes = require('./routes/vehicles');
 const technicianRoutes = require('./routes/technicians');
 const jobRoutes = require('./routes/jobs');
-const jobsEnhancedRoutes = require('./routes/jobsEnhanced'); // New enhanced jobs route
 const estimateRoutes = require('./routes/estimates');
 const partsRoutes = require('./routes/parts');
 const inventoryRoutes = require('./routes/inventory');
@@ -100,27 +92,9 @@ console.log('🔍 Environment Variables Debug:');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
 console.log('NODE_ENV:', process.env.NODE_ENV || 'undefined');
 console.log('SERVER_PORT:', process.env.SERVER_PORT || 'undefined');
-console.log('SUPABASE_ENABLED:', isSupabaseEnabled ? 'YES' : 'NO');
-if (isSupabaseEnabled) {
-  console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
-  console.log(
-    'SUPABASE_ANON_KEY:',
-    process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'
-  );
-}
 
 // Create HTTP server for Socket.io
 const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
-  cors: {
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? ['https://collisionos.com', 'https://app.collisionos.com']
-        : ['http://localhost:3000'],
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
 
 // Security middleware
 app.use(httpsOnly);
@@ -206,10 +180,6 @@ app.get('/health', async (req, res) => {
         backend: realtimeStatus.backend,
         subscriptions: realtimeStatus.activeSubscriptions,
       },
-      supabase: {
-        enabled: isSupabaseEnabled,
-        configured: process.env.SUPABASE_URL ? true : false,
-      },
     });
   } catch (error) {
     res.status(500).json({
@@ -261,10 +231,6 @@ app.get('/api/health', async (req, res) => {
         backend: realtimeStatus.backend,
         subscriptions: realtimeStatus.activeSubscriptions,
       },
-      supabase: {
-        enabled: isSupabaseEnabled,
-        configured: process.env.SUPABASE_URL ? true : false,
-      },
     });
   } catch (error) {
     res.status(500).json({
@@ -281,11 +247,7 @@ app.use('/api/v1/users', authenticateToken(), userRoutes);
 app.use('/api/v1/customers', authenticateToken(), customerRoutes);
 app.use('/api/v1/vehicles', authenticateToken(), vehicleRoutes);
 app.use('/api/v1/technicians', authenticateToken(), technicianRoutes);
-app.use(
-  '/api/v1/jobs',
-  authenticateToken(),
-  isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes
-);
+app.use('/api/v1/jobs', authenticateToken(), jobRoutes);
 app.use('/api/v1/estimates', authenticateToken(), estimateRoutes);
 app.use('/api/v1/parts', authenticateToken(), partsRoutes);
 app.use('/api/v1/inventory', authenticateToken(), inventoryRoutes);
@@ -339,7 +301,7 @@ app.use('/api/technicians', authenticateToken(), technicianRoutes);
 app.use(
   '/api/jobs',
   devBypass, // Bypass auth in development for easier testing
-  isSupabaseEnabled ? jobsEnhancedRoutes : jobRoutes
+  jobRoutes
 );
 app.use('/api/estimates', authenticateToken(), estimateRoutes);
 app.use('/api/parts', authenticateToken(), partsRoutes);
@@ -391,7 +353,7 @@ const socketAuth = require('./middleware/socketAuth');
 const { handleJobUpdates } = require('./services/socketService');
 
 // Initialize real-time service with Socket.io server
-realtimeService.setSocketServer(io);
+const io = realtimeService.initialize(server);
 
 io.use(socketAuth);
 
@@ -466,60 +428,28 @@ async function startServer() {
   try {
     console.log('🚀 Starting CollisionOS Server...');
 
-    // Test Supabase connection if enabled
-    if (isSupabaseEnabled) {
-      console.log('🔄 Testing Supabase connection...');
-      const supabaseConnected = await testSupabaseConnection();
-      if (supabaseConnected) {
-        console.log('✅ Supabase connection established successfully');
-
-        // Set up real-time subscriptions for key tables
-        try {
-          await realtimeService.subscribe('jobs_subscription', 'jobs', {
-            callback: payload => {
-              console.log('📡 Job real-time update:', payload.eventType);
-            },
-          });
-          console.log('📡 Real-time subscriptions initialized');
-        } catch (realtimeError) {
-          console.warn(
-            '⚠️  Real-time subscriptions failed:',
-            realtimeError.message
-          );
-        }
-      } else {
-        console.warn(
-          '⚠️  Supabase connection failed, falling back to legacy database'
-        );
+    // Ensure SQLite data directory exists in development
+    if (
+      process.env.DB_HOST === 'sqlite' ||
+      process.env.NODE_ENV === 'development'
+    ) {
+      const sqlitePath =
+        process.env.DATABASE_PATH || path.join(__dirname, '../data/collisionos.db');
+      const dataDir = path.dirname(sqlitePath);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
       }
     }
 
-    // Legacy database initialization (always maintain as fallback)
-    if (!isSupabaseEnabled || process.env.MIGRATION_MODE === 'hybrid') {
-      // Ensure SQLite data directory exists in development
-      if (
-        process.env.DB_HOST === 'sqlite' ||
-        process.env.NODE_ENV === 'development'
-      ) {
-        const sqlitePath =
-          process.env.SQLITE_PATH ||
-          path.join(__dirname, '../data/collisionos.db');
-        const dataDir = path.dirname(sqlitePath);
-        if (!fs.existsSync(dataDir)) {
-          fs.mkdirSync(dataDir, { recursive: true });
-        }
-      }
+    // Test database connection
+    await sequelize.authenticate();
+    console.log('✅ Database connection established successfully');
 
-      // Test legacy database connection
-      await sequelize.authenticate();
-      console.log('✅ Legacy database connection established successfully');
-
-      // Sync database models (in development)
-      if (process.env.NODE_ENV === 'development') {
-        await Shop.sync({ force: false });
-        await User.sync({ force: false });
-        console.log('📊 Legacy database models synchronized');
-      }
+    // Sync database models (in development)
+    if (process.env.NODE_ENV === 'development') {
+      await Shop.sync({ force: false });
+      await User.sync({ force: false });
+      console.log('📊 Database models synchronized');
     }
 
     // Start server
@@ -530,12 +460,8 @@ async function startServer() {
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
       console.log(`📚 API docs: http://localhost:${PORT}/api-docs`);
-      console.log(
-        `🔧 Database: ${isSupabaseEnabled ? 'Supabase' : 'Legacy SQLite/PostgreSQL'}`
-      );
-      console.log(
-        `📡 Real-time: ${isSupabaseEnabled ? 'Supabase Realtime' : 'Socket.io'}`
-      );
+      console.log('🔧 Database: SQLite (local)');
+      console.log('📡 Real-time: Socket.io');
       console.log('=====================================\n');
     });
   } catch (error) {
@@ -550,21 +476,16 @@ const gracefulShutdown = async signal => {
 
   try {
     // Clean up real-time subscriptions
-    await realtimeService.cleanup();
-
-    // Close Supabase connections
-    if (isSupabaseEnabled) {
-      closeSupabaseConnections();
-    }
+    await realtimeService.close();
 
     // Close server
     server.close(async () => {
       console.log('✅ HTTP server closed');
 
-      // Close legacy database connection
+      // Close database connection
       if (sequelize) {
         await sequelize.close();
-        console.log('✅ Database connections closed');
+        console.log('✅ Database connection closed');
       }
 
       console.log('✅ Graceful shutdown completed');

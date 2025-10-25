@@ -35,23 +35,6 @@ const authLimiter = rateLimit({
 });
 
 /**
- * Sync API rate limiter (moderate protection)
- * Allows 30 requests per 15 minutes (2 per minute)
- */
-const syncLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  skip: (req) => {
-    // Skip for automated sync operations
-    return req.headers['x-automated-sync'] === 'true';
-  },
-  message: {
-    success: false,
-    error: 'Sync rate limit exceeded. Please wait before trying again.',
-  },
-});
-
-/**
  * File upload rate limiter
  * Allows 20 uploads per hour
  */
@@ -80,7 +63,6 @@ const bmsUploadLimiter = rateLimit({
 module.exports = {
   generalLimiter,
   authLimiter,
-  syncLimiter,
   uploadLimiter,
   bmsUploadLimiter,
 };
