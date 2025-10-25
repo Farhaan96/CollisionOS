@@ -64,7 +64,7 @@ const signaturesRoutes = require('./routes/signatures');
 const {
   authenticateToken,
   optionalAuth,
-} = require('./middleware/authEnhanced'); // Use enhanced auth with proper token handling
+} = require('./middleware/auth'); // Use simplified session-based auth
 
 // Create a development bypass middleware for certain routes
 const devBypass = (req, res, next) => {
@@ -151,6 +151,11 @@ if (process.env.NODE_ENV === 'development') {
 } else {
   app.use(morgan('combined'));
 }
+
+// Session middleware (for persistent authentication)
+const session = require('express-session');
+const { sessionConfig } = require('./config/session');
+app.use(session(sessionConfig));
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

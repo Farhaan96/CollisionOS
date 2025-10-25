@@ -17,20 +17,15 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important: Send session cookies with requests
 });
 
-// Request interceptor - Add auth token
+// Request interceptor - Add metadata and context
 api.interceptors.request.use(
   (config) => {
-    // Get auth token from localStorage or auth context
-    const token = localStorage.getItem('auth_token') ||
-                  sessionStorage.getItem('auth_token');
+    // Session cookie is automatically sent by browser (withCredentials: true)
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Add shop context if available
+    // Add shop context if available (optional, may not be needed with sessions)
     const shopId = localStorage.getItem('shop_id');
     if (shopId) {
       config.headers['X-Shop-ID'] = shopId;
@@ -74,9 +69,8 @@ api.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // Unauthorized - clear auth and redirect to login
-          localStorage.removeItem('auth_token');
-          sessionStorage.removeItem('auth_token');
+          // Unauthorized - session expired, redirect to login
+          // Session cookie is automatically handled by browser
           window.location.href = '/login';
           break;
 

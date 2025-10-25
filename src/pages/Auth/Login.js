@@ -64,57 +64,27 @@ const Login = () => {
     setError('');
 
     try {
-      // Simple authentication logic - in real app, this would call your API
-      const validCredentials = [
-        { user: 'admin', pass: 'admin123', role: 'owner', firstName: 'Admin' },
-        {
-          user: 'manager',
-          pass: 'manager123',
-          role: 'manager',
-          firstName: 'Manager',
-        },
-        {
-          user: 'estimator',
-          pass: 'estimator123',
-          role: 'estimator',
-          firstName: 'Estimator',
-        },
-      ];
+      // Call the login function with username and password
+      // Session is automatically created on successful login
+      await login(username, password);
 
-      const credential = validCredentials.find(
-        cred => cred.user === username && cred.pass === password
-      );
-
-      if (credential) {
-        // Save user if remember me is checked
-        if (rememberMe) {
-          localStorage.setItem(
-            'collisionos_remembered_user',
-            JSON.stringify({
-              username: credential.user,
-              firstName: credential.firstName,
-              role: credential.role,
-            })
-          );
-        } else {
-          localStorage.removeItem('collisionos_remembered_user');
-        }
-
-        await login(
-          {
-            username: credential.user,
-            role: credential.role,
-            firstName: credential.firstName,
-          },
-          'dev-token'
+      // Save username if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem(
+          'collisionos_remembered_user',
+          JSON.stringify({ username })
         );
-
-        navigate('/dashboard');
       } else {
-        throw new Error('Invalid credentials');
+        localStorage.removeItem('collisionos_remembered_user');
       }
+
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Login failed. Please check your credentials.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
