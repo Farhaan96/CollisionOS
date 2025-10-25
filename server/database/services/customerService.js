@@ -1,11 +1,13 @@
-const { supabase, supabaseAdmin } = require('../../config/supabase');
+const { Customer, Vehicle, RepairOrderManagement } = require('../models');
+const { queryHelpers } = require('../../utils/queryHelpers');
+const { Op } = require('sequelize');
 
 /**
- * Customer Service - Supabase integration for customer management
+ * Customer Service - Sequelize integration for customer management
  */
 class CustomerService {
   constructor() {
-    this.table = 'customers';
+    // No table name needed - using Sequelize models
   }
 
   /**
@@ -13,36 +15,29 @@ class CustomerService {
    */
   async findCustomers(criteria = {}, shopId) {
     try {
-      const client = supabase || supabaseAdmin;
-
-      // Enforce tenant scoping
-      const effectiveShopId = this._requireShopId(shopId);
-      let query = client.from(this.table).select('*').eq('shop_id', effectiveShopId);
+      // Build where clause
+      const where = {
+        ...queryHelpers.forShop(shopId),
+      };
 
       // Apply filters based on criteria
       if (criteria.email) {
-        query = query.eq('email', criteria.email);
+        where.email = criteria.email;
       }
       if (criteria.phone) {
-        query = query.eq('phone', criteria.phone);
+        where.phone = criteria.phone;
       }
       if (criteria.firstName && criteria.lastName) {
-        query = query
-          .eq('first_name', criteria.firstName)
-          .eq('last_name', criteria.lastName);
+        where.firstName = criteria.firstName;
+        where.lastName = criteria.lastName;
       }
       if (criteria.id) {
-        query = query.eq('id', criteria.id);
+        where.id = criteria.id;
       }
 
-      const { data, error } = await query;
+      const customers = await Customer.findAll({ where });
 
-      if (error) {
-        console.error('Error finding customers:', error);
-        throw error;
-      }
-
-      return data || [];
+      return customers.map(c => c.toJSON());
     } catch (error) {
       console.error('CustomerService.findCustomers error:', error);
       throw error;
@@ -58,48 +53,37 @@ class CustomerService {
       const customerNumber =
         customerData.customerNumber || `CUST-${Date.now()}`;
 
-      // Start with minimal required fields only
+      // Build customer record with camelCase fields
       const customerRecord = {
-        customer_number: customerNumber,
-        first_name:
+        customerNumber: customerNumber,
+        firstName:
           customerData.firstName || customerData.name?.split(' ')[0] || '',
-        last_name:
+        lastName:
           customerData.lastName ||
           customerData.name?.split(' ').slice(1).join(' ') ||
           '',
-        shop_id: this._requireShopId(customerData.shopId || shopId),
-        customer_type: customerData.customerType || 'individual',
-        customer_status: customerData.status || 'active',
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        shopId: shopId,
+        customerType: customerData.customerType || 'individual',
+        customerStatus: customerData.status || 'active',
+        isActive: true,
       };
 
-      // Add optional fields only if provided and we know they exist
+      // Add optional fields only if provided
       if (customerData.email) customerRecord.email = customerData.email;
       if (customerData.phone) customerRecord.phone = customerData.phone;
       if (customerData.address) customerRecord.address = customerData.address;
       if (customerData.city) customerRecord.city = customerData.city;
       if (customerData.state) customerRecord.state = customerData.state;
-      // Note: removed zip field as it doesn't exist in current schema
-
-      // Use non-admin when RLS is configured; fallback to admin only if needed
-      const client = supabase || supabaseAdmin;
-      const { data, error } = await client
-        .from(this.table)
-        .insert([customerRecord])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating customer:', error);
-        throw error;
+      if (customerData.zip || customerData.zipCode) {
+        customerRecord.zipCode = customerData.zip || customerData.zipCode;
       }
 
-      console.log('Customer created successfully:', data.id);
+      const customer = await Customer.create(customerRecord);
+
+      console.log('Customer created successfully:', customer.id);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(customer.toJSON());
     } catch (error) {
       console.error('CustomerService.createCustomer error:', error);
       throw error;
@@ -111,19 +95,15 @@ class CustomerService {
    */
   async updateCustomer(customerId, updateData, shopId) {
     try {
-      const client = supabase || supabaseAdmin;
       const customerRecord = {
-        first_name: updateData.firstName,
-        last_name: updateData.lastName,
+        firstName: updateData.firstName,
+        lastName: updateData.lastName,
         email: updateData.email,
         phone: updateData.phone,
         address: updateData.address,
         city: updateData.city,
         state: updateData.state,
-        // Remove non-existent columns for now
-        // postal_code: updateData.zip || updateData.zipCode,
-        // insurance_company: updateData.insurance,
-        updated_at: new Date().toISOString(),
+        zipCode: updateData.zip || updateData.zipCode,
       };
 
       // Remove undefined values
@@ -133,22 +113,20 @@ class CustomerService {
         }
       });
 
-      const { data, error } = await client
-        .from(this.table)
-        .update(customerRecord)
-        .eq('id', customerId)
-        .select()
-        .single();
+      const [affectedRows] = await Customer.update(customerRecord, {
+        where: { id: customerId },
+      });
 
-      if (error) {
-        console.error('Error updating customer:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Customer not found or no changes made');
       }
+
+      const customer = await Customer.findByPk(customerId);
 
       console.log('Customer updated successfully:', customerId);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(customer.toJSON());
     } catch (error) {
       console.error('CustomerService.updateCustomer error:', error);
       throw error;
@@ -160,23 +138,13 @@ class CustomerService {
    */
   async getCustomerById(customerId) {
     try {
-      // Use admin client to bypass RLS for development
-      const client = supabaseAdmin || supabase;
-      const { data, error } = await client
-        .from(this.table)
-        .select('*')
-        .eq('id', customerId)
-        .single();
+      const customer = await Customer.findByPk(customerId);
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null; // Not found
-        }
-        console.error('Error getting customer:', error);
-        throw error;
+      if (!customer) {
+        return null; // Not found
       }
 
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(customer.toJSON());
     } catch (error) {
       console.error('CustomerService.getCustomerById error:', error);
       throw error;
@@ -188,38 +156,30 @@ class CustomerService {
    */
   async getAllCustomers(options = {}, shopId) {
     try {
-      const client = supabase || supabaseAdmin;
-      const effectiveShopId = this._requireShopId(shopId);
-      let query = client.from(this.table).select('*').eq('shop_id', effectiveShopId);
+      const where = {
+        ...queryHelpers.forShop(shopId),
+      };
+
+      const queryOptions = { where };
 
       // Apply sorting
       if (options.sortBy) {
-        query = query.order(options.sortBy, {
-          ascending: options.ascending !== false,
-        });
+        queryOptions.order = [[options.sortBy, options.ascending !== false ? 'ASC' : 'DESC']];
       } else {
-        query = query.order('created_at', { ascending: false });
+        queryOptions.order = [['createdAt', 'DESC']];
       }
 
       // Apply pagination
       if (options.limit) {
-        query = query.limit(options.limit);
+        queryOptions.limit = options.limit;
       }
       if (options.offset) {
-        query = query.range(
-          options.offset,
-          options.offset + (options.limit || 100) - 1
-        );
+        queryOptions.offset = options.offset;
       }
 
-      const { data, error } = await query;
+      const customers = await Customer.findAll(queryOptions);
 
-      if (error) {
-        console.error('Error getting customers:', error);
-        throw error;
-      }
-
-      return (data || []).map(customer => this.transformToFrontend(customer));
+      return customers.map(customer => this.transformToFrontend(customer.toJSON()));
     } catch (error) {
       console.error('CustomerService.getAllCustomers error:', error);
       throw error;
@@ -231,23 +191,20 @@ class CustomerService {
    */
   async searchCustomers(searchTerm, shopId) {
     try {
-      const client = supabase || supabaseAdmin;
-      const effectiveShopId = this._requireShopId(shopId);
-      const { data, error } = await client
-        .from(this.table)
-        .select('*')
-        .eq('shop_id', effectiveShopId)
-        .or(
-          `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-        )
-        .order('created_at', { ascending: false });
+      const where = {
+        ...queryHelpers.forShop(shopId),
+        ...queryHelpers.search(
+          ['firstName', 'lastName', 'email', 'phone'],
+          searchTerm
+        ),
+      };
 
-      if (error) {
-        console.error('Error searching customers:', error);
-        throw error;
-      }
+      const customers = await Customer.findAll({
+        where,
+        order: [['createdAt', 'DESC']],
+      });
 
-      return (data || []).map(customer => this.transformToFrontend(customer));
+      return customers.map(customer => this.transformToFrontend(customer.toJSON()));
     } catch (error) {
       console.error('CustomerService.searchCustomers error:', error);
       throw error;
@@ -259,17 +216,15 @@ class CustomerService {
    */
   async deleteCustomer(customerId, shopId) {
     try {
-      const client = supabase || supabaseAdmin;
-      const effectiveShopId = this._requireShopId(shopId);
-      const { error } = await client
-        .from(this.table)
-        .delete()
-        .eq('id', customerId)
-        .eq('shop_id', effectiveShopId);
+      const affectedRows = await Customer.destroy({
+        where: {
+          id: customerId,
+          shopId: shopId,
+        },
+      });
 
-      if (error) {
-        console.error('Error deleting customer:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Customer not found');
       }
 
       console.log('Customer deleted successfully:', customerId);
@@ -288,36 +243,23 @@ class CustomerService {
 
     return {
       id: customerRecord.id,
-      firstName: customerRecord.first_name || '',
-      lastName: customerRecord.last_name || '',
-      name: `${customerRecord.first_name || ''} ${customerRecord.last_name || ''}`.trim(),
+      firstName: customerRecord.firstName || '',
+      lastName: customerRecord.lastName || '',
+      name: `${customerRecord.firstName || ''} ${customerRecord.lastName || ''}`.trim(),
       email: customerRecord.email || '',
       phone: customerRecord.phone || '',
       address: customerRecord.address || '',
       city: customerRecord.city || '',
       state: customerRecord.state || '',
-      zip: customerRecord.postal_code || customerRecord.zip || '',
-      zipCode: customerRecord.postal_code || customerRecord.zip || '',
+      zip: customerRecord.zipCode || '',
+      zipCode: customerRecord.zipCode || '',
       insurance:
-        customerRecord.insurance_company || customerRecord.insurance || '',
-      customerType: customerRecord.customer_type || 'individual',
-      status: customerRecord.status || 'active',
-      createdAt: customerRecord.created_at,
-      updatedAt: customerRecord.updated_at,
+        customerRecord.primaryInsuranceCompany || '',
+      customerType: customerRecord.customerType || 'individual',
+      status: customerRecord.customerStatus || 'active',
+      createdAt: customerRecord.createdAt,
+      updatedAt: customerRecord.updatedAt,
     };
-  }
-
-  /**
-   * Internal: ensure a valid shopId is present
-   */
-  _requireShopId(shopId) {
-    if (shopId) return shopId;
-    if (process.env.NODE_ENV === 'development') {
-      const fallback = process.env.DEV_SHOP_ID || '00000000-0000-4000-8000-000000000001';
-      console.warn('Shop ID missing; using DEV fallback shop ID:', fallback);
-      return fallback;
-    }
-    throw new Error('Missing shopId for tenant-scoped customer operation');
   }
 }
 

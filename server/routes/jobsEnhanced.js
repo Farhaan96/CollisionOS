@@ -3,7 +3,9 @@ const {
   authenticateToken,
   requireManager,
 } = require('../middleware/authSupabase');
-const { databaseService } = require('../services/databaseService');
+const { Job, Customer, Vehicle, User, JobStageHistory } = require('../database/models');
+const { queryHelpers } = require('../utils/queryHelpers');
+const { Op } = require('sequelize');
 const { realtimeService } = require('../services/realtimeService');
 const {
   asyncHandler,
@@ -78,19 +80,13 @@ router.get(
       limit = 20,
       offset = 0,
       search,
-      sortBy = 'created_at',
+      sortBy = 'createdAt',
       sortOrder = 'desc',
     } = req.query;
 
-    const options = {
-      limit: Math.min(parseInt(limit), 100), // Cap at 100
-      offset: parseInt(offset),
-      order: [[sortBy, sortOrder]],
-    };
-
     // Build where conditions
     const where = {
-      shop_id: req.user.shopId,
+      ...queryHelpers.forShop(req.user.shopId),
     };
 
     if (status) {
@@ -98,92 +94,69 @@ router.get(
     }
 
     if (search) {
-      // In Supabase, this will be handled differently than Sequelize
-      if (databaseService.useSupabase) {
-        // Use Supabase text search
-        options.select = '*';
-        // Note: This would need to be implemented with proper text search in Supabase
-      } else {
-        // Legacy Sequelize search
-        const { Op } = require('sequelize');
-        where[Op.or] = [
-          { jobNumber: { [Op.iLike]: `%${search}%` } },
-          { customerName: { [Op.iLike]: `%${search}%` } },
-        ];
-      }
+      where[Op.or] = [
+        { jobNumber: { [Op.like]: `%${search}%` } },
+        { customerName: { [Op.like]: `%${search}%` } },
+      ];
     }
 
-    options.where = where;
+    const options = {
+      where,
+      limit: Math.min(parseInt(limit), 100), // Cap at 100
+      offset: parseInt(offset),
+      order: [[sortBy, sortOrder.toUpperCase()]],
+      include: [
+        {
+          model: User,
+          as: 'assignedTechnician',
+          attributes: ['id', 'firstName', 'lastName', 'username'],
+          required: false,
+        },
+      ],
+    };
 
     try {
-      const jobs = await databaseService.query('jobs', options);
+      const { count: total, rows: jobs } = await Job.findAndCountAll(options);
 
       // Transform jobs to include all fields needed by Kanban board
       const transformedJobs = jobs.map(job => ({
         id: job.id,
-        jobNumber: job.job_number || job.jobNumber,
+        jobNumber: job.jobNumber,
         status: job.status,
         priority: job.priority || 'normal',
         customer: {
-          name: job.customer_name || job.customerName,
-          phone: job.customer_phone || job.customerPhone,
-          email: job.customer_email || job.customerEmail,
+          name: job.customerName,
+          phone: job.customerPhone,
+          email: job.customerEmail,
         },
         vehicle: {
-          year: job.vehicle_year || job.vehicleYear,
-          make: job.vehicle_make || job.vehicleMake,
-          model: job.vehicle_model || job.vehicleModel,
-          vin: job.vehicle_vin || job.vehicleVin,
+          year: job.vehicleYear,
+          make: job.vehicleMake,
+          model: job.vehicleModel,
+          vin: job.vehicleVin,
         },
-        assignedTechnician: job.assigned_technician
+        assignedTechnician: job.assignedTechnician
           ? {
-              name:
-                job.assigned_technician.name || job.assignedTechnician?.name,
-              avatar:
-                job.assigned_technician.avatar ||
-                job.assignedTechnician?.avatar,
+              name: `${job.assignedTechnician.firstName} ${job.assignedTechnician.lastName}`.trim() || job.assignedTechnician.username,
+              avatar: job.assignedTechnician.avatar,
             }
           : null,
-        daysInShop:
-          job.days_in_shop ||
-          Math.floor(
-            (new Date() - new Date(job.created_at || job.createdAt)) /
-              (1000 * 60 * 60 * 24)
-          ),
-        daysInCurrentStatus:
-          job.days_in_current_status ||
-          Math.floor(
-            (new Date() -
-              new Date(
-                job.status_changed_at || job.updated_at || job.updatedAt
-              )) /
-              (1000 * 60 * 60 * 24)
-          ),
-        progressPercentage:
-          job.progress_percentage || getProgressFromStatus(job.status),
-        targetDate:
-          job.target_date || job.estimated_completion || job.targetDate,
-        partsStatus: job.parts_status || job.partsStatus || 'pending',
+        daysInShop: job.daysInShop || Math.floor(
+          (new Date() - new Date(job.createdAt)) / (1000 * 60 * 60 * 24)
+        ),
+        daysInCurrentStatus: job.daysInCurrentStatus || Math.floor(
+          (new Date() - new Date(job.statusChangedAt || job.updatedAt)) / (1000 * 60 * 60 * 24)
+        ),
+        progressPercentage: job.progressPercentage || getProgressFromStatus(job.status),
+        targetDate: job.targetDate || job.estimatedCompletion,
+        partsStatus: job.partsStatus || 'pending',
         insurance: {
-          company: job.insurance_company || job.insurance?.company,
-          claimNumber: job.insurance_claim || job.insurance?.claimNumber,
+          company: job.insuranceCompany,
+          claimNumber: job.insuranceClaim,
         },
-        createdAt: job.created_at || job.createdAt,
-        updatedAt: job.updated_at || job.updatedAt,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
       }));
-
-      // Get total count for pagination
-      let total = 0;
-      if (databaseService.useSupabase) {
-        const countResult = await databaseService.query('jobs', {
-          select: 'id',
-          where: { shop_id: req.user.shopId },
-        });
-        total = countResult.length;
-      } else {
-        const { Job } = require('../database/models');
-        total = await Job.count({ where: { shopId: req.user.shopId } });
-      }
 
       paginatedResponse(res, transformedJobs, {
         limit: options.limit,
@@ -270,25 +243,23 @@ router.post(
     const jobNumber = await generateJobNumber(req.user.shopId);
 
     const jobData = {
-      job_number: jobNumber,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      customer_phone: customerPhone,
-      vehicle_make: vehicleInfo.make,
-      vehicle_model: vehicleInfo.model,
-      vehicle_year: vehicleInfo.year,
-      vehicle_vin: vehicleInfo.vin,
+      jobNumber,
+      customerName,
+      customerEmail,
+      customerPhone,
+      vehicleMake: vehicleInfo.make,
+      vehicleModel: vehicleInfo.model,
+      vehicleYear: vehicleInfo.year,
+      vehicleVin: vehicleInfo.vin,
       description,
       priority,
       status: 'estimate',
-      shop_id: req.user.shopId,
-      created_by: req.user.id,
-      created_at: new Date(),
-      updated_at: new Date(),
+      shopId: req.user.shopId,
+      createdBy: req.user.id,
     };
 
     try {
-      const newJob = await databaseService.insert('jobs', jobData);
+      const newJob = await Job.create(jobData);
 
       // Broadcast real-time update
       realtimeService.broadcastJobUpdate(newJob, 'created');
@@ -329,18 +300,25 @@ router.get(
     const { id } = req.params;
 
     try {
-      const jobs = await databaseService.query('jobs', {
+      const job = await Job.findOne({
         where: {
           id,
-          shop_id: req.user.shopId,
+          ...queryHelpers.forShop(req.user.shopId),
         },
+        include: [
+          {
+            model: User,
+            as: 'assignedTechnician',
+            attributes: ['id', 'firstName', 'lastName', 'username'],
+            required: false,
+          },
+        ],
       });
 
-      if (!jobs || jobs.length === 0) {
+      if (!job) {
         throw errors.notFound('Job not found');
       }
 
-      const job = jobs[0];
       successResponse(res, job, 'Job retrieved successfully');
     } catch (error) {
       console.error('Error fetching job:', error);
@@ -397,18 +375,22 @@ router.put(
     const updateData = { ...req.body };
 
     // Add metadata
-    updateData.updated_at = new Date();
-    updateData.updated_by = req.user.id;
+    updateData.updatedBy = req.user.id;
 
     try {
-      const updatedJob = await databaseService.update('jobs', updateData, {
-        id,
-        shop_id: req.user.shopId,
+      const [affectedCount, updatedJobs] = await Job.update(updateData, {
+        where: {
+          id,
+          ...queryHelpers.forShop(req.user.shopId),
+        },
+        returning: true,
       });
 
-      if (!updatedJob) {
+      if (affectedCount === 0) {
         throw errors.notFound('Job not found');
       }
+
+      const updatedJob = updatedJobs[0];
 
       // Broadcast real-time update
       realtimeService.broadcastJobUpdate(updatedJob, 'updated');
@@ -496,47 +478,47 @@ router.post(
 
     try {
       // Get current job
-      const jobs = await databaseService.query('jobs', {
-        where: { id, shop_id: req.user.shopId },
+      const currentJob = await Job.findOne({
+        where: {
+          id,
+          ...queryHelpers.forShop(req.user.shopId),
+        },
       });
 
-      if (!jobs || jobs.length === 0) {
+      if (!currentJob) {
         throw errors.notFound('Job not found');
       }
 
-      const currentJob = jobs[0];
       const previousStatus = currentJob.status;
 
       // Update job status
       const updateData = {
         status,
-        updated_at: new Date(),
-        updated_by: req.user.id,
+        updatedBy: req.user.id,
       };
 
       // Add completion timestamp for final status
       if (status === 'delivered') {
-        updateData.completed_at = new Date();
+        updateData.completedAt = new Date();
       }
 
-      const updatedJob = await databaseService.update('jobs', updateData, {
-        id,
-        shop_id: req.user.shopId,
-      });
+      await currentJob.update(updateData);
 
       // Log status change if we have a proper audit table
       try {
-        await databaseService.insert('job_status_history', {
-          job_id: id,
-          previous_status: previousStatus,
-          new_status: status,
-          changed_by: req.user.id,
+        await JobStageHistory.create({
+          jobId: id,
+          previousStatus,
+          newStatus: status,
+          changedBy: req.user.id,
           notes,
-          changed_at: new Date(),
         });
       } catch (auditError) {
         console.warn('Failed to log status change:', auditError.message);
       }
+
+      // Reload job to get updated data
+      await currentJob.reload();
 
       // Broadcast real-time production update
       realtimeService.broadcastProductionUpdate(
@@ -544,13 +526,13 @@ router.post(
           jobId: id,
           previousStatus,
           newStatus: status,
-          jobNumber: updatedJob.job_number || updatedJob.jobNumber,
+          jobNumber: currentJob.jobNumber,
           updatedBy: req.user.username || req.user.email,
         },
         req.user.shopId
       );
 
-      successResponse(res, updatedJob, `Job moved to ${status} successfully`);
+      successResponse(res, currentJob, `Job moved to ${status} successfully`);
     } catch (error) {
       console.error('Error moving job:', error);
       if (error.message === 'Job not found') {
@@ -640,15 +622,17 @@ router.patch(
 
     try {
       // Get current job
-      const jobs = await databaseService.query('jobs', {
-        where: { id, shop_id: req.user.shopId },
+      const currentJob = await Job.findOne({
+        where: {
+          id,
+          ...queryHelpers.forShop(req.user.shopId),
+        },
       });
 
-      if (!jobs || jobs.length === 0) {
+      if (!currentJob) {
         throw errors.notFound('Job not found');
       }
 
-      const currentJob = jobs[0];
       const previousStatus = currentJob.status;
 
       // Validate status transition
@@ -662,37 +646,35 @@ router.patch(
       // Update job status
       const updateData = {
         status,
-        updated_at: new Date(),
-        updated_by: req.user.id,
-        status_changed_at: new Date(),
+        updatedBy: req.user.id,
+        statusChangedAt: new Date(),
       };
 
       // Add completion timestamp for final statuses
       if (status === 'delivered') {
-        updateData.delivered_at = new Date();
+        updateData.deliveredAt = new Date();
       } else if (status === 'closed') {
-        updateData.closed_at = new Date();
+        updateData.closedAt = new Date();
       }
 
-      const updatedJob = await databaseService.update('jobs', updateData, {
-        id,
-        shop_id: req.user.shopId,
-      });
+      await currentJob.update(updateData);
 
       // Log status change in history table
       try {
-        await databaseService.insert('job_status_history', {
-          job_id: id,
-          previous_status: previousStatus,
-          new_status: status,
-          changed_by: req.user.id,
+        await JobStageHistory.create({
+          jobId: id,
+          previousStatus,
+          newStatus: status,
+          changedBy: req.user.id,
           notes,
-          changed_at: new Date(),
-          shop_id: req.user.shopId,
+          shopId: req.user.shopId,
         });
       } catch (auditError) {
         console.warn('Failed to log status change:', auditError.message);
       }
+
+      // Reload job to get updated data
+      await currentJob.reload();
 
       // Broadcast real-time update
       realtimeService.broadcastJobUpdate(
@@ -700,7 +682,7 @@ router.patch(
           jobId: id,
           previousStatus,
           newStatus: status,
-          jobNumber: updatedJob.job_number || updatedJob.jobNumber,
+          jobNumber: currentJob.jobNumber,
           updatedBy: req.user.username || req.user.email,
           notes,
         },
@@ -710,7 +692,7 @@ router.patch(
       successResponse(
         res,
         {
-          ...updatedJob,
+          ...currentJob.toJSON(),
           status_history: [
             {
               previous_status: previousStatus,
@@ -764,20 +746,31 @@ router.get(
 
     try {
       // Verify job exists and belongs to shop
-      const jobs = await databaseService.query('jobs', {
-        where: { id, shop_id: req.user.shopId },
+      const job = await Job.findOne({
+        where: {
+          id,
+          ...queryHelpers.forShop(req.user.shopId),
+        },
       });
 
-      if (!jobs || jobs.length === 0) {
+      if (!job) {
         throw errors.notFound('Job not found');
       }
 
       // Get status history
       let history = [];
       try {
-        history = await databaseService.query('job_status_history', {
-          where: { job_id: id },
-          order: [['changed_at', 'desc']],
+        history = await JobStageHistory.findAll({
+          where: { jobId: id },
+          order: [['changedAt', 'DESC']],
+          include: [
+            {
+              model: User,
+              as: 'changedByUser',
+              attributes: ['id', 'username', 'firstName', 'lastName'],
+              required: false,
+            },
+          ],
         });
       } catch (historyError) {
         console.warn('Failed to retrieve status history:', historyError.message);
@@ -788,10 +781,15 @@ router.get(
       // Transform history for frontend
       const transformedHistory = history.map(entry => ({
         id: entry.id,
-        previousStatus: entry.previous_status,
-        newStatus: entry.new_status,
-        changedAt: entry.changed_at,
-        changedBy: entry.changed_by,
+        previousStatus: entry.previousStatus,
+        newStatus: entry.newStatus,
+        changedAt: entry.changedAt,
+        changedBy: entry.changedBy,
+        changedByUser: entry.changedByUser ? {
+          id: entry.changedByUser.id,
+          username: entry.changedByUser.username,
+          name: `${entry.changedByUser.firstName || ''} ${entry.changedByUser.lastName || ''}`.trim(),
+        } : null,
         notes: entry.notes,
         duration: calculateStatusDuration(entry),
       }));
@@ -852,42 +850,20 @@ function calculateStatusDuration(historyEntry) {
  */
 async function generateJobNumber(shopId) {
   const prefix = 'JOB';
-  const year = new Date().getFullYear();
 
   try {
-    // Get the highest job number for this year
+    // Get the highest job number for this shop
+    const lastJob = await Job.findOne({
+      where: { shopId },
+      order: [['jobNumber', 'DESC']],
+      attributes: ['jobNumber'],
+    });
+
     let highestNumber = 0;
-
-    if (databaseService.useSupabase) {
-      const existingJobs = await databaseService.query('jobs', {
-        select: 'job_number',
-        where: {
-          shop_id: shopId,
-        },
-        order: [['job_number', 'desc']],
-        limit: 1,
-      });
-
-      if (existingJobs.length > 0) {
-        const lastJobNumber = existingJobs[0].job_number;
-        const match = lastJobNumber.match(/JOB(\d+)/);
-        if (match) {
-          highestNumber = parseInt(match[1]);
-        }
-      }
-    } else {
-      const { Job } = require('../database/models');
-      const lastJob = await Job.findOne({
-        where: { shopId },
-        order: [['jobNumber', 'DESC']],
-        attributes: ['jobNumber'],
-      });
-
-      if (lastJob && lastJob.jobNumber) {
-        const match = lastJob.jobNumber.match(/JOB(\d+)/);
-        if (match) {
-          highestNumber = parseInt(match[1]);
-        }
+    if (lastJob && lastJob.jobNumber) {
+      const match = lastJob.jobNumber.match(/JOB(\d+)/);
+      if (match) {
+        highestNumber = parseInt(match[1]);
       }
     }
 

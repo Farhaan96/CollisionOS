@@ -1,11 +1,13 @@
-const { supabase, supabaseAdmin } = require('../../config/supabase');
+const { Vehicle, Customer } = require('../models');
+const { queryHelpers } = require('../../utils/queryHelpers');
+const { Op } = require('sequelize');
 
 /**
- * Vehicle Service - Supabase integration for vehicle management
+ * Vehicle Service - Sequelize integration for vehicle management
  */
 class VehicleService {
   constructor() {
-    this.table = 'vehicles';
+    // No table name needed - using Sequelize models
   }
 
   /**
@@ -13,32 +15,25 @@ class VehicleService {
    */
   async findVehicles(criteria = {}) {
     try {
-      // Use admin client to bypass RLS for system operations
-      const client = supabaseAdmin || supabase;
-      let query = client.from(this.table).select('*');
+      const where = {};
 
       // Apply filters based on criteria
       if (criteria.vin) {
-        query = query.eq('vin', criteria.vin);
+        where.vin = criteria.vin;
       }
       if (criteria.customerId) {
-        query = query.eq('customer_id', criteria.customerId);
+        where.customerId = criteria.customerId;
       }
       if (criteria.license) {
-        query = query.eq('license_plate', criteria.license);
+        where.licensePlate = criteria.license;
       }
       if (criteria.id) {
-        query = query.eq('id', criteria.id);
+        where.id = criteria.id;
       }
 
-      const { data, error } = await query;
+      const vehicles = await Vehicle.findAll({ where });
 
-      if (error) {
-        console.error('Error finding vehicles:', error);
-        throw error;
-      }
-
-      return data || [];
+      return vehicles.map(v => v.toJSON());
     } catch (error) {
       console.error('VehicleService.findVehicles error:', error);
       throw error;
@@ -50,10 +45,10 @@ class VehicleService {
    */
   async createVehicle(vehicleData, customerId) {
     try {
-      // Start with minimal required fields only
+      // Build vehicle record with camelCase fields
       const vehicleRecord = {
-        customer_id: customerId,
-        shop_id:
+        customerId: customerId,
+        shopId:
           vehicleData.shopId ||
           process.env.DEV_SHOP_ID ||
           '00000000-0000-4000-8000-000000000001',
@@ -61,40 +56,41 @@ class VehicleService {
         make: vehicleData.make || '',
         model: vehicleData.model || '',
         vin: vehicleData.vin || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
-      // Add optional fields only if they exist in schema
+      // Add optional fields
       if (vehicleData.license || vehicleData.licensePlate) {
-        vehicleRecord.license_plate =
+        vehicleRecord.licensePlate =
           vehicleData.license || vehicleData.licensePlate;
       }
       if (vehicleData.mileage) {
         vehicleRecord.mileage = vehicleData.mileage;
       }
-      // Remove columns that don't exist in Supabase schema for now
-      // if (vehicleData.color) vehicleRecord.color = vehicleData.color;
-      // if (vehicleData.engine) vehicleRecord.engine = vehicleData.engine;
-      // if (vehicleData.transmission) vehicleRecord.transmission = vehicleData.transmission;
-
-      // Use admin client to bypass RLS for system operations
-      const client = supabaseAdmin || supabase;
-      const { data, error } = await client
-        .from(this.table)
-        .insert([vehicleRecord])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating vehicle:', error);
-        throw error;
+      if (vehicleData.color) {
+        vehicleRecord.color = vehicleData.color;
+      }
+      if (vehicleData.engineSize || vehicleData.engine) {
+        vehicleRecord.engineSize = vehicleData.engineSize || vehicleData.engine;
+      }
+      if (vehicleData.transmission) {
+        vehicleRecord.transmission = vehicleData.transmission;
+      }
+      if (vehicleData.trim) {
+        vehicleRecord.trim = vehicleData.trim;
+      }
+      if (vehicleData.bodyStyle) {
+        vehicleRecord.bodyStyle = vehicleData.bodyStyle;
+      }
+      if (vehicleData.fuelType) {
+        vehicleRecord.fuelType = vehicleData.fuelType;
       }
 
-      console.log('Vehicle created successfully:', data.id);
+      const vehicle = await Vehicle.create(vehicleRecord);
+
+      console.log('Vehicle created successfully:', vehicle.id);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(vehicle.toJSON());
     } catch (error) {
       console.error('VehicleService.createVehicle error:', error);
       throw error;
@@ -111,15 +107,14 @@ class VehicleService {
         make: updateData.make,
         model: updateData.model,
         vin: updateData.vin,
-        license_plate: updateData.license || updateData.licensePlate,
+        licensePlate: updateData.license || updateData.licensePlate,
         mileage: updateData.mileage,
         color: updateData.color,
-        engine: updateData.engine,
+        engineSize: updateData.engine || updateData.engineSize,
         transmission: updateData.transmission,
         trim: updateData.trim,
-        body_style: updateData.bodyStyle,
-        fuel_type: updateData.fuelType,
-        updated_at: new Date().toISOString(),
+        bodyStyle: updateData.bodyStyle,
+        fuelType: updateData.fuelType,
       };
 
       // Remove undefined values
@@ -129,22 +124,20 @@ class VehicleService {
         }
       });
 
-      const { data, error } = await supabase
-        .from(this.table)
-        .update(vehicleRecord)
-        .eq('id', vehicleId)
-        .select()
-        .single();
+      const [affectedRows] = await Vehicle.update(vehicleRecord, {
+        where: { id: vehicleId },
+      });
 
-      if (error) {
-        console.error('Error updating vehicle:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Vehicle not found or no changes made');
       }
+
+      const vehicle = await Vehicle.findByPk(vehicleId);
 
       console.log('Vehicle updated successfully:', vehicleId);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(vehicle.toJSON());
     } catch (error) {
       console.error('VehicleService.updateVehicle error:', error);
       throw error;
@@ -156,32 +149,21 @@ class VehicleService {
    */
   async getVehicleById(vehicleId) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          )
-        `
-        )
-        .eq('id', vehicleId)
-        .single();
+      const vehicle = await Vehicle.findByPk(vehicleId, {
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+        ],
+      });
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null; // Not found
-        }
-        console.error('Error getting vehicle:', error);
-        throw error;
+      if (!vehicle) {
+        return null; // Not found
       }
 
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(vehicle.toJSON());
     } catch (error) {
       console.error('VehicleService.getVehicleById error:', error);
       throw error;
@@ -193,18 +175,12 @@ class VehicleService {
    */
   async getVehiclesByCustomer(customerId) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select('*')
-        .eq('customer_id', customerId)
-        .order('created_at', { ascending: false });
+      const vehicles = await Vehicle.findAll({
+        where: { customerId },
+        order: [['createdAt', 'DESC']],
+      });
 
-      if (error) {
-        console.error('Error getting customer vehicles:', error);
-        throw error;
-      }
-
-      return (data || []).map(vehicle => this.transformToFrontend(vehicle));
+      return vehicles.map(vehicle => this.transformToFrontend(vehicle.toJSON()));
     } catch (error) {
       console.error('VehicleService.getVehiclesByCustomer error:', error);
       throw error;
@@ -216,31 +192,26 @@ class VehicleService {
    */
   async searchVehicles(searchTerm) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          )
-        `
-        )
-        .or(
-          `vin.ilike.%${searchTerm}%,license_plate.ilike.%${searchTerm}%,make.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%`
-        )
-        .order('created_at', { ascending: false });
+      const where = {
+        ...queryHelpers.search(
+          ['vin', 'licensePlate', 'make', 'model'],
+          searchTerm
+        ),
+      };
 
-      if (error) {
-        console.error('Error searching vehicles:', error);
-        throw error;
-      }
+      const vehicles = await Vehicle.findAll({
+        where,
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
 
-      return (data || []).map(vehicle => this.transformToFrontend(vehicle));
+      return vehicles.map(vehicle => this.transformToFrontend(vehicle.toJSON()));
     } catch (error) {
       console.error('VehicleService.searchVehicles error:', error);
       throw error;
@@ -292,14 +263,12 @@ class VehicleService {
    */
   async deleteVehicle(vehicleId) {
     try {
-      const { error } = await supabase
-        .from(this.table)
-        .delete()
-        .eq('id', vehicleId);
+      const affectedRows = await Vehicle.destroy({
+        where: { id: vehicleId },
+      });
 
-      if (error) {
-        console.error('Error deleting vehicle:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Vehicle not found');
       }
 
       console.log('Vehicle deleted successfully:', vehicleId);
@@ -318,33 +287,33 @@ class VehicleService {
 
     const transformed = {
       id: vehicleRecord.id,
-      customerId: vehicleRecord.customer_id,
+      customerId: vehicleRecord.customerId,
       year: vehicleRecord.year,
       make: vehicleRecord.make || '',
       model: vehicleRecord.model || '',
       vin: vehicleRecord.vin || '',
-      license: vehicleRecord.license_plate || '',
-      licensePlate: vehicleRecord.license_plate || '',
+      license: vehicleRecord.licensePlate || '',
+      licensePlate: vehicleRecord.licensePlate || '',
       mileage: vehicleRecord.mileage,
       color: vehicleRecord.color || '',
-      engine: vehicleRecord.engine || '',
+      engine: vehicleRecord.engineSize || '',
       transmission: vehicleRecord.transmission || '',
       trim: vehicleRecord.trim || '',
-      bodyStyle: vehicleRecord.body_style || '',
-      fuelType: vehicleRecord.fuel_type || '',
-      createdAt: vehicleRecord.created_at,
-      updatedAt: vehicleRecord.updated_at,
+      bodyStyle: vehicleRecord.bodyStyle || '',
+      fuelType: vehicleRecord.fuelType || '',
+      createdAt: vehicleRecord.createdAt,
+      updatedAt: vehicleRecord.updatedAt,
     };
 
     // Add customer information if available
-    if (vehicleRecord.customers) {
+    if (vehicleRecord.customer) {
       transformed.customer = {
-        id: vehicleRecord.customers.id,
-        name: `${vehicleRecord.customers.first_name || ''} ${vehicleRecord.customers.last_name || ''}`.trim(),
-        firstName: vehicleRecord.customers.first_name || '',
-        lastName: vehicleRecord.customers.last_name || '',
-        email: vehicleRecord.customers.email || '',
-        phone: vehicleRecord.customers.phone || '',
+        id: vehicleRecord.customer.id,
+        name: `${vehicleRecord.customer.firstName || ''} ${vehicleRecord.customer.lastName || ''}`.trim(),
+        firstName: vehicleRecord.customer.firstName || '',
+        lastName: vehicleRecord.customer.lastName || '',
+        email: vehicleRecord.customer.email || '',
+        phone: vehicleRecord.customer.phone || '',
       };
     }
 

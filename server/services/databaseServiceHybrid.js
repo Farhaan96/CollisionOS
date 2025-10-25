@@ -1,6 +1,15 @@
 /**
+ * @deprecated This service is DEPRECATED for core database operations.
+ *
  * Hybrid Database Service (Phase 1)
  * Supports dual-write to SQLite (primary) and Supabase (optional cloud sync)
+ *
+ * This file is kept ONLY for the optional cloud sync feature used by routes/sync.js.
+ * DO NOT use this for core database operations - use Sequelize models directly instead.
+ *
+ * For new code:
+ * - Use Sequelize models directly from require('../database/models')
+ * - Use queryHelpers from require('../utils/queryHelpers')
  */
 
 const { databaseService: legacyService } = require('./databaseService');
@@ -10,6 +19,7 @@ const { getSupabaseClient } = require('../config/supabase');
 
 /**
  * Enhanced database service with hybrid cloud sync support
+ * @deprecated - Use Sequelize models directly for core operations
  */
 class HybridDatabaseService {
   constructor() {

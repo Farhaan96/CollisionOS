@@ -185,11 +185,21 @@ app.use(
 
 // Health check with enhanced database status
 app.get('/health', async (req, res) => {
-  const { databaseService } = require('./services/databaseService');
+  const { sequelize } = require('./database/models');
   const { realtimeService } = require('./services/realtimeService');
 
   try {
-    const dbStatus = await databaseService.getConnectionStatus();
+    // Check Sequelize connection
+    let dbConnected = false;
+    let dbError = null;
+
+    try {
+      await sequelize.authenticate();
+      dbConnected = true;
+    } catch (error) {
+      dbError = error.message;
+    }
+
     const realtimeStatus = realtimeService.getStatus();
 
     res.json({
@@ -198,9 +208,9 @@ app.get('/health', async (req, res) => {
       version: process.env.npm_package_version || '1.0.0',
       environment: process.env.NODE_ENV || 'development',
       database: {
-        type: dbStatus.type,
-        connected: dbStatus.connected,
-        error: dbStatus.error || null,
+        type: 'sequelize',
+        connected: dbConnected,
+        error: dbError,
       },
       realtime: {
         backend: realtimeStatus.backend,
@@ -240,12 +250,27 @@ app.get('/api/migration/status', async (req, res) => {
 
 // Health check endpoints (both versioned and legacy)
 app.get('/api/health', async (req, res) => {
-  const { databaseService } = require('./services/databaseService');
+  const { sequelize } = require('./database/models');
   const { realtimeService } = require('./services/realtimeService');
 
   try {
-    const dbStatus = await databaseService.getConnectionStatus();
+    // Check Sequelize connection
+    let dbConnected = false;
+    let dbError = null;
+
+    try {
+      await sequelize.authenticate();
+      dbConnected = true;
+    } catch (error) {
+      dbError = error.message;
+    }
+
     const realtimeStatus = realtimeService.getStatus();
+    const dbStatus = {
+      type: 'sequelize',
+      connected: dbConnected,
+      error: dbError,
+    };
 
     res.json({
       status: 'OK',

@@ -10,6 +10,16 @@ const {
 } = require('../database/models'); // Legacy models
 
 /**
+ * @deprecated This service is DEPRECATED and should NOT be used for new code.
+ *
+ * All core database operations should use Sequelize models directly.
+ * This file is kept ONLY for backwards compatibility with the optional
+ * hybrid cloud sync feature (databaseServiceHybrid.js).
+ *
+ * For new code:
+ * - Use Sequelize models directly from require('../database/models')
+ * - Use queryHelpers from require('../utils/queryHelpers')
+ *
  * Universal database service that handles both Supabase and legacy database operations
  */
 class DatabaseService {
