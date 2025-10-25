@@ -1,9 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getSupabaseClient } = require('../config/supabase');
+const { Op } = require('sequelize');
+const { Customer, Vehicle, RepairOrderManagement, ClaimManagement } = require('../database/models');
+const { queryHelpers } = require('../utils/queryHelpers');
 const { authenticateToken } = require('../middleware/authSupabase');
 
-// Get all customers
+/**
+ * GET /api/customers
+ * Get all customers with filtering, search, and pagination
+ */
 router.get('/', authenticateToken(), async (req, res) => {
   try {
     const {
@@ -12,7 +17,7 @@ router.get('/', authenticateToken(), async (req, res) => {
       search,
       status,
       type,
-      sortBy = 'last_name',
+      sortBy = 'lastName',
       sortOrder = 'asc',
     } = req.query;
 
@@ -29,7 +34,6 @@ router.get('/', authenticateToken(), async (req, res) => {
       sortBy
     );
 
-    const supabase = getSupabaseClient(); // Use RLS-protected client
     const shopId = req.user?.shopId;
 
     if (!shopId) {
@@ -39,96 +43,107 @@ router.get('/', authenticateToken(), async (req, res) => {
       });
     }
 
-    // Build query - be more flexible with optional columns
-    // Only select columns that exist in the database to avoid schema errors
-    let query = supabase
-      .from('customers')
-      .select(
-        `
-        id,
-        customer_number,
-        first_name,
-        last_name,
-        email,
-        phone,
-        mobile,
-        company_name,
-        customer_type,
-        customer_status,
-        is_active,
-        created_at,
-        updated_at,
-        vehicles:vehicles(id, year, make, model, vin),
-        repair_orders:repair_orders(id, ro_number, claims:claims(claim_number))
-      `
-      )
-      .eq('shop_id', shopId)
-      .eq('is_active', true); // Only show active customers (filter out soft-deleted)
+    // Build where clause
+    const where = {
+      ...queryHelpers.forShop(shopId),
+      isActive: true, // Only show active customers (soft delete)
+    };
 
     // Add search filter
     if (search) {
-      query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,customer_number.ilike.%${search}%,company_name.ilike.%${search}%`
-      );
+      where[Op.or] = [
+        { firstName: { [Op.like]: `%${search}%` } },
+        { lastName: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } },
+        { customerNumber: { [Op.like]: `%${search}%` } },
+        { companyName: { [Op.like]: `%${search}%` } },
+      ];
     }
 
     // Add status filter
     if (status && status !== 'all') {
-      query = query.eq('customer_status', status);
+      where.customerStatus = status;
     }
 
     // Add type filter
     if (type && type !== 'all') {
-      query = query.eq('customer_type', type);
+      where.customerType = type;
     }
 
-    // Add sorting
-    query = query.order(sortBy, {
-      ascending: sortOrder.toLowerCase() === 'asc',
+    // Pagination
+    const { offset, limit: limitNum } = queryHelpers.paginate(page, limit);
+
+    // Query customers with associations
+    const { count, rows: customers } = await Customer.findAndCountAll({
+      where,
+      include: [
+        {
+          model: Vehicle,
+          as: 'vehicles',
+          attributes: ['id', 'year', 'make', 'model', 'vin'],
+          where: { isActive: true },
+          required: false,
+        },
+        {
+          model: RepairOrderManagement,
+          as: 'repairOrders',
+          attributes: ['id', 'roNumber', 'claimId'],
+          include: [
+            {
+              model: ClaimManagement,
+              as: 'claim',
+              attributes: ['claimNumber'],
+            },
+          ],
+          required: false,
+        },
+      ],
+      order: [[sortBy, sortOrder.toUpperCase()]],
+      offset,
+      limit: limitNum,
     });
-
-    // Add pagination
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    query = query.range(offset, offset + parseInt(limit) - 1);
-
-    const { data: customers, error, count } = await query;
-
-    if (error) {
-      console.error('❌ Error fetching customers:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch customers',
-        details: error.message,
-      });
-    }
 
     console.log('✅ Found', customers?.length || 0, 'customers');
 
-    // Transform customers to add claim_number at top level for easier frontend access
-    const transformedCustomers = (customers || []).map(customer => {
+    // Transform customers to match frontend expectations
+    const transformedCustomers = customers.map(customer => {
+      const customerData = customer.toJSON();
+
       // Extract claim number from first repair order (if any)
-      const claimNumber = customer.repair_orders?.[0]?.claims?.claim_number;
+      const claimNumber = customerData.repairOrders?.[0]?.claim?.claimNumber;
 
       return {
-        ...customer,
+        id: customerData.id,
+        customer_number: customerData.customerNumber,
+        first_name: customerData.firstName,
+        last_name: customerData.lastName,
+        email: customerData.email,
+        phone: customerData.phone,
+        mobile: customerData.mobile,
+        company_name: customerData.companyName,
+        customer_type: customerData.customerType,
+        customer_status: customerData.customerStatus,
+        is_active: customerData.isActive,
+        created_at: customerData.createdAt,
+        updated_at: customerData.updatedAt,
+        vehicles: customerData.vehicles || [],
+        repair_orders: customerData.repairOrders?.map(ro => ({
+          id: ro.id,
+          ro_number: ro.roNumber,
+          claims: ro.claim ? { claim_number: ro.claim.claimNumber } : null,
+        })) || [],
         claimNumber: claimNumber || null,
       };
     });
 
-    // Calculate pagination
-    const totalPages = Math.ceil(
-      (count || customers?.length || 0) / parseInt(limit)
-    );
+    // Calculate pagination metadata
+    const paginationMeta = queryHelpers.paginationMeta(count, parseInt(page), parseInt(limit));
 
     res.json({
       success: true,
       data: transformedCustomers,
-      pagination: {
-        total: count || customers?.length || 0,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages,
-      },
+      pagination: paginationMeta,
       message: 'Customers retrieved successfully',
     });
   } catch (error) {
@@ -141,10 +156,12 @@ router.get('/', authenticateToken(), async (req, res) => {
   }
 });
 
-// Get customer by ID
+/**
+ * GET /api/customers/:id
+ * Get customer by ID
+ */
 router.get('/:id', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -155,39 +172,29 @@ router.get('/:id', authenticateToken(), async (req, res) => {
       });
     }
 
-    const { data: customer, error } = await supabase
-      .from('customers')
-      .select(
-        `
+    const customer = await Customer.findOne({
+      where: {
         id,
-        customer_number,
-        first_name,
-        last_name,
-        email,
-        phone,
-        company_name,
-        customer_type,
-        customer_status,
-        primary_insurance_company,
-        policy_number,
-        deductible,
-        is_active,
-        created_at,
-        updated_at
-      `
-      )
-      .eq('id', id)
-      .eq('shop_id', shopId)
-      .single();
-
-    if (error) {
-      console.error('❌ Error fetching customer:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch customer',
-        details: error.message,
-      });
-    }
+        shopId,
+      },
+      attributes: [
+        'id',
+        'customerNumber',
+        'firstName',
+        'lastName',
+        'email',
+        'phone',
+        'companyName',
+        'customerType',
+        'customerStatus',
+        'primaryInsuranceCompany',
+        'policyNumber',
+        'deductible',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
 
     if (!customer) {
       return res.status(404).json({
@@ -196,9 +203,29 @@ router.get('/:id', authenticateToken(), async (req, res) => {
       });
     }
 
+    // Transform to snake_case for frontend compatibility
+    const customerData = customer.toJSON();
+    const transformed = {
+      id: customerData.id,
+      customer_number: customerData.customerNumber,
+      first_name: customerData.firstName,
+      last_name: customerData.lastName,
+      email: customerData.email,
+      phone: customerData.phone,
+      company_name: customerData.companyName,
+      customer_type: customerData.customerType,
+      customer_status: customerData.customerStatus,
+      primary_insurance_company: customerData.primaryInsuranceCompany,
+      policy_number: customerData.policyNumber,
+      deductible: customerData.deductible,
+      is_active: customerData.isActive,
+      created_at: customerData.createdAt,
+      updated_at: customerData.updatedAt,
+    };
+
     res.json({
       success: true,
-      data: customer,
+      data: transformed,
       message: 'Customer retrieved successfully',
     });
   } catch (error) {
@@ -206,14 +233,17 @@ router.get('/:id', authenticateToken(), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch customer',
+      details: error.message,
     });
   }
 });
 
-// Create new customer
+/**
+ * POST /api/customers
+ * Create new customer
+ */
 router.post('/', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const shopId = req.user?.shopId;
 
     if (!shopId) {
@@ -223,44 +253,67 @@ router.post('/', authenticateToken(), async (req, res) => {
       });
     }
 
+    // Convert snake_case to camelCase for model
     const customerData = {
-      ...req.body,
-      shop_id: shopId,
+      shopId,
+      firstName: req.body.first_name || req.body.firstName,
+      lastName: req.body.last_name || req.body.lastName,
+      email: req.body.email,
+      phone: req.body.phone,
+      mobile: req.body.mobile,
+      companyName: req.body.company_name || req.body.companyName,
+      customerType: req.body.customer_type || req.body.customerType || 'individual',
+      customerStatus: req.body.customer_status || req.body.customerStatus || 'active',
+      primaryInsuranceCompany: req.body.primary_insurance_company || req.body.primaryInsuranceCompany,
+      policyNumber: req.body.policy_number || req.body.policyNumber,
+      deductible: req.body.deductible,
+      isActive: true,
     };
 
-    const { data: customer, error } = await supabase
-      .from('customers')
-      .insert([customerData])
-      .select()
-      .single();
+    const customer = await Customer.create(customerData);
 
-    if (error) {
-      console.error('❌ Error creating customer:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to create customer',
-        details: error.message,
-      });
-    }
+    // Transform response to snake_case
+    const customerJson = customer.toJSON();
+    const transformed = {
+      id: customerJson.id,
+      customer_number: customerJson.customerNumber,
+      first_name: customerJson.firstName,
+      last_name: customerJson.lastName,
+      email: customerJson.email,
+      phone: customerJson.phone,
+      mobile: customerJson.mobile,
+      company_name: customerJson.companyName,
+      customer_type: customerJson.customerType,
+      customer_status: customerJson.customerStatus,
+      primary_insurance_company: customerJson.primaryInsuranceCompany,
+      policy_number: customerJson.policyNumber,
+      deductible: customerJson.deductible,
+      is_active: customerJson.isActive,
+      created_at: customerJson.createdAt,
+      updated_at: customerJson.updatedAt,
+    };
 
     res.status(201).json({
       success: true,
-      data: customer,
+      data: transformed,
       message: 'Customer created successfully',
     });
   } catch (error) {
-    console.error('Error creating customer:', error);
+    console.error('❌ Error creating customer:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create customer',
+      details: error.message,
     });
   }
 });
 
-// Update customer
+/**
+ * PUT /api/customers/:id
+ * Update customer
+ */
 router.put('/:id', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -271,48 +324,85 @@ router.put('/:id', authenticateToken(), async (req, res) => {
       });
     }
 
-    const { data: customer, error } = await supabase
-      .from('customers')
-      .update(req.body)
-      .eq('id', id)
-      .eq('shop_id', shopId)
-      .select()
-      .single();
+    // Convert snake_case to camelCase for model
+    const updateData = {};
+    if (req.body.first_name !== undefined) updateData.firstName = req.body.first_name;
+    if (req.body.firstName !== undefined) updateData.firstName = req.body.firstName;
+    if (req.body.last_name !== undefined) updateData.lastName = req.body.last_name;
+    if (req.body.lastName !== undefined) updateData.lastName = req.body.lastName;
+    if (req.body.email !== undefined) updateData.email = req.body.email;
+    if (req.body.phone !== undefined) updateData.phone = req.body.phone;
+    if (req.body.mobile !== undefined) updateData.mobile = req.body.mobile;
+    if (req.body.company_name !== undefined) updateData.companyName = req.body.company_name;
+    if (req.body.companyName !== undefined) updateData.companyName = req.body.companyName;
+    if (req.body.customer_type !== undefined) updateData.customerType = req.body.customer_type;
+    if (req.body.customerType !== undefined) updateData.customerType = req.body.customerType;
+    if (req.body.customer_status !== undefined) updateData.customerStatus = req.body.customer_status;
+    if (req.body.customerStatus !== undefined) updateData.customerStatus = req.body.customerStatus;
+    if (req.body.primary_insurance_company !== undefined) updateData.primaryInsuranceCompany = req.body.primary_insurance_company;
+    if (req.body.primaryInsuranceCompany !== undefined) updateData.primaryInsuranceCompany = req.body.primaryInsuranceCompany;
+    if (req.body.policy_number !== undefined) updateData.policyNumber = req.body.policy_number;
+    if (req.body.policyNumber !== undefined) updateData.policyNumber = req.body.policyNumber;
+    if (req.body.deductible !== undefined) updateData.deductible = req.body.deductible;
 
-    if (error) {
-      console.error('❌ Error updating customer:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to update customer',
-        details: error.message,
-      });
-    }
+    const [updated] = await Customer.update(updateData, {
+      where: { id, shopId },
+    });
 
-    if (!customer) {
+    if (!updated) {
       return res.status(404).json({
         success: false,
         error: 'Customer not found',
       });
     }
 
+    // Fetch updated customer
+    const customer = await Customer.findOne({
+      where: { id, shopId },
+    });
+
+    // Transform response
+    const customerJson = customer.toJSON();
+    const transformed = {
+      id: customerJson.id,
+      customer_number: customerJson.customerNumber,
+      first_name: customerJson.firstName,
+      last_name: customerJson.lastName,
+      email: customerJson.email,
+      phone: customerJson.phone,
+      mobile: customerJson.mobile,
+      company_name: customerJson.companyName,
+      customer_type: customerJson.customerType,
+      customer_status: customerJson.customerStatus,
+      primary_insurance_company: customerJson.primaryInsuranceCompany,
+      policy_number: customerJson.policyNumber,
+      deductible: customerJson.deductible,
+      is_active: customerJson.isActive,
+      created_at: customerJson.createdAt,
+      updated_at: customerJson.updatedAt,
+    };
+
     res.json({
       success: true,
-      data: customer,
+      data: transformed,
       message: 'Customer updated successfully',
     });
   } catch (error) {
-    console.error('Error updating customer:', error);
+    console.error('❌ Error updating customer:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update customer',
+      details: error.message,
     });
   }
 });
 
-// Delete customer
+/**
+ * DELETE /api/customers/:id
+ * Soft delete customer
+ */
 router.delete('/:id', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient(true);
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -323,25 +413,13 @@ router.delete('/:id', authenticateToken(), async (req, res) => {
       });
     }
 
-    // Soft delete by setting is_active to false
-    const { data: customer, error } = await supabase
-      .from('customers')
-      .update({ is_active: false })
-      .eq('id', id)
-      .eq('shop_id', shopId)
-      .select()
-      .single();
+    // Soft delete by setting isActive to false
+    const [updated] = await Customer.update(
+      { isActive: false },
+      { where: { id, shopId } }
+    );
 
-    if (error) {
-      console.error('❌ Error deleting customer:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to delete customer',
-        details: error.message,
-      });
-    }
-
-    if (!customer) {
+    if (!updated) {
       return res.status(404).json({
         success: false,
         error: 'Customer not found',
@@ -353,18 +431,21 @@ router.delete('/:id', authenticateToken(), async (req, res) => {
       message: 'Customer deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting customer:', error);
+    console.error('❌ Error deleting customer:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete customer',
+      details: error.message,
     });
   }
 });
 
-// Get customer vehicles
+/**
+ * GET /api/customers/:id/vehicles
+ * Get customer vehicles
+ */
 router.get('/:id/vehicles', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -375,22 +456,14 @@ router.get('/:id/vehicles', authenticateToken(), async (req, res) => {
       });
     }
 
-    const { data: vehicles, error } = await supabase
-      .from('vehicles')
-      .select('*')
-      .eq('customer_id', id)
-      .eq('shop_id', shopId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ Error fetching customer vehicles:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch customer vehicles',
-        details: error.message,
-      });
-    }
+    const vehicles = await Vehicle.findAll({
+      where: {
+        customerId: id,
+        shopId,
+        isActive: true,
+      },
+      order: [['createdAt', 'DESC']],
+    });
 
     res.json({
       success: true,
@@ -398,18 +471,21 @@ router.get('/:id/vehicles', authenticateToken(), async (req, res) => {
       message: 'Customer vehicles retrieved successfully',
     });
   } catch (error) {
-    console.error('Error fetching customer vehicles:', error);
+    console.error('❌ Error fetching customer vehicles:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch customer vehicles',
+      details: error.message,
     });
   }
 });
 
-// Get customer jobs/repair orders
+/**
+ * GET /api/customers/:id/jobs
+ * Get customer jobs/repair orders
+ */
 router.get('/:id/jobs', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const { id } = req.params;
     const shopId = req.user?.shopId;
 
@@ -420,36 +496,50 @@ router.get('/:id/jobs', authenticateToken(), async (req, res) => {
       });
     }
 
-    const { data: jobs, error } = await supabase
-      .from('repair_orders')
-      .select(`
-        *,
-        vehicles:vehicle_id(year, make, model, vin),
-        claims:claim_id(claim_number, insurance_company)
-      `)
-      .eq('customer_id', id)
-      .eq('shop_id', shopId)
-      .order('created_at', { ascending: false });
+    const jobs = await RepairOrderManagement.findAll({
+      where: {
+        customerId: id,
+        shopId,
+      },
+      include: [
+        {
+          model: Vehicle,
+          as: 'vehicle',
+          attributes: ['year', 'make', 'model', 'vin'],
+        },
+        {
+          model: ClaimManagement,
+          as: 'claim',
+          attributes: ['claimNumber', 'insurerName'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
-    if (error) {
-      console.error('❌ Error fetching customer jobs:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch customer jobs',
-        details: error.message,
-      });
-    }
+    // Transform to match expected format
+    const transformedJobs = jobs.map(job => {
+      const jobData = job.toJSON();
+      return {
+        ...jobData,
+        vehicles: jobData.vehicle,
+        claims: jobData.claim ? {
+          claim_number: jobData.claim.claimNumber,
+          insurance_company: jobData.claim.insurerName,
+        } : null,
+      };
+    });
 
     res.json({
       success: true,
-      data: jobs || [],
+      data: transformedJobs || [],
       message: 'Customer jobs retrieved successfully',
     });
   } catch (error) {
-    console.error('Error fetching customer jobs:', error);
+    console.error('❌ Error fetching customer jobs:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch customer jobs',
+      details: error.message,
     });
   }
 });

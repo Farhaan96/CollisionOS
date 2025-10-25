@@ -1,12 +1,12 @@
-const { supabase, supabaseAdmin } = require('../../config/supabase');
-const { v4: uuidv4 } = require('uuid');
+const { Job, Customer, Vehicle, User } = require('../models');
+const { queryHelpers } = require('../../utils/queryHelpers');
+const { Op } = require('sequelize');
 
 /**
- * Job Service - Supabase integration for job/repair order management
+ * Job Service - Sequelize integration for job/repair order management
  */
 class JobService {
   constructor() {
-    this.table = 'jobs';
     this.statusFlow = [
       'estimate',
       'approved',
@@ -23,65 +23,53 @@ class JobService {
    */
   async getAllJobs(options = {}) {
     try {
-      let query = supabase.from(this.table).select(`
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color
-          )
-        `);
+      const where = {};
 
       // Apply filters
       if (options.status) {
-        query = query.eq('status', options.status);
+        where.status = options.status;
       }
       if (options.priority) {
-        query = query.eq('priority', options.priority);
+        where.priority = options.priority;
       }
       if (options.customerId) {
-        query = query.eq('customer_id', options.customerId);
+        where.customerId = options.customerId;
       }
+
+      const queryOptions = {
+        where,
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color'],
+          },
+        ],
+      };
 
       // Apply sorting
       if (options.sortBy) {
-        query = query.order(options.sortBy, {
-          ascending: options.ascending !== false,
-        });
+        queryOptions.order = [[options.sortBy, options.ascending !== false ? 'ASC' : 'DESC']];
       } else {
-        query = query.order('created_at', { ascending: false });
+        queryOptions.order = [['createdAt', 'DESC']];
       }
 
       // Apply pagination
       if (options.limit) {
-        query = query.limit(options.limit);
+        queryOptions.limit = options.limit;
       }
       if (options.offset) {
-        query = query.range(
-          options.offset,
-          options.offset + (options.limit || 100) - 1
-        );
+        queryOptions.offset = options.offset;
       }
 
-      const { data, error } = await query;
+      const jobs = await Job.findAll(queryOptions);
 
-      if (error) {
-        console.error('Error getting jobs:', error);
-        throw error;
-      }
-
-      return (data || []).map(job => this.transformToFrontend(job));
+      return jobs.map(job => this.transformToFrontend(job.toJSON()));
     } catch (error) {
       console.error('JobService.getAllJobs error:', error);
       throw error;
@@ -93,64 +81,91 @@ class JobService {
    */
   async createJob(jobData) {
     try {
-      // Start with minimal required fields only
+      // Build job record with camelCase fields
       const jobRecord = {
-        job_number: jobData.jobNumber || this.generateJobNumber(),
-        customer_id: jobData.customerId,
-        vehicle_id: jobData.vehicleId,
-        shop_id:
+        jobNumber: jobData.jobNumber || this.generateJobNumber(),
+        customerId: jobData.customerId,
+        vehicleId: jobData.vehicleId,
+        shopId:
           jobData.shopId ||
           process.env.DEV_SHOP_ID ||
           '00000000-0000-4000-8000-000000000001',
         status: jobData.status || 'estimate',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
-      // Add optional fields only if they exist in schema
-      // if (jobData.description) jobRecord.description = jobData.description; // Column doesn't exist in Supabase
-      if (jobData.estimateTotal)
-        jobRecord.estimate_total = jobData.estimateTotal;
-      // Remove columns that don't exist in schema for now
-      // priority, insurance_company, claim_number, deductible, damage_description,
-      // parts_needed, labor_hours, paint_hours, target_completion, notes, bms_import_id
-
-      // Use admin client to bypass RLS for system operations
-      const client = supabaseAdmin || supabase;
-      const { data, error } = await client
-        .from(this.table)
-        .insert([jobRecord])
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate
-          )
-        `
-        )
-        .single();
-
-      if (error) {
-        console.error('Error creating job:', error);
-        throw error;
+      // Add optional fields
+      if (jobData.estimateTotal) {
+        jobRecord.totalAmount = jobData.estimateTotal;
+      }
+      if (jobData.priority) {
+        jobRecord.priority = jobData.priority;
+      }
+      if (jobData.insuranceCompany) {
+        // Note: Job model doesn't have insuranceCompany field directly
+        // Store in metadata or custom fields if needed
+        jobRecord.metadata = { insuranceCompany: jobData.insuranceCompany };
+      }
+      if (jobData.claimNumber) {
+        jobRecord.claimNumber = jobData.claimNumber;
+      }
+      if (jobData.deductible) {
+        jobRecord.deductible = jobData.deductible;
+      }
+      if (jobData.damageDescription) {
+        jobRecord.damageDescription = jobData.damageDescription;
+      }
+      if (jobData.partsNeeded) {
+        // Store as JSON in metadata or custom fields
+        jobRecord.metadata = {
+          ...(jobRecord.metadata || {}),
+          partsNeeded: jobData.partsNeeded
+        };
+      }
+      if (jobData.laborHours) {
+        jobRecord.estimatedHours = jobData.laborHours;
+      }
+      if (jobData.paintHours) {
+        // Store in metadata or custom fields
+        jobRecord.metadata = {
+          ...(jobRecord.metadata || {}),
+          paintHours: jobData.paintHours
+        };
+      }
+      if (jobData.targetCompletion) {
+        jobRecord.targetDeliveryDate = jobData.targetCompletion;
+      }
+      if (jobData.notes) {
+        jobRecord.notes = jobData.notes;
+      }
+      if (jobData.bmsImportId) {
+        jobRecord.metadata = {
+          ...(jobRecord.metadata || {}),
+          bmsImportId: jobData.bmsImportId
+        };
       }
 
-      console.log('Job created successfully:', data.id);
+      const job = await Job.create(jobRecord);
+
+      // Fetch with associations
+      const jobWithAssociations = await Job.findByPk(job.id, {
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate'],
+          },
+        ],
+      });
+
+      console.log('Job created successfully:', job.id);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(jobWithAssociations.toJSON());
     } catch (error) {
       console.error('JobService.createJob error:', error);
       throw error;
@@ -165,16 +180,27 @@ class JobService {
       const jobRecord = {
         status: updateData.status,
         priority: updateData.priority,
-        estimate_total: updateData.estimateTotal,
-        description: updateData.description,
-        damage_description: updateData.damageDescription,
-        parts_needed: updateData.partsNeeded,
-        labor_hours: updateData.laborHours,
-        paint_hours: updateData.paintHours,
-        target_completion: updateData.targetCompletion,
+        totalAmount: updateData.estimateTotal,
+        damageDescription: updateData.damageDescription,
+        estimatedHours: updateData.laborHours,
+        targetDeliveryDate: updateData.targetCompletion,
         notes: updateData.notes,
-        updated_at: new Date().toISOString(),
       };
+
+      // Handle fields stored in metadata
+      if (updateData.partsNeeded || updateData.paintHours) {
+        const existingJob = await Job.findByPk(jobId);
+        const metadata = existingJob ? existingJob.metadata || {} : {};
+
+        if (updateData.partsNeeded) {
+          metadata.partsNeeded = updateData.partsNeeded;
+        }
+        if (updateData.paintHours) {
+          metadata.paintHours = updateData.paintHours;
+        }
+
+        jobRecord.metadata = metadata;
+      }
 
       // Remove undefined values
       Object.keys(jobRecord).forEach(key => {
@@ -183,42 +209,33 @@ class JobService {
         }
       });
 
-      const { data, error } = await supabase
-        .from(this.table)
-        .update(jobRecord)
-        .eq('id', jobId)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color
-          )
-        `
-        )
-        .single();
+      const [affectedRows] = await Job.update(jobRecord, {
+        where: { id: jobId },
+      });
 
-      if (error) {
-        console.error('Error updating job:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Job not found or no changes made');
       }
+
+      const job = await Job.findByPk(jobId, {
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color'],
+          },
+        ],
+      });
 
       console.log('Job updated successfully:', jobId);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(job.toJSON());
     } catch (error) {
       console.error('JobService.updateJob error:', error);
       throw error;
@@ -237,49 +254,39 @@ class JobService {
 
       const updateData = {
         status: newStatus,
-        updated_at: new Date().toISOString(),
       };
 
       if (notes) {
         updateData.notes = notes;
       }
 
-      const { data, error } = await supabase
-        .from(this.table)
-        .update(updateData)
-        .eq('id', jobId)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color
-          )
-        `
-        )
-        .single();
+      const [affectedRows] = await Job.update(updateData, {
+        where: { id: jobId },
+      });
 
-      if (error) {
-        console.error('Error moving job:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Job not found');
       }
+
+      const job = await Job.findByPk(jobId, {
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color'],
+          },
+        ],
+      });
 
       console.log(`Job ${jobId} moved to status: ${newStatus}`);
 
       // Convert back to frontend format
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(job.toJSON());
     } catch (error) {
       console.error('JobService.moveJobToStatus error:', error);
       throw error;
@@ -291,46 +298,26 @@ class JobService {
    */
   async getJobById(jobId) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            address,
-            city,
-            state
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color,
-            mileage,
-            engine
-          )
-        `
-        )
-        .eq('id', jobId)
-        .single();
+      const job = await Job.findByPk(jobId, {
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color', 'mileage', 'engineSize'],
+          },
+        ],
+      });
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null; // Not found
-        }
-        console.error('Error getting job:', error);
-        throw error;
+      if (!job) {
+        return null; // Not found
       }
 
-      return this.transformToFrontend(data);
+      return this.transformToFrontend(job.toJSON());
     } catch (error) {
       console.error('JobService.getJobById error:', error);
       throw error;
@@ -342,38 +329,24 @@ class JobService {
    */
   async getJobsByStatus(status) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color
-          )
-        `
-        )
-        .eq('status', status)
-        .order('created_at', { ascending: false });
+      const jobs = await Job.findAll({
+        where: { status },
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
 
-      if (error) {
-        console.error('Error getting jobs by status:', error);
-        throw error;
-      }
-
-      return (data || []).map(job => this.transformToFrontend(job));
+      return jobs.map(job => this.transformToFrontend(job.toJSON()));
     } catch (error) {
       console.error('JobService.getJobsByStatus error:', error);
       throw error;
@@ -385,40 +358,31 @@ class JobService {
    */
   async searchJobs(searchTerm) {
     try {
-      const { data, error } = await supabase
-        .from(this.table)
-        .select(
-          `
-          *,
-          customers (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          vehicles (
-            id,
-            year,
-            make,
-            model,
-            vin,
-            license_plate,
-            color
-          )
-        `
-        )
-        .or(
-          `job_number.ilike.%${searchTerm}%,claim_number.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
-        )
-        .order('created_at', { ascending: false });
+      const where = {
+        ...queryHelpers.search(
+          ['jobNumber', 'claimNumber', 'damageDescription'],
+          searchTerm
+        ),
+      };
 
-      if (error) {
-        console.error('Error searching jobs:', error);
-        throw error;
-      }
+      const jobs = await Job.findAll({
+        where,
+        include: [
+          {
+            model: Customer,
+            as: 'customer',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+          },
+          {
+            model: Vehicle,
+            as: 'vehicle',
+            attributes: ['id', 'year', 'make', 'model', 'vin', 'licensePlate', 'color'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
 
-      return (data || []).map(job => this.transformToFrontend(job));
+      return jobs.map(job => this.transformToFrontend(job.toJSON()));
     } catch (error) {
       console.error('JobService.searchJobs error:', error);
       throw error;
@@ -430,14 +394,12 @@ class JobService {
    */
   async deleteJob(jobId) {
     try {
-      const { error } = await supabase
-        .from(this.table)
-        .delete()
-        .eq('id', jobId);
+      const affectedRows = await Job.destroy({
+        where: { id: jobId },
+      });
 
-      if (error) {
-        console.error('Error deleting job:', error);
-        throw error;
+      if (affectedRows === 0) {
+        throw new Error('Job not found');
       }
 
       console.log('Job deleted successfully:', jobId);
@@ -474,13 +436,20 @@ class JobService {
           process.env.DEV_SHOP_ID ||
           '00000000-0000-4000-8000-000000000001',
         status: 'estimate',
-        // description: 'BMS Import Job', // Column doesn't exist in Supabase schema
         estimateTotal: parseFloat(
           bmsData.job?.estimateTotal || bmsData.documentInfo?.totalAmount || 0
         ),
-        // Remove fields that don't exist in schema for now
-        // priority, insuranceCompany, claimNumber, deductible, damageDescription,
-        // partsNeeded, laborHours, paintHours, targetCompletion, notes, bmsImportId
+        priority: bmsData.job?.priority || 'normal',
+        insuranceCompany: bmsData.job?.insuranceCompany || '',
+        claimNumber: bmsData.job?.claimNumber || '',
+        deductible: parseFloat(bmsData.job?.deductible || 0),
+        damageDescription: bmsData.job?.damageDescription || '',
+        partsNeeded: bmsData.job?.partsNeeded || [],
+        laborHours: parseFloat(bmsData.job?.laborHours || 0),
+        paintHours: parseFloat(bmsData.job?.paintHours || 0),
+        targetCompletion: bmsData.job?.targetCompletion || null,
+        notes: bmsData.job?.notes || '',
+        bmsImportId: bmsData.bmsImportId || null,
       };
 
       return await this.createJob(jobData);
@@ -535,54 +504,56 @@ class JobService {
   transformToFrontend(jobRecord) {
     if (!jobRecord) return null;
 
+    const metadata = jobRecord.metadata || {};
+
     const transformed = {
       id: jobRecord.id,
-      jobNumber: jobRecord.job_number || '',
-      customerId: jobRecord.customer_id,
-      vehicleId: jobRecord.vehicle_id,
+      jobNumber: jobRecord.jobNumber || '',
+      customerId: jobRecord.customerId,
+      vehicleId: jobRecord.vehicleId,
       status: jobRecord.status || 'estimate',
       priority: jobRecord.priority || 'normal',
-      estimateTotal: parseFloat(jobRecord.estimate_total || 0),
-      insuranceCompany: jobRecord.insurance_company || '',
-      claimNumber: jobRecord.claim_number || '',
+      estimateTotal: parseFloat(jobRecord.totalAmount || 0),
+      insuranceCompany: metadata.insuranceCompany || '',
+      claimNumber: jobRecord.claimNumber || '',
       deductible: parseFloat(jobRecord.deductible || 0),
-      description: jobRecord.description || '',
-      damageDescription: jobRecord.damage_description || '',
-      partsNeeded: jobRecord.parts_needed || [],
-      laborHours: parseFloat(jobRecord.labor_hours || 0),
-      paintHours: parseFloat(jobRecord.paint_hours || 0),
-      targetCompletion: jobRecord.target_completion,
-      targetDate: jobRecord.target_completion,
+      description: jobRecord.repairDescription || '',
+      damageDescription: jobRecord.damageDescription || '',
+      partsNeeded: metadata.partsNeeded || [],
+      laborHours: parseFloat(jobRecord.estimatedHours || 0),
+      paintHours: parseFloat(metadata.paintHours || 0),
+      targetCompletion: jobRecord.targetDeliveryDate,
+      targetDate: jobRecord.targetDeliveryDate,
       notes: jobRecord.notes || '',
-      bmsImportId: jobRecord.bms_import_id,
-      createdAt: jobRecord.created_at,
-      updatedAt: jobRecord.updated_at,
-      daysInShop: this.calculateDaysInShop(jobRecord.created_at),
+      bmsImportId: metadata.bmsImportId || null,
+      createdAt: jobRecord.createdAt,
+      updatedAt: jobRecord.updatedAt,
+      daysInShop: this.calculateDaysInShop(jobRecord.createdAt),
       progressPercentage: this.calculateProgressPercentage(jobRecord.status),
     };
 
     // Add customer information if available
-    if (jobRecord.customers) {
+    if (jobRecord.customer) {
       transformed.customer = {
-        id: jobRecord.customers.id,
-        name: `${jobRecord.customers.first_name || ''} ${jobRecord.customers.last_name || ''}`.trim(),
-        firstName: jobRecord.customers.first_name || '',
-        lastName: jobRecord.customers.last_name || '',
-        email: jobRecord.customers.email || '',
-        phone: jobRecord.customers.phone || '',
+        id: jobRecord.customer.id,
+        name: `${jobRecord.customer.firstName || ''} ${jobRecord.customer.lastName || ''}`.trim(),
+        firstName: jobRecord.customer.firstName || '',
+        lastName: jobRecord.customer.lastName || '',
+        email: jobRecord.customer.email || '',
+        phone: jobRecord.customer.phone || '',
       };
     }
 
     // Add vehicle information if available
-    if (jobRecord.vehicles) {
+    if (jobRecord.vehicle) {
       transformed.vehicle = {
-        id: jobRecord.vehicles.id,
-        year: jobRecord.vehicles.year,
-        make: jobRecord.vehicles.make || '',
-        model: jobRecord.vehicles.model || '',
-        vin: jobRecord.vehicles.vin || '',
-        license: jobRecord.vehicles.license_plate || '',
-        color: jobRecord.vehicles.color || '',
+        id: jobRecord.vehicle.id,
+        year: jobRecord.vehicle.year,
+        make: jobRecord.vehicle.make || '',
+        model: jobRecord.vehicle.model || '',
+        vin: jobRecord.vehicle.vin || '',
+        license: jobRecord.vehicle.licensePlate || '',
+        color: jobRecord.vehicle.color || '',
       };
     }
 

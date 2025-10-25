@@ -1,16 +1,20 @@
-const { databaseService } = require('./databaseService');
-const { getSupabaseClient, isSupabaseEnabled } = require('../config/supabase');
+const { sequelize } = require('../database/connection');
+const {
+  Job,
+  Customer,
+  User,
+  Part,
+  EstimateLineItem,
+  PartsOrderItem,
+} = require('../database/models');
+const { Op } = require('sequelize');
 
 /**
  * Advanced Analytics Service for CollisionOS
  * Provides business intelligence, reporting, and predictive analytics
- * Compatible with both Supabase (PostgreSQL) and SQLite
+ * Uses direct Sequelize models for all database operations
  */
 class AnalyticsService {
-  constructor() {
-    this.useSupabase = isSupabaseEnabled;
-  }
-
   // ==============================================================
   // DASHBOARD ANALYTICS
   // ==============================================================
@@ -24,86 +28,121 @@ class AnalyticsService {
   async getDashboardStats(shopId, period = 'month') {
     try {
       const dateFilter = this.getDateFilter(period);
-
-      if (this.useSupabase) {
-        return await this.getSupabaseDashboardStats(shopId, dateFilter);
-      } else {
-        return await this.getSQLiteDashboardStats(shopId, dateFilter);
-      }
+      return await this.getSequelizeDashboardStats(shopId, dateFilter);
     } catch (error) {
       throw new Error(`Failed to get dashboard stats: ${error.message}`);
     }
   }
 
   /**
-   * Get Supabase dashboard stats using RPC function
+   * Get dashboard stats using Sequelize ORM
    */
-  async getSupabaseDashboardStats(shopId, dateFilter) {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase.rpc('get_shop_dashboard_stats', {
-      shop_uuid: shopId,
-    });
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Get SQLite dashboard stats using raw queries
-   */
-  async getSQLiteDashboardStats(shopId, dateFilter) {
+  async getSequelizeDashboardStats(shopId, dateFilter) {
     const stats = {};
 
-    // Job statistics
-    const jobStats = await databaseService.query('jobs', {
-      select:
-        'id, status, total_amount, cycle_time, created_at, completion_date',
+    // Job statistics with aggregations
+    const jobStats = await Job.findAll({
+      attributes: [
+        'id',
+        'status',
+        'totalAmount',
+        'cycleTime',
+        'createdAt',
+        'completionDate',
+      ],
       where: {
-        shop_id: shopId,
-        created_at: { gte: dateFilter.start },
+        shopId,
+        createdAt: { [Op.gte]: dateFilter.start },
       },
+      raw: true,
+    });
+
+    // Calculate job metrics
+    const activeStatuses = [
+      'body_structure',
+      'paint_prep',
+      'paint_booth',
+      'reassembly',
+    ];
+    const activeJobs = jobStats.filter(j => activeStatuses.includes(j.status));
+    const completedJobs = jobStats.filter(j => j.status === 'delivered');
+
+    // Revenue aggregation for completed jobs
+    const revenueResult = await Job.findOne({
+      attributes: [
+        [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalRevenue'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+      ],
+      where: {
+        shopId,
+        status: 'delivered',
+        createdAt: { [Op.gte]: dateFilter.start },
+      },
+      raw: true,
+    });
+
+    // Average cycle time for completed jobs
+    const cycleTimeResult = await Job.findOne({
+      attributes: [
+        [sequelize.fn('AVG', sequelize.col('cycleTime')), 'avgCycleTime'],
+      ],
+      where: {
+        shopId,
+        status: 'delivered',
+        cycleTime: { [Op.not]: null },
+        createdAt: { [Op.gte]: dateFilter.start },
+      },
+      raw: true,
     });
 
     stats.jobs = {
       total: jobStats.length,
-      active: jobStats.filter(j =>
-        ['body_structure', 'paint_prep', 'paint_booth', 'reassembly'].includes(
-          j.status
-        )
-      ).length,
-      completed: jobStats.filter(j => j.status === 'delivered').length,
-      revenue: jobStats
-        .filter(j => j.status === 'delivered')
-        .reduce((sum, j) => sum + (j.total_amount || 0), 0),
-      avg_cycle_time: this.calculateAverage(
-        jobStats.filter(j => j.cycle_time).map(j => j.cycle_time)
-      ),
+      active: activeJobs.length,
+      completed: completedJobs.length,
+      revenue: parseFloat(revenueResult?.totalRevenue || 0),
+      avg_cycle_time: parseFloat(cycleTimeResult?.avgCycleTime || 0),
     };
 
     // Customer statistics
-    const customerStats = await databaseService.query('customers', {
-      select: 'id, created_at',
-      where: { shop_id: shopId },
+    const customerStats = await Customer.findAll({
+      attributes: ['id', 'createdAt'],
+      where: { shopId },
+      raw: true,
     });
+
+    const newCustomers = customerStats.filter(
+      c => new Date(c.createdAt) >= dateFilter.start
+    );
 
     stats.customers = {
       total: customerStats.length,
-      new_period: customerStats.filter(
-        c => new Date(c.created_at) >= dateFilter.start
-      ).length,
+      new_period: newCustomers.length,
     };
 
     // Parts statistics
-    const partsStats = await databaseService.query('parts', {
-      select: 'current_stock, minimum_stock, reorder_point',
-      where: { shop_id: shopId, is_active: true },
+    const lowStockParts = await Part.count({
+      where: {
+        shopId,
+        isActive: true,
+        currentStock: {
+          [Op.lte]: sequelize.col('minimumStock'),
+        },
+      },
+    });
+
+    const reorderNeededParts = await Part.count({
+      where: {
+        shopId,
+        isActive: true,
+        currentStock: {
+          [Op.lte]: sequelize.col('reorderPoint'),
+        },
+      },
     });
 
     stats.parts = {
-      low_stock: partsStats.filter(p => p.current_stock <= p.minimum_stock)
-        .length,
-      reorder_needed: partsStats.filter(p => p.current_stock <= p.reorder_point)
-        .length,
+      low_stock: lowStockParts,
+      reorder_needed: reorderNeededParts,
     };
 
     return stats;
@@ -123,54 +162,36 @@ class AnalyticsService {
   async getRevenueAnalytics(shopId, period = 'year', groupBy = 'month') {
     try {
       const dateFilter = this.getDateFilter(period);
-
-      if (this.useSupabase) {
-        return await this.getSupabaseRevenueAnalytics(
-          shopId,
-          dateFilter,
-          groupBy
-        );
-      } else {
-        return await this.getSQLiteRevenueAnalytics(
-          shopId,
-          dateFilter,
-          groupBy
-        );
-      }
+      return await this.getSequelizeRevenueAnalytics(
+        shopId,
+        dateFilter,
+        groupBy
+      );
     } catch (error) {
       throw new Error(`Failed to get revenue analytics: ${error.message}`);
     }
   }
 
-  async getSupabaseRevenueAnalytics(shopId, dateFilter, groupBy) {
-    const supabase = getSupabaseClient();
-
-    // Use materialized view if available, fallback to regular query
-    const { data, error } = await supabase
-      .from('revenue_trends')
-      .select('*')
-      .eq('shop_id', shopId)
-      .gte('month', dateFilter.start.toISOString())
-      .lte('month', dateFilter.end.toISOString())
-      .order('month');
-
-    if (error) throw error;
-    return this.processRevenueData(data, groupBy);
-  }
-
-  async getSQLiteRevenueAnalytics(shopId, dateFilter, groupBy) {
-    const jobs = await databaseService.query('jobs', {
-      select:
-        'total_amount, labor_amount, parts_amount, materials_amount, created_at, completion_date',
+  async getSequelizeRevenueAnalytics(shopId, dateFilter, groupBy) {
+    const jobs = await Job.findAll({
+      attributes: [
+        'totalAmount',
+        'laborAmount',
+        'partsAmount',
+        'materialsAmount',
+        'createdAt',
+        'completionDate',
+      ],
       where: {
-        shop_id: shopId,
+        shopId,
         status: 'delivered',
-        completion_date: {
-          gte: dateFilter.start,
-          lte: dateFilter.end,
+        completionDate: {
+          [Op.gte]: dateFilter.start,
+          [Op.lte]: dateFilter.end,
         },
       },
-      order: [['completion_date', 'ASC']],
+      order: [['completionDate', 'ASC']],
+      raw: true,
     });
 
     return this.processRevenueData(jobs, groupBy);
@@ -190,7 +211,7 @@ class AnalyticsService {
     };
 
     data.forEach(item => {
-      const date = new Date(item.completion_date || item.month);
+      const date = new Date(item.completionDate || item.month);
       const key = this.formatDateKey(date, groupBy);
 
       if (!grouped[key]) {
@@ -204,10 +225,10 @@ class AnalyticsService {
         };
       }
 
-      const revenue = parseFloat(item.total_amount || item.revenue || 0);
-      const labor = parseFloat(item.labor_amount || 0);
-      const parts = parseFloat(item.parts_amount || 0);
-      const materials = parseFloat(item.materials_amount || 0);
+      const revenue = parseFloat(item.totalAmount || item.revenue || 0);
+      const labor = parseFloat(item.laborAmount || 0);
+      const parts = parseFloat(item.partsAmount || 0);
+      const materials = parseFloat(item.materialsAmount || 0);
 
       grouped[key].revenue += revenue;
       grouped[key].labor += labor;
@@ -262,64 +283,52 @@ class AnalyticsService {
    */
   async getCustomerAnalytics(shopId, options = {}) {
     try {
-      if (this.useSupabase) {
-        return await this.getSupabaseCustomerAnalytics(shopId, options);
-      } else {
-        return await this.getSQLiteCustomerAnalytics(shopId, options);
-      }
+      return await this.getSequelizeCustomerAnalytics(shopId, options);
     } catch (error) {
       throw new Error(`Failed to get customer analytics: ${error.message}`);
     }
   }
 
-  async getSupabaseCustomerAnalytics(shopId, options) {
-    const supabase = getSupabaseClient();
-
-    // Get customer segments from materialized view
-    const { data: segments, error: segmentsError } = await supabase
-      .from('customer_segments')
-      .select('*')
-      .eq('shop_id', shopId);
-
-    if (segmentsError) throw segmentsError;
-
-    // Get customer analytics data
-    const { data: analytics, error: analyticsError } = await supabase
-      .from('customer_analytics')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('lifetime_value', { ascending: false });
-
-    if (analyticsError) throw analyticsError;
-
-    return this.processCustomerAnalytics(segments, analytics);
-  }
-
-  async getSQLiteCustomerAnalytics(shopId, options) {
-    // Get all customers with their job statistics
-    const customers = await databaseService.query('customers', {
-      where: { shop_id: shopId, is_active: true },
+  async getSequelizeCustomerAnalytics(shopId, options) {
+    // Get all active customers
+    const customers = await Customer.findAll({
+      where: { shopId, isActive: true },
+      raw: true,
     });
 
     const analytics = [];
 
     for (const customer of customers) {
-      const jobs = await databaseService.query('jobs', {
-        where: { customer_id: customer.id, shop_id: shopId },
+      // Get all jobs for this customer
+      const jobs = await Job.findAll({
+        where: { customerId: customer.id, shopId },
+        raw: true,
       });
 
       const completedJobs = jobs.filter(j => j.status === 'delivered');
-      const totalSpent = completedJobs.reduce(
-        (sum, j) => sum + (j.total_amount || 0),
-        0
-      );
-      const avgJobValue =
-        completedJobs.length > 0 ? totalSpent / completedJobs.length : 0;
+
+      // Calculate total spent using aggregation
+      const revenueResult = await Job.findOne({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalSpent'],
+          [sequelize.fn('COUNT', sequelize.col('id')), 'completedCount'],
+        ],
+        where: {
+          customerId: customer.id,
+          shopId,
+          status: 'delivered',
+        },
+        raw: true,
+      });
+
+      const totalSpent = parseFloat(revenueResult?.totalSpent || 0);
+      const completedCount = parseInt(revenueResult?.completedCount || 0);
+      const avgJobValue = completedCount > 0 ? totalSpent / completedCount : 0;
 
       // Calculate days since last job
       const lastJobDate =
         jobs.length > 0
-          ? new Date(Math.max(...jobs.map(j => new Date(j.created_at))))
+          ? new Date(Math.max(...jobs.map(j => new Date(j.createdAt))))
           : null;
       const daysSinceLastJob = lastJobDate
         ? Math.floor(
@@ -343,9 +352,9 @@ class AnalyticsService {
 
       analytics.push({
         customer_id: customer.id,
-        customer_name: `${customer.first_name} ${customer.last_name}`,
+        customer_name: `${customer.firstName} ${customer.lastName}`,
         total_jobs: jobs.length,
-        completed_jobs: completedJobs.length,
+        completed_jobs: completedCount,
         total_spent: totalSpent,
         avg_job_value: avgJobValue,
         days_since_last_job: daysSinceLastJob,
@@ -422,67 +431,59 @@ class AnalyticsService {
   async getTechnicianAnalytics(shopId, period = 'month') {
     try {
       const dateFilter = this.getDateFilter(period);
-
-      if (this.useSupabase) {
-        return await this.getSupabaseTechnicianAnalytics(shopId, dateFilter);
-      } else {
-        return await this.getSQLiteTechnicianAnalytics(shopId, dateFilter);
-      }
+      return await this.getSequelizeTechnicianAnalytics(shopId, dateFilter);
     } catch (error) {
       throw new Error(`Failed to get technician analytics: ${error.message}`);
     }
   }
 
-  async getSupabaseTechnicianAnalytics(shopId, dateFilter) {
-    const supabase = getSupabaseClient();
-
-    const { data, error } = await supabase
-      .from('technician_efficiency')
-      .select('*')
-      .eq('shop_id', shopId);
-
-    if (error) throw error;
-    return data;
-  }
-
-  async getSQLiteTechnicianAnalytics(shopId, dateFilter) {
-    const technicians = await databaseService.query('users', {
+  async getSequelizeTechnicianAnalytics(shopId, dateFilter) {
+    const technicians = await User.findAll({
       where: {
-        shop_id: shopId,
+        shopId,
         role: 'technician',
-        is_active: true,
+        isActive: true,
       },
+      raw: true,
     });
 
     const analytics = [];
 
     for (const tech of technicians) {
-      const jobs = await databaseService.query('jobs', {
+      const jobs = await Job.findAll({
         where: {
-          assigned_to: tech.id,
-          shop_id: shopId,
-          created_at: { gte: dateFilter.start },
+          assignedTo: tech.id,
+          shopId,
+          createdAt: { [Op.gte]: dateFilter.start },
         },
+        raw: true,
       });
 
       const completedJobs = jobs.filter(j => j.status === 'delivered');
-      const totalRevenue = completedJobs.reduce(
-        (sum, j) => sum + (j.total_amount || 0),
-        0
-      );
-      const totalHours = completedJobs.reduce(
-        (sum, j) => sum + (j.actual_hours || 0),
-        0
-      );
-      const avgEfficiency =
-        completedJobs.length > 0
-          ? completedJobs.reduce((sum, j) => sum + (j.efficiency || 100), 0) /
-            completedJobs.length
-          : 100;
+
+      // Aggregate revenue and hours
+      const aggregates = await Job.findOne({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalRevenue'],
+          [sequelize.fn('SUM', sequelize.col('actualHours')), 'totalHours'],
+          [sequelize.fn('AVG', sequelize.col('efficiency')), 'avgEfficiency'],
+        ],
+        where: {
+          assignedTo: tech.id,
+          shopId,
+          status: 'delivered',
+          createdAt: { [Op.gte]: dateFilter.start },
+        },
+        raw: true,
+      });
+
+      const totalRevenue = parseFloat(aggregates?.totalRevenue || 0);
+      const totalHours = parseFloat(aggregates?.totalHours || 0);
+      const avgEfficiency = parseFloat(aggregates?.avgEfficiency || 100);
 
       analytics.push({
         technician_id: tech.id,
-        technician_name: `${tech.first_name} ${tech.last_name}`,
+        technician_name: `${tech.firstName} ${tech.lastName}`,
         total_jobs: jobs.length,
         completed_jobs: completedJobs.length,
         total_hours: totalHours,
@@ -508,64 +509,55 @@ class AnalyticsService {
    */
   async getPartsAnalytics(shopId) {
     try {
-      if (this.useSupabase) {
-        return await this.getSupabasePartsAnalytics(shopId);
-      } else {
-        return await this.getSQLitePartsAnalytics(shopId);
-      }
+      return await this.getSequelizePartsAnalytics(shopId);
     } catch (error) {
       throw new Error(`Failed to get parts analytics: ${error.message}`);
     }
   }
 
-  async getSupabasePartsAnalytics(shopId) {
-    const supabase = getSupabaseClient();
-
-    const { data, error } = await supabase
-      .from('parts_analytics')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('margin_percentage', { ascending: false });
-
-    if (error) throw error;
-    return this.processPartsAnalytics(data);
-  }
-
-  async getSQLitePartsAnalytics(shopId) {
-    const parts = await databaseService.query('parts', {
-      where: { shop_id: shopId, is_active: true },
+  async getSequelizePartsAnalytics(shopId) {
+    const parts = await Part.findAll({
+      where: { shopId, isActive: true },
+      raw: true,
     });
 
     const analytics = [];
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     for (const part of parts) {
-      // Get recent job parts usage
-      const jobParts = await databaseService.query('job_parts', {
+      // Get recent usage from EstimateLineItem (which represents job parts)
+      const lineItems = await EstimateLineItem.findAll({
         where: {
-          part_id: part.id,
-          created_at: { gte: thirtyDaysAgo },
+          partNumber: part.partNumber,
+          createdAt: { [Op.gte]: thirtyDaysAgo },
         },
+        raw: true,
       });
 
-      const quantityUsed30d = jobParts.reduce(
-        (sum, jp) => sum + (jp.quantity_needed || 0),
-        0
-      );
-      const totalRevenue30d = jobParts.reduce(
-        (sum, jp) => sum + (jp.total_price || 0),
-        0
-      );
-      const totalCost30d = jobParts.reduce(
-        (sum, jp) => sum + (jp.total_cost || 0),
-        0
-      );
+      // Aggregate usage statistics
+      const usage = await EstimateLineItem.findOne({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('quantity')), 'quantityUsed'],
+          [sequelize.fn('SUM', sequelize.col('totalPrice')), 'totalRevenue'],
+        ],
+        where: {
+          partNumber: part.partNumber,
+          createdAt: { [Op.gte]: thirtyDaysAgo },
+        },
+        raw: true,
+      });
+
+      const quantityUsed30d = parseFloat(usage?.quantityUsed || 0);
+      const totalRevenue30d = parseFloat(usage?.totalRevenue || 0);
+
+      // Calculate cost (estimate based on part cost price and quantity)
+      const totalCost30d = quantityUsed30d * (part.costPrice || 0);
       const margin30d = totalRevenue30d - totalCost30d;
       const marginPercentage =
         totalRevenue30d > 0 ? (margin30d / totalRevenue30d) * 100 : 0;
 
       // Calculate turnover rate
-      const avgStock = part.current_stock > 0 ? part.current_stock : 1;
+      const avgStock = part.currentStock > 0 ? part.currentStock : 1;
       const turnoverRate =
         quantityUsed30d > 0 ? (quantityUsed30d * 12) / avgStock : 0;
 
@@ -576,9 +568,9 @@ class AnalyticsService {
 
       analytics.push({
         part_id: part.id,
-        part_number: part.part_number,
+        part_number: part.partNumber,
         description: part.description,
-        current_stock: part.current_stock,
+        current_stock: part.currentStock,
         quantity_used_30d: quantityUsed30d,
         total_revenue_30d: totalRevenue30d,
         margin_30d: margin30d,
@@ -587,6 +579,7 @@ class AnalyticsService {
         abc_class: abcClass,
         velocity_class:
           turnoverRate > 6 ? 'Fast' : turnoverRate > 2 ? 'Medium' : 'Slow',
+        cost_price: part.costPrice,
       });
     }
 
@@ -755,26 +748,21 @@ class AnalyticsService {
 
   /**
    * Update daily metrics (called by scheduled job)
+   * NOTE: DailyMetric model not yet implemented - this is a placeholder
    */
   async updateDailyMetrics(shopId, targetDate = new Date()) {
     try {
-      if (this.useSupabase) {
-        const supabase = getSupabaseClient();
-        await supabase.rpc('update_daily_metrics', {
-          target_date: targetDate.toISOString().split('T')[0],
-          shop_uuid: shopId,
-        });
-      } else {
-        // SQLite implementation would require custom calculations
-        await this.calculateAndStoreDailyMetrics(shopId, targetDate);
-      }
+      // TODO: Implement daily metrics tracking
+      // await this.calculateAndStoreDailyMetrics(shopId, targetDate);
+      console.warn('Daily metrics tracking not yet implemented');
     } catch (error) {
       throw new Error(`Failed to update daily metrics: ${error.message}`);
     }
   }
 
   /**
-   * Calculate and store daily metrics for SQLite
+   * Calculate and store daily metrics
+   * NOTE: Requires DailyMetric model to be created
    */
   async calculateAndStoreDailyMetrics(shopId, targetDate) {
     const dateStr = targetDate.toISOString().split('T')[0];
@@ -783,52 +771,55 @@ class AnalyticsService {
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Calculate metrics for the day
-    const jobsCreated = await databaseService.query('jobs', {
+    // Calculate jobs created
+    const jobsCreatedCount = await Job.count({
       where: {
-        shop_id: shopId,
-        created_at: { gte: startOfDay, lte: endOfDay },
+        shopId,
+        createdAt: { [Op.gte]: startOfDay, [Op.lte]: endOfDay },
       },
     });
 
-    const jobsCompleted = await databaseService.query('jobs', {
+    // Calculate jobs completed
+    const jobsCompletedCount = await Job.count({
       where: {
-        shop_id: shopId,
+        shopId,
         status: 'delivered',
-        completion_date: { gte: startOfDay, lte: endOfDay },
+        completionDate: { [Op.gte]: startOfDay, [Op.lte]: endOfDay },
       },
     });
 
-    const revenueTotal = jobsCompleted.reduce(
-      (sum, job) => sum + (job.total_amount || 0),
-      0
-    );
-    const avgCycleTime = this.calculateAverage(
-      jobsCompleted.map(job => job.cycle_time).filter(Boolean)
-    );
-
-    // Upsert daily metrics
-    const existingMetric = await databaseService.query('daily_metrics', {
-      where: { shop_id: shopId, metric_date: dateStr },
+    // Calculate revenue and cycle time
+    const metrics = await Job.findOne({
+      attributes: [
+        [sequelize.fn('SUM', sequelize.col('totalAmount')), 'revenueTotal'],
+        [sequelize.fn('AVG', sequelize.col('cycleTime')), 'avgCycleTime'],
+      ],
+      where: {
+        shopId,
+        status: 'delivered',
+        completionDate: { [Op.gte]: startOfDay, [Op.lte]: endOfDay },
+      },
+      raw: true,
     });
 
+    const revenueTotal = parseFloat(metrics?.revenueTotal || 0);
+    const avgCycleTime = parseFloat(metrics?.avgCycleTime || 0);
+
+    // TODO: Upsert to DailyMetric model once it's created
     const metricsData = {
-      shop_id: shopId,
-      metric_date: dateStr,
-      jobs_created: jobsCreated.length,
-      jobs_completed: jobsCompleted.length,
-      revenue_total: revenueTotal,
-      avg_cycle_time: avgCycleTime,
-      updated_at: new Date(),
+      shopId,
+      metricDate: dateStr,
+      jobsCreated: jobsCreatedCount,
+      jobsCompleted: jobsCompletedCount,
+      revenueTotal,
+      avgCycleTime,
+      updatedAt: new Date(),
     };
 
-    if (existingMetric.length > 0) {
-      await databaseService.update('daily_metrics', metricsData, {
-        id: existingMetric[0].id,
-      });
-    } else {
-      await databaseService.insert('daily_metrics', metricsData);
-    }
+    console.log('Daily metrics calculated:', metricsData);
+
+    // TODO: Implement upsert when DailyMetric model exists
+    // await DailyMetric.upsert(metricsData);
   }
 }
 

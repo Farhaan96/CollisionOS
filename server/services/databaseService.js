@@ -6,7 +6,14 @@
 const { sequelize } = require('../database/models');
 
 /**
- * Simple database service for Sequelize operations
+ * @deprecated This service is DEPRECATED and should NOT be used for new code.
+ *
+ * All core database operations should use Sequelize models directly.
+ * This file is kept ONLY for backwards compatibility with legacy code.
+ *
+ * For new code:
+ * - Use Sequelize models directly from require('../database/models')
+ * - Use queryHelpers from require('../utils/queryHelpers')
  */
 class DatabaseService {
   constructor() {
