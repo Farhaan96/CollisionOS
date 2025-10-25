@@ -383,6 +383,36 @@ class VehicleService {
       throw error;
     }
   }
+
+  /**
+   * Get vehicle service history
+   * @param {string} vehicleId - Vehicle ID
+   * @returns {Promise<Array>} Service history
+   */
+  async getVehicleServiceHistory(vehicleId) {
+    try {
+      const response = await this.api.get(`/${vehicleId}/service-history`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching vehicle service history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vehicle odometer history
+   * @param {string} vehicleId - Vehicle ID
+   * @returns {Promise<Array>} Odometer readings
+   */
+  async getVehicleOdometerHistory(vehicleId) {
+    try {
+      const response = await this.api.get(`/${vehicleId}/odometer-history`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching vehicle odometer history:', error);
+      throw error;
+    }
+  }
 }
 
 // Create and export singleton instance

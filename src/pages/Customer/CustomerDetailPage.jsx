@@ -51,6 +51,8 @@ import { motion } from 'framer-motion';
 import { LoadingSpinner } from '../../components/Common/LoadingSpinner';
 import { CustomerForm } from '../../components/Customer/CustomerForm';
 import VehicleFormDialog from '../../components/Vehicle/VehicleFormDialog';
+import CommunicationsTab from '../../components/Customer/CommunicationsTab';
+import HistoryTab from '../../components/Customer/HistoryTab';
 
 // Services
 import { customerService } from '../../services/customerService';
@@ -437,32 +439,18 @@ const CustomerDetailPage = () => {
 
               {/* Communications Tab */}
               {tabValue === 2 && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    Communications
-                  </Typography>
-                  <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <Message sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                    <Typography color='text.secondary'>
-                      No communications yet
-                    </Typography>
-                  </Box>
-                </Box>
+                <CommunicationsTab
+                  customerId={id}
+                  customerService={customerService}
+                />
               )}
 
               {/* History Tab */}
               {tabValue === 3 && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    Customer History
-                  </Typography>
-                  <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                    <Typography color='text.secondary'>
-                      No history available
-                    </Typography>
-                  </Box>
-                </Box>
+                <HistoryTab
+                  customerId={id}
+                  customerService={customerService}
+                />
               )}
             </CardContent>
           </Card>

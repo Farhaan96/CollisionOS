@@ -31,7 +31,6 @@ import { motion } from 'framer-motion';
 
 // Services
 import { vehicleService } from '../../services/vehicleService';
-import { vinService } from '../../services/vinService';
 
 // Components
 import CustomerAutocomplete from '../Common/CustomerAutocomplete';
@@ -143,7 +142,7 @@ const VehicleFormDialog = ({ open, vehicle, onClose, onSave, customerId = null }
 
     setVinDecoding(true);
     try {
-      const result = await vinService.decodeVIN(formData.vin);
+      const result = await vehicleService.decodeVIN(formData.vin);
 
       if (result.success && result.vehicle) {
         const decoded = result.vehicle;

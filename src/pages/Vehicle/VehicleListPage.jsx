@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TablePagination,
 } from '@mui/material';
 import {
   Add,
@@ -70,13 +71,16 @@ const VehicleListPage = () => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [vehicleFormOpen, setVehicleFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [totalVehicles, setTotalVehicles] = useState(0);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Load vehicles
   useEffect(() => {
     loadVehicles();
-  }, []);
+  }, [page, rowsPerPage]);
 
   // Filter vehicles based on search and filters
   useEffect(() => {
@@ -111,8 +115,22 @@ const VehicleListPage = () => {
   const loadVehicles = async () => {
     setLoading(true);
     try {
-      const data = await vehicleService.getVehicles();
-      setVehicles(data || []);
+      const filters = {
+        limit: rowsPerPage,
+        offset: (page - 1) * rowsPerPage,
+      };
+
+      const response = await vehicleService.getVehicles(filters);
+
+      // Handle paginated response format
+      if (response && response.pagination) {
+        setVehicles(response.data || []);
+        setTotalVehicles(response.pagination.total || 0);
+      } else {
+        // Fallback for non-paginated response
+        setVehicles(response || []);
+        setTotalVehicles(response?.length || 0);
+      }
     } catch (error) {
       console.error('Error loading vehicles:', error);
     } finally {
@@ -386,6 +404,18 @@ const VehicleListPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          component="div"
+          count={totalVehicles}
+          page={page - 1}
+          onPageChange={(event, newPage) => setPage(newPage + 1)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(1);
+          }}
+          rowsPerPageOptions={[10, 20, 50, 100]}
+        />
       </Card>
 
       {/* Dialogs */}
