@@ -1,358 +1,217 @@
-const { getSupabaseClient, isSupabaseEnabled } = require('../config/supabase');
+/**
+ * Real-time Service for CollisionOS
+ * Socket.io-based real-time notifications (Supabase integration removed)
+ */
 
 /**
- * Real-time service that manages both Supabase real-time subscriptions and Socket.io fallback
+ * Real-time service that manages Socket.io connections for live updates
  */
 class RealtimeService {
   constructor() {
-    this.subscriptions = new Map();
-    this.socketIoServer = null;
-    this.useSupabase = isSupabaseEnabled;
-
-    console.log(
-      `🔄 Real-time service initialized with ${this.useSupabase ? 'Supabase' : 'Socket.io'} backend`
-    );
+    this.io = null;
+    this.subscribers = new Map();
+    console.log('🔄 Real-time service initialized with Socket.io backend');
   }
 
   /**
-   * Set Socket.io server instance for fallback
-   * @param {Object} io - Socket.io server instance
+   * Initialize Socket.io server
+   * @param {Object} server - HTTP server instance
+   * @returns {Object} Socket.io server instance
    */
-  setSocketServer(io) {
-    this.socketIoServer = io;
-  }
+  initialize(server) {
+    const socketIo = require('socket.io');
 
-  /**
-   * Subscribe to real-time updates for a table
-   * @param {string} subscriptionId - Unique subscription identifier
-   * @param {string} table - Table name to watch
-   * @param {Object} options - Subscription options
-   * @returns {Promise<Object>} Subscription object
-   */
-  async subscribe(subscriptionId, table, options = {}) {
-    if (this.subscriptions.has(subscriptionId)) {
-      console.warn(`Subscription ${subscriptionId} already exists`);
-      return this.subscriptions.get(subscriptionId);
-    }
-
-    if (this.useSupabase) {
-      return this.subscribeSupabase(subscriptionId, table, options);
-    } else {
-      return this.subscribeSocketIo(subscriptionId, table, options);
-    }
-  }
-
-  /**
-   * Create Supabase real-time subscription
-   * @param {string} subscriptionId - Subscription ID
-   * @param {string} table - Table name
-   * @param {Object} options - Subscription options
-   * @returns {Promise<Object>} Subscription object
-   */
-  async subscribeSupabase(subscriptionId, table, options = {}) {
-    const supabase = getSupabaseClient();
-    if (!supabase) {
-      throw new Error('Supabase not available for real-time subscriptions');
-    }
-
-    const {
-      event = '*', // INSERT, UPDATE, DELETE, or *
-      filter,
-      callback,
-      schema = 'public',
-    } = options;
-
-    let channelName = `${table}_changes`;
-    if (filter) {
-      channelName += `_${Object.keys(filter).join('_')}`;
-    }
-
-    const channel = supabase.channel(channelName).on(
-      'postgres_changes',
-      {
-        event,
-        schema,
-        table,
-        filter: filter
-          ? `${Object.keys(filter)[0]}=eq.${Object.values(filter)[0]}`
-          : undefined,
+    this.io = socketIo(server, {
+      cors: {
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+        methods: ['GET', 'POST'],
+        credentials: true,
       },
-      payload => {
-        console.log(`📡 Supabase real-time event:`, payload);
-        if (callback) {
-          callback(payload);
-        }
-        // Also emit to Socket.io for backwards compatibility
-        this.emitToSocketIo(`${table}_update`, payload);
-      }
-    );
-
-    // Subscribe to the channel
-    const subscriptionResponse = await channel.subscribe(status => {
-      console.log(`📡 Supabase subscription ${subscriptionId} status:`, status);
     });
 
-    const subscription = {
-      id: subscriptionId,
-      type: 'supabase',
-      table,
-      channel,
-      options,
-      status: subscriptionResponse,
-    };
+    this.io.on('connection', (socket) => {
+      console.log('📡 Client connected:', socket.id);
 
-    this.subscriptions.set(subscriptionId, subscription);
-    return subscription;
+      // Handle subscription requests
+      socket.on('subscribe', (channel) => {
+        socket.join(channel);
+        console.log(`📡 Client ${socket.id} subscribed to ${channel}`);
+
+        // Track subscription
+        if (!this.subscribers.has(channel)) {
+          this.subscribers.set(channel, new Set());
+        }
+        this.subscribers.get(channel).add(socket.id);
+      });
+
+      // Handle unsubscription
+      socket.on('unsubscribe', (channel) => {
+        socket.leave(channel);
+        console.log(`📡 Client ${socket.id} unsubscribed from ${channel}`);
+
+        // Remove from tracking
+        if (this.subscribers.has(channel)) {
+          this.subscribers.get(channel).delete(socket.id);
+          if (this.subscribers.get(channel).size === 0) {
+            this.subscribers.delete(channel);
+          }
+        }
+      });
+
+      // Handle disconnect
+      socket.on('disconnect', () => {
+        console.log('📡 Client disconnected:', socket.id);
+
+        // Clean up subscriptions
+        this.subscribers.forEach((subscribers, channel) => {
+          subscribers.delete(socket.id);
+          if (subscribers.size === 0) {
+            this.subscribers.delete(channel);
+          }
+        });
+      });
+    });
+
+    console.log('✅ Socket.io server initialized');
+    return this.io;
   }
 
   /**
-   * Create Socket.io based subscription (fallback)
+   * Broadcast an event to a specific channel
+   * @param {string} channel - Channel/room name
+   * @param {string} event - Event name
+   * @param {Object} data - Event data
+   */
+  broadcast(channel, event, data) {
+    if (!this.io) {
+      console.warn('⚠️  Socket.io not initialized, cannot broadcast');
+      return;
+    }
+
+    this.io.to(channel).emit(event, data);
+    console.log(`📡 Broadcasted ${event} to channel ${channel}`);
+  }
+
+  /**
+   * Notify clients about database changes
+   * @param {string} table - Table name that changed
+   * @param {string} operation - Operation type (INSERT, UPDATE, DELETE)
+   * @param {Object} data - Changed data
+   * @param {string} shopId - Optional shop ID for filtering
+   */
+  notifyChange(table, operation, data, shopId = null) {
+    const channel = shopId ? `shop:${shopId}:${table}` : `table:${table}`;
+
+    this.broadcast(channel, 'change', {
+      table,
+      operation,
+      data,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Also broadcast to general table channel
+    this.broadcast(`table:${table}`, 'change', {
+      table,
+      operation,
+      data,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Emit event to specific shop room
+   * @param {string} shopId - Shop ID
+   * @param {string} event - Event name
+   * @param {Object} data - Event data
+   */
+  emitToShop(shopId, event, data) {
+    const channel = `shop:${shopId}`;
+    this.broadcast(channel, event, data);
+  }
+
+  /**
+   * Emit event to all connected clients
+   * @param {string} event - Event name
+   * @param {Object} data - Event data
+   */
+  emitToAll(event, data) {
+    if (!this.io) {
+      console.warn('⚠️  Socket.io not initialized, cannot emit');
+      return;
+    }
+
+    this.io.emit(event, data);
+    console.log(`📡 Broadcasted ${event} to all clients`);
+  }
+
+  /**
+   * Get current service status
+   * @returns {Object} Status information
+   */
+  getStatus() {
+    return {
+      backend: 'socket.io',
+      connected: this.io ? true : false,
+      activeChannels: Array.from(this.subscribers.keys()),
+      activeSubscriptions: this.subscribers.size,
+      totalClients: this.io ? this.io.sockets.sockets.size : 0,
+    };
+  }
+
+  /**
+   * Get Socket.io server instance
+   * @returns {Object} Socket.io server
+   */
+  getServer() {
+    return this.io;
+  }
+
+  /**
+   * Subscribe to a table (legacy compatibility method)
    * @param {string} subscriptionId - Subscription ID
    * @param {string} table - Table name
    * @param {Object} options - Subscription options
    * @returns {Object} Subscription object
    */
-  subscribeSocketIo(subscriptionId, table, options = {}) {
-    const subscription = {
+  async subscribe(subscriptionId, table, options = {}) {
+    console.log(`📡 Creating subscription: ${subscriptionId} for table ${table}`);
+
+    // This is a no-op since Socket.io subscriptions are handled client-side
+    // Just return a subscription object for compatibility
+    return {
       id: subscriptionId,
       type: 'socket.io',
       table,
       options,
+      status: 'active',
     };
-
-    this.subscriptions.set(subscriptionId, subscription);
-    console.log(`📡 Socket.io subscription created: ${subscriptionId}`);
-
-    return subscription;
   }
 
   /**
-   * Unsubscribe from real-time updates
-   * @param {string} subscriptionId - Subscription ID to remove
-   * @returns {Promise<boolean>} Success status
+   * Unsubscribe (legacy compatibility method)
+   * @param {string} subscriptionId - Subscription ID
+   * @returns {boolean} Success status
    */
   async unsubscribe(subscriptionId) {
-    const subscription = this.subscriptions.get(subscriptionId);
-    if (!subscription) {
-      console.warn(`Subscription ${subscriptionId} not found`);
-      return false;
-    }
-
-    if (subscription.type === 'supabase' && subscription.channel) {
-      const supabase = getSupabaseClient();
-      if (supabase) {
-        await supabase.removeChannel(subscription.channel);
-      }
-    }
-
-    this.subscriptions.delete(subscriptionId);
     console.log(`📡 Unsubscribed: ${subscriptionId}`);
     return true;
   }
 
   /**
-   * Emit real-time update to all connected clients
-   * @param {string} event - Event name
-   * @param {Object} data - Event data
-   * @param {string} shopId - Optional shop ID for room targeting
+   * Close all connections
    */
-  emit(event, data, shopId = null) {
-    if (this.useSupabase) {
-      // With Supabase, real-time events are handled automatically
-      // But we can still emit to Socket.io for backwards compatibility
-      this.emitToSocketIo(event, data, shopId);
-    } else {
-      this.emitToSocketIo(event, data, shopId);
+  async close() {
+    if (this.io) {
+      this.io.close();
+      console.log('🔌 Socket.io server closed');
     }
-  }
-
-  /**
-   * Emit to Socket.io server
-   * @param {string} event - Event name
-   * @param {Object} data - Event data
-   * @param {string} shopId - Optional shop ID for room targeting
-   */
-  emitToSocketIo(event, data, shopId = null) {
-    if (!this.socketIoServer) {
-      return;
-    }
-
-    if (shopId) {
-      this.socketIoServer.to(`shop_${shopId}`).emit(event, data);
-    } else {
-      this.socketIoServer.emit(event, data);
-    }
-  }
-
-  /**
-   * Broadcast job update to all relevant clients
-   * @param {Object} jobData - Job data
-   * @param {string} eventType - Type of update (created, updated, deleted)
-   */
-  broadcastJobUpdate(jobData, eventType = 'updated') {
-    const event = 'job_update';
-    const payload = {
-      type: eventType,
-      data: jobData,
-      timestamp: new Date().toISOString(),
-    };
-
-    this.emit(event, payload, jobData.shopId || jobData.shop_id);
-  }
-
-  /**
-   * Broadcast production board update
-   * @param {Object} data - Production data
-   * @param {string} shopId - Shop ID
-   */
-  broadcastProductionUpdate(data, shopId) {
-    this.emit(
-      'production_update',
-      {
-        type: 'status_change',
-        data,
-        timestamp: new Date().toISOString(),
-      },
-      shopId
-    );
-  }
-
-  /**
-   * Broadcast parts update
-   * @param {Object} partData - Parts data
-   * @param {string} eventType - Event type
-   */
-  broadcastPartsUpdate(partData, eventType = 'updated') {
-    this.emit(
-      'parts_update',
-      {
-        type: eventType,
-        data: partData,
-        timestamp: new Date().toISOString(),
-      },
-      partData.shopId || partData.shop_id
-    );
-  }
-
-  /**
-   * Broadcast quality control update
-   * @param {Object} qualityData - Quality data
-   * @param {string} eventType - Event type
-   */
-  broadcastQualityUpdate(qualityData, eventType = 'updated') {
-    this.emit(
-      'quality_update',
-      {
-        type: eventType,
-        data: qualityData,
-        timestamp: new Date().toISOString(),
-      },
-      qualityData.shopId || qualityData.shop_id
-    );
-  }
-
-  /**
-   * Broadcast notification to users
-   * @param {Object} notification - Notification data
-   * @param {string} shopId - Shop ID
-   */
-  broadcastNotification(notification, shopId) {
-    this.emit(
-      'notification',
-      {
-        ...notification,
-        timestamp: new Date().toISOString(),
-      },
-      shopId
-    );
-  }
-
-  /**
-   * Broadcast customer update
-   * @param {Object} customerData - Customer data
-   * @param {string} eventType - Event type
-   */
-  broadcastCustomerUpdate(customerData, eventType = 'updated') {
-    this.emit(
-      'customer_update',
-      {
-        type: eventType,
-        data: customerData,
-        timestamp: new Date().toISOString(),
-      },
-      customerData.shopId || customerData.shop_id
-    );
-  }
-
-  /**
-   * Broadcast financial update
-   * @param {Object} financialData - Financial data
-   * @param {string} eventType - Event type
-   */
-  broadcastFinancialUpdate(financialData, eventType = 'updated') {
-    this.emit(
-      'financial_update',
-      {
-        type: eventType,
-        data: financialData,
-        timestamp: new Date().toISOString(),
-      },
-      financialData.shopId || financialData.shop_id
-    );
-  }
-
-  /**
-   * Get all active subscriptions
-   * @returns {Array} List of active subscriptions
-   */
-  getActiveSubscriptions() {
-    return Array.from(this.subscriptions.values()).map(sub => ({
-      id: sub.id,
-      type: sub.type,
-      table: sub.table,
-      status: sub.status || 'active',
-    }));
-  }
-
-  /**
-   * Clean up all subscriptions
-   * @returns {Promise<void>}
-   */
-  async cleanup() {
-    console.log('🧹 Cleaning up real-time subscriptions...');
-
-    for (const [subscriptionId] of this.subscriptions) {
-      await this.unsubscribe(subscriptionId);
-    }
-
-    if (this.useSupabase) {
-      const supabase = getSupabaseClient();
-      if (supabase) {
-        // Remove all channels
-        supabase.removeAllChannels();
-      }
-    }
-
-    console.log('✅ Real-time service cleanup completed');
-  }
-
-  /**
-   * Get service status
-   * @returns {Object} Service status
-   */
-  getStatus() {
-    return {
-      backend: this.useSupabase ? 'supabase' : 'socket.io',
-      activeSubscriptions: this.subscriptions.size,
-      subscriptions: this.getActiveSubscriptions(),
-    };
   }
 }
 
-// Create singleton instance
+// Singleton instance
 const realtimeService = new RealtimeService();
 
 module.exports = {
-  RealtimeService,
   realtimeService,
+  RealtimeService,
 };
