@@ -131,9 +131,10 @@ const RODetailPage = () => {
         estimated_completion_date: result.data.estimated_completion_date,
         drop_off_date: result.data.drop_off_date,
         created_at: result.data.created_at,
-        customer: result.data.customers || result.data.customer || null,
-        vehicleProfile: result.data.vehicles || result.data.vehicleProfile || null,
-        claimManagement: result.data.claims || result.data.claimManagement || null,
+        // Clean field mappings - backend now returns singular names
+        customer: result.data.customer || null,
+        vehicleProfile: result.data.vehicle || null,
+        claimManagement: result.data.claim || null,
       };
 
       setRO(roData);

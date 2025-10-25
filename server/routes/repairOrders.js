@@ -356,8 +356,8 @@ router.get('/:id', [
         drop_off_date: repairOrder.dropOffDate,
         created_at: repairOrder.createdAt,
 
-        // Customer data
-        customers: repairOrder.customer ? {
+        // Customer data (singular - matches 1:1 relationship)
+        customer: repairOrder.customer ? {
           id: repairOrder.customer.id,
           first_name: repairOrder.customer.firstName,
           last_name: repairOrder.customer.lastName,
@@ -366,8 +366,8 @@ router.get('/:id', [
           address: repairOrder.customer.address
         } : null,
 
-        // Vehicle data
-        vehicles: repairOrder.vehicleProfile ? {
+        // Vehicle data (singular - matches 1:1 relationship)
+        vehicle: repairOrder.vehicleProfile ? {
           id: repairOrder.vehicleProfile.id,
           vin: repairOrder.vehicleProfile.vin,
           year: repairOrder.vehicleProfile.year,
@@ -378,14 +378,14 @@ router.get('/:id', [
           color: repairOrder.vehicleProfile.color
         } : null,
 
-        // Claim data
-        claims: repairOrder.claimManagement ? {
+        // Claim data (singular - matches 1:1 relationship)
+        claim: repairOrder.claimManagement ? {
           id: repairOrder.claimManagement.id,
           claim_number: repairOrder.claimManagement.claimNumber,
           claim_status: repairOrder.claimManagement.claimStatus,
           deductible: repairOrder.claimManagement.deductibleAmount,
           coverage_type: repairOrder.claimManagement.coverageType,
-          insurance_companies: repairOrder.claimManagement.insuranceCompany ? {
+          insurance_company: repairOrder.claimManagement.insuranceCompany ? {
             name: repairOrder.claimManagement.insuranceCompany.name,
             short_name: repairOrder.claimManagement.insuranceCompany.shortName,
             is_drp: repairOrder.claimManagement.insuranceCompany.isDrp || false
