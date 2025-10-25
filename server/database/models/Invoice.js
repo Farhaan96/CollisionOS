@@ -559,6 +559,54 @@ module.exports = (sequelize, Sequelize) => {
     return ((discount / subtotal) * 100).toFixed(2);
   };
 
+  /**
+   * Record a payment against this invoice
+   * Updates paid amount, balance due, and payment status
+   * @param {number} paymentAmount - Amount of payment to record
+   * @returns {Promise<Invoice>} - Updated invoice
+   */
+  Invoice.prototype.recordPayment = async function (paymentAmount) {
+    const amount = parseFloat(paymentAmount);
+
+    if (amount <= 0) {
+      throw new Error('Payment amount must be greater than zero');
+    }
+
+    const currentPaid = parseFloat(this.amountPaid || 0);
+    const total = parseFloat(this.totalAmount);
+    const newPaidAmount = currentPaid + amount;
+
+    if (newPaidAmount > total) {
+      throw new Error('Payment amount exceeds invoice total');
+    }
+
+    // Update amounts
+    this.amountPaid = newPaidAmount.toFixed(2);
+    this.balanceDue = (total - newPaidAmount).toFixed(2);
+
+    // Update payment status
+    if (newPaidAmount >= total) {
+      this.paymentStatus = 'paid';
+      this.invoiceStatus = 'paid';
+      if (!this.paidInFullDate) {
+        this.paidInFullDate = new Date();
+      }
+    } else if (newPaidAmount > 0) {
+      this.paymentStatus = 'partial';
+      this.invoiceStatus = 'partial';
+    }
+
+    // Update payment dates
+    if (!this.firstPaymentDate) {
+      this.firstPaymentDate = new Date();
+    }
+    this.lastPaymentDate = new Date();
+
+    // Save the invoice
+    await this.save();
+    return this;
+  };
+
   // Class methods
   Invoice.generateInvoiceNumber = generateInvoiceNumber;
 
