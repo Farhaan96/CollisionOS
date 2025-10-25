@@ -36,6 +36,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {
   DirectionsCar,
@@ -50,6 +52,7 @@ import {
   Build,
   Schedule,
 } from '@mui/icons-material';
+import loanerFleetService from '../../services/loanerFleetService';
 
 const CourtesyCarsPage = () => {
   const theme = useTheme();
@@ -60,76 +63,66 @@ const CourtesyCarsPage = () => {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [vehicleForm, setVehicleForm] = useState({
+    make: '',
+    model: '',
+    year: '',
+    licensePlate: '',
+    mileage: '',
+    status: 'available',
+    location: '',
+    fuelLevel: 100,
+  });
 
-  // Mock data for demonstration
+  // Load fleet data from backend
   useEffect(() => {
-    setVehicles([
-      {
-        id: 1,
-        make: 'Toyota',
-        model: 'Camry',
-        year: 2020,
-        licensePlate: 'ABC-123',
-        status: 'available',
-        mileage: 45000,
-        fuelLevel: 75,
-        lastService: '2024-01-01',
-        nextService: '2024-04-01',
-        location: 'Shop Lot',
-      },
-      {
-        id: 2,
-        make: 'Honda',
-        model: 'Civic',
-        year: 2019,
-        licensePlate: 'XYZ-789',
-        status: 'in-use',
-        mileage: 52000,
-        fuelLevel: 45,
-        lastService: '2023-12-15',
-        nextService: '2024-03-15',
-        location: 'Customer Location',
-      },
-      {
-        id: 3,
-        make: 'Nissan',
-        model: 'Altima',
-        year: 2021,
-        licensePlate: 'DEF-456',
-        status: 'maintenance',
-        mileage: 38000,
-        fuelLevel: 90,
-        lastService: '2024-01-10',
-        nextService: '2024-04-10',
-        location: 'Service Bay',
-      },
-    ]);
-
-    setAssignments([
-      {
-        id: 1,
-        vehicleId: 2,
-        customer: 'Sarah Johnson',
-        customerPhone: '604-555-0123',
-        jobNumber: 'RO-2025-001',
-        assignedDate: '2024-01-10',
-        expectedReturn: '2024-01-20',
-        status: 'active',
-        notes: 'Front end repair - estimated 10 days',
-      },
-      {
-        id: 2,
-        vehicleId: 1,
-        customer: 'Mike Wilson',
-        customerPhone: '604-555-0456',
-        jobNumber: 'RO-2025-002',
-        assignedDate: '2024-01-12',
-        expectedReturn: '2024-01-18',
-        status: 'returned',
-        notes: 'Paint job completed',
-      },
-    ]);
+    loadFleetData();
+    loadAssignments();
   }, []);
+
+  const loadFleetData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await loanerFleetService.getFleet();
+      setVehicles(response.data || response.vehicles || []);
+    } catch (err) {
+      console.error('Error loading fleet:', err);
+      setError(err.message || 'Failed to load loaner fleet');
+      showSnackbar('Failed to load loaner fleet', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAssignments = async () => {
+    try {
+      const activeResponse = await loanerFleetService.getActiveAssignments();
+      const historyResponse = await loanerFleetService.getAssignmentHistory({ limit: 10 });
+
+      const activeAssignments = (activeResponse.data || activeResponse.assignments || []).map(a => ({
+        ...a,
+        status: 'active'
+      }));
+
+      const historicalAssignments = (historyResponse.data || historyResponse.assignments || []);
+
+      setAssignments([...activeAssignments, ...historicalAssignments]);
+    } catch (err) {
+      console.error('Error loading assignments:', err);
+      showSnackbar('Failed to load assignments', 'error');
+    }
+  };
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -137,12 +130,81 @@ const CourtesyCarsPage = () => {
 
   const handleAddVehicle = () => {
     setSelectedVehicle(null);
+    setVehicleForm({
+      make: '',
+      model: '',
+      year: '',
+      licensePlate: '',
+      mileage: '',
+      status: 'available',
+      location: '',
+      fuelLevel: 100,
+    });
     setDialogOpen(true);
   };
 
   const handleEditVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
+    setVehicleForm({
+      make: vehicle.make || '',
+      model: vehicle.model || '',
+      year: vehicle.year || '',
+      licensePlate: vehicle.licensePlate || '',
+      mileage: vehicle.mileage || '',
+      status: vehicle.status || 'available',
+      location: vehicle.location || '',
+      fuelLevel: vehicle.fuelLevel || 100,
+    });
     setDialogOpen(true);
+  };
+
+  const handleSaveVehicle = async () => {
+    try {
+      setLoading(true);
+
+      if (selectedVehicle) {
+        // Update existing vehicle
+        await loanerFleetService.updateVehicle(selectedVehicle.id, vehicleForm);
+        showSnackbar('Vehicle updated successfully', 'success');
+      } else {
+        // Add new vehicle
+        await loanerFleetService.addVehicle(vehicleForm);
+        showSnackbar('Vehicle added successfully', 'success');
+      }
+
+      setDialogOpen(false);
+      await loadFleetData();
+    } catch (err) {
+      console.error('Error saving vehicle:', err);
+      showSnackbar(err.message || 'Failed to save vehicle', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteVehicle = async (vehicleId) => {
+    if (!window.confirm('Are you sure you want to remove this vehicle from the fleet?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await loanerFleetService.removeVehicle(vehicleId);
+      showSnackbar('Vehicle removed successfully', 'success');
+      await loadFleetData();
+    } catch (err) {
+      console.error('Error deleting vehicle:', err);
+      showSnackbar(err.message || 'Failed to remove vehicle', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormChange = (field) => (event) => {
+    setVehicleForm({
+      ...vehicleForm,
+      [field]: event.target.value,
+    });
   };
 
   const getStatusColor = (status) => {
@@ -178,6 +240,13 @@ const CourtesyCarsPage = () => {
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
         {/* Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
           <Box>
@@ -364,6 +433,8 @@ const CourtesyCarsPage = () => {
                         size="small"
                         color="error"
                         startIcon={<Delete />}
+                        onClick={() => handleDeleteVehicle(vehicle.id)}
+                        disabled={loading}
                       >
                         Remove
                       </Button>
@@ -510,14 +581,18 @@ const CourtesyCarsPage = () => {
                   <TextField
                     fullWidth
                     label="Make"
-                    defaultValue={selectedVehicle?.make || ''}
+                    value={vehicleForm.make}
+                    onChange={handleFormChange('make')}
+                    required
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Model"
-                    defaultValue={selectedVehicle?.model || ''}
+                    value={vehicleForm.model}
+                    onChange={handleFormChange('model')}
+                    required
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -525,14 +600,18 @@ const CourtesyCarsPage = () => {
                     fullWidth
                     label="Year"
                     type="number"
-                    defaultValue={selectedVehicle?.year || ''}
+                    value={vehicleForm.year}
+                    onChange={handleFormChange('year')}
+                    required
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="License Plate"
-                    defaultValue={selectedVehicle?.licensePlate || ''}
+                    value={vehicleForm.licensePlate}
+                    onChange={handleFormChange('licensePlate')}
+                    required
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -540,15 +619,21 @@ const CourtesyCarsPage = () => {
                     fullWidth
                     label="Mileage"
                     type="number"
-                    defaultValue={selectedVehicle?.mileage || ''}
+                    value={vehicleForm.mileage}
+                    onChange={handleFormChange('mileage')}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <InputLabel>Status</InputLabel>
-                    <Select defaultValue={selectedVehicle?.status || 'available'}>
+                    <Select
+                      value={vehicleForm.status}
+                      onChange={handleFormChange('status')}
+                      label="Status"
+                    >
                       <MenuItem value="available">Available</MenuItem>
                       <MenuItem value="in-use">In Use</MenuItem>
+                      <MenuItem value="reserved">Reserved</MenuItem>
                       <MenuItem value="maintenance">Maintenance</MenuItem>
                       <MenuItem value="out-of-service">Out of Service</MenuItem>
                     </Select>
@@ -558,19 +643,72 @@ const CourtesyCarsPage = () => {
                   <TextField
                     fullWidth
                     label="Location"
-                    defaultValue={selectedVehicle?.location || ''}
+                    value={vehicleForm.location}
+                    onChange={handleFormChange('location')}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Fuel Level (%)"
+                    type="number"
+                    value={vehicleForm.fuelLevel}
+                    onChange={handleFormChange('fuelLevel')}
+                    inputProps={{ min: 0, max: 100 }}
                   />
                 </Grid>
               </Grid>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant="contained">
-              {selectedVehicle ? 'Update' : 'Add'}
+            <Button onClick={() => setDialogOpen(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSaveVehicle}
+              disabled={loading || !vehicleForm.make || !vehicleForm.model || !vehicleForm.year || !vehicleForm.licensePlate}
+            >
+              {loading ? <CircularProgress size={24} /> : selectedVehicle ? 'Update' : 'Add'}
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Loading Indicator */}
+        {loading && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(0, 0, 0, 0.3)',
+              zIndex: 9999,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
+
+        {/* Error/Success Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );
