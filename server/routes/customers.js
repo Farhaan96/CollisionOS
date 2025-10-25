@@ -552,6 +552,104 @@ router.get('/:id/jobs', authenticateToken(), async (req, res) => {
   }
 });
 
+// Get customer repair history with communications and statistics
+router.get('/:id/history', authenticateToken(), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 20, offset = 0 } = req.query;
+    const { RepairOrderManagement, VehicleProfile, ClaimManagement, Invoice, CommunicationLog } = require('../database/models');
+
+    // Verify customer exists
+    const { Customer } = require('../database/models');
+    const customer = await Customer.findOne({
+      where: { id: id }
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Customer not found'
+      });
+    }
+
+    // Get customer's repair order history
+    const repairOrders = await RepairOrderManagement.findAll({
+      where: { customer_id: id },
+      include: [
+        {
+          model: VehicleProfile,
+          as: 'vehicleProfile'
+        },
+        {
+          model: ClaimManagement,
+          as: 'claimManagement'
+        }
+      ],
+      order: [['opened_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    // Get communication history
+    const communications = await CommunicationLog.findAll({
+      where: { customer_id: id },
+      order: [['created_at', 'DESC']],
+      limit: 10
+    }).catch(() => []); // Graceful fallback if table doesn't exist
+
+    // Calculate summary statistics
+    const totalROs = await RepairOrderManagement.count({
+      where: { customer_id: id }
+    });
+
+    const completedROs = await RepairOrderManagement.count({
+      where: { customer_id: id, stage: 'delivered' }
+    });
+
+    // Get total spent from invoices (if Invoice model exists)
+    let totalSpent = 0;
+    try {
+      const invoices = await Invoice.findAll({
+        include: [{
+          model: RepairOrderManagement,
+          as: 'repairOrder',
+          where: { customer_id: id }
+        }]
+      });
+      totalSpent = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount) || 0), 0);
+    } catch (err) {
+      console.log('Invoice calculation skipped:', err.message);
+    }
+
+    res.json({
+      success: true,
+      history: {
+        repairOrders: repairOrders.map(ro => ro.toJSON()),
+        communications: communications.map(c => c.toJSON()),
+        summary: {
+          totalRepairOrders: totalROs,
+          completedRepairOrders: completedROs,
+          totalSpent: totalSpent,
+          memberSince: customer.created_at || customer.createdAt
+        }
+      },
+      pagination: {
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        total: totalROs
+      }
+    });
+
+  } catch (error) {
+    console.error('Get customer history error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
 // Get customer search (smart search across multiple fields)
 router.get('/search', authenticateToken(), async (req, res) => {
   try {

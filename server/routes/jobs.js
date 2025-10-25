@@ -474,18 +474,53 @@ router.get('/', authenticateToken(), async (req, res) => {
   }
 });
 
-// Get single job
-router.get('/:id', (req, res) => {
+// Get single job with full details (RO Detail Page)
+router.get('/:id', authenticateToken(), async (req, res) => {
   try {
-    const jobs = generateMockJobs();
-    const job = jobs.find(j => j.id === req.params.id);
-    if (!job) {
-      return res.status(404).json({ error: 'Job not found' });
+    const { id } = req.params;
+    const shopId = req.user?.shopId;
+
+    // Find RepairOrder with all associated data
+    const repairOrder = await RepairOrder.findOne({
+      where: { ro_id: id },
+      include: [
+        {
+          model: Customer,
+          as: 'customer'
+        },
+        {
+          model: VehicleProfile,
+          as: 'vehicleProfile'
+        },
+        {
+          model: Claim,
+          as: 'claimManagement'
+        }
+      ]
+    });
+
+    if (!repairOrder) {
+      return res.status(404).json({
+        success: false,
+        error: 'Repair Order not found'
+      });
     }
-    res.json(job);
+
+    // Map to frontend format
+    const mappedRO = mapJobToFrontend(repairOrder.toJSON());
+
+    res.json({
+      success: true,
+      job: mappedRO
+    });
+
   } catch (error) {
-    console.error('Error fetching job:', error);
-    res.status(500).json({ error: 'Failed to fetch job' });
+    console.error('Get job details error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
