@@ -154,13 +154,26 @@ export const navigationConfig = [
     id: 'tools',
     label: 'Tools',
     icon: Engineering,
+    path: '/tools',
     description: 'Shop tools and utilities',
     submenu: [
+      {
+        id: 'tools-hub',
+        label: 'All Tools',
+        path: '/tools',
+        description: 'View all available tools',
+      },
       {
         id: 'bms-import',
         label: 'BMS Import',
         path: '/bms-import',
         description: 'Import estimates from BMS',
+      },
+      {
+        id: 'vin-decoder',
+        label: 'VIN Decoder',
+        path: '/tools/vin-decoder',
+        description: 'Decode vehicle identification numbers',
       },
       {
         id: 'courtesy-cars',

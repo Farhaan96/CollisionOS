@@ -66,6 +66,8 @@ const JobsListPage = lazy(() => import('./pages/Jobs/JobsListPage'));
 const JobsListPageClean = lazy(() => import('./pages/Jobs/JobsListPageClean'));
 const DashboardClean = lazy(() => import('./pages/Dashboard/DashboardClean'));
 const InvoicingPage = lazy(() => import('./pages/Invoicing/InvoicingPage'));
+const VINDecoderDemo = lazy(() => import('./pages/VINDecoderDemo'));
+const ToolsHub = lazy(() => import('./pages/Tools/ToolsHub'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -288,6 +290,26 @@ const AppRoutes = () => {
             <PageErrorBoundary pageName="Courtesy Cars">
               <Suspense fallback={<LoadingSpinner />}>
                 <CourtesyCarsPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='tools'
+          element={
+            <PageErrorBoundary pageName="Tools Hub">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ToolsHub />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='tools/vin-decoder'
+          element={
+            <PageErrorBoundary pageName="VIN Decoder">
+              <Suspense fallback={<LoadingSpinner />}>
+                <VINDecoderDemo />
               </Suspense>
             </PageErrorBoundary>
           }

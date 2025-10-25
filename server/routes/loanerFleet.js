@@ -35,6 +35,200 @@ const loanerRateLimit = rateLimit({
 });
 
 /**
+ * POST /api/loaners/fleet - Add new vehicle to fleet
+ */
+router.post('/fleet', loanerRateLimit, async (req, res) => {
+  try {
+    const { shopId, userId } = req.user;
+    const {
+      make,
+      model,
+      year,
+      licensePlate,
+      mileage,
+      status = 'available',
+      location,
+      fuelLevel = 100,
+      vehicleType,
+      vin,
+      color,
+    } = req.body;
+
+    // Validate required fields
+    if (!make || !model || !year || !licensePlate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: make, model, year, licensePlate',
+      });
+    }
+
+    // Check for duplicate license plate
+    const existingVehicle = await LoanerFleetManagement.findOne({
+      where: { shopId, license_plate: licensePlate },
+    });
+
+    if (existingVehicle) {
+      return res.status(409).json({
+        success: false,
+        message: 'Vehicle with this license plate already exists',
+      });
+    }
+
+    // Generate vehicle number
+    const vehicleCount = await LoanerFleetManagement.count({ where: { shopId } });
+    const vehicleNumber = `LC-${(vehicleCount + 1).toString().padStart(3, '0')}`;
+
+    // Create new fleet vehicle
+    const newVehicle = await LoanerFleetManagement.create({
+      shopId,
+      vehicle_number: vehicleNumber,
+      make,
+      model,
+      year,
+      license_plate: licensePlate,
+      vin,
+      color,
+      vehicle_type: vehicleType || 'sedan',
+      status,
+      current_odometer: mileage || 0,
+      fuel_level: fuelLevel,
+      location,
+      total_miles: 0,
+      total_rentals: 0,
+      createdBy: userId,
+      updatedBy: userId,
+    });
+
+    res.json({
+      success: true,
+      message: 'Vehicle added to fleet successfully',
+      data: {
+        vehicle: formatFleetVehicle(newVehicle),
+      },
+    });
+  } catch (error) {
+    console.error('Add fleet vehicle error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add vehicle to fleet',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/loaners/fleet/:id - Update vehicle information
+ */
+router.put('/fleet/:id', loanerRateLimit, async (req, res) => {
+  try {
+    const { shopId, userId } = req.user;
+    const { id } = req.params;
+    const {
+      make,
+      model,
+      year,
+      licensePlate,
+      mileage,
+      status,
+      location,
+      fuelLevel,
+      vehicleType,
+      vin,
+      color,
+    } = req.body;
+
+    const vehicle = await LoanerFleetManagement.findOne({
+      where: { id, shopId },
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found',
+      });
+    }
+
+    // Update vehicle
+    await vehicle.update({
+      make: make || vehicle.make,
+      model: model || vehicle.model,
+      year: year || vehicle.year,
+      license_plate: licensePlate || vehicle.license_plate,
+      vin: vin || vehicle.vin,
+      color: color || vehicle.color,
+      vehicle_type: vehicleType || vehicle.vehicle_type,
+      status: status || vehicle.status,
+      current_odometer: mileage !== undefined ? mileage : vehicle.current_odometer,
+      fuel_level: fuelLevel !== undefined ? fuelLevel : vehicle.fuel_level,
+      location: location || vehicle.location,
+      updatedBy: userId,
+    });
+
+    res.json({
+      success: true,
+      message: 'Vehicle updated successfully',
+      data: {
+        vehicle: formatFleetVehicle(vehicle),
+      },
+    });
+  } catch (error) {
+    console.error('Update fleet vehicle error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update vehicle',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/loaners/fleet/:id - Remove vehicle from fleet
+ */
+router.delete('/fleet/:id', async (req, res) => {
+  try {
+    const { shopId, userId } = req.user;
+    const { id } = req.params;
+
+    const vehicle = await LoanerFleetManagement.findOne({
+      where: { id, shopId },
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found',
+      });
+    }
+
+    // Check if vehicle is currently in use
+    if (vehicle.status === 'rented' || vehicle.status === 'reserved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot remove vehicle that is currently rented or reserved',
+      });
+    }
+
+    // Soft delete by updating status
+    await vehicle.update({
+      status: 'out_of_service',
+      updatedBy: userId,
+    });
+
+    res.json({
+      success: true,
+      message: 'Vehicle removed from fleet successfully',
+    });
+  } catch (error) {
+    console.error('Remove fleet vehicle error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove vehicle',
+      error: error.message,
+    });
+  }
+});
+
+/**
  * GET /api/loaners/fleet - Fleet status and availability
  */
 router.get('/fleet', async (req, res) => {
@@ -77,7 +271,10 @@ router.get('/fleet', async (req, res) => {
     // Calculate fleet metrics
     const fleet_metrics = calculateFleetMetrics(fleet_vehicles);
 
-    // Group vehicles by status
+    // Format vehicles
+    const formatted_vehicles = fleet_vehicles.map(vehicle => formatFleetVehicle(vehicle));
+
+    // Group vehicles by status for additional info
     const vehicles_by_status = {
       available: [],
       rented: [],
@@ -86,9 +283,8 @@ router.get('/fleet', async (req, res) => {
       reserved: [],
     };
 
-    fleet_vehicles.forEach(vehicle => {
-      const vehicle_data = formatFleetVehicle(vehicle);
-      const status_key = vehicle.status || 'available';
+    formatted_vehicles.forEach(vehicle_data => {
+      const status_key = vehicle_data.status || 'available';
       if (vehicles_by_status[status_key]) {
         vehicles_by_status[status_key].push(vehicle_data);
       }
@@ -97,7 +293,8 @@ router.get('/fleet', async (req, res) => {
     res.json({
       success: true,
       data: {
-        fleet_vehicles: vehicles_by_status,
+        vehicles: formatted_vehicles, // Flat array for easy consumption
+        fleet_vehicles: vehicles_by_status, // Grouped by status
         fleet_metrics,
         availability_analysis,
         filters_applied: {
@@ -692,34 +889,307 @@ router.get('/utilization', async (req, res) => {
 });
 
 /**
+ * GET /api/loaners/assignments/active - Get active assignments
+ */
+router.get('/assignments/active', async (req, res) => {
+  try {
+    const { shopId } = req.user;
+
+    const activeAssignments = await LoanerReservation.findAll({
+      where: {
+        shopId,
+        status: 'active',
+      },
+      include: [
+        {
+          model: LoanerFleetManagement,
+          as: 'loanerVehicle',
+          attributes: ['id', 'vehicle_number', 'make', 'model', 'year', 'license_plate'],
+        },
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email'],
+        },
+        {
+          model: RepairOrderManagement,
+          as: 'repairOrder',
+          attributes: ['id', 'ro_number'],
+        },
+      ],
+      order: [['checkout_date', 'DESC']],
+    });
+
+    const formattedAssignments = activeAssignments.map(assignment => ({
+      id: assignment.id,
+      vehicleId: assignment.loanerVehicleId,
+      customer: assignment.customer
+        ? `${assignment.customer.firstName} ${assignment.customer.lastName}`
+        : 'Unknown',
+      customerPhone: assignment.customer?.phone,
+      jobNumber: assignment.repairOrder?.ro_number || 'N/A',
+      assignedDate: assignment.checkout_date,
+      expectedReturn: assignment.expected_return_date,
+      status: 'active',
+      notes: assignment.reservation_notes || assignment.checkout_notes,
+      vehicle: assignment.loanerVehicle
+        ? `${assignment.loanerVehicle.year} ${assignment.loanerVehicle.make} ${assignment.loanerVehicle.model}`
+        : null,
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        assignments: formattedAssignments,
+        count: formattedAssignments.length,
+      },
+    });
+  } catch (error) {
+    console.error('Get active assignments error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get active assignments',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/loaners/assignments/history - Get assignment history
+ */
+router.get('/assignments/history', async (req, res) => {
+  try {
+    const { shopId } = req.user;
+    const { limit = 50, offset = 0, startDate, endDate } = req.query;
+
+    const whereClause = {
+      shopId,
+      status: ['completed', 'cancelled'],
+    };
+
+    if (startDate || endDate) {
+      whereClause.checkout_date = {};
+      if (startDate) whereClause.checkout_date[Op.gte] = new Date(startDate);
+      if (endDate) whereClause.checkout_date[Op.lte] = new Date(endDate);
+    }
+
+    const historicalAssignments = await LoanerReservation.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: LoanerFleetManagement,
+          as: 'loanerVehicle',
+          attributes: ['id', 'vehicle_number', 'make', 'model', 'year', 'license_plate'],
+        },
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email'],
+        },
+        {
+          model: RepairOrderManagement,
+          as: 'repairOrder',
+          attributes: ['id', 'ro_number'],
+        },
+      ],
+      order: [['return_date', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    const formattedAssignments = historicalAssignments.map(assignment => ({
+      id: assignment.id,
+      vehicleId: assignment.loanerVehicleId,
+      customer: assignment.customer
+        ? `${assignment.customer.firstName} ${assignment.customer.lastName}`
+        : 'Unknown',
+      customerPhone: assignment.customer?.phone,
+      jobNumber: assignment.repairOrder?.ro_number || 'N/A',
+      assignedDate: assignment.checkout_date,
+      expectedReturn: assignment.expected_return_date,
+      actualReturn: assignment.return_date,
+      status: assignment.status,
+      notes: assignment.reservation_notes || assignment.return_notes,
+      vehicle: assignment.loanerVehicle
+        ? `${assignment.loanerVehicle.year} ${assignment.loanerVehicle.make} ${assignment.loanerVehicle.model}`
+        : null,
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        assignments: formattedAssignments,
+        count: formattedAssignments.length,
+        pagination: {
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get assignment history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get assignment history',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/loaners/assignments/:id - Get assignment by ID
+ */
+router.get('/assignments/:id', async (req, res) => {
+  try {
+    const { shopId } = req.user;
+    const { id } = req.params;
+
+    const assignment = await LoanerReservation.findOne({
+      where: { id, shopId },
+      include: [
+        {
+          model: LoanerFleetManagement,
+          as: 'loanerVehicle',
+        },
+        {
+          model: Customer,
+          as: 'customer',
+        },
+        {
+          model: RepairOrderManagement,
+          as: 'repairOrder',
+        },
+      ],
+    });
+
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Assignment not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        assignment: {
+          id: assignment.id,
+          vehicleId: assignment.loanerVehicleId,
+          customerId: assignment.customerId,
+          repairOrderId: assignment.repairOrderId,
+          status: assignment.status,
+          pickupDate: assignment.pickup_date,
+          expectedReturnDate: assignment.expected_return_date,
+          checkoutDate: assignment.checkout_date,
+          returnDate: assignment.return_date,
+          checkoutOdometer: assignment.checkout_odometer,
+          returnOdometer: assignment.return_odometer,
+          notes: assignment.reservation_notes || assignment.checkout_notes || assignment.return_notes,
+          vehicle: assignment.loanerVehicle,
+          customer: assignment.customer,
+          repairOrder: assignment.repairOrder,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get assignment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get assignment',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/loaners/assignments/:id - Update assignment
+ */
+router.put('/assignments/:id', loanerRateLimit, async (req, res) => {
+  try {
+    const { shopId, userId } = req.user;
+    const { id } = req.params;
+    const { expectedReturnDate, notes, status } = req.body;
+
+    const assignment = await LoanerReservation.findOne({
+      where: { id, shopId },
+    });
+
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Assignment not found',
+      });
+    }
+
+    await assignment.update({
+      expected_return_date: expectedReturnDate || assignment.expected_return_date,
+      reservation_notes: notes || assignment.reservation_notes,
+      status: status || assignment.status,
+      updatedBy: userId,
+    });
+
+    res.json({
+      success: true,
+      message: 'Assignment updated successfully',
+      data: {
+        assignment,
+      },
+    });
+  } catch (error) {
+    console.error('Update assignment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update assignment',
+      error: error.message,
+    });
+  }
+});
+
+/**
  * Helper Functions
  */
 
 function formatFleetVehicle(vehicle) {
+  // Support both raw object and Sequelize model
+  const data = vehicle.dataValues || vehicle;
+
   return {
-    vehicle_id: vehicle.id,
-    vehicle_number: vehicle.vehicle_number,
-    make: vehicle.make,
-    model: vehicle.model,
-    year: vehicle.year,
-    license_plate: vehicle.license_plate,
-    status: vehicle.status,
-    vehicle_type: vehicle.vehicle_type,
-    current_odometer: vehicle.current_odometer,
-    fuel_level: vehicle.fuel_level,
-    current_renter: vehicle.currentRenter
+    id: data.id,
+    vehicle_id: data.id,
+    vehicle_number: data.vehicle_number,
+    make: data.make,
+    model: data.model,
+    year: data.year,
+    licensePlate: data.license_plate,
+    license_plate: data.license_plate,
+    status: data.status,
+    vehicleType: data.vehicle_type,
+    vehicle_type: data.vehicle_type,
+    mileage: data.current_odometer,
+    current_odometer: data.current_odometer,
+    fuelLevel: data.fuel_level,
+    fuel_level: data.fuel_level,
+    location: data.location,
+    vin: data.vin,
+    color: data.color,
+    currentRenter: vehicle.currentRenter
       ? {
           name: `${vehicle.currentRenter.firstName} ${vehicle.currentRenter.lastName}`,
           phone: vehicle.currentRenter.phone,
         }
       : null,
-    maintenance_due: vehicle.next_service_date
-      ? new Date(vehicle.next_service_date) <= new Date()
+    maintenance_due: data.next_service_date
+      ? new Date(data.next_service_date) <= new Date()
       : false,
+    lastService: data.last_service_date,
+    nextService: data.next_service_date,
+    last_service: data.last_service_date,
+    next_service_date: data.next_service_date,
     availability_status: getAvailabilityStatus(vehicle),
-    last_service: vehicle.last_service_date,
-    total_rentals: vehicle.total_rentals || 0,
-    total_miles: vehicle.total_miles || 0,
+    total_rentals: data.total_rentals || 0,
+    total_miles: data.total_miles || 0,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
   };
 }
 
