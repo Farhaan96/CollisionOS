@@ -7,7 +7,7 @@ import axios from 'axios';
 import { getAuthHeader } from './authService';
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+  process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 class AIService {
   constructor() {

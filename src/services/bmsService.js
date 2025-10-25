@@ -1140,7 +1140,7 @@ class BMSService {
         // Browser environment - use API endpoints
         return {
           apiMode: true,
-          baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
+          baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3002/api',
         };
       }
     } catch (error) {

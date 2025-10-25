@@ -1,7 +1,6 @@
 
 // Twilio SMS Integration for CollisionOS
 const twilio = require('twilio');
-const { createClient } = require('@supabase/supabase-js');
 
 class TwilioSMSService {
   constructor() {
@@ -9,10 +8,7 @@ class TwilioSMSService {
       process.env.TWILIO_ACCOUNT_SID,
       process.env.TWILIO_AUTH_TOKEN
     );
-    this.supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    // TODO: Replace with local database connection
   }
 
   /**

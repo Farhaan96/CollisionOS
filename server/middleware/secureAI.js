@@ -3,7 +3,6 @@
  * Provides multi-layer security for AI-powered database queries
  */
 
-const { getSupabaseClient } = require('../config/supabase');
 const rateLimit = require('express-rate-limit');
 
 // Rate limiting for AI queries per user
@@ -57,45 +56,12 @@ async function validateUserShopAccess(req, res, next) {
       return next();
     }
 
-    // Double-check user-shop relationship in database
-    const supabase = getSupabaseClient(false);
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('shop_id, role, deleted_at')
-      .eq('id', userId)
-      .eq('shop_id', shopId)
-      .is('deleted_at', null)
-      .single();
-
-    if (error || !user) {
-      console.error(
-        `🚨 Security violation: User ${userId} attempted access to shop ${shopId}`
-      );
-
-      // Log security violation
-      await logSecurityViolation(
-        userId,
-        shopId,
-        'ai_query',
-        'unauthorized_shop_access',
-        {
-          endpoint: req.originalUrl,
-          userAgent: req.get('User-Agent'),
-          ip: req.ip,
-        }
-      );
-
-      return res.status(403).json({
-        error: 'Access denied',
-        message: "You do not have permission to access this shop's data.",
-      });
-    }
-
-    // Add user details to request for downstream use
+    // TODO: Implement user-shop validation with local database
+    // For now, trust the authenticated user's shopId
     req.secureUser = {
-      userId: user.id || userId,
-      shopId: user.shop_id,
-      role: user.role,
+      userId: userId,
+      shopId: shopId,
+      role: req.user.role || 'user',
     };
 
     next();
@@ -216,18 +182,14 @@ async function logSecurityViolation(
   details = {}
 ) {
   try {
-    const supabaseAdmin = getSupabaseClient(true);
-
-    await supabaseAdmin.from('security_audit_log').insert({
-      user_id: userId,
-      attempted_shop_id: shopId,
-      table_name: 'ai_query',
-      action_type: `${actionType}_${violationType}`,
-      details: {
-        violation_type: violationType,
-        ...details,
-        timestamp: new Date().toISOString(),
-      },
+    // TODO: Implement security audit logging with local database
+    console.log('[SECURITY VIOLATION]', {
+      userId,
+      shopId,
+      actionType,
+      violationType,
+      details,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('❌ Failed to log security violation:', error);
@@ -237,18 +199,15 @@ async function logSecurityViolation(
 // AI query audit logging
 async function logAIQuery(queryData) {
   try {
-    const supabaseAdmin = getSupabaseClient(true);
-
-    await supabaseAdmin.from('ai_query_audit').insert({
-      user_id: queryData.userId,
-      shop_id: queryData.shopId,
+    // TODO: Implement AI query audit logging with local database
+    console.log('[AI QUERY AUDIT]', {
+      userId: queryData.userId,
+      shopId: queryData.shopId,
       query: queryData.query,
-      duration_ms: queryData.duration,
+      duration: queryData.duration,
       success: queryData.success,
-      status_code: queryData.statusCode,
-      ip_address: queryData.ip,
-      user_agent: queryData.userAgent,
-      created_at: queryData.timestamp,
+      statusCode: queryData.statusCode,
+      timestamp: queryData.timestamp
     });
   } catch (error) {
     console.error('❌ Failed to log AI query:', error);

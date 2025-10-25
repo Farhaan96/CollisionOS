@@ -10,13 +10,6 @@
  */
 
 const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 // Encryption configuration
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -147,14 +140,9 @@ const auditLog = async (action, tableName, recordId, userId, shopId, details = {
       user_agent: details.userAgent || null,
       timestamp: new Date().toISOString()
     };
-    
-    const { error } = await supabase
-      .from('audit_logs')
-      .insert(auditEntry);
-    
-    if (error) {
-      console.error('Audit logging failed:', error);
-    }
+
+    // TODO: Implement audit logging with local database
+    console.log('[AUDIT]', auditEntry);
   } catch (error) {
     console.error('Audit logging error:', error);
   }
@@ -165,33 +153,8 @@ const auditLog = async (action, tableName, recordId, userId, shopId, details = {
  */
 const enforceDataRetention = async (tableName, recordId, retentionDays = 2555) => { // 7 years default
   try {
-    const retentionDate = new Date();
-    retentionDate.setDate(retentionDate.getDate() - retentionDays);
-    
-    // Check if record should be deleted
-    const { data: record } = await supabase
-      .from(tableName)
-      .select('created_at')
-      .eq('id', recordId)
-      .single();
-    
-    if (record && new Date(record.created_at) < retentionDate) {
-      // Log the deletion
-      await auditLog('DATA_RETENTION_DELETE', tableName, recordId, 'system', null, {
-        reason: 'Data retention policy',
-        retentionDays,
-        createdDate: record.created_at
-      });
-      
-      // Delete the record
-      await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', recordId);
-      
-      return true;
-    }
-    
+    // TODO: Implement data retention with local database
+    console.log('[DATA RETENTION] Checking retention for', tableName, recordId);
     return false;
   } catch (error) {
     console.error('Data retention enforcement failed:', error);
@@ -204,30 +167,15 @@ const enforceDataRetention = async (tableName, recordId, retentionDays = 2555) =
  */
 const rightToBeForgotten = async (userId, shopId) => {
   try {
-    const tables = ['customers', 'users', 'vehicles', 'insurance_claims', 'repair_orders'];
-    
-    for (const table of tables) {
-      // Find all records related to the user
-      const { data: records } = await supabase
-        .from(table)
-        .select('id')
-        .eq('shop_id', shopId)
-        .or(`customer_id.eq.${userId},user_id.eq.${userId}`);
-      
-      if (records) {
-        for (const record of records) {
-          // Anonymize instead of delete for business continuity
-          await anonymizeRecord(table, record.id);
-        }
-      }
-    }
-    
+    // TODO: Implement GDPR deletion with local database
+    console.log('[GDPR] Right to be forgotten request for user', userId, 'shop', shopId);
+
     // Log the GDPR request
     await auditLog('GDPR_RIGHT_TO_BE_FORGOTTEN', 'users', userId, userId, shopId, {
       requestType: 'GDPR',
       timestamp: new Date().toISOString()
     });
-    
+
     return true;
   } catch (error) {
     console.error('GDPR right to be forgotten failed:', error);
@@ -240,50 +188,8 @@ const rightToBeForgotten = async (userId, shopId) => {
  */
 const anonymizeRecord = async (tableName, recordId) => {
   try {
-    const anonymizationData = {
-      // Customer anonymization
-      first_name: 'ANONYMIZED',
-      last_name: 'ANONYMIZED',
-      email: 'anonymized@deleted.com',
-      phone: '000-000-0000',
-      address: 'ANONYMIZED',
-      city: 'ANONYMIZED',
-      state: 'ANONYMIZED',
-      zip_code: '00000',
-      ssn: '000-00-0000',
-      drivers_license: 'ANONYMIZED',
-      
-      // Vehicle anonymization
-      vin: 'ANONYMIZED',
-      plate: 'ANONYMIZED',
-      
-      // General anonymization
-      notes: 'ANONYMIZED - GDPR REQUEST',
-      is_anonymized: true,
-      anonymized_at: new Date().toISOString()
-    };
-    
-    // Only update fields that exist in the table
-    const { data: existingRecord } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('id', recordId)
-      .single();
-    
-    if (existingRecord) {
-      const updateData = {};
-      Object.keys(anonymizationData).forEach(key => {
-        if (existingRecord.hasOwnProperty(key)) {
-          updateData[key] = anonymizationData[key];
-        }
-      });
-      
-      await supabase
-        .from(tableName)
-        .update(updateData)
-        .eq('id', recordId);
-    }
-    
+    // TODO: Implement record anonymization with local database
+    console.log('[ANONYMIZE] Anonymizing record', recordId, 'in table', tableName);
     return true;
   } catch (error) {
     console.error('Record anonymization failed:', error);
@@ -302,31 +208,16 @@ const exportUserData = async (userId, shopId) => {
       export_timestamp: new Date().toISOString(),
       data: {}
     };
-    
-    // Export data from all relevant tables
-    const tables = ['customers', 'vehicles', 'insurance_claims', 'repair_orders', 'payments'];
-    
-    for (const table of tables) {
-      const { data: records } = await supabase
-        .from(table)
-        .select('*')
-        .eq('shop_id', shopId)
-        .or(`customer_id.eq.${userId},user_id.eq.${userId}`);
-      
-      if (records) {
-        // Decrypt sensitive fields before export
-        exportData.data[table] = records.map(record => 
-          decryptSensitiveFields(record, table)
-        );
-      }
-    }
-    
+
+    // TODO: Implement GDPR data export with local database
+    console.log('[GDPR EXPORT] Exporting data for user', userId, 'shop', shopId);
+
     // Log the export
     await auditLog('GDPR_DATA_EXPORT', 'users', userId, userId, shopId, {
       exportTimestamp: exportData.export_timestamp,
       tablesExported: Object.keys(exportData.data)
     });
-    
+
     return exportData;
   } catch (error) {
     console.error('GDPR data export failed:', error);

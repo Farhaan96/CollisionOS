@@ -7,14 +7,14 @@
 
 import api from './api';
 
-// API endpoints
+// API endpoints (api.js already includes /api in baseURL)
 const ENDPOINTS = {
-  REPAIR_ORDERS: '/api/repair-orders',
-  SEARCH: '/api/repair-orders/search',
-  WORKFLOW: '/api/repair-orders/workflow',
-  PARTS: '/api/repair-orders/:id/parts',
-  CLAIMS: '/api/repair-orders/:id/claim',
-  DOCUMENTS: '/api/repair-orders/:id/documents'
+  REPAIR_ORDERS: '/repair-orders',
+  SEARCH: '/repair-orders/search',
+  WORKFLOW: '/repair-orders/workflow',
+  PARTS: '/repair-orders/:id/parts',
+  CLAIMS: '/repair-orders/:id/claim',
+  DOCUMENTS: '/repair-orders/:id/documents'
 };
 
 /**
@@ -190,7 +190,7 @@ export const updateROWorkflowStatus = async (roId, status, notes = '') => {
 export const getROParts = async (roId) => {
   try {
     // Use the new endpoint structure
-    const response = await api.get(`/api/repair-orders/${roId}/parts`);
+    const response = await api.get(`/repair-orders/${roId}/parts`);
 
     return {
       success: true,
@@ -213,7 +213,7 @@ export const getROParts = async (roId) => {
  */
 export const updatePartStatus = async (partLineId, newStatus, notes = '') => {
   try {
-    const response = await api.put(`/api/parts/${partLineId}/status`, {
+    const response = await api.put(`/parts/${partLineId}/status`, {
       status: newStatus,
       notes,
       updated_at: new Date().toISOString()
@@ -239,7 +239,7 @@ export const updatePartStatus = async (partLineId, newStatus, notes = '') => {
  */
 export const bulkUpdatePartStatus = async (partLineIds, newStatus, notes = '') => {
   try {
-    const response = await api.put('/api/parts/bulk-status-update', {
+    const response = await api.put('/parts/bulk-status-update', {
       part_line_ids: partLineIds,
       status: newStatus,
       notes,

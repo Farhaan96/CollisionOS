@@ -516,7 +516,7 @@ export const useAPIClient = () => {
 
   useEffect(() => {
     const apiClient = new MobileAPIClient(
-      process.env.REACT_NATIVE_API_URL || 'http://localhost:3001'
+      process.env.REACT_NATIVE_API_URL || 'http://localhost:3002'
     );
     setClient(apiClient);
 

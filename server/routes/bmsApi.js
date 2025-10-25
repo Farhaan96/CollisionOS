@@ -10,18 +10,8 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
-const { createClient } = require('@supabase/supabase-js');
 
 const router = express.Router();
-
-// Initialize Supabase service role client (bypasses RLS) - only if configured
-let supabaseAdmin = null;
-if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-}
 
 // Import services (these would need to be adapted for server-side use)
 // For now, using placeholder implementations

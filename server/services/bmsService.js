@@ -943,11 +943,11 @@ class BMSService {
         );
       }
 
-      // Import required services (use local if Supabase is disabled)
-      const useSupabase = process.env.ENABLE_SUPABASE === 'true';
+      // Import required services (use local database)
+      const useSupabase = false; // Supabase removed
 
-      // Import Supabase admin client for BMS operations (bypasses RLS)
-      const { supabaseAdmin } = require('../config/supabase');
+      // TODO: Remove supabaseAdmin references, use local database only
+      const supabaseAdmin = null;
 
       const { customerService } = useSupabase
         ? require('../database/services/customerService')

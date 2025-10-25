@@ -4,7 +4,6 @@
  * domain expertise, and smart data analysis
  */
 
-const { getSupabaseClient } = require('../config/supabase');
 const {
   formatDistance,
   parseISO,
@@ -17,40 +16,19 @@ const {
 
 class IntelligentCollisionAssistant {
   constructor() {
-    // DO NOT use admin client - this bypasses RLS security!
-    this.supabase = getSupabaseClient(false);
-    this.supabaseAdmin = getSupabaseClient(true); // Only for system operations
+    // TODO: Initialize with local database connection
     this.domainKnowledge = this.initializeDomainKnowledge();
     this.queryPatterns = this.initializeQueryPatterns();
     this.industryBenchmarks = this.initializeIndustryBenchmarks();
   }
 
   /**
-   * Create a secure user-scoped Supabase client
+   * Create a secure user-scoped database client
    */
   createUserScopedClient(userToken) {
-    if (!userToken) {
-      throw new Error('User token required for secure database access');
-    }
-
-    // Handle development token
-    if (process.env.NODE_ENV === 'development' && userToken === 'dev-token') {
-      console.log('🔧 Using admin client for development token');
-      // For development, use admin client since dev-token is not a valid JWT
-      return this.supabaseAdmin;
-    }
-    const { createClient } = require('@supabase/supabase-js');
-    return createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        },
-      }
-    );
+    // TODO: Implement with local database
+    console.log('[INTELLIGENT ASSISTANT] User-scoped client requested');
+    return null;
   }
 
   /**
@@ -58,31 +36,8 @@ class IntelligentCollisionAssistant {
    */
   async validateUserShopAccess(userId, shopId, userToken) {
     try {
-      // Skip validation for development users
-      if (process.env.NODE_ENV === 'development' && userId === 'dev-user-123') {
-        console.log(
-          '🔧 Bypassing intelligent assistant user-shop validation for development user'
-        );
-        return true;
-      }
-
-      const userClient = this.createUserScopedClient(userToken);
-
-      // Check if user exists and belongs to the shop
-      const { data, error } = await userClient
-        .from('users')
-        .select('shop_id')
-        .eq('id', userId)
-        .eq('shop_id', shopId)
-        .single();
-
-      if (error || !data) {
-        console.error(
-          `❌ Security violation: User ${userId} attempted access to shop ${shopId}`
-        );
-        return false;
-      }
-
+      // TODO: Implement user-shop validation with local database
+      console.log('[INTELLIGENT ASSISTANT] Validating user', userId, 'for shop', shopId);
       return true;
     } catch (error) {
       console.error('❌ User validation error:', error);

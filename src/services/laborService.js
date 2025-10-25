@@ -1,12 +1,13 @@
 import api from './api';
 
+// Note: api.js already includes /api in baseURL, so paths here should not start with /api
 const laborService = {
   /**
    * Perform a clock operation (clock in/out, start/stop job, break, etc.)
    */
   async clockOperation(data) {
     try {
-      const response = await api.post('/api/labor/clock-operation', data);
+      const response = await api.post('/labor/clock-operation', data);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to process clock operation');
@@ -18,7 +19,7 @@ const laborService = {
    */
   async getCurrentStatus(technicianId) {
     try {
-      const response = await api.get(`/api/labor/technician/${technicianId}/current`);
+      const response = await api.get(`/labor/technician/${technicianId}/current`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get current status');
@@ -30,7 +31,7 @@ const laborService = {
    */
   async getActiveSessions() {
     try {
-      const response = await api.get('/api/labor/active-sessions');
+      const response = await api.get('/labor/active-sessions');
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get active sessions');
@@ -46,7 +47,7 @@ const laborService = {
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
 
-      const response = await api.get(`/api/labor/productivity/${technicianId}`, { params });
+      const response = await api.get(`/labor/productivity/${technicianId}`, { params });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get productivity data');
@@ -58,7 +59,7 @@ const laborService = {
    */
   async getJobTimeEntries(jobId) {
     try {
-      const response = await api.get(`/api/labor/entries/${jobId}`);
+      const response = await api.get(`/labor/entries/${jobId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get job time entries');
@@ -70,7 +71,7 @@ const laborService = {
    */
   async editTimeEntry(entryId, data) {
     try {
-      const response = await api.put(`/api/labor/entries/${entryId}`, data);
+      const response = await api.put(`/labor/entries/${entryId}`, data);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to edit time entry');
@@ -82,7 +83,7 @@ const laborService = {
    */
   async deleteTimeEntry(entryId) {
     try {
-      const response = await api.delete(`/api/labor/entries/${entryId}`);
+      const response = await api.delete(`/labor/entries/${entryId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to delete time entry');
@@ -94,7 +95,7 @@ const laborService = {
    */
   async getShiftSummary(technicianId) {
     try {
-      const response = await api.get(`/api/labor/technician/${technicianId}/shift-summary`);
+      const response = await api.get(`/labor/technician/${technicianId}/shift-summary`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get shift summary');
@@ -106,7 +107,7 @@ const laborService = {
    */
   async createWorkOrder(data) {
     try {
-      const response = await api.post('/api/labor/work-order', data);
+      const response = await api.post('/labor/work-order', data);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to create work order');
@@ -118,7 +119,7 @@ const laborService = {
    */
   async getJobCosting(jobId) {
     try {
-      const response = await api.get(`/api/labor/job-costing/${jobId}`);
+      const response = await api.get(`/labor/job-costing/${jobId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get job costing');
@@ -130,7 +131,7 @@ const laborService = {
    */
   async getEfficiencyMetrics(technicianId, period = 'week') {
     try {
-      const response = await api.get(`/api/labor/efficiency/${technicianId}`, {
+      const response = await api.get(`/labor/efficiency/${technicianId}`, {
         params: { period },
       });
       return response.data;

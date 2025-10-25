@@ -200,7 +200,7 @@ const BMSFileUpload = ({
       setUploadProgress(25);
 
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/import/batch`,
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3002/api'}/import/batch`,
         {
           method: 'POST',
           body: formData,
@@ -240,7 +240,7 @@ const BMSFileUpload = ({
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/import/status/${importId}`,
+          `${process.env.REACT_APP_API_URL || 'http://localhost:3002/api'}/import/status/${importId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,

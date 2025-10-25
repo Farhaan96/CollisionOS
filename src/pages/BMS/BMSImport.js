@@ -62,7 +62,7 @@ const BMSImport = () => {
       }
 
       // Construct the full API URL
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
       const response = await axios.post(`${API_BASE}/import/bms`, formData, {
         headers,
         onUploadProgress: progressEvent => {

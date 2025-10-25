@@ -1,14 +1,10 @@
 
 // QuickBooks Integration for CollisionOS
 const QuickBooks = require('node-quickbooks');
-const { createClient } = require('@supabase/supabase-js');
 
 class QuickBooksService {
   constructor() {
-    this.supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    // TODO: Replace with local database connection
   }
 
   /**

@@ -1,10 +1,10 @@
-const { getSupabaseClient, isSupabaseEnabled } = require('../config/supabase');
 const { sequelize } = require('../database/models');
 const fs = require('fs').promises;
 const path = require('path');
 
 /**
- * Migration utilities for transitioning from legacy database to Supabase
+ * Migration utilities for local database management
+ * (Supabase functionality removed)
  */
 class MigrationUtils {
   constructor() {
@@ -35,44 +35,30 @@ class MigrationUtils {
    */
   async getMigrationStatus() {
     const status = {
-      supabaseEnabled: isSupabaseEnabled,
-      supabaseConnected: false,
-      legacyConnected: false,
+      databaseConnected: false,
       tables: {},
       recommendations: [],
     };
 
-    // Test Supabase connection
-    if (isSupabaseEnabled) {
-      try {
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase.auth.getSession();
-        status.supabaseConnected =
-          !error || error.message === 'No session found';
-      } catch (error) {
-        this.log('error', 'Supabase connection test failed', error.message);
-      }
-    }
-
-    // Test legacy database connection
+    // Test database connection
     try {
       await sequelize.authenticate();
-      status.legacyConnected = true;
+      status.databaseConnected = true;
     } catch (error) {
       this.log(
         'error',
-        'Legacy database connection test failed',
+        'Database connection test failed',
         error.message
       );
     }
 
     // Analyze tables
-    if (status.legacyConnected) {
+    if (status.databaseConnected) {
       try {
-        const tables = await this.analyzeLegacyTables();
+        const tables = await this.analyzeTables();
         status.tables = tables;
       } catch (error) {
-        this.log('error', 'Failed to analyze legacy tables', error.message);
+        this.log('error', 'Failed to analyze tables', error.message);
       }
     }
 
@@ -83,10 +69,10 @@ class MigrationUtils {
   }
 
   /**
-   * Analyze legacy database tables
+   * Analyze database tables
    * @returns {Promise<Object>} Table analysis
    */
-  async analyzeLegacyTables() {
+  async analyzeTables() {
     const tables = {};
 
     try {
@@ -171,59 +157,38 @@ class MigrationUtils {
   generateRecommendations(status) {
     const recommendations = [];
 
-    if (!status.supabaseEnabled) {
+    if (!status.databaseConnected) {
       recommendations.push({
-        type: 'setup',
+        type: 'database',
         priority: 'high',
-        message: 'Configure Supabase credentials in .env file',
-        action:
-          'Add SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY to .env',
+        message: 'Database connection issues',
+        action: 'Check database configuration in .env file',
       });
     }
 
-    if (status.supabaseEnabled && !status.supabaseConnected) {
+    const tablesWithData = Object.values(status.tables || {}).filter(
+      table => table.recordCount > 0
+    );
+
+    if (tablesWithData.length > 0) {
       recommendations.push({
-        type: 'connection',
-        priority: 'high',
-        message: 'Fix Supabase connection issues',
-        action: 'Verify Supabase credentials and project status',
+        type: 'info',
+        priority: 'low',
+        message: `${tablesWithData.length} tables contain data`,
+        action: 'Database is operational',
       });
-    }
-
-    if (!status.legacyConnected) {
-      recommendations.push({
-        type: 'legacy',
-        priority: 'medium',
-        message: 'Legacy database connection issues',
-        action: 'Check legacy database configuration',
-      });
-    }
-
-    if (status.supabaseConnected && status.legacyConnected) {
-      const migratableTables = Object.values(status.tables || {}).filter(
-        table => table.migrationReady && table.recordCount > 0
-      );
-
-      if (migratableTables.length > 0) {
-        recommendations.push({
-          type: 'migration',
-          priority: 'medium',
-          message: `${migratableTables.length} tables ready for migration`,
-          action: 'Consider running data migration process',
-        });
-      }
     }
 
     return recommendations;
   }
 
   /**
-   * Export data from legacy database for manual inspection
+   * Export data from database for manual inspection
    * @param {string} tableName - Table to export
    * @param {Object} options - Export options
    * @returns {Promise<string>} File path of exported data
    */
-  async exportLegacyData(tableName, options = {}) {
+  async exportData(tableName, options = {}) {
     const { limit = 1000, format = 'json' } = options;
 
     try {
@@ -280,16 +245,16 @@ class MigrationUtils {
   }
 
   /**
-   * Create Supabase table schema based on legacy table
+   * Generate PostgreSQL schema based on table structure
    * @param {string} tableName - Table name
    * @returns {Promise<string>} SQL schema
    */
-  async generateSupabaseSchema(tableName) {
+  async generateSchema(tableName) {
     try {
       const queryInterface = sequelize.getQueryInterface();
       const columns = await queryInterface.describeTable(tableName);
 
-      let sql = `-- Supabase schema for ${tableName}\nCREATE TABLE public.${tableName} (\n`;
+      let sql = `-- PostgreSQL schema for ${tableName}\nCREATE TABLE ${tableName} (\n`;
 
       const columnDefs = [];
 
@@ -298,8 +263,7 @@ class MigrationUtils {
         const constraints = [];
 
         if (columnName.toLowerCase() === 'id') {
-          sqlType = 'UUID';
-          constraints.push('PRIMARY KEY DEFAULT gen_random_uuid()');
+          constraints.push('PRIMARY KEY');
         } else if (!columnDef.allowNull) {
           constraints.push('NOT NULL');
         }
@@ -322,15 +286,13 @@ class MigrationUtils {
 
       sql += columnDefs.join(',\n') + '\n);\n\n';
 
-      // Add RLS policy
-      sql += `-- Enable Row Level Security\nALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;\n\n`;
-      sql += `-- Create policy for shop isolation\nCREATE POLICY "Users can only access their shop's data" ON public.${tableName}\n`;
-      sql += `  FOR ALL USING (shop_id = auth.jwt() ->> 'shop_id');\n\n`;
-
       // Add indexes
-      sql += `-- Add indexes\nCREATE INDEX idx_${tableName}_shop_id ON public.${tableName}(shop_id);\n`;
+      sql += `-- Add indexes\n`;
+      if (columns.shop_id || columns.shopId) {
+        sql += `CREATE INDEX idx_${tableName}_shop_id ON ${tableName}(shop_id);\n`;
+      }
       if (columns.created_at || columns.createdAt) {
-        sql += `CREATE INDEX idx_${tableName}_created_at ON public.${tableName}(created_at);\n`;
+        sql += `CREATE INDEX idx_${tableName}_created_at ON ${tableName}(created_at);\n`;
       }
 
       return sql;

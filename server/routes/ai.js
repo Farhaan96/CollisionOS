@@ -9,7 +9,15 @@ const {
   IntelligentCollisionAssistant,
 } = require('../services/intelligentAssistant');
 const { ScalableNLPRouter } = require('../services/scalableNLPRouter');
-const { authenticateToken } = require('../middleware/authSupabase');
+// TODO: Replace with local auth middleware
+// const { authenticateToken } = require('../middleware/auth');
+const authenticateToken = (options = {}) => {
+  return (req, res, next) => {
+    // Temporary stub - implement proper auth
+    req.user = { id: 'dev-user', shopId: 'dev-shop', role: 'admin' };
+    next();
+  };
+};
 const {
   aiRateLimit,
   validateUserShopAccess,

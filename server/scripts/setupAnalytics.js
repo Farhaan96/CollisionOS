@@ -9,11 +9,9 @@
 const path = require('path');
 const fs = require('fs').promises;
 const { databaseService } = require('../services/databaseService');
-const { getSupabaseClient, isSupabaseEnabled } = require('../config/supabase');
 
 class AnalyticsSetup {
   constructor() {
-    this.useSupabase = isSupabaseEnabled;
     this.logMessages = [];
   }
 

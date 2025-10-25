@@ -3,7 +3,7 @@
  * Compares BMS estimate versions and tracks changes
  */
 
-const { supabaseAdmin } = require('../config/supabase');
+// TODO: Replace with local database connection
 
 /**
  * Compare two BMS parsed results and generate a detailed diff

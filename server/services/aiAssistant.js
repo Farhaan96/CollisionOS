@@ -3,11 +3,9 @@
  * Intelligent collision repair assistant with domain-specific knowledge
  */
 
-const { getSupabaseClient } = require('../config/supabase');
-
 class CollisionOSAssistant {
   constructor() {
-    this.supabase = getSupabaseClient(true); // Admin client for AI queries
+    // TODO: Initialize with local database connection
     this.collisionKnowledge = this.loadCollisionRepairKnowledge();
   }
 

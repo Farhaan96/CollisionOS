@@ -3,7 +3,7 @@
   "maxTokens": 8192,
   "permissions": {
     "allow": [
-      "Bash(dir:*)"
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
