@@ -209,10 +209,11 @@ const SchedulePage = () => {
   };
 
   const getStatusIcon = (status) => {
+    // Return icon based on appointment status
     switch (status) {
       case 'completed': return <CheckCircle />;
       case 'cancelled': return <Warning />;
-      case 'in-progress': return <Schedule />;
+      case 'in-progress': return <ScheduleIcon />;
       default: return <CalendarToday />;
     }
   };
