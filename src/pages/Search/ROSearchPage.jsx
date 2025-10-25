@@ -151,12 +151,16 @@ const ROSearchPage = () => {
     const lowerTerm = term.toLowerCase();
 
     const filtered = ros.filter(ro => {
+      // Backend now returns: customer, vehicle, claim (singular)
+      const customer = ro.customer;
+      const vehicle = ro.vehicle || ro.vehicleProfile;
+
       return (
         ro.ro_number?.toLowerCase().includes(lowerTerm) ||
-        ro.customer?.first_name?.toLowerCase().includes(lowerTerm) ||
-        ro.customer?.last_name?.toLowerCase().includes(lowerTerm) ||
-        ro.vehicleProfile?.vin?.toLowerCase().includes(lowerTerm) ||
-        ro.vehicleProfile?.license_plate?.toLowerCase().includes(lowerTerm)
+        customer?.first_name?.toLowerCase().includes(lowerTerm) ||
+        customer?.last_name?.toLowerCase().includes(lowerTerm) ||
+        vehicle?.vin?.toLowerCase().includes(lowerTerm) ||
+        vehicle?.license_plate?.toLowerCase().includes(lowerTerm)
       );
     });
 
