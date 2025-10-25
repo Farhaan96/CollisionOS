@@ -606,11 +606,10 @@ router.calculateInvoiceAmounts = async function (
   discounts = [],
   additionalCharges = []
 ) {
-  // Mock calculation - replace with actual labor and parts data
-  const laborAmount = job.estimatedLaborHours
-    ? job.estimatedLaborHours * 85
-    : 500; // $85/hour
-  const partsAmount = (await this.calculateJobPartsCost(job.id)) || 300;
+  // Calculate real labor and parts costs from database
+  const laborAmount = (await this.calculateJobLaborCost(job.id)) ||
+    (job.estimatedLaborHours ? job.estimatedLaborHours * 85 : 0); // Fallback to estimate
+  const partsAmount = (await this.calculateJobPartsCost(job.id)) || 0;
   const subtotal = laborAmount + partsAmount;
 
   const lineItems = [
@@ -718,14 +717,113 @@ router.processPayment = async function ({
   }
 };
 
+/**
+ * Calculate actual labor cost for a job from database
+ * Sums up all labor line items associated with the job
+ */
 router.calculateJobLaborCost = async function (jobId) {
-  // Mock labor cost calculation
-  return Math.floor(Math.random() * 400) + 200; // $200-600
+  try {
+    const { JobLabor, PartLine } = require('../database/models');
+    const { Op } = require('sequelize');
+
+    // Try JobLabor table if it exists
+    try {
+      const laborRecords = await JobLabor.findAll({
+        where: { jobId },
+        attributes: ['totalAmount', 'hourlyRate', 'actualHours']
+      });
+
+      if (laborRecords && laborRecords.length > 0) {
+        return laborRecords.reduce((sum, labor) => {
+          return sum + parseFloat(labor.totalAmount || 0);
+        }, 0);
+      }
+    } catch (e) {
+      // JobLabor table may not exist yet
+    }
+
+    // Fallback to estimating from job data or part lines with labor operation
+    try {
+      const laborParts = await PartLine.findAll({
+        where: {
+          jobId,
+          operation: {
+            [Op.in]: ['labor', 'refinish', 'paint']
+          }
+        },
+        attributes: ['totalPrice']
+      });
+
+      if (laborParts && laborParts.length > 0) {
+        return laborParts.reduce((sum, part) => {
+          return sum + parseFloat(part.totalPrice || 0);
+        }, 0);
+      }
+    } catch (e) {
+      // PartLine table may not have these fields
+    }
+
+    // Default return if no labor data found
+    return 0;
+  } catch (error) {
+    console.error('Error calculating job labor cost:', error);
+    return 0;
+  }
 };
 
+/**
+ * Calculate actual parts cost for a job from database
+ * Sums up all part line items associated with the job
+ */
 router.calculateJobPartsCost = async function (jobId) {
-  // Mock parts cost calculation
-  return Math.floor(Math.random() * 800) + 100; // $100-900
+  try {
+    const { PartLine, JobPart } = require('../database/models');
+    const { Op } = require('sequelize');
+
+    // Try JobPart table first (preferred structure)
+    try {
+      const jobParts = await JobPart.findAll({
+        where: { jobId },
+        attributes: ['totalCost']
+      });
+
+      if (jobParts && jobParts.length > 0) {
+        return jobParts.reduce((sum, part) => {
+          return sum + parseFloat(part.totalCost || 0);
+        }, 0);
+      }
+    } catch (e) {
+      // JobPart table may not exist
+    }
+
+    // Fallback to PartLine table
+    try {
+      const partLines = await PartLine.findAll({
+        where: {
+          jobId,
+          operation: {
+            [Op.in]: ['replace', 'repair', 'part']
+          }
+        },
+        attributes: ['totalCost', 'unitCost', 'quantity']
+      });
+
+      if (partLines && partLines.length > 0) {
+        return partLines.reduce((sum, part) => {
+          const cost = part.totalCost || (parseFloat(part.unitCost || 0) * parseInt(part.quantity || 0));
+          return sum + cost;
+        }, 0);
+      }
+    } catch (e) {
+      // PartLine table may not exist
+    }
+
+    // Default return if no parts data found
+    return 0;
+  } catch (error) {
+    console.error('Error calculating job parts cost:', error);
+    return 0;
+  }
 };
 
 router.generateInvoiceRecommendations = function (invoice, job) {
