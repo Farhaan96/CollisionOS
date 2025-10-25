@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
 } from 'react';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -20,80 +21,48 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const login = useCallback((userData, token) => {
+  const login = useCallback(async (username, password) => {
     try {
-      localStorage.setItem('token', token || 'dev-token');
-      const userToSet = userData || { firstName: 'Admin', role: 'owner' };
-      localStorage.setItem('user', JSON.stringify(userToSet));
-      setUser(userToSet);
+      const response = await authService.login(username, password);
+      const userData = response.data?.user || response.user;
+      setUser(userData);
       console.log('AuthContext - Login successful:', userData);
-      console.log('AuthContext - User state set to:', userToSet);
-      console.log('AuthContext - isAuthenticated will be:', !!userToSet);
+      return userData;
     } catch (error) {
       console.error('AuthContext - Login error:', error);
+      throw error;
     }
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      await authService.logout();
       setUser(null);
       console.log('AuthContext - Logout successful');
     } catch (error) {
       console.error('AuthContext - Logout error:', error);
+      // Still clear user state even if API call fails
+      setUser(null);
     }
   }, []);
 
-  // Restore authentication state from localStorage on app load
+  // Check authentication status on app load
   useEffect(() => {
-    const initAuth = async () => {
+    const checkAuth = async () => {
       try {
-        // Check for remember me first
-        const rememberedUser = localStorage.getItem(
-          'collisionos_remembered_user'
-        );
-        const token = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
-
-        if (rememberedUser && !token) {
-          // User was remembered but session expired - restore from remember me
-          try {
-            const userData = JSON.parse(rememberedUser);
-            setUser(userData);
-            localStorage.setItem('token', 'dev-token');
-            localStorage.setItem('user', JSON.stringify(userData));
-            console.log('AuthContext - Restored from remember me:', userData);
-            return;
-          } catch (e) {
-            localStorage.removeItem('collisionos_remembered_user');
-          }
-        }
-
-        if (token && savedUser) {
-          const userData = JSON.parse(savedUser);
-          setUser(userData);
-          console.log('AuthContext - Restored auth state:', userData);
-        } else if (token) {
-          // Legacy support - create default user if only token exists
-          const defaultUser = { firstName: 'Admin', role: 'owner' };
-          setUser(defaultUser);
-          localStorage.setItem('user', JSON.stringify(defaultUser));
-          console.log('AuthContext - Created default user for legacy token');
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          console.log('AuthContext - Restored session:', currentUser);
         }
       } catch (error) {
-        console.error('AuthContext - Error restoring auth state:', error);
-        // Clear corrupted data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('collisionos_remembered_user');
+        console.log('AuthContext - No active session');
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Add small delay to ensure localStorage is fully available
-    setTimeout(initAuth, 100);
+    checkAuth();
   }, []);
 
   const isAuthenticated = !!user;
