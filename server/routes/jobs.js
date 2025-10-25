@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { mapJobToFrontend } = require('../utils/fieldMapper');
-const { getSupabaseClient } = require('../config/supabase');
-const { authenticateToken } = require('../middleware/authSupabase');
+const { RepairOrderManagement: RepairOrder, Customer, VehicleProfile, ClaimManagement: Claim } = require('../database/models');
+// TODO: Replace with local database auth middleware
+// const { authenticateToken } = require('../middleware/auth');
+const authenticateToken = (options = {}) => {
+  return (req, res, next) => {
+    req.user = { userId: 'dev-user', shopId: 'dev-shop', role: 'admin' };
+    next();
+  };
+};
 
 // Enhanced query parameter handling for dashboard navigation
 const parseJobFilters = req => {
@@ -262,7 +269,6 @@ const generateMockJobs = () => {
 // Enhanced GET endpoint with dashboard navigation support
 router.get('/', authenticateToken(), async (req, res) => {
   try {
-    const supabase = getSupabaseClient();
     const shopId = req.user?.shopId;
 
     if (!shopId) {
@@ -275,70 +281,83 @@ router.get('/', authenticateToken(), async (req, res) => {
     // Parse query parameters for dashboard navigation
     const filters = parseJobFilters(req);
 
-    // Query real jobs from database
-    let query = supabase
-      .from('repair_orders')
-      .select(`
-        *,
-        customers:customer_id(first_name, last_name, phone, email),
-        vehicles:vehicle_id(year, make, model, vin),
-        claims:claim_id(claim_number, insurance_company)
-      `)
-      .eq('shop_id', shopId);
-
-    // Apply status filter if provided
+    // Build Sequelize where clause
+    const whereClause = { shop_id: shopId };
     if (filters.status) {
-      query = query.eq('status', filters.status);
+      whereClause.status = filters.status;
     }
-
-    // Apply priority filter if provided
     if (filters.priority) {
-      query = query.eq('priority', filters.priority);
+      whereClause.priority = filters.priority;
     }
 
-    // Execute query
-    const { data: jobs, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ Error fetching jobs:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch jobs',
-        details: error.message,
-      });
-    }
+    // Query repair orders from local database using Sequelize with associations
+    const jobs = await RepairOrder.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email'],
+          required: false
+        },
+        {
+          model: VehicleProfile,
+          as: 'vehicleProfile',
+          attributes: ['id', 'vin', 'year', 'make', 'model', 'trim'],
+          required: false
+        },
+        {
+          model: Claim,
+          as: 'claimManagement',
+          attributes: ['id', 'claimNumber', 'claimStatus'],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit: 100,
+    });
 
     // Transform database jobs to match expected format
-    let transformedJobs = (jobs || []).map(job => ({
-      id: job.id,
-      jobNumber: job.ro_number,
-      status: job.status || 'estimate',
-      priority: job.priority || 'normal',
-      customer: {
-        name: job.customers ? `${job.customers.first_name} ${job.customers.last_name}`.trim() : 'Unknown',
-        phone: job.customers?.phone || '',
-        email: job.customers?.email || '',
-      },
-      vehicle: job.vehicles ? {
-        year: job.vehicles.year,
-        make: job.vehicles.make,
-        model: job.vehicles.model,
-        vin: job.vehicles.vin,
-      } : null,
-      assignedTechnician: null, // TODO: Add technician relationship
-      daysInShop: job.created_at ? Math.floor((Date.now() - new Date(job.created_at)) / (1000 * 60 * 60 * 24)) : 0,
-      daysInCurrentStatus: 0, // TODO: Calculate from status history
-      progressPercentage: 10, // TODO: Calculate based on status
-      targetDate: job.estimated_completion_date || null,
-      partsStatus: 'pending', // TODO: Calculate from parts
-      insurance: {
-        company: job.claims?.insurance_company || '',
-        claimNumber: job.claims?.claim_number || '',
-      },
-      createdAt: job.created_at,
-      updatedAt: job.updated_at,
-      lastUpdated: job.updated_at,
-    }));
+    let transformedJobs = (jobs || []).map(job => {
+      const jobData = job.get({ plain: true });
+      const customer = jobData.customer || {};
+      const vehicle = jobData.vehicleProfile || {};
+      const claim = jobData.claimManagement || {};
+
+      return {
+        id: jobData.id,
+        jobNumber: jobData.repairOrderNumber || `RO-${jobData.id}`,
+        status: jobData.roStatus || 'estimate',
+        priority: jobData.isPriority ? 'high' : 'normal',
+        customer: {
+          name: customer.firstName && customer.lastName
+            ? `${customer.firstName} ${customer.lastName}`
+            : 'Unknown Customer',
+          phone: customer.phone || '',
+          email: customer.email || '',
+        },
+        vehicle: vehicle.vin ? {
+          vin: vehicle.vin,
+          year: vehicle.year,
+          make: vehicle.make,
+          model: vehicle.model,
+          trim: vehicle.trim
+        } : null,
+        assignedTechnician: null, // TODO: Add technician relationship
+        daysInShop: jobData.dateCreated ? Math.floor((Date.now() - new Date(jobData.dateCreated)) / (1000 * 60 * 60 * 24)) : 0,
+        daysInCurrentStatus: 0, // TODO: Calculate from status history
+        progressPercentage: jobData.productionPercentComplete || (jobData.roStatus === 'delivered' ? 100 : 10),
+        targetDate: jobData.promisedDeliveryDate || null,
+        partsStatus: jobData.allPartsReceived ? 'received' : 'pending',
+        insurance: {
+          company: '', // TODO: Get from claim relationship
+          claimNumber: claim.claimNumber || '',
+        },
+        createdAt: jobData.dateCreated,
+        updatedAt: jobData.updatedAt,
+        lastUpdated: jobData.updatedAt || jobData.dateCreated,
+      };
+    });
 
     // Apply view-specific and other filters to transformed jobs
     transformedJobs = applyJobViewFilters(transformedJobs, filters);

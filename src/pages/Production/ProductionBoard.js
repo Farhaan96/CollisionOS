@@ -131,7 +131,7 @@ const ProductionBoard = () => {
         sx={{
           position: 'fixed',
           bottom: 16,
-          right: 16,
+          left: 16,
           zIndex: 9999,
         }}
         icon={<SpeedDialIcon />}

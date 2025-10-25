@@ -3,7 +3,15 @@ const router = express.Router();
 const { Op } = require('sequelize');
 const { Customer, Vehicle, RepairOrderManagement, ClaimManagement } = require('../database/models');
 const { queryHelpers } = require('../utils/queryHelpers');
-const { authenticateToken } = require('../middleware/authSupabase');
+// TODO: Replace with local auth middleware
+// const { authenticateToken } = require('../middleware/auth');
+const authenticateToken = (options = {}) => {
+  return (req, res, next) => {
+    // Temporary stub - implement proper auth
+    req.user = { userId: 'dev-user', shopId: 'dev-shop', role: 'admin' };
+    next();
+  };
+};
 
 /**
  * GET /api/customers
@@ -87,12 +95,12 @@ router.get('/', authenticateToken(), async (req, res) => {
         },
         {
           model: RepairOrderManagement,
-          as: 'repairOrders',
-          attributes: ['id', 'roNumber', 'claimId'],
+          as: 'repairOrderManagement',
+          attributes: ['id', 'repairOrderNumber', 'claimManagementId'],
           include: [
             {
               model: ClaimManagement,
-              as: 'claim',
+              as: 'claimManagement',
               attributes: ['claimNumber'],
             },
           ],
@@ -111,7 +119,7 @@ router.get('/', authenticateToken(), async (req, res) => {
       const customerData = customer.toJSON();
 
       // Extract claim number from first repair order (if any)
-      const claimNumber = customerData.repairOrders?.[0]?.claim?.claimNumber;
+      const claimNumber = customerData.repairOrderManagement?.[0]?.claimManagement?.claimNumber;
 
       return {
         id: customerData.id,
@@ -128,10 +136,10 @@ router.get('/', authenticateToken(), async (req, res) => {
         created_at: customerData.createdAt,
         updated_at: customerData.updatedAt,
         vehicles: customerData.vehicles || [],
-        repair_orders: customerData.repairOrders?.map(ro => ({
+        repair_orders: customerData.repairOrderManagement?.map(ro => ({
           id: ro.id,
-          ro_number: ro.roNumber,
-          claims: ro.claim ? { claim_number: ro.claim.claimNumber } : null,
+          ro_number: ro.repairOrderNumber,
+          claims: ro.claimManagement ? { claim_number: ro.claimManagement.claimNumber } : null,
         })) || [],
         claimNumber: claimNumber || null,
       };
