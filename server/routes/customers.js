@@ -454,4 +454,230 @@ router.get('/:id/jobs', authenticateToken(), async (req, res) => {
   }
 });
 
+// Get customer search (smart search across multiple fields)
+router.get('/search', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { q, limit = 20 } = req.query;
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters',
+      });
+    }
+
+    const searchTerm = q.toLowerCase();
+
+    const { data: customers, error } = await supabase
+      .from('customers')
+      .select('id, customer_number, first_name, last_name, email, phone, company_name, customer_type, customer_status')
+      .eq('shop_id', shopId)
+      .eq('is_active', true)
+      .or(
+        `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,customer_number.ilike.%${searchTerm}%,company_name.ilike.%${searchTerm}%`
+      )
+      .limit(parseInt(limit));
+
+    if (error) {
+      console.error('Error searching customers:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to search customers',
+        details: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: customers || [],
+      message: 'Customer search completed successfully',
+    });
+  } catch (error) {
+    console.error('Customer search error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search customers',
+    });
+  }
+});
+
+// Get customer statistics
+router.get('/stats', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    // Get customer counts by status and type
+    const { data: customers, error } = await supabase
+      .from('customers')
+      .select('customer_status, customer_type, is_active')
+      .eq('shop_id', shopId);
+
+    if (error) {
+      console.error('Error fetching customer stats:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customer statistics',
+        details: error.message,
+      });
+    }
+
+    // Calculate statistics
+    const stats = {
+      total: customers?.length || 0,
+      active: customers?.filter(c => c.is_active && c.customer_status === 'active').length || 0,
+      inactive: customers?.filter(c => c.customer_status === 'inactive').length || 0,
+      prospects: customers?.filter(c => c.customer_status === 'prospect').length || 0,
+      vip: customers?.filter(c => c.customer_status === 'vip').length || 0,
+      byType: {
+        individual: customers?.filter(c => c.customer_type === 'individual').length || 0,
+        business: customers?.filter(c => c.customer_type === 'business').length || 0,
+        insurance: customers?.filter(c => c.customer_type === 'insurance').length || 0,
+        fleet: customers?.filter(c => c.customer_type === 'fleet').length || 0,
+      },
+    };
+
+    res.json({
+      success: true,
+      data: stats,
+      message: 'Customer statistics retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Customer stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customer statistics',
+    });
+  }
+});
+
+// Get VIP customers
+router.get('/vip', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    const { data: vipCustomers, error } = await supabase
+      .from('customers')
+      .select('id, customer_number, first_name, last_name, email, phone, company_name, created_at')
+      .eq('shop_id', shopId)
+      .eq('customer_status', 'vip')
+      .eq('is_active', true)
+      .order('last_name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching VIP customers:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch VIP customers',
+        details: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: vipCustomers || [],
+      message: 'VIP customers retrieved successfully',
+    });
+  } catch (error) {
+    console.error('VIP customers error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch VIP customers',
+    });
+  }
+});
+
+// Get customer suggestions for autocomplete
+router.get('/suggestions', authenticateToken(), async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { q, limit = 10 } = req.query;
+    const shopId = req.user?.shopId;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Shop ID is required',
+      });
+    }
+
+    if (!q || q.trim().length < 1) {
+      // Return empty suggestions if no query
+      return res.json({
+        success: true,
+        data: [],
+        message: 'No search query provided',
+      });
+    }
+
+    const searchTerm = q.toLowerCase();
+
+    const { data: suggestions, error } = await supabase
+      .from('customers')
+      .select('id, customer_number, first_name, last_name, email, phone, company_name, customer_type')
+      .eq('shop_id', shopId)
+      .eq('is_active', true)
+      .or(
+        `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,company_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
+      )
+      .limit(parseInt(limit))
+      .order('last_name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching customer suggestions:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch customer suggestions',
+        details: error.message,
+      });
+    }
+
+    // Format suggestions for autocomplete
+    const formattedSuggestions = (suggestions || []).map(customer => ({
+      id: customer.id,
+      label: customer.company_name || `${customer.first_name} ${customer.last_name}`,
+      customerNumber: customer.customer_number,
+      phone: customer.phone,
+      email: customer.email,
+      type: customer.customer_type,
+    }));
+
+    res.json({
+      success: true,
+      data: formattedSuggestions,
+      message: 'Customer suggestions retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Customer suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customer suggestions',
+    });
+  }
+});
+
 module.exports = router;
