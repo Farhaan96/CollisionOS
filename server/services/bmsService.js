@@ -1426,6 +1426,12 @@ class BMSService {
    */
   async findOrCreateVehicleWithAdmin(vehicleData, customerId, supabaseAdmin) {
     try {
+      // Use legacy database when Supabase is not available
+      if (!supabaseAdmin) {
+        const { vehicleService } = require('../database/services/vehicleService-local');
+        return await vehicleService.findOrCreateVehicle(vehicleData, customerId);
+      }
+
       // Try to find existing vehicle by VIN first
       if (vehicleData.vin) {
         const { data: existingVehicles } = await supabaseAdmin

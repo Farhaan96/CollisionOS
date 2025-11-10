@@ -935,12 +935,63 @@ router.put('/board/:jobId/status', productionUpdateLimit, async (req, res) => {
     }
 
     const previousStatus = job.status;
+    const transitionTime = new Date();
+
+    // Determine movement type
+    const stageOrder = {
+      estimating: 1,
+      scheduled: 2,
+      disassembly: 3,
+      parts_pending: 4,
+      in_repair: 5,
+      reassembly: 6,
+      qc: 7,
+      complete: 8,
+    };
+    const fromOrder = stageOrder[previousStatus] || 0;
+    const toOrder = stageOrder[status] || 0;
+    
+    let movementType = 'forward';
+    if (toOrder < fromOrder) movementType = 'backward';
+    else if (toOrder > fromOrder + 1) movementType = 'skip';
+    else if (toOrder === fromOrder) movementType = 'parallel';
+
+    // Get previous stage history to calculate duration
+    const JobStageHistory = require('../database/models').JobStageHistory;
+    const lastHistory = await JobStageHistory.findOne({
+      where: { jobId, shopId: job.shopId },
+      order: [['transitionTime', 'DESC']],
+    });
+
+    const stageStartTime = lastHistory?.transitionTime || job.createdAt || transitionTime;
+    const stageDuration = Math.round((transitionTime - new Date(stageStartTime)) / 1000 / 60); // minutes
 
     // Update job
     await job.update({
       status: detailedStage,
-      lastUpdated: new Date(),
+      lastUpdated: transitionTime,
     });
+
+    // Create stage history entry
+    try {
+      await JobStageHistory.create({
+        shopId: job.shopId,
+        jobId,
+        fromStage: previousStatus,
+        toStage: detailedStage,
+        movementType,
+        movementReason: 'normal_progression',
+        transitionTime,
+        stageStartTime: lastHistory?.transitionTime || job.createdAt,
+        stageEndTime: transitionTime,
+        stageDuration,
+        technicianId: job.technicianId || req.user?.id,
+        authorizedBy: req.user?.id,
+        notes: req.body.notes || null,
+      });
+    } catch (historyError) {
+      console.warn('Failed to create stage history:', historyError.message);
+    }
 
     // Audit logging
     auditLogger.info('Production board status update', {
@@ -948,7 +999,8 @@ router.put('/board/:jobId/status', productionUpdateLimit, async (req, res) => {
       from: previousStatus,
       to: detailedStage,
       userId: req.user?.id,
-      timestamp: new Date(),
+      timestamp: transitionTime,
+      movementType,
     });
 
     // Real-time WebSocket broadcast

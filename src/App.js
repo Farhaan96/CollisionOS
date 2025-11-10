@@ -54,6 +54,10 @@ const AdvancedProductionBoard = lazy(
 const SimpleProductionBoard = lazy(
   () => import('./components/Production/SimpleProductionBoard')
 );
+const TimeClockPage = lazy(() => import('./pages/TimeClock/TimeClockPage'));
+const InvoiceGenerationPage = lazy(() => import('./pages/Financial/InvoiceGenerationPage'));
+const PaymentProcessingPage = lazy(() => import('./pages/Financial/PaymentProcessingPage'));
+const QuickBooksIntegrationPage = lazy(() => import('./pages/Financial/QuickBooksIntegrationPage'));
 const PODashboard = lazy(
   () => import('./components/PurchaseOrder/PODashboard')
 );
@@ -220,6 +224,46 @@ const AppRoutes = () => {
             <PageErrorBoundary pageName="Production Board">
               <Suspense fallback={<LoadingSpinner />}>
                 <SimpleProductionBoard />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='time-clock'
+          element={
+            <PageErrorBoundary pageName="Time Clock">
+              <Suspense fallback={<LoadingSpinner />}>
+                <TimeClockPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='invoices'
+          element={
+            <PageErrorBoundary pageName="Invoice Management">
+              <Suspense fallback={<LoadingSpinner />}>
+                <InvoiceGenerationPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='invoices/:invoiceId/payment'
+          element={
+            <PageErrorBoundary pageName="Payment Processing">
+              <Suspense fallback={<LoadingSpinner />}>
+                <PaymentProcessingPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='quickbooks'
+          element={
+            <PageErrorBoundary pageName="QuickBooks Integration">
+              <Suspense fallback={<LoadingSpinner />}>
+                <QuickBooksIntegrationPage />
               </Suspense>
             </PageErrorBoundary>
           }

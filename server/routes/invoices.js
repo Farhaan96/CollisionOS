@@ -609,4 +609,328 @@ router.delete('/:id', [
   }
 });
 
+/**
+ * POST /api/invoices/generate-from-ro/:roId
+ * Generate invoice from completed repair order
+ */
+router.post('/generate-from-ro/:roId', [
+  param('roId').isUUID(),
+  body('payment_terms').optional().isIn(['due_on_receipt', 'net15', 'net30', 'net45', 'net60']),
+], async (req, res) => {
+  try {
+    const { roId } = req.params;
+    const { payment_terms = 'net30', discounts = [], additional_charges = [] } = req.body;
+    const { shopId, userId } = req.user;
+
+    // Get repair order with all related data
+    const { Job, Part, LaborTimeEntry } = require('../database/models');
+    const ro = await Job.findOne({
+      where: { id: roId, shopId },
+      include: [
+        { model: Customer, as: 'customer' },
+        { model: require('../database/models').Vehicle, as: 'vehicle' },
+        { model: Part, as: 'parts' },
+        { model: LaborTimeEntry, as: 'laborEntries' },
+      ],
+    });
+
+    if (!ro) {
+      return res.status(404).json({
+        success: false,
+        error: 'Repair order not found',
+      });
+    }
+
+    // Check if job is complete
+    if (ro.status !== 'ready_pickup' && ro.status !== 'delivered' && ro.status !== 'complete') {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot generate invoice for incomplete job. Job must be ready for pickup or delivered.',
+      });
+    }
+
+    // Check if invoice already exists
+    const existingInvoice = await Invoice.findOne({ where: { repairOrderId: roId, shopId } });
+    if (existingInvoice) {
+      return res.status(409).json({
+        success: false,
+        error: 'Invoice already exists for this repair order',
+        invoice: existingInvoice.toJSON(),
+      });
+    }
+
+    // Calculate invoice amounts
+    const partsTotal = ro.parts?.reduce((sum, part) => {
+      return sum + (parseFloat(part.unitPrice || 0) * parseFloat(part.quantity || 0));
+    }, 0) || 0;
+
+    const laborTotal = ro.laborEntries?.reduce((sum, entry) => {
+      return sum + (parseFloat(entry.totalHours || 0) * parseFloat(entry.hourlyRate || 75));
+    }, 0) || parseFloat(ro.estimatedLaborTotal || 0);
+
+    const subletTotal = parseFloat(ro.subletTotal || 0);
+    const materialsTotal = parseFloat(ro.materialsTotal || 0);
+    const miscTotal = parseFloat(ro.miscTotal || 0);
+
+    const subtotal = partsTotal + laborTotal + subletTotal + materialsTotal + miscTotal;
+
+    // Apply discounts
+    const discountAmount = discounts.reduce((sum, discount) => {
+      if (discount.type === 'percentage') {
+        return sum + (subtotal * (parseFloat(discount.value) / 100));
+      } else {
+        return sum + parseFloat(discount.value);
+      }
+    }, 0);
+
+    // Add additional charges
+    const additionalAmount = additional_charges.reduce((sum, charge) => {
+      return sum + parseFloat(charge.amount || 0);
+    }, 0);
+
+    // Calculate tax (default 10% if not set)
+    const taxRate = parseFloat(ro.taxRate || 10);
+    const taxableAmount = subtotal - discountAmount;
+    const taxAmount = taxableAmount * (taxRate / 100);
+
+    // Calculate total
+    const totalAmount = taxableAmount + taxAmount + additionalAmount;
+
+    // Generate invoice number
+    const year = new Date().getFullYear();
+    const count = await Invoice.count({
+      where: {
+        shopId,
+        invoiceNumber: {
+          [require('sequelize').Op.like]: `INV-${year}-%`,
+        },
+      },
+    });
+    const invoiceNumber = `INV-${year}-${String(count + 1).padStart(5, '0')}`;
+
+    // Calculate due date
+    const invoiceDate = new Date();
+    let dueDate = new Date(invoiceDate);
+    switch (payment_terms) {
+      case 'due_on_receipt':
+        dueDate = invoiceDate;
+        break;
+      case 'net15':
+        dueDate.setDate(dueDate.getDate() + 15);
+        break;
+      case 'net30':
+        dueDate.setDate(dueDate.getDate() + 30);
+        break;
+      case 'net45':
+        dueDate.setDate(dueDate.getDate() + 45);
+        break;
+      case 'net60':
+        dueDate.setDate(dueDate.getDate() + 60);
+        break;
+    }
+
+    // Create invoice
+    const invoice = await Invoice.create({
+      shopId,
+      customerId: ro.customerId,
+      repairOrderId: roId,
+      invoiceNumber,
+      invoiceType: 'standard',
+      invoiceStatus: 'draft',
+      subtotal,
+      taxRate,
+      taxAmount: Math.round(taxAmount * 100) / 100,
+      discountAmount: Math.round(discountAmount * 100) / 100,
+      totalAmount: Math.round(totalAmount * 100) / 100,
+      paidAmount: 0,
+      balanceDue: Math.round(totalAmount * 100) / 100,
+      laborTotal: Math.round(laborTotal * 100) / 100,
+      partsTotal: Math.round(partsTotal * 100) / 100,
+      subletTotal: Math.round(subletTotal * 100) / 100,
+      materialsTotal: Math.round(materialsTotal * 100) / 100,
+      miscTotal: Math.round(miscTotal * 100) / 100,
+      invoiceDate,
+      dueDate,
+      paymentTerms: payment_terms,
+      notes: ro.notes || '',
+      createdBy: userId,
+      metadata: {
+        jobNumber: ro.jobNumber,
+        vehicleInfo: ro.vehicle ? `${ro.vehicle.year} ${ro.vehicle.make} ${ro.vehicle.model}` : '',
+        discounts,
+        additional_charges,
+      },
+    });
+
+    // Update job with invoice reference
+    await ro.update({ invoiceId: invoice.id });
+
+    res.status(201).json({
+      success: true,
+      invoice: invoice.toJSON(),
+      message: 'Invoice generated successfully from repair order',
+    });
+  } catch (error) {
+    console.error('Generate invoice from RO error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/invoices/:id/pdf
+ * Generate PDF for invoice
+ */
+router.get('/:id/pdf', [
+  param('id').isUUID(),
+], async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { shopId } = req.user;
+
+    const invoice = await Invoice.findOne({
+      where: { id, shopId },
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'firstName', 'lastName', 'companyName', 'email', 'phone', 'address'],
+        },
+        {
+          model: RepairOrder,
+          as: 'repairOrder',
+          attributes: ['id', 'roNumber', 'status'],
+        },
+      ],
+    });
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        error: 'Invoice not found',
+      });
+    }
+
+    // Use PDFKit or Puppeteer to generate PDF
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
+
+    doc.pipe(res);
+
+    // Invoice Header
+    doc.fontSize(20).text('INVOICE', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(`Invoice #: ${invoice.invoiceNumber}`, { align: 'right' });
+    const invoiceDate = invoice.invoiceDate instanceof Date 
+      ? invoice.invoiceDate 
+      : new Date(invoice.invoiceDate);
+    const dueDate = invoice.dueDate instanceof Date 
+      ? invoice.dueDate 
+      : invoice.dueDate ? new Date(invoice.dueDate) : null;
+    doc.text(`Date: ${invoiceDate.toLocaleDateString()}`, { align: 'right' });
+    doc.text(`Due Date: ${dueDate ? dueDate.toLocaleDateString() : 'N/A'}`, { align: 'right' });
+    doc.moveDown();
+
+    // Customer Info
+    doc.fontSize(14).text('Bill To:', { underline: true });
+    doc.fontSize(10);
+    if (invoice.customer) {
+      doc.text(`${invoice.customer.firstName} ${invoice.customer.lastName}`);
+      if (invoice.customer.companyName) doc.text(invoice.customer.companyName);
+      if (invoice.customer.address) doc.text(invoice.customer.address);
+      if (invoice.customer.phone) doc.text(`Phone: ${invoice.customer.phone}`);
+      if (invoice.customer.email) doc.text(`Email: ${invoice.customer.email}`);
+    }
+    doc.moveDown();
+
+    // Line Items
+    doc.fontSize(14).text('Line Items:', { underline: true });
+    doc.moveDown(0.5);
+
+    doc.fontSize(10);
+    doc.text('Description', 50, doc.y, { width: 200 });
+    doc.text('Quantity', 250, doc.y, { width: 80, align: 'right' });
+    doc.text('Rate', 330, doc.y, { width: 80, align: 'right' });
+    doc.text('Amount', 410, doc.y, { width: 100, align: 'right' });
+    doc.moveDown(0.5);
+    doc.moveTo(50, doc.y).lineTo(510, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    // Labor
+    if (invoice.laborTotal > 0) {
+      doc.text('Labor', 50);
+      doc.text('1', 250, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.laborTotal.toFixed(2)}`, 330, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.laborTotal.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+      doc.moveDown(0.5);
+    }
+
+    // Parts
+    if (invoice.partsTotal > 0) {
+      doc.text('Parts', 50);
+      doc.text('1', 250, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.partsTotal.toFixed(2)}`, 330, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.partsTotal.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+      doc.moveDown(0.5);
+    }
+
+    // Sublet
+    if (invoice.subletTotal > 0) {
+      doc.text('Sublet', 50);
+      doc.text('1', 250, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.subletTotal.toFixed(2)}`, 330, doc.y, { width: 80, align: 'right' });
+      doc.text(`$${invoice.subletTotal.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+      doc.moveDown(0.5);
+    }
+
+    doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(510, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    // Totals
+    doc.text('Subtotal:', 350, doc.y, { width: 100, align: 'right' });
+    doc.text(`$${invoice.subtotal.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+    doc.moveDown(0.5);
+
+    if (invoice.discountAmount > 0) {
+      doc.text('Discount:', 350, doc.y, { width: 100, align: 'right' });
+      doc.text(`-$${invoice.discountAmount.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+      doc.moveDown(0.5);
+    }
+
+    doc.text(`Tax (${invoice.taxRate}%):`, 350, doc.y, { width: 100, align: 'right' });
+    doc.text(`$${invoice.taxAmount.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+    doc.moveDown(0.5);
+
+    doc.moveTo(350, doc.y).lineTo(510, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    doc.fontSize(12).font('Helvetica-Bold');
+    doc.text('Total:', 350, doc.y, { width: 100, align: 'right' });
+    doc.text(`$${invoice.totalAmount.toFixed(2)}`, 410, doc.y, { width: 100, align: 'right' });
+    doc.moveDown();
+
+    // Notes
+    if (invoice.notes) {
+      doc.fontSize(10).font('Helvetica');
+      doc.moveDown();
+      doc.text('Notes:', { underline: true });
+      doc.text(invoice.notes);
+    }
+
+    doc.end();
+  } catch (error) {
+    console.error('Generate PDF error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
