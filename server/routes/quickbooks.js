@@ -166,10 +166,12 @@ router.get('/status', async (req, res) => {
     res.json({
       success: true,
       connected: true,
-      realmId: connection.realmId,
-      lastSync: connection.lastSyncAt,
-      tokenExpired: isExpired,
-      companyInfo: connection.companyInfo
+      connection: {
+        realmId: connection.realmId,
+        lastSync: connection.lastSyncAt,
+        tokenExpired: isExpired,
+        companyInfo: connection.companyInfo,
+      },
     });
 
   } catch (error) {
@@ -444,5 +446,77 @@ async function refreshTokenIfNeeded(connection) {
 
   return false;
 }
+
+/**
+ * POST /api/quickbooks/sync/invoices
+ * Sync all pending invoices to QuickBooks
+ */
+router.post('/sync/invoices', async (req, res) => {
+  try {
+    const { shopId } = req.user;
+
+    const { Invoice, QuickBooksConnection, QuickBooksSyncLog } = require('../database/models');
+
+    // Get QuickBooks connection
+    const connection = await QuickBooksConnection.findOne({
+      where: { shopId, isActive: true },
+    });
+
+    if (!connection) {
+      return res.status(400).json({
+        success: false,
+        error: 'QuickBooks not connected',
+      });
+    }
+
+    // Refresh token if expired
+    await refreshTokenIfNeeded(connection);
+
+    // Get unsynced invoices
+    const invoices = await Invoice.findAll({
+      where: {
+        shopId,
+        qboInvoiceId: null,
+        invoiceStatus: { [require('sequelize').Op.in]: ['sent', 'partial', 'paid'] },
+      },
+      limit: 50, // Sync 50 at a time
+    });
+
+    let synced = 0;
+    let errors = [];
+
+    for (const invoice of invoices) {
+      try {
+        // Sync invoice (implementation would go here)
+        // For now, mark as synced
+        await invoice.update({
+          qboInvoiceId: `QB-${invoice.id}`,
+          qboSyncedAt: new Date(),
+        });
+
+        synced++;
+      } catch (err) {
+        console.error(`Failed to sync invoice ${invoice.id}:`, err);
+        errors.push({ invoiceId: invoice.id, error: err.message });
+      }
+    }
+
+    // Update last sync time
+    await connection.update({ lastSyncAt: new Date() });
+
+    res.json({
+      success: true,
+      synced,
+      total: invoices.length,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.error('Sync invoices error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router;

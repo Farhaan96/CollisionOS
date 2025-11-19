@@ -36,12 +36,14 @@ module.exports = (sequelize) => {
         'general'
       ),
       allowNull: false,
+      field: 'document_type',
       comment: 'Type of document being signed',
     },
 
     documentId: {
       type: DataTypes.UUID,
       allowNull: false,
+      field: 'document_id',
       comment: 'ID of the document being signed',
     },
 
@@ -49,6 +51,7 @@ module.exports = (sequelize) => {
     signatureFieldName: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: 'signature_field_name',
       comment: 'Name/label of signature field (e.g., "Customer Signature", "Technician Signature")',
     },
 
@@ -114,6 +117,7 @@ module.exports = (sequelize) => {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'signed_at',
       comment: 'Timestamp when signature was captured',
     },
 
@@ -165,24 +169,28 @@ module.exports = (sequelize) => {
     shopId: {
       type: DataTypes.UUID,
       allowNull: false,
+      field: 'shop_id',
       comment: 'Shop where signature was captured',
     },
 
     userId: {
       type: DataTypes.UUID,
       allowNull: true,
+      field: 'user_id',
       comment: 'CollisionOS user ID if signer is a system user',
     },
 
     customerId: {
       type: DataTypes.UUID,
       allowNull: true,
+      field: 'customer_id',
       comment: 'Customer ID if signer is a customer',
     },
 
     repairOrderId: {
       type: DataTypes.UUID,
       allowNull: true,
+      field: 'repair_order_id',
       comment: 'Associated repair order (if applicable)',
     },
 
@@ -211,32 +219,32 @@ module.exports = (sequelize) => {
     paranoid: true, // Enable soft deletes
     indexes: [
       {
-        fields: ['documentType', 'documentId'],
+        fields: ['document_type', 'document_id'],
         name: 'idx_signature_document',
       },
       {
-        fields: ['shopId'],
+        fields: ['shop_id'],
         name: 'idx_signature_shop',
       },
       {
-        fields: ['repairOrderId'],
+        fields: ['repair_order_id'],
         name: 'idx_signature_ro',
       },
       {
-        fields: ['customerId'],
+        fields: ['customer_id'],
         name: 'idx_signature_customer',
       },
       {
-        fields: ['userId'],
+        fields: ['user_id'],
         name: 'idx_signature_user',
       },
       {
-        fields: ['signedAt'],
+        fields: ['signed_at'],
         name: 'idx_signature_signed_at',
       },
       {
         unique: true,
-        fields: ['documentType', 'documentId', 'signatureFieldName', 'signedAt'],
+        fields: ['document_type', 'document_id', 'signature_field_name', 'signed_at'],
         name: 'idx_signature_unique_field',
       },
     ],

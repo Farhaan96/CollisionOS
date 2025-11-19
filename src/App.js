@@ -8,12 +8,16 @@ import {
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
 import Layout from './components/Layout/Layout';
 import { LoadingSpinner } from './components/Common/LoadingSpinner';
 import { ErrorBoundary, PageErrorBoundary } from './components/Common/ErrorBoundary';
 import BMSUploadButton from './components/BMS/BMSUploadButton';
+
+// Core pages - imported directly for instant loading (no lazy loading for Electron desktop app)
+import DashboardClean from './pages/Dashboard/DashboardClean';
+import JobsListPageClean from './pages/Jobs/JobsListPageClean';
+import RODetailPage from './pages/RO/RODetailPage';
 
 // Lazy load components for better performance
 const BMSImportPage = lazy(() => import('./pages/BMSImport/BMSImportPage'));
@@ -44,7 +48,6 @@ const MUIComponentTest = lazy(
 // New Enterprise Collision Repair Components
 const SearchPage = lazy(() => import('./pages/Search/SearchPage'));
 const ROSearchPage = lazy(() => import('./pages/Search/ROSearchPage'));
-const RODetailPage = lazy(() => import('./pages/RO/RODetailPage'));
 const BusinessIntelligenceDashboard = lazy(
   () => import('./components/Analytics/BusinessIntelligenceDashboard')
 );
@@ -54,6 +57,10 @@ const AdvancedProductionBoard = lazy(
 const SimpleProductionBoard = lazy(
   () => import('./components/Production/SimpleProductionBoard')
 );
+const TimeClockPage = lazy(() => import('./pages/TimeClock/TimeClockPage'));
+const InvoiceGenerationPage = lazy(() => import('./pages/Financial/InvoiceGenerationPage'));
+const PaymentProcessingPage = lazy(() => import('./pages/Financial/PaymentProcessingPage'));
+const QuickBooksIntegrationPage = lazy(() => import('./pages/Financial/QuickBooksIntegrationPage'));
 const PODashboard = lazy(
   () => import('./components/PurchaseOrder/PODashboard')
 );
@@ -63,8 +70,6 @@ const CustomerCommunicationCenter = lazy(
 const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage'));
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const JobsListPage = lazy(() => import('./pages/Jobs/JobsListPage'));
-const JobsListPageClean = lazy(() => import('./pages/Jobs/JobsListPageClean'));
-const DashboardClean = lazy(() => import('./pages/Dashboard/DashboardClean'));
 const InvoicingPage = lazy(() => import('./pages/Invoicing/InvoicingPage'));
 const VINDecoderDemo = lazy(() => import('./pages/VINDecoderDemo'));
 const ToolsHub = lazy(() => import('./pages/Tools/ToolsHub'));
@@ -108,12 +113,9 @@ const AppRoutes = () => {
       >
         <Route path='dashboard' element={
           <PageErrorBoundary pageName="Dashboard">
-            <Suspense fallback={<LoadingSpinner />}>
-              <DashboardClean />
-            </Suspense>
+            <DashboardClean />
           </PageErrorBoundary>
         } />
-        <Route path='dashboard-old' element={<Dashboard />} />
         <Route
           path='search'
           element={
@@ -128,9 +130,7 @@ const AppRoutes = () => {
           path='ro/:id'
           element={
             <PageErrorBoundary pageName="RO Detail">
-              <Suspense fallback={<LoadingSpinner />}>
-                <RODetailPage />
-              </Suspense>
+              <RODetailPage />
             </PageErrorBoundary>
           }
         />
@@ -220,6 +220,46 @@ const AppRoutes = () => {
             <PageErrorBoundary pageName="Production Board">
               <Suspense fallback={<LoadingSpinner />}>
                 <SimpleProductionBoard />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='time-clock'
+          element={
+            <PageErrorBoundary pageName="Time Clock">
+              <Suspense fallback={<LoadingSpinner />}>
+                <TimeClockPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='invoices'
+          element={
+            <PageErrorBoundary pageName="Invoice Management">
+              <Suspense fallback={<LoadingSpinner />}>
+                <InvoiceGenerationPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='invoices/:invoiceId/payment'
+          element={
+            <PageErrorBoundary pageName="Payment Processing">
+              <Suspense fallback={<LoadingSpinner />}>
+                <PaymentProcessingPage />
+              </Suspense>
+            </PageErrorBoundary>
+          }
+        />
+        <Route
+          path='quickbooks'
+          element={
+            <PageErrorBoundary pageName="QuickBooks Integration">
+              <Suspense fallback={<LoadingSpinner />}>
+                <QuickBooksIntegrationPage />
               </Suspense>
             </PageErrorBoundary>
           }
@@ -368,19 +408,7 @@ const AppRoutes = () => {
           path='jobs'
           element={
             <PageErrorBoundary pageName="Jobs">
-              <Suspense fallback={<LoadingSpinner />}>
-                <JobsListPageClean />
-              </Suspense>
-            </PageErrorBoundary>
-          }
-        />
-        <Route
-          path='jobs-old'
-          element={
-            <PageErrorBoundary pageName="Jobs Old">
-              <Suspense fallback={<LoadingSpinner />}>
-                <JobsListPage />
-              </Suspense>
+              <JobsListPageClean />
             </PageErrorBoundary>
           }
         />
@@ -388,16 +416,6 @@ const AppRoutes = () => {
           path='jobs/:id'
           element={
             <PageErrorBoundary pageName="Job Detail">
-              <Suspense fallback={<LoadingSpinner />}>
-                <JobsListPage />
-              </Suspense>
-            </PageErrorBoundary>
-          }
-        />
-        <Route
-          path='jobs/new'
-          element={
-            <PageErrorBoundary pageName="New Job">
               <Suspense fallback={<LoadingSpinner />}>
                 <JobsListPage />
               </Suspense>
@@ -424,7 +442,7 @@ const AppRoutes = () => {
 export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider enableScheduledSwitching={true}>
+      <ThemeProvider>
         <CssBaseline />
         <AuthProvider>
           <Router

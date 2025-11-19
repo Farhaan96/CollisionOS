@@ -12,6 +12,7 @@ module.exports = (sequelize, Sequelize) => {
       shopId: {
         type: DataTypes.UUID,
         allowNull: false,
+        field: 'shop_id',
         references: {
           model: 'shops',
           key: 'id',
@@ -20,6 +21,7 @@ module.exports = (sequelize, Sequelize) => {
       technicianId: {
         type: DataTypes.UUID,
         allowNull: false,
+        field: 'technician_id',
         references: {
           model: 'users',
           key: 'id',
@@ -28,6 +30,7 @@ module.exports = (sequelize, Sequelize) => {
       roId: {
         type: DataTypes.UUID,
         allowNull: true, // Can be null for general clock in/out
+        field: 'ro_id',
         references: {
           model: 'jobs',
           key: 'id',
@@ -38,6 +41,7 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'clock_in',
       },
       clockOut: {
         type: DataTypes.DATE,
@@ -202,16 +206,16 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true,
       indexes: [
         {
-          fields: ['shopId', 'technicianId'],
+          fields: ['shop_id', 'technician_id'],
         },
         {
-          fields: ['technicianId', 'status'],
+          fields: ['technician_id', 'status'],
         },
         {
-          fields: ['roId'],
+          fields: ['ro_id'],
         },
         {
-          fields: ['clockIn'],
+          fields: ['clock_in'],
         },
         {
           fields: ['status'],

@@ -48,11 +48,13 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import { SortableItem } from '../Common/SortableItem';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -72,6 +74,7 @@ const SimpleProductionBoard = () => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [activeId, setActiveId] = useState(null);
   const [filters, setFilters] = useState({
     priority: 'all',
     technician: 'all',
@@ -251,14 +254,26 @@ const SimpleProductionBoard = () => {
     return filtered;
   }, [jobs, filters]);
 
-  // Handle job drag
+  // Handle drag start
+  const handleDragStart = event => {
+    setActiveId(event.active.id);
+  };
+
+  // Handle job drag end
   const handleDragEnd = async event => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (!over) return;
 
     const jobId = active.id;
     const newStage = over.id;
+
+    // Don't update if dropped in same column
+    const job = jobs.find(j => j.id === jobId);
+    if (job && job.stage === newStage) {
+      return;
+    }
 
     // Optimistic UI update
     setJobs(prevJobs =>
@@ -274,9 +289,13 @@ const SimpleProductionBoard = () => {
 
     // Update backend
     try {
-      await axios.put(`/api/production/board/${jobId}/status`, {
+      const response = await axios.put(`/api/production/board/${jobId}/status`, {
         status: newStage,
       });
+      
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Update failed');
+      }
     } catch (error) {
       console.error('Error updating job stage:', error);
       // Revert on error
@@ -456,12 +475,17 @@ const SimpleProductionBoard = () => {
     </Card>
   );
 
-  // Render stage column
-  const renderStageColumn = stage => {
+  // Droppable Stage Column Component
+  const DroppableStageColumn = ({ stage }) => {
+    const { setNodeRef, isOver } = useDroppable({
+      id: stage.id,
+    });
+
     const stageJobs = filteredJobs.filter(job => job.stage === stage.id);
 
     return (
       <Paper
+        ref={setNodeRef}
         key={stage.id}
         sx={{
           minWidth: 320,
@@ -469,9 +493,11 @@ const SimpleProductionBoard = () => {
           height: 'calc(100vh - 350px)',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: 'background.paper',
-          border: 1,
-          borderColor: 'divider',
+          backgroundColor: isOver ? `${stage.color}25` : 'background.paper',
+          border: 2,
+          borderColor: isOver ? stage.color : 'divider',
+          borderStyle: isOver ? 'dashed' : 'solid',
+          transition: 'all 0.2s ease-in-out',
         }}
       >
         {/* Stage Header */}
@@ -514,7 +540,6 @@ const SimpleProductionBoard = () => {
           strategy={verticalListSortingStrategy}
         >
           <Box
-            id={stage.id}
             sx={{
               flex: 1,
               overflow: 'auto',
@@ -534,7 +559,7 @@ const SimpleProductionBoard = () => {
                 color='text.secondary'
                 sx={{ textAlign: 'center', mt: 4, fontStyle: 'italic' }}
               >
-                No jobs
+                {isOver ? 'Drop job here' : 'No jobs'}
               </Typography>
             )}
           </Box>
@@ -649,6 +674,7 @@ const SimpleProductionBoard = () => {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <Box
@@ -659,8 +685,27 @@ const SimpleProductionBoard = () => {
               pb: 2,
             }}
           >
-            {STAGES.map(stage => renderStageColumn(stage))}
+            {STAGES.map(stage => (
+              <DroppableStageColumn key={stage.id} stage={stage} />
+            ))}
           </Box>
+          <DragOverlay>
+            {activeId ? (
+              <Card
+                sx={{
+                  width: 300,
+                  opacity: 0.9,
+                  transform: 'rotate(5deg)',
+                  boxShadow: 6,
+                }}
+              >
+                {(() => {
+                  const job = jobs.find(j => j.id === activeId);
+                  return job ? renderJobCard(job) : null;
+                })()}
+              </Card>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
 

@@ -23,6 +23,7 @@ import {
   Close as CloseIcon,
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
+  Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerStore } from '../../store/customerStore';
@@ -278,16 +279,32 @@ const BMSUploadButton = () => {
                 <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
                   Upload Successful!
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   BMS file processed and customer data imported
                 </Typography>
                 {uploadResult?.data && (
-                  <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1, mb: 2 }}>
                     <Typography variant="caption" color="text.secondary">
                       Customer: {uploadResult.data.customer?.firstName} {uploadResult.data.customer?.lastName}
                     </Typography>
+                    {uploadResult.jobId && (
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                        Job ID: {uploadResult.jobId}
+                      </Typography>
+                    )}
                   </Box>
                 )}
+                <Button
+                  variant="outlined"
+                  startIcon={<ViewIcon />}
+                  onClick={() => {
+                    navigate('/bms-dashboard');
+                    setOpen(false);
+                  }}
+                  sx={{ mt: 1 }}
+                >
+                  View All BMS Files
+                </Button>
               </Box>
             )}
 
@@ -309,6 +326,18 @@ const BMSUploadButton = () => {
           <Button onClick={() => setOpen(false)}>
             {uploadStatus === 'success' ? 'Close' : 'Cancel'}
           </Button>
+          {uploadStatus === 'success' && (
+            <Button 
+              variant="contained" 
+              startIcon={<ViewIcon />}
+              onClick={() => {
+                navigate('/bms-dashboard');
+                setOpen(false);
+              }}
+            >
+              View Files
+            </Button>
+          )}
           {uploadStatus === 'error' && (
             <Button 
               variant="contained" 

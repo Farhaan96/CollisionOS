@@ -161,7 +161,15 @@ router.post('/bms', upload.single('file'), async (req, res) => {
       customerId: processedData.createdCustomer?.id,
     });
   } catch (error) {
-    console.error('BMS import error:', error);
+    console.error('❌ BMS import error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      fileName: req.file?.originalname,
+      filePath: req.file?.path,
+    });
 
     // Update status with error
     importStatusStore.set(importId, {
@@ -186,6 +194,11 @@ router.post('/bms', upload.single('file'), async (req, res) => {
       importId,
       error: error.message,
       message: 'Failed to process BMS file',
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: error.stack,
+        name: error.name,
+        code: error.code,
+      } : undefined,
     });
   }
 });

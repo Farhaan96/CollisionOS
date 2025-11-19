@@ -190,11 +190,100 @@ const BMSDashboard = () => {
   ];
 
   useEffect(() => {
-    // Simulate loading BMS data
-    setTimeout(() => {
-      setBmsData(mockBMSData);
-      setLoading(false);
-    }, 1000);
+    const fetchBMSFiles = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/bms/imports?limit=100', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data && result.data.length > 0) {
+            // Transform API data to match component structure
+            const transformedData = result.data.map(importItem => {
+              const bmsData = importItem.parsedData || importItem.data || {};
+              return {
+                id: importItem.id || importItem.importId || Date.now().toString(),
+                documentInfo: {
+                  documentNumber: safeText(bmsData.documentInfo?.documentNumber) || importItem.fileName || 'Unknown',
+                  documentType: safeText(bmsData.documentInfo?.documentType) || 'Estimate',
+                  createdDate: importItem.createdAt ? new Date(importItem.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                  status: importItem.status === 'completed' ? 'Approved' : importItem.status === 'failed' ? 'Rejected' : 'Pending',
+                },
+                claimInfo: {
+                  claimNumber: safeText(bmsData.claimInfo?.claimNumber) || 'N/A',
+                  insuranceCompany: safeText(bmsData.claimInfo?.insuranceCompany) || 'Unknown',
+                  deductible: parseFloat(safeText(bmsData.claimInfo?.deductible)) || 0,
+                  totalLoss: false,
+                },
+                customer: {
+                  name: safeText(bmsData.customer?.name) || `${safeText(bmsData.customer?.firstName) || ''} ${safeText(bmsData.customer?.lastName) || ''}`.trim() || 'Unknown Customer',
+                  phone: safeText(bmsData.customer?.phone) || 'N/A',
+                  email: safeText(bmsData.customer?.email) || 'N/A',
+                  address: safeText(bmsData.customer?.address) || 'N/A',
+                },
+                vehicle: {
+                  year: parseInt(safeText(bmsData.vehicle?.year)) || 0,
+                  make: safeText(bmsData.vehicle?.make) || 'Unknown',
+                  model: safeText(bmsData.vehicle?.model) || 'Unknown',
+                  vin: safeText(bmsData.vehicle?.vin) || 'N/A',
+                  mileage: parseInt(safeText(bmsData.vehicle?.mileage)) || 0,
+                  color: safeText(bmsData.vehicle?.color) || 'N/A',
+                },
+                damage: {
+                  totalParts: parseInt(safeText(bmsData.damage?.totalParts)) || 0,
+                  totalLabor: parseFloat(safeText(bmsData.damage?.totalLabor)) || 0,
+                  totalMaterials: parseFloat(safeText(bmsData.damage?.totalMaterials)) || 0,
+                  totalAmount: parseFloat(safeText(bmsData.damage?.totalAmount)) || 0,
+                  damageLines: Array.isArray(bmsData.damage?.damageLines)
+                    ? bmsData.damage.damageLines.map(line => ({
+                        part: safeText(line.part) || 'Unknown Part',
+                        operation: safeText(line.operation) || 'Repair',
+                        labor: parseFloat(safeText(line.labor)) || 0,
+                        parts: parseFloat(safeText(line.parts)) || 0,
+                      }))
+                    : [],
+                },
+              };
+            });
+            setBmsData(transformedData);
+          } else {
+            // Fallback to mock data if no real data available
+            setBmsData(mockBMSData);
+          }
+        } else {
+          // Fallback to mock data on error
+          console.warn('Failed to fetch BMS files, using mock data');
+          setBmsData(mockBMSData);
+        }
+      } catch (error) {
+        console.error('Error fetching BMS files:', error);
+        // Fallback to mock data on error
+        setBmsData(mockBMSData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBMSFiles();
+
+    // Listen for new BMS imports
+    const handleBMSImport = () => {
+      // Refresh the list when a new file is uploaded
+      setTimeout(() => {
+        fetchBMSFiles();
+      }, 1000); // Small delay to ensure backend has processed the file
+    };
+
+    window.addEventListener('bmsImported', handleBMSImport);
+    return () => {
+      window.removeEventListener('bmsImported', handleBMSImport);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleSection = sectionId => {

@@ -156,9 +156,15 @@ const CustomerList = () => {
     setLoading(true);
     try {
       const data = await customerService.getCustomers();
-      setCustomers(data);
+      console.log('Loaded customers:', data); // Debug log
+      console.log('Customer count:', Array.isArray(data) ? data.length : 'Not an array');
+      // Ensure data is an array
+      const customersArray = Array.isArray(data) ? data : (data?.data || data?.customers || []);
+      setCustomers(customersArray);
+      console.log('Set customers:', customersArray.length);
     } catch (error) {
       console.error('Error loading customers:', error);
+      setCustomers([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -354,16 +360,43 @@ const CustomerList = () => {
             </TableHead>
             <TableBody>
               <AnimatePresence>
-                {filteredCustomers.map((customer, index) => (
-                  <motion.tr
-                    key={customer.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                    component={TableRow}
-                    hover
-                  >
+                {filteredCustomers.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          {customers.length === 0 
+                            ? 'No customers found' 
+                            : 'No customers match your filters'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {customers.length === 0 
+                            ? 'Click "Add Customer" to create your first customer'
+                            : `Try adjusting your search or filters. Total customers: ${customers.length}`}
+                        </Typography>
+                        {customers.length === 0 && (
+                          <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={handleAddCustomer}
+                          >
+                            Add Customer
+                          </Button>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCustomers.map((customer, index) => (
+                    <motion.tr
+                      key={customer.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      component={TableRow}
+                      hover
+                    >
                     <TableCell>
                       <Box
                         sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
@@ -495,7 +528,8 @@ const CustomerList = () => {
                       </Box>
                     </TableCell>
                   </motion.tr>
-                ))}
+                  ))
+                )}
               </AnimatePresence>
             </TableBody>
           </Table>

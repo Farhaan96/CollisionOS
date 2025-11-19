@@ -12,13 +12,9 @@ const {
   Shop,
 } = require('../database/models');
 
-// Cache for dashboard data (5 minute cache)
-const dashboardCache = new Map();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-const getCacheKey = (method, params, shopId) =>
-  `${method}-${shopId}-${JSON.stringify(params)}`;
-const isCacheValid = timestamp => Date.now() - timestamp < CACHE_DURATION;
+// Cache for dashboard data (5 minute cache) - Using LRU to prevent memory leaks
+const { dashboardCache, getCacheKey, isCacheValid } = require('../utils/cacheManager');
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (for reference, LRU handles this)
 
 // Helper function to get date ranges
 const getDateRanges = (timeframe = 'month') => {
@@ -89,8 +85,8 @@ router.get('/stats', async (req, res) => {
     const cacheKey = getCacheKey('stats', {}, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const now = new Date();
@@ -280,11 +276,8 @@ router.get('/stats', async (req, res) => {
       recentJobs,
     };
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: stats,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, stats);
 
     res.json(stats);
   } catch (error) {
@@ -305,8 +298,8 @@ router.get('/kpis', async (req, res) => {
     const cacheKey = getCacheKey('kpis', { timeframe }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const ranges = getDateRanges(timeframe);
@@ -681,11 +674,8 @@ router.get('/kpis', async (req, res) => {
       },
     };
 
-    // Cache the enhanced result
-    dashboardCache.set(cacheKey, {
-      data: kpis,
-      timestamp: Date.now(),
-    });
+    // Cache the enhanced result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, kpis);
 
     res.json(kpis);
   } catch (error) {
@@ -701,8 +691,8 @@ router.get('/production', async (req, res) => {
     const cacheKey = getCacheKey('production', {}, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     // Get current production status
@@ -752,11 +742,8 @@ router.get('/production', async (req, res) => {
       })
     );
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: productionData,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, productionData);
 
     res.json(productionData);
   } catch (error) {
@@ -774,8 +761,8 @@ router.get('/revenue-trend', async (req, res) => {
     const cacheKey = getCacheKey('revenue-trend', { timeframe }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const ranges = getDateRanges(timeframe);
@@ -817,11 +804,8 @@ router.get('/revenue-trend', async (req, res) => {
         })
       );
 
-      // Cache the result
-      dashboardCache.set(cacheKey, {
-        data: revenueData,
-        timestamp: Date.now(),
-      });
+      // Cache the result (LRU handles expiration automatically)
+      dashboardCache.set(cacheKey, revenueData);
 
       res.json(revenueData);
     } else {
@@ -843,8 +827,8 @@ router.get('/recent-jobs', async (req, res) => {
     const cacheKey = getCacheKey('recent-jobs', { limit }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const recentJobs = await Job.findAll({
@@ -896,11 +880,8 @@ router.get('/recent-jobs', async (req, res) => {
       };
     });
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: formattedJobs,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, formattedJobs);
 
     res.json(formattedJobs);
   } catch (error) {
@@ -922,8 +903,8 @@ router.get('/technician-performance', async (req, res) => {
     );
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const ranges = getDateRanges(timeframe);
@@ -1000,11 +981,8 @@ router.get('/technician-performance', async (req, res) => {
       .sort((a, b) => b.efficiency - a.efficiency)
       .slice(0, 4); // Top 4 performers
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: technicianData,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, technicianData);
 
     res.json(technicianData);
   } catch (error) {
@@ -1020,8 +998,8 @@ router.get('/recent-activity', async (req, res) => {
     const cacheKey = getCacheKey('recent-activity', {}, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const activities = [];
@@ -1072,11 +1050,8 @@ router.get('/recent-activity', async (req, res) => {
       });
     });
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: activities,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, activities);
 
     res.json(activities);
   } catch (error) {
@@ -1097,8 +1072,8 @@ router.get('/activity', async (req, res) => {
     const cacheKey = getCacheKey('activity', { limit, type }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const activities = [];
@@ -1275,11 +1250,8 @@ router.get('/activity', async (req, res) => {
     // Limit results
     const limitedActivities = activities.slice(0, parseInt(limit));
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: limitedActivities,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, limitedActivities);
 
     res.json(limitedActivities);
   } catch (error) {
@@ -1297,8 +1269,8 @@ router.get('/alerts', async (req, res) => {
     const cacheKey = getCacheKey('alerts', { priority, limit }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const alerts = [];
@@ -1543,19 +1515,16 @@ router.get('/alerts', async (req, res) => {
     // Limit results
     const limitedAlerts = filteredAlerts.slice(0, parseInt(limit));
 
-    // Cache the result
+    // Cache the result (LRU handles expiration automatically)
     dashboardCache.set(cacheKey, {
-      data: {
-        alerts: limitedAlerts,
-        summary: {
-          total: alerts.length,
-          critical: alerts.filter(a => a.priority === 'critical').length,
-          high: alerts.filter(a => a.priority === 'high').length,
-          medium: alerts.filter(a => a.priority === 'medium').length,
-          low: alerts.filter(a => a.priority === 'low').length,
-        },
+      alerts: limitedAlerts,
+      summary: {
+        total: alerts.length,
+        critical: alerts.filter(a => a.priority === 'critical').length,
+        high: alerts.filter(a => a.priority === 'high').length,
+        medium: alerts.filter(a => a.priority === 'medium').length,
+        low: alerts.filter(a => a.priority === 'low').length,
       },
-      timestamp: Date.now(),
     });
 
     res.json({
@@ -1593,8 +1562,8 @@ router.get('/business-intelligence', async (req, res) => {
     );
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const ranges = getDateRanges(timeframe);
@@ -1822,11 +1791,8 @@ router.get('/business-intelligence', async (req, res) => {
       },
     };
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: analytics,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, analytics);
 
     res.json(analytics);
   } catch (error) {
@@ -1844,8 +1810,8 @@ router.get('/workload', async (req, res) => {
     const cacheKey = getCacheKey('workload', {}, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const now = new Date();
@@ -2033,11 +1999,8 @@ router.get('/workload', async (req, res) => {
       ].filter(Boolean),
     };
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: workload,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, workload);
 
     res.json(workload);
   } catch (error) {
@@ -2055,8 +2018,8 @@ router.get('/financial-summary', async (req, res) => {
     const cacheKey = getCacheKey('financial-summary', { timeframe }, shopId);
     const cached = dashboardCache.get(cacheKey);
 
-    if (cached && isCacheValid(cached.timestamp)) {
-      return res.json(cached.data);
+    if (cached && isCacheValid(cached)) {
+      return res.json(cached);
     }
 
     const ranges = getDateRanges(timeframe);
@@ -2253,11 +2216,8 @@ router.get('/financial-summary', async (req, res) => {
       },
     };
 
-    // Cache the result
-    dashboardCache.set(cacheKey, {
-      data: financialSummary,
-      timestamp: Date.now(),
-    });
+    // Cache the result (LRU handles expiration automatically)
+    dashboardCache.set(cacheKey, financialSummary);
 
     res.json(financialSummary);
   } catch (error) {

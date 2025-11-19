@@ -202,6 +202,11 @@ const CustomerForm = ({ open, customer, onClose, onSave }) => {
         savedCustomer = await customerService.createCustomer(customerData);
       }
 
+      // Emit event for real-time updates
+      window.dispatchEvent(new CustomEvent('customersUpdated', {
+        detail: { customer: savedCustomer, action: customer ? 'updated' : 'created' }
+      }));
+
       onSave(savedCustomer || customerData);
     } catch (error) {
       setErrors({ submit: 'Failed to save customer. Please try again.' });

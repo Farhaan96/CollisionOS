@@ -1,58 +1,59 @@
 import { createTheme } from '@mui/material/styles';
+import { premiumColors } from './premiumDesignSystem';
 
 export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976D2',
-      light: '#42A5F5',
-      dark: '#1565C0',
+      main: premiumColors.primary[500], // #6366F1
+      light: premiumColors.primary[400], // #818CF8
+      dark: premiumColors.primary[600], // #4F46E5
       contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#00897B',
-      light: '#4DB6AC',
-      dark: '#00695C',
+      main: premiumColors.secondary[500], // #A855F7
+      light: premiumColors.secondary[400], // #C084FC
+      dark: premiumColors.secondary[600], // #9333EA
       contrastText: '#FFFFFF',
     },
     background: {
-      default: '#F8FAFC',
+      default: premiumColors.neutral[50], // #FAFAFA
       paper: '#FFFFFF',
-      surface: '#F1F5F9',
+      surface: premiumColors.neutral[100], // #F4F4F5
     },
     text: {
-      primary: '#1E293B',
-      secondary: '#64748B',
+      primary: premiumColors.neutral[900], // #18181B
+      secondary: premiumColors.neutral[600], // #52525B
     },
     success: {
-      main: '#2E7D32',
-      light: '#4CAF50',
-      dark: '#1B5E20',
+      main: premiumColors.semantic.success.main, // #22C55E
+      light: premiumColors.semantic.success.light, // #DCFCE7
+      dark: premiumColors.semantic.success.dark, // #15803D
       contrastText: '#FFFFFF',
     },
     error: {
-      main: '#D32F2F',
-      light: '#EF5350',
-      dark: '#C62828',
+      main: premiumColors.semantic.error.main, // #EF4444
+      light: premiumColors.semantic.error.light, // #FECACA
+      dark: premiumColors.semantic.error.dark, // #DC2626
       contrastText: '#FFFFFF',
     },
     warning: {
-      main: '#F57C00',
-      light: '#FF9800',
-      dark: '#E65100',
+      main: premiumColors.semantic.warning.main, // #F59E0B
+      light: premiumColors.semantic.warning.light, // #FEF3C7
+      dark: premiumColors.semantic.warning.dark, // #D97706
       contrastText: '#FFFFFF',
     },
     info: {
-      main: '#0288D1',
-      light: '#03A9F4',
-      dark: '#01579B',
+      main: premiumColors.semantic.info.main, // #3B82F6
+      light: premiumColors.semantic.info.light, // #DBEAFE
+      dark: premiumColors.semantic.info.dark, // #1E40AF
       contrastText: '#FFFFFF',
     },
-    divider: '#E2E8F0',
+    divider: premiumColors.neutral[200], // #E4E4E7
   },
 
   typography: {
-    fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: '"Inter", "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     h1: {
       fontSize: '3rem',
       fontWeight: 700,

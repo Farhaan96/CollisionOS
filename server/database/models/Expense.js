@@ -189,7 +189,23 @@ module.exports = (sequelize) => {
       field: 'receipt_url'
     },
     attachments: {
-      type: DataTypes.JSONB
+      type: DataTypes.TEXT, // Store as JSON string for SQLite compatibility
+      get() {
+        const value = this.getDataValue('attachments');
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return null;
+        }
+      },
+      set(value) {
+        if (value && typeof value === 'object') {
+          this.setDataValue('attachments', JSON.stringify(value));
+        } else {
+          this.setDataValue('attachments', value);
+        }
+      }
     },
 
     // Metadata
@@ -197,7 +213,23 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT
     },
     tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING)
+      type: DataTypes.TEXT, // Store as JSON string for SQLite compatibility
+      get() {
+        const value = this.getDataValue('tags');
+        if (!value) return [];
+        try {
+          return JSON.parse(value);
+        } catch {
+          return [];
+        }
+      },
+      set(value) {
+        if (Array.isArray(value)) {
+          this.setDataValue('tags', JSON.stringify(value));
+        } else {
+          this.setDataValue('tags', value);
+        }
+      }
     },
 
     // Audit

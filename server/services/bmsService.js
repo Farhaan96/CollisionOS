@@ -1426,6 +1426,12 @@ class BMSService {
    */
   async findOrCreateVehicleWithAdmin(vehicleData, customerId, supabaseAdmin) {
     try {
+      // Use legacy database when Supabase is not available
+      if (!supabaseAdmin) {
+        const { vehicleService } = require('../database/services/vehicleService-local');
+        return await vehicleService.findOrCreateVehicle(vehicleData, customerId);
+      }
+
       // Try to find existing vehicle by VIN first
       if (vehicleData.vin) {
         const { data: existingVehicles } = await supabaseAdmin
@@ -1528,6 +1534,18 @@ class BMSService {
    */
   async findOrCreateInsuranceCompany(insuranceCompanyName, shopId, supabaseAdmin) {
     try {
+      // Use legacy database when Supabase is not available
+      if (!supabaseAdmin) {
+        // Return a mock insurance company object for legacy mode
+        return {
+          id: `insurance-${insuranceCompanyName.toLowerCase().replace(/\s+/g, '-')}`,
+          name: insuranceCompanyName,
+          short_name: insuranceCompanyName,
+          shop_id: shopId,
+          is_active: true,
+        };
+      }
+
       // Try to find existing insurance company by name
       const { data: existingInsuranceCompanies } = await supabaseAdmin
         .from('insurance_companies')
@@ -1575,6 +1593,19 @@ class BMSService {
    */
   async createJobFromBMSWithAdmin(bmsResult, customerId, vehicleId, supabaseAdmin) {
     try {
+      // Use legacy database when Supabase is not available
+      if (!supabaseAdmin) {
+        const { jobService } = require('../database/services/jobService-local');
+        // Create job using legacy service
+        const jobData = {
+          ...bmsResult,
+          customerId,
+          vehicleId,
+          shopId: bmsResult.shop_id,
+        };
+        return await jobService.createJobFromBMS(jobData, customerId, vehicleId);
+      }
+
       // STEP 0: Find or create insurance company
       const insuranceCompanyName = bmsResult.claimInfo?.insuranceCompany || 'ICBC';
       const insuranceCompany = await this.findOrCreateInsuranceCompany(

@@ -86,7 +86,17 @@ class CustomerService {
       });
 
       const response = await this.api.get(`?${params.toString()}`);
-      return response;
+      // The interceptor should transform the response, but ensure we return an array
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        return response.data;
+      } else if (response?.customers && Array.isArray(response.customers)) {
+        return response.customers;
+      }
+      // Fallback: return empty array if format is unexpected
+      console.warn('Unexpected customer API response format:', response);
+      return [];
     } catch (error) {
       console.error('Error fetching customers:', error);
       throw error;
